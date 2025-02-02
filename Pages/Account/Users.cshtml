@@ -1,0 +1,37 @@
+﻿@page
+@model Melodies25.Pages.Account.UsersModel
+@{
+    ViewData["Title"] = "User List";
+}
+
+<h2>Registered Users</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Roles</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Users)
+        {
+            <tr>
+                <td>@user.UserName</td>
+                <td>@user.Email</td>
+                <td>
+                    @foreach (var role in Model.Roles)
+                    {
+                        @if (Model.UserRoles.Contains(role))
+                        {
+                            <span>@role</span>
+
+                            <br />
+                        }
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
