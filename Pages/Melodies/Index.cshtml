@@ -14,7 +14,7 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Melody[0].File)
+                @Html.DisplayNameFor(model => model.Melody[0].Filepath)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Melody[0].Title)
@@ -35,7 +35,7 @@
 @foreach (var item in Model.Melody) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.File)
+                @Html.DisplayFor(modelItem => item.Filepath)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Title)

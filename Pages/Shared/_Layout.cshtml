@@ -20,20 +20,21 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Головна</a>
+                            <a class="nav-link text-dark" asp-page="/Index">Головна</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="Melodies/Index">Мелодії</a>
+                            <a class="nav-link text-dark" asp-page="/Melodies/Index">Мелодії</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="Authors/Index">Автори</a>
+                            <a class="nav-link text-dark" asp-page="/Authors/Index">Автори</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="Countries/Index">Країни</a>
-                        </li>
+                            <a class="nav-link text-dark" asp-page="/Countries/Index">Країни</a>
+                        </li>                        
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
+                        <partial name="_LoginPartial" />
                     </ul>
                 </div>
             </div>

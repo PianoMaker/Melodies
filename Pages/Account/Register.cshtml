@@ -1,0 +1,16 @@
+﻿@page
+@model RegisterModel
+
+<h2>Register</h2>
+
+<form method="post">
+    <div class="form-group">
+        <label for="Input_Email">Email</label>
+        <input asp-for="Input.Email" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="Input_Password">Password</label>
+        <input asp-for="Input.Password" class="form-control" type="password" />
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
+</form>

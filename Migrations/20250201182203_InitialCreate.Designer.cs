@@ -87,7 +87,7 @@ namespace Melodies25.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("File")
+                    b.Property<string>("Filepath")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
