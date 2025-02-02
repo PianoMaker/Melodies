@@ -7,16 +7,21 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Melodies25.Data;
 using Melodies25.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace Melodies25.Pages.Melodies
 {
+    //[Authorize(Roles = "Admin")] - це повне вимкнення
     public class DeleteModel : PageModel
     {
         private readonly Melodies25.Data.Melodies25Context _context;
 
-        public DeleteModel(Melodies25.Data.Melodies25Context context)
+        private readonly UserManager<IdentityUser> _userManager;
+        public DeleteModel(Melodies25.Data.Melodies25Context context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         [BindProperty]
@@ -28,6 +33,16 @@ namespace Melodies25.Pages.Melodies
             {
                 return NotFound();
             }
+
+            /*м'яке посилання користува*/
+            var user = await _userManager.GetUserAsync(User);
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+            if (!isAdmin)
+            {
+                return RedirectToPage("/Shared/AccessDenied"); // Перенаправлення на сторінку з відмовою в доступі
+            }
+            /**/
 
             var melody = await _context.Melody.FirstOrDefaultAsync(m => m.ID == id);
 
