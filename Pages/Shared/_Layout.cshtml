@@ -10,7 +10,7 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-sky border-bottom box-shadow"><!--mb-3 дає відступ, випиляв-->
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-page="/Index">Melodies25</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -43,12 +43,20 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
+    @if (ViewContext.RouteData.Values["Page"]?.ToString() == "/Index")
+    {
+     <div class="mainpage">
+        @RenderBody()
+        </div>
+    }
+    else
+    {
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    }
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2025 - Melodies25 - <a asp-area="" asp-page="/Privacy">Privacy</a>

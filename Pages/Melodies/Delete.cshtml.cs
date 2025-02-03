@@ -34,17 +34,20 @@ namespace Melodies25.Pages.Melodies
                 return NotFound();
             }
 
-            /*м'яке посилання користува*/
+            /*м'яке посилання користувача */
             var user = await _userManager.GetUserAsync(User);
-            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-
-            if (!isAdmin)
+            if (user is not null)
             {
-                return RedirectToPage("/Shared/AccessDenied"); // Перенаправлення на сторінку з відмовою в доступі
-            }
+                var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+                if (!isAdmin)
+                {
+                    return RedirectToPage("/Shared/AccessDenied");
+                }
+            } 
+            else return RedirectToPage("/Shared/AccessDenied");
             /**/
 
-            var melody = await _context.Melody.FirstOrDefaultAsync(m => m.ID == id);
+                var melody = await _context.Melody.FirstOrDefaultAsync(m => m.ID == id);
 
             if (melody == null)
             {

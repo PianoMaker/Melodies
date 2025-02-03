@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Melodies25.Data;
 using Melodies25.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace Melodies25.Pages.Authors
 {
@@ -14,9 +15,12 @@ namespace Melodies25.Pages.Authors
     {
         private readonly Melodies25.Data.Melodies25Context _context;
 
-        public DeleteModel(Melodies25.Data.Melodies25Context context)
+        private readonly UserManager<IdentityUser> _userManager;
+
+        public DeleteModel(Melodies25.Data.Melodies25Context context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         [BindProperty]
@@ -28,6 +32,19 @@ namespace Melodies25.Pages.Authors
             {
                 return NotFound();
             }
+
+            /*м'яке посилання користувача */
+            var user = await _userManager.GetUserAsync(User);
+            if (user is not null)
+            {
+                var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+                if (!isAdmin)
+                {
+                    return RedirectToPage("/Shared/AccessDenied");
+                }
+            }
+            else return RedirectToPage("/Shared/AccessDenied");
+            /**/
 
             var author = await _context.Author.FirstOrDefaultAsync(m => m.ID == id);
 

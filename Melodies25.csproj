@@ -25,6 +25,8 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\melodies\" />
+    <Folder Include="wwwroot\NewFolder1\" />
+    <Folder Include="wwwroot\NewFolder\" />
   </ItemGroup>
 
 </Project>
