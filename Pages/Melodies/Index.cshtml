@@ -14,19 +14,19 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Melody[0].Filepath)
+                Назва
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Melody[0].Title)
+                Файл
+            </th>            
+            <th>
+                Рік
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Melody[0].Year)
+                Опис
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Melody[0].Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Melody[0].Author)
+                Автор
             </th>
             <th></th>
         </tr>
@@ -34,13 +34,29 @@
     <tbody>
 @foreach (var item in Model.Melody) {
         <tr>
-            <td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Filepath))
+                    {
+                        var filepath = Url.Content(item.Filepath);
+                        <div>                            
+                            <a href="@filepath" download class="btn btn-primary">Завантажити MIDI</a>
 
-                @Html.DisplayFor(modelItem => item.Filepath)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
+                            <audio controls>
+                                <source src="@filepath" type="audio/midi">
+                                Ваш браузер не підтримує відтворення MIDI.
+                            </audio>
+                        </div>
+                    }
+                    else
+                    {
+                        <span>Файл не доступний</span>
+                    }
+                </td>
+
+            
             <td>
                 @Html.DisplayFor(modelItem => item.Year)
             </td>
