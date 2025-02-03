@@ -3,6 +3,13 @@
 
 @{
     ViewData["Title"] = "Index";
+    var message = TempData["Message"];
+    if (message != null)
+    {
+        <script>
+            alert('@message');
+        </script>
+    }
 }
 
 <h1>Index</h1>
@@ -32,22 +39,21 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Melody) {
-        <tr>
+        @foreach (var item in Model.Melody) {
+            <tr>
                 <td>
                     @Html.DisplayFor(modelItem => item.Title)
                 </td>
                 <td>
                     @if (!string.IsNullOrEmpty(item.Filepath))
                     {
-                        var filepath = Url.Content(item.Filepath);
-                        <div>                            
-                            <a href="@filepath" download class="btn btn-primary">Завантажити MIDI</a>
-
-                            <audio controls>
-                                <source src="@filepath" type="audio/midi">
-                                Ваш браузер не підтримує відтворення MIDI.
-                            </audio>
+                        var filepath = Url.Content($"~/melodies/{item.Filepath}");
+                        Console.WriteLine($"filepath = {filepath}");
+                        <div style="display:inline-flex">
+                        <a href="@filepath" download class="btn btn-primary">Завантажити MIDI</a>
+                        <form method="post">
+                            <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-success">Відтворити MIDI</button>
+                        </form>
                         </div>
                     }
                     else
@@ -75,3 +81,5 @@
 }
     </tbody>
 </table>
+
+

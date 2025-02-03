@@ -26,5 +26,12 @@ namespace Melodies25.Pages.Melodies
             Melody = await _context.Melody
                 .Include(m => m.Author).ToListAsync();
         }
+
+
+        public IActionResult OnPostPlay(string path)
+        {
+            TempData["Message"] = $"Method for playing the file {path} is under development.";
+            return RedirectToPage();
+        }
     }
 }
