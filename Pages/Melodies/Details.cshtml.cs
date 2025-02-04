@@ -28,7 +28,10 @@ namespace Melodies25.Pages.Melodies
                 return NotFound();
             }
 
-            var melody = await _context.Melody.FirstOrDefaultAsync(m => m.ID == id);
+            var melody = await _context.Melody
+                .Include(m => m.Author)
+                .FirstOrDefaultAsync(m => m.ID == id);
+                
             if (melody == null)
             {
                 return NotFound();

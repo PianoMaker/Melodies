@@ -5,16 +5,16 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+<h1>Створити</h1>
 
-<h4>Country</h4>
+<h4>Країни</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Country.Name" class="control-label"></label>
+                <label asp-for="Country.Name" class="control-label">Назва</label>
                 <input asp-for="Country.Name" class="form-control" />
                 <span asp-validation-for="Country.Name" class="text-danger"></span>
             </div>
@@ -26,7 +26,7 @@
 </div>
 
 <div>
-    <a asp-page="Index">Back to List</a>
+    <a asp-page="Index">Назад до списку</a>
 </div>
 
 @section Scripts {

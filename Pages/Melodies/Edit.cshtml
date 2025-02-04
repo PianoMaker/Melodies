@@ -2,40 +2,53 @@
 @model Melodies25.Pages.Melodies.EditModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Редагування";
 }
 
-<h1>Edit</h1>
+<h1>Редагування</h1>
 
-<h4>Melody</h4>
+<h4>Мелодія</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Melody.ID" />
+
+            @if (Model.Melody.Filepath is null)
+            {
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="file" id="melodyFileInput" name="fileupload" class="form-control" accept=".mid" />
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p>Поточний файл - @Model.Melody.Filepath</p>
+
+                <button type="submit" class="btn btn-danger" asp-page-handler="DeleteFile">
+                    Видалити файл
+                </button>
+            }
+
             <div class="form-group">
-                <label asp-for="Melody.Filepath" class="control-label"></label>
-                <input asp-for="Melody.Filepath" class="form-control" />
-                <span asp-validation-for="Melody.Filepath" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Melody.Title" class="control-label"></label>
+                <label asp-for="Melody.Title" class="control-label">Назва</label>
                 <input asp-for="Melody.Title" class="form-control" />
                 <span asp-validation-for="Melody.Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Melody.Year" class="control-label"></label>
+                <label asp-for="Melody.Year" class="control-label">Рік</label>
                 <input asp-for="Melody.Year" class="form-control" />
                 <span asp-validation-for="Melody.Year" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Melody.Description" class="control-label"></label>
+                <label asp-for="Melody.Description" class="control-label">Примітки</label>
                 <input asp-for="Melody.Description" class="form-control" />
                 <span asp-validation-for="Melody.Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Melody.AuthorID" class="control-label"></label>
+                <label asp-for="Melody.AuthorID" class="control-label">Автор</label>
                 <select asp-for="Melody.AuthorID" class="form-control" asp-items="ViewBag.AuthorID"></select>
                 <span asp-validation-for="Melody.AuthorID" class="text-danger"></span>
             </div>
@@ -46,8 +59,9 @@
     </div>
 </div>
 
+
 <div>
-    <a asp-page="./Index">Back to List</a>
+    <a asp-page="./Index">Назад до списку</a>
 </div>
 
 @section Scripts {

@@ -1,0 +1,33 @@
+﻿@page
+@model Melodies25.Pages.Melodies.SearchModel
+@{
+}
+@{
+    ViewData["Title"] = "Search";
+}
+
+<h1>Пошук</h1>
+
+<form method="post">
+    <label>Автор</label>
+    <input type="text" asp-route-name="author" class="form-control w-25" placeholder="шукати серед усіх"/>
+    <label>Назва</label>
+    <input type="text" asp-route-name="title" class="form-control w-25" placeholder="шукати серед усіх"/>
+    <label>Починається з ноти...</label>
+    <select asp-for="Note" class="form-control w-25">
+        <option value="" selected disabled>(будь-яка)</option>
+        <option value="c">до</option>
+        <option value="cis">до♯ / ре♭</option>
+        <option value="d">ре</option>
+        <option value="dis">ре♯ / мі♭</option>
+        <option value="e">мі</option>
+        <option value="f">фа</option>
+        <option value="fis">фа♯ / соль♭</option>
+        <option value="g">соль</option>
+        <option value="gis">соль♯ / ля♭</option>
+        <option value="a">ля</option>
+        <option value="ais">ля♯ / сі♭</option>
+        <option value="b">сі</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Пошук</button>
+</form>

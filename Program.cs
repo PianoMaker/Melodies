@@ -31,7 +31,10 @@ namespace Melodies25
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.AccessDeniedPath = "/Account/AccessDenied"; // Перенаправлення замість 404
+            });
 
 
             // Add services to the container.

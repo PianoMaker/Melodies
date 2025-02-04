@@ -5,7 +5,7 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+<h1>Додати</h1>
 
 <h4>Завантажити MIDI файл</h4>
 <hr />
@@ -25,22 +25,22 @@
     </div>
 
     <div class="form-group">
-        <label asp-for="Melody.Title" class="control-label"></label>
+        <label asp-for="Melody.Title" class="control-label">Назва</label>
         <input asp-for="Melody.Title" class="form-control" />
         <span asp-validation-for="Melody.Title" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Melody.Year" class="control-label"></label>
+        <label asp-for="Melody.Year" class="control-label">Рік</label>
         <input asp-for="Melody.Year" class="form-control" />
         <span asp-validation-for="Melody.Year" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Melody.Description" class="control-label"></label>
+        <label asp-for="Melody.Description" class="control-label">Примітки</label>
         <input asp-for="Melody.Description" class="form-control" />
         <span asp-validation-for="Melody.Description" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Melody.AuthorID" class="control-label"></label>
+        <label asp-for="Melody.AuthorID" class="control-label">Автор</label>
         <select asp-for="Melody.AuthorID" class="form-control" asp-items="ViewBag.AuthorID"></select>
     </div>
     <div class="form-group">
@@ -49,7 +49,7 @@
 </form>
 
 <div>
-    <a asp-page="Index">Back to List</a>
+    <a asp-page="Index">Назад до списку</a>
 </div>
 
 @section Scripts {

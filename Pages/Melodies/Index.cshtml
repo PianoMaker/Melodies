@@ -2,7 +2,7 @@
 @model Melodies25.Pages.Melodies.IndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Мелодії в Базі даних";
     var message = TempData["Message"];
     if (message != null)
     {
@@ -12,10 +12,12 @@
     }
 }
 
-<h1>Index</h1>
+<h1>Мелодії в Базі даних</h1>
+
+<a asp-page="search">Розширений пошук</a>
 
 <p>
-    <a asp-page="Create">Create New</a>
+    <a asp-page="Create">Додати мелодію</a>
 </p>
 <table class="table">
     <thead>
@@ -57,22 +59,20 @@
                     {
                         <span>Файл не доступний</span>
                     }
+                </td>            
+                <td>
+                    @Html.DisplayFor(modelItem => item.Year)
+                </td>            
+                <td>
+                    @Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)
                 </td>
-
-            
-            <td>
-                @Html.DisplayFor(modelItem => item.Year)
-            </td>            
-            <td>
-                @Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)
-            </td>
-            <td>
-                <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.ID">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.ID">Delete</a>
-            </td>
-        </tr>
-}
+                <td>
+                    <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |
+                    <a asp-page="./Details" asp-route-id="@item.ID">Details</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.ID">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
 

@@ -7,13 +7,17 @@ const addNote = () => {
         return; // Якщо ми не на головній сторінці — виходимо
     }
 
-    const notes = document.querySelectorAll('.notka'); // Отримуємо всі нотки
+    const notes = Array.from(document.querySelectorAll('*')).filter(el =>
+        el.classList.contains('notka') || el.classList.contains('notka-blue')
+    );
+
+
     if (notes.length >= maxNotes) {
         return; // Якщо ноток вже 20, не додаємо нову
     }
 
     const note = document.createElement('div');
-    note.classList.add('notka');
+    note.classList.add(Math.random() < 0.8 ? 'notka' : 'notka-blue');
     document.body.appendChild(note);
 
     // початкова позиція (у % від розміру екрана)

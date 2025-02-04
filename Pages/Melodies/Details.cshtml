@@ -2,48 +2,62 @@
 @model Melodies25.Pages.Melodies.DetailsModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Мелодія";
 }
 
-<h1>Details</h1>
+<h1>Детальна інформація</h1>
 
 <div>
-    <h4>Melody</h4>
+    <h4>Мелодія</h4>
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Melody.Filepath)
+            Файл
         </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Melody.Filepath)
+        <dd>
+            @if (!string.IsNullOrEmpty(Model.Melody.Filepath))
+            {
+                var filepath = Url.Content($"~/melodies/{Model.Melody.Filepath}");
+                Console.WriteLine($"filepath = {filepath}");
+                <div style="display:inline-flex">
+                    <a href="@filepath" download class="btn btn-primary">Завантажити MIDI</a>
+                    <form method="post">
+                        <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-success">Відтворити MIDI</button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <span>Файл не доступний</span>
+            }
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Melody.Title)
+            Назва
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Melody.Title)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Melody.Year)
+            Рік
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Melody.Year)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Melody.Description)
+            Примітки
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Melody.Description)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Melody.Author)
+            Автор
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Melody.Author.ID)
+            @Html.DisplayFor(model => model.Melody.Author.Surname)  @Html.DisplayFor(model => model.Melody.Author.Name)
         </dd>
     </dl>
 </div>
 <div>
-    <a asp-page="./Edit" asp-route-id="@Model.Melody.ID">Edit</a> |
-    <a asp-page="./Index">Back to List</a>
+    <a asp-page="./Edit" asp-route-id="@Model.Melody.ID">Редагувати</a> |
+    <a asp-page="./Index">Назад до списку мелодій</a>
 </div>
