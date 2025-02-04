@@ -65,13 +65,13 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     background-image: url("/images/note-yellow.png");
     background-size: contain; 
     background-position: center;
-    opacity: 0.4;
+    opacity: 0.6;
     animation: float 10s infinite linear;
 }
 
 .notka-blue {
-
     background-image: url("/images/note.png");
+    opacity: 0.3;
 }
 
 @keyframes float {

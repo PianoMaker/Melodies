@@ -10,10 +10,19 @@
 
 <form method="post">
     <label>Автор</label>
-    <input type="text" asp-route-name="author" class="form-control w-25" placeholder="шукати серед усіх"/>
+    <input type="text" asp-for="Author" class="form-control w-25" placeholder="шукати серед усіх"/>
+
     <label>Назва</label>
-    <input type="text" asp-route-name="title" class="form-control w-25" placeholder="шукати серед усіх"/>
+    <input type="text" asp-for="Title" class="form-control w-25" placeholder="шукати серед усіх"/>
+
+    <div class="form-check mt-2">
+        <input type="checkbox" id="ifPartly" asp-for="IfPartly" class="form-check-input" />
+        <label class="form-check-label" for="ifPartly">Частковий збіг</label>
+    </div>
+
     <label>Починається з ноти...</label>
+
+
     <select asp-for="Note" class="form-control w-25">
         <option value="" selected disabled>(будь-яка)</option>
         <option value="c">до</option>
@@ -31,3 +40,67 @@
     </select>
     <button type="submit" class="btn btn-primary">Пошук</button>
 </form>
+
+@if (Model.Melody is not null)
+{
+
+        <h2>Результати </h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Назва
+            </th>
+            <th>
+                Файл
+            </th>
+            <th>
+                Рік
+            </th>
+            <th>
+                Автор
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Melody)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Filepath))
+                    {
+                        var filepath = Url.Content($"~/melodies/{item.Filepath}");
+                        Console.WriteLine($"filepath = {filepath}");
+                        <div style="display:inline-flex">
+                            <a href="@filepath" download class="btn btn-primary">Завантажити MIDI</a>
+                            <form method="post">
+                                <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-success">Відтворити MIDI</button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <span>Файл не доступний</span>
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Year)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)
+                </td>
+                <td>
+                    <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |
+                    <a asp-page="./Details" asp-route-id="@item.ID">Details</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.ID">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+}
+
