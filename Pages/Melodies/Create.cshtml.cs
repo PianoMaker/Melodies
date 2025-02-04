@@ -30,7 +30,7 @@ namespace Melodies25.Pages.Melodies
 
         public IActionResult OnGet()
         {
-            ViewData["AuthorID"] = new SelectList(_context.Author, "ID", "ID");
+            ViewData["AuthorID"] = new SelectList(_context.Author, "ID", "Surname");
             return Page();
         }
 
