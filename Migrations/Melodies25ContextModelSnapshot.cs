@@ -39,6 +39,9 @@ namespace Melodies25.Migrations
                     b.Property<int?>("DateOfDeath")
                         .HasColumnType("int");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 

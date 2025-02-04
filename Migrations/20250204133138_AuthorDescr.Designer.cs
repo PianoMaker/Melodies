@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Melodies25.Migrations
 {
     [DbContext(typeof(Melodies25Context))]
-    [Migration("20250202114249_filepath")]
-    partial class filepath
+    [Migration("20250204133138_AuthorDescr")]
+    partial class AuthorDescr
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,6 +41,9 @@ namespace Melodies25.Migrations
 
                     b.Property<int?>("DateOfDeath")
                         .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
