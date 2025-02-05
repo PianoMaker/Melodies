@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.IdentityModel.Tokens;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Music;
 
 namespace Melodies25.Models
 {
@@ -20,5 +22,9 @@ namespace Melodies25.Models
         [Display(Name = "MIDI файл")]
         [NotMapped]
         public IFormFile? File { get; set; }
+
+        // власна розробка  для роботи з нотним текстом
+        [NotMapped]
+        public Music.Melody? MidiMelody { get; set; }
     }
 }
