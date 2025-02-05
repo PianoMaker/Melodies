@@ -45,6 +45,8 @@ namespace Melodies25.Pages.Melodies
         {
             Melody = _context.Melody.ToList();
 
+            Music.Globals.notation = Notation.eu;
+
             foreach (var melody in Melody)
             {
                 var wwwRootPath = Path.Combine(_environment.WebRootPath, "melodies");
@@ -53,11 +55,11 @@ namespace Melodies25.Pages.Melodies
                 {
                     var path = Path.Combine(wwwRootPath, melody.Filepath);
 
-                    Console.WriteLine($"{melody.Title} exploring file {path}");
+                    MessageL(COLORS.green, $"{melody.Title} exploring file {path}");
 
                     var midifile = MidiConverter.GetMidiFile(path);
 
-                    melody.MidiMelody = MidiConverter.GetMelodyFromMidi(midifile);
+                    melody.MidiMelody = await MidiConverter.GetMelodyFromMidiAsync(midifile);
                 }
                 else
                 {
@@ -69,7 +71,9 @@ namespace Melodies25.Pages.Melodies
 
         public async Task OnPostAsync()
         {
+            // Ініціалізую властивість midiMelody
             await NotesSearchInitialize();
+            
             // Очищення попередніх результатів
             Melody = new List<Melody>();
 

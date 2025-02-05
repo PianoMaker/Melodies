@@ -79,6 +79,56 @@ namespace Music
             return melody;
         }
 
+        public static async Task<Melody> GetMelodyFromMidiAsync(MidiFile midiFile)
+        {
+            // Використовуємо Task.Run для асинхронної обробки в окремому потоці
+            return await Task.Run(() =>
+            {
+                var ticksperquater = midiFile.DeltaTicksPerQuarterNote;
+                Melody melody = new Melody();
+                List<string> noteDurations = new List<string>(); // Для збереження тривалості нот
+                double totalTime = 0;
+
+                int trackcounter = 0;
+
+                foreach (var track in midiFile.Events)
+                {
+                    Console.WriteLine($"track {trackcounter}");
+                    trackcounter++;
+
+                    foreach (var midiEvent in track)
+                    {
+                        if (midiEvent is TempoEvent tempoEvent)
+                            SetTempo(GetBpmFromTempoEvent(tempoEvent));
+
+                        if (midiEvent is NoteOnEvent noteOn)
+                        {
+                            // Записуємо стартову позицію ноти
+                            var time = midiEvent.DeltaTime;
+
+                            var pitch = noteOn.NoteNumber % 12;
+                            var oct = noteOn.NoteNumber / 12 - 4;
+                            var step = key_to_step(noteOn.NoteName);
+                            var note = new Note(pitch, step, oct);
+                            melody.AddNote(note);
+                            Console.Write($"note on {noteOn.NoteNumber} - ");
+                        }
+                        else if (NoteEvent.IsNoteOff(midiEvent))
+                        {
+                            var time = midiEvent.DeltaTime;
+                            int dur = 4 * ticksperquater / time;
+                            melody.Notes[melody.Notes.Count - 1].SetDuration(dur);
+                            Console.WriteLine(melody.Notes[melody.Notes.Count - 1].AbsDuration());
+                        }
+                    }
+                }
+
+                return melody;
+            });
+        }
+
+
+
         // Перетворення номеру ноти в ім'я
         private static string NoteToName(int noteNumber)
         {
