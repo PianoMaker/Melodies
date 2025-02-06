@@ -1,8 +1,14 @@
 ﻿@page
 @model Melodies25.Pages.Shared.AccessDeniedModel
 @{
-    ViewData["Title"] = "Access Denied";
+    ViewData["Title"] = "Мелодія - помилка доступу";
 }
 
-<h2>Access Denied</h2>
-<p>You do not have permission to access this page.</p>
+<h2>Відмовлено в доступрі</h2>
+<p>Ви не маєте прав на перегляд цієї сторінки.</p>
+
+
+<div class="d-flex gap-3 m-3">
+    <a class="btn btn-light" asp-area="Identity" asp-page="/Account/Register">Зареєструватися</a>
+    <a class="btn btn-light" asp-area="Identity" asp-page="/Account/Login">Увійти</a>
+</div>

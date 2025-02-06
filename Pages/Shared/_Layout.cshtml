@@ -15,37 +15,35 @@
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-sky border-bottom box-shadow mb-0"><!--mb-3 дає відступ, випиляв-->
-            <div class="container mb-0">
+            <div class="container mb-1">
                 <img src="~/images/wcu_newLogo_Монтажна область 1.png" class="logoimage" alt="logo"/>
-                <a class="display-4 title" asp-area="" asp-page="/Index">Мелодія</a>
+                <a class="title" asp-area="" asp-page="/Index">Мелодія</a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                    <ul class="navbar-nav flex-grow-1">                        
                         <li class="nav-item">
-                            <a class="nav-link text-dark singerellamenue"  asp-page="/Index">Головна</a>
+                            <a class="nav-link navmelody" asp-page="/Melodies/Index">Мелодії</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-page="/Melodies/Index">Мелодії</a>
+                            <a class="nav-link navmelody" asp-page="/Authors/Index">Автори</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-page="/Authors/Index">Автори</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-page="/Countries/Index">Країни</a>
+                            <a class="nav-link navmelody" asp-page="/Countries/Index">Країни</a>
                         </li>                        
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Про сайт</a>
+                            <a class="nav-link navmelody" asp-area="" asp-page="/Privacy">Про сайт</a>
                         </li>
                         <!--
                         <partial name="_LoginPartial" />
                         -->
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="Account/Users">Користувачі</a>
-                        </li>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a class="nav-link navmelody" asp-area="" asp-page="Account/Users">Користувачі</a>
+                        }
                         </ul>
                 </div>
             </div>

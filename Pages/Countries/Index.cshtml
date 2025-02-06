@@ -2,7 +2,7 @@
 @model Melodies25.Pages.Countries.IndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Мелодія - країни";
 }
 
 <h1>Index</h1>
@@ -27,8 +27,8 @@
             </td>
             <td>
                 <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.ID">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.ID">Delete</a>
+                <a asp-page="./Details" asp-route-id="@item.ID">Детальна інформація</a>  |
+                <a asp-page="./Delete" asp-route-id="@item.ID">Вилучити</a> 
             </td>
         </tr>
 }

@@ -3,7 +3,7 @@
 @{
 }
 @{
-    ViewData["Title"] = "Search";
+    ViewData["Title"] = "Мелодія - пошук";
 }
 
 <h1>Пошук</h1>
@@ -94,9 +94,9 @@
                     @Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)
                 </td>
                 <td>
-                    <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |
-                    <a asp-page="./Details" asp-route-id="@item.ID">Details</a> |
-                    <a asp-page="./Delete" asp-route-id="@item.ID">Delete</a>
+                    <a asp-page="./Edit" asp-route-id="@item.ID">Редагувати</a> |
+                    <a asp-page="./Details" asp-route-id="@item.ID">Детальна інформація</a>  |
+                    <a asp-page="./Delete" asp-route-id="@item.ID">Вилучити</a> 
                 </td>
             </tr>
         }
