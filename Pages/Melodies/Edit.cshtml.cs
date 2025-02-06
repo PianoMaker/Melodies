@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using System;
 using Microsoft.AspNetCore.Identity;
+using Melodies25.Utilities;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -76,7 +77,8 @@ namespace Melodies25.Pages.Melodies
             //завантаження файлу якщо є
             if (fileupload is not null)
             {
-                var filePath = Path.Combine(uploadsPath, fileupload.FileName);
+                var newfilename = Translit.Transliterate(fileupload.FileName);
+                var filePath = Path.Combine(uploadsPath, newfilename);
 
                 // Записуємо файл на сервер
                 using (var stream = new FileStream(filePath, FileMode.Create))
@@ -84,9 +86,8 @@ namespace Melodies25.Pages.Melodies
                     await fileupload.CopyToAsync(stream);
                 }
 
-                ViewData["Message"] = "Файл успішно завантажено!";
-                var filename = fileupload.FileName;
-                Melody.Filepath = filename; //назву файлу фіксуємо
+                ViewData["Message"] = "Файл успішно завантажено!";                
+                Melody.Filepath = newfilename; //назву файлу фіксуємо
             }
             else
             {
