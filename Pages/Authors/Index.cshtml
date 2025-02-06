@@ -14,16 +14,12 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Author[0].Surname)
+                Автор
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Author[0].Name)
-            </th>
+                Роки життя
             <th>
-                @Html.DisplayNameFor(model => model.Author[0].DateOfBirth)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Author[0].DateOfDeath)
+                Країна
             </th>
             <th></th>
         </tr>
@@ -32,19 +28,17 @@
 @foreach (var item in Model.Author) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Surname)
+                    @Html.DisplayFor(modelItem => item.Name) @Html.DisplayFor(modelItem => item.Surname)           
+                
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                    @Html.DisplayFor(modelItem => item.DateOfBirth) - @Html.DisplayFor(modelItem => item.DateOfDeath)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.DateOfBirth)
+                    @(item.Country != null ? item.Country.Name : "Немає даних")
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.DateOfDeath)
-            </td>
-            <td>
-                <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |
+                <a asp-page="./Edit" asp-route-id="@item.ID">Редагувати</a> |
                 <a asp-page="./Details" asp-route-id="@item.ID">Details</a> |
                 <a asp-page="./Delete" asp-route-id="@item.ID">Delete</a>
             </td>

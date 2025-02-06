@@ -41,11 +41,8 @@ namespace Music
         // 1-а октава відповідає 4-й MIDI-октаві, нумерація MIDI-октав з нуля
 
         
+        public int MidiDur { get { return duration.MidiDuration(PPQN); } }
 
-        public int MidiDur(int PPQN)
-        {
-            return duration.MidiDuration(PPQN);
-        }
         public Note(Note note)
         {
             this.pitch = note.pitch;
@@ -97,6 +94,7 @@ namespace Music
 
         public void EnterNote(string input)
         {//створення ноти за буквою
+            input = CutSlash(input);
             int octave; string key;
             octdivide(input, out octave, out key);
             int temp = key_to_pitch(key);
@@ -105,6 +103,17 @@ namespace Music
             step = key_to_step(key);
             oct = octave;
             duration = new Duration();
+        }
+
+        private static string CutSlash(string input)
+        {
+            var slash = input.IndexOf('/');
+            if (slash != -1)
+            {
+                input = input.Substring(slash);
+            }
+
+            return input;
         }
 
         public Note GenerateRandomNote()
@@ -209,9 +218,10 @@ namespace Music
         }
 
 
-        public Note(string input)
-        {            
+        public Note(string input)        {            
+
             if (input is null) throw new IncorrectNote("Impossible to initialize note");
+            input = CutSlash(input); // при пошуку типу cis/des
             stringdivider(input, out string key, out int octave, out int duration, out string? durmodifier);                        
             pitch = key_to_pitch(key, true);                        
             step = key_to_step(key);

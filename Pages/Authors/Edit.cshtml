@@ -7,7 +7,7 @@
 
 <h1>Редагування</h1>
 
-<h4>Author</h4>
+<h4>Автор</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -15,17 +15,17 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Author.ID" />
             <div class="form-group">
-                <label asp-for="Author.Surname" class="control-label"></label>
+                <label asp-for="Author.Surname" class="control-label">Прізвище</label>
                 <input asp-for="Author.Surname" class="form-control" />
                 <span asp-validation-for="Author.Surname" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Author.Name" class="control-label"></label>
+                <label asp-for="Author.Name" class="control-label">Ім'я'</label>
                 <input asp-for="Author.Name" class="form-control" />
                 <span asp-validation-for="Author.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Author.DateOfBirth" class="control-label"></label>
+                <label asp-for="Author.DateOfBirth" class="control-label">Народився</label>
                 <input asp-for="Author.DateOfBirth" class="form-control" />
                 <span asp-validation-for="Author.DateOfBirth" class="text-danger"></span>
             </div>
@@ -35,7 +35,15 @@
                 <span asp-validation-for="Author.DateOfDeath" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Author.Description" class="control-label"></label>
+                <label asp-for="Author.CountryID" class="control-label">Країна</label>
+                <select asp-for="Author.CountryID" class="form-control" asp-items="ViewBag.CountryID">
+                    <option value="">-- Оберіть країну --</option>
+               </select>
+                <span asp-validation-for="Author.CountryID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Author.Description" class="control-label">Примітки</label>
                 <input asp-for="Author.Description" class="form-control" />
                 <span asp-validation-for="Author.Description" class="text-danger"></span>
             </div>

@@ -4,16 +4,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Melodies25</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />    
+    <!--<link rel="stylesheet" href="~/css/assets.css" asp-append-version="true" />-->
+    <link rel="stylesheet" href="~/css/singerella.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Melodies25.styles.css" asp-append-version="true" />
-    <script src="~/libs/midi.js/MIDI.js"></script>
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <!--<link rel="stylesheet" href="~/Melodies25.styles.css" asp-append-version="true" />-->
+
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-sky border-bottom box-shadow"><!--mb-3 дає відступ, випиляв-->
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Melodies25</a>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-sky border-bottom box-shadow mb-0"><!--mb-3 дає відступ, випиляв-->
+            <div class="container mb-0">
+                <img src="~/images/wcu_newLogo_Монтажна область 1.png" class="logoimage" alt="logo"/>
+                <a class="display-4 title" asp-area="" asp-page="/Index">Мелодія</a>
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -21,7 +26,7 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-page="/Index">Головна</a>
+                            <a class="nav-link text-dark singerellamenue"  asp-page="/Index">Головна</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-page="/Melodies/Index">Мелодії</a>
@@ -33,13 +38,15 @@
                             <a class="nav-link text-dark" asp-page="/Countries/Index">Країни</a>
                         </li>                        
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Про сайт</a>
                         </li>
+                        <!--
                         <partial name="_LoginPartial" />
+                        -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="Account/Users">Users</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="Account/Users">Користувачі</a>
                         </li>
-                    </ul>
+                        </ul>
                 </div>
             </div>
         </nav>
@@ -52,7 +59,7 @@
     }
     else
     {
-        <div class="container">
+        <div class="container h-85">
             <main role="main" class="pb-3">
                 @RenderBody()
             </main>

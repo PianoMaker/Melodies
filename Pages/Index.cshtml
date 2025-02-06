@@ -1,17 +1,103 @@
 ﻿@page
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
+    var Singerella = Model.Singerella;
 }
 
-<div class="text-center mainpage">
-    <h1 class="display-4 title">МЕЛОДІЯ</h1>
-    <p>Загальна інфо про проект</p>
+<div class="mainpage">
+    <div style="position:absolute; top:5px; left:5px">
+    <form method="post" id="myForm" style="align-content:end">
+        <input type="checkbox" asp-for="Singerella" id="singerellaCheckbox" />
+    </form>    
+    <script>
+        document.getElementById("singerellaCheckbox").addEventListener("change", function() {            
+            document.getElementById("myForm").submit(); // Відправка форми при зміні стану чекбокса
+        });
+    </script>
+    </div>
 
-    <div class="notka"></div>
-    <div class="notka-blue"></div>
+    @if (@Singerella == false)
+    {
+        <div class="d-flex commoncontainer">
+            <!-- -->
+            <div class="container flex-column justify-content-center align-items-start mt-5 w-25 haslo">
+                <h3 class="display-5 indextext">Поринь у світ музики</h3>
+                <p class="display-5 has-small-font-size">Мелодії з усього світу в одному сайті!</p>
+                <form method="post" class="mt-3 w-100 d-flex flex-column align-items-center">
+                    <label for="search">Пошук</label>
+                    <input asp-for="Search" type="text" class="form-control searchfield" />
+                    <button type="submit" class="btn btn-primary mt-2">🔍 Пошук</button>
+                </form>
+            </div>
+            <div class="d-flex flex-column align-items-end w-75 rightcontainer mt-0">
+                
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <div class="d-flex gap-3 m-3">
+                        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Users" title="Manage">
+                            Вітаємо, @User.Identity?.Name!
+                        </a>
+                    
+                        <form class="form-inline" method="post" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
+                            <button type="submit" class="nav-link btn btn-link text-dark">Вийти</button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex gap-3 m-3">
+                        <a class="btn btn-light" asp-area="Identity" asp-page="/Account/Register">Зареєструватися</a>
+                        <a class="btn btn-light" asp-area="Identity" asp-page="/Account/Login">Увійти</a>
+                    </div>
+                }
+                
+
+              
+
+            </div>
+
+        </div>
+
     
-    <script src="script.js"></script>
-</div>
+    }
+    else
 
+    {
+        <div data-elementor-type="wp-page" data-elementor-id="22" class="elementor elementor-22">
+            <section class="elementor-section elementor-top-section elementor-element elementor-element-0b3aa23 elementor-section-boxed elementor-section-height-default elementor-section-height-default" data-id="0b3aa23" data-element_type="section" data-settings="{&quot;jet_parallax_layout_list&quot;:[{&quot;jet_parallax_layout_image&quot;:{&quot;url&quot;:&quot;&quot;,&quot;id&quot;:&quot;&quot;,&quot;size&quot;:&quot;&quot;},&quot;_id&quot;:&quot;c352893&quot;,&quot;jet_parallax_layout_image_tablet&quot;:{&quot;url&quot;:&quot;&quot;,&quot;id&quot;:&quot;&quot;,&quot;size&quot;:&quot;&quot;},&quot;jet_parallax_layout_image_mobile&quot;:{&quot;url&quot;:&quot;&quot;,&quot;id&quot;:&quot;&quot;,&quot;size&quot;:&quot;&quot;},&quot;jet_parallax_layout_speed&quot;:{&quot;unit&quot;:&quot;%&quot;,&quot;size&quot;:50,&quot;sizes&quot;:[]},&quot;jet_parallax_layout_type&quot;:&quot;scroll&quot;,&quot;jet_parallax_layout_direction&quot;:null,&quot;jet_parallax_layout_fx_direction&quot;:null,&quot;jet_parallax_layout_z_index&quot;:&quot;&quot;,&quot;jet_parallax_layout_bg_x&quot;:50,&quot;jet_parallax_layout_bg_x_tablet&quot;:&quot;&quot;,&quot;jet_parallax_layout_bg_x_mobile&quot;:&quot;&quot;,&quot;jet_parallax_layout_bg_y&quot;:50,&quot;jet_parallax_layout_bg_y_tablet&quot;:&quot;&quot;,&quot;jet_parallax_layout_bg_y_mobile&quot;:&quot;&quot;,&quot;jet_parallax_layout_bg_size&quot;:&quot;auto&quot;,&quot;jet_parallax_layout_bg_size_tablet&quot;:&quot;&quot;,&quot;jet_parallax_layout_bg_size_mobile&quot;:&quot;&quot;,&quot;jet_parallax_layout_animation_prop&quot;:&quot;transform&quot;,&quot;jet_parallax_layout_on&quot;:[&quot;desktop&quot;,&quot;tablet&quot;]}],&quot;background_background&quot;:&quot;classic&quot;}">
+                <div class="elementor-container elementor-column-gap-default">
+                    <div class="elementor-column elementor-col-50 elementor-top-column elementor-element elementor-element-0189159" data-id="0189159" data-element_type="column">
+                        <div class="elementor-widget-wrap elementor-element-populated">
+                            <div class="elementor-element elementor-element-66ce06e elementor-widget elementor-widget-heading" data-id="66ce06e" data-element_type="widget" data-widget_type="heading.default">
+                                <div class="elementor-widget-container">
+                                    <h1 class="elementor-heading-title elementor-size-default">Поринь у світ музики</h1>
+                                </div>
+                            </div>
+                            <div class="elementor-element elementor-element-6a6f8a3 elementor-widget elementor-widget-text-editor" data-id="6a6f8a3" data-element_type="widget" data-widget_type="text-editor.default">
+                                <div class="elementor-widget-container">
+                                    AWAKEN POSSIBILITY
+                                </div>
+                            </div>
+                            <div class="elementor-element elementor-element-25f4122 elementor-widget__width-initial elementor-widget elementor-widget-text-editor" data-id="25f4122" data-element_type="widget" data-widget_type="text-editor.default">
+                                <div class="elementor-widget-container">
+                                    We offer music education for individuals of just about every age and skill level.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+
+            <div class="notka"></div>
+            <div class="notka-blue"></div>
+            <script src="script.js"></script>
+        </div>
+    }
+</div>
 

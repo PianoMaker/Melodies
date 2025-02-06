@@ -23,7 +23,8 @@ namespace Melodies25.Pages.Authors
 
         public async Task OnGetAsync()
         {
-            Author = await _context.Author.ToListAsync();
+            Author = await _context.Author.Include(m=>m.Country).ToListAsync();
+                
         }
     }
 }

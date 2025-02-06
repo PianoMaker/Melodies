@@ -21,6 +21,7 @@ namespace Melodies25.Pages.Authors
 
         public IActionResult OnGet()
         {
+            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
             return Page();
         }
 

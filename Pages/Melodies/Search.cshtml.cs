@@ -34,11 +34,33 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public bool IfPartly { get; set; }
 
+        public string Description { get; set; }
 
-        public void OnGetAsync()
+
+        public void OnGetAsync(string search)
         {
-                       
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                Console.WriteLine($"Received search: {search}");
+
+                Melody = new List<Melody>();
+
+                string searchQuery = search.ToLower();
+
+                var query = _context.Melody.AsQueryable();
+
+                var results = query.Where(m => EF.Functions.Like(m.Author.Surname, $"%{searchQuery}%"))
+                                   .Concat(query.Where(m => EF.Functions.Like(m.Title, $"%{searchQuery}%")));
+
+                Melody = results.ToList();
+
+                if (Melody.Count == 0) Description = ($"За результатами пошуку \"{search}\" Нічого не знайдено");
+                else Description = ($"За результатами пошуку \"{search}\" знайдено");
+            }
+
             Page();
+
         }
 
         private async Task NotesSearchInitialize()
@@ -137,6 +159,9 @@ namespace Melodies25.Pages.Melodies
                 }
 
                 Melody = filteredMelodies;
+
+                if (Melody.Count == 0) Description = ($"За результатами пошуку \"{Author}\", \"{Title}\" Нічого не знайдено");
+                else Description = ($"За результатами пошуку \"{Author}\", \"{Title}\" знайдено:");
             }
 
             

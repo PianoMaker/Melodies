@@ -36,6 +36,8 @@ namespace Melodies25.Pages.Authors
                 return NotFound();
             }
             Author = author;
+            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
+
             return Page();
         }
 

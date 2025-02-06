@@ -36,15 +36,15 @@
         <option value="gis">соль♯ / ля♭</option>
         <option value="a">ля</option>
         <option value="ais">ля♯ / сі♭</option>
-        <option value="b">сі</option>
+        <option value="h">сі</option>
     </select>
     <button type="submit" class="btn btn-primary">Пошук</button>
 </form>
 
-@if (Model.Melody is not null)
+@if (Model.Melody is not null && Model.Melody.Count > 0)
 {
 
-        <h2>Результати </h2>
+    <p>@Model.Description </p>
 <table class="table">
     <thead>
         <tr>
@@ -102,5 +102,9 @@
         }
     </tbody>
 </table>
+}
+else
+{
+    <p>@Model.Description </p>
 }
 
