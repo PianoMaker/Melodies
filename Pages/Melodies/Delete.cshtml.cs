@@ -9,6 +9,7 @@ using Melodies25.Data;
 using Melodies25.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using System.IO;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -18,10 +19,13 @@ namespace Melodies25.Pages.Melodies
         private readonly Melodies25.Data.Melodies25Context _context;
 
         private readonly UserManager<IdentityUser> _userManager;
-        public DeleteModel(Melodies25.Data.Melodies25Context context, UserManager<IdentityUser> userManager)
+
+        private readonly IWebHostEnvironment _environment;
+        public DeleteModel(Melodies25.Data.Melodies25Context context, UserManager<IdentityUser> userManager, IWebHostEnvironment environment)
         {
             _context = context;
             _userManager = userManager;
+            _environment = environment;
         }
 
         [BindProperty]
@@ -71,8 +75,30 @@ namespace Melodies25.Pages.Melodies
             if (melody != null)
             {
                 Melody = melody;
+                if(Melody.Filepath is not null)
+                {
+                    var filename = Melody.Filepath;
+                    var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies");
+                    var filePath = Path.Combine(uploadsPath, filename);
+                    try
+                    {
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            System.IO.File.Delete(filePath);
+                            Console.WriteLine($"Файл {filename} успішно видалено.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Помилка при видаленні файлу: {ex.Message}");
+                    }
+                }
+
                 _context.Melody.Remove(Melody);
                 await _context.SaveChangesAsync();
+
+                
+
             }
 
             return RedirectToPage("./Index");

@@ -36,6 +36,11 @@ namespace Melodies25.Pages.Authors
             else
             {
                 Author = author;
+
+                var meloides = await _context.Melody.Where(m => m.AuthorID == author.ID).ToListAsync();
+                author.MelodiesCount = meloides.Count;
+
+
             }
             return Page();
         }

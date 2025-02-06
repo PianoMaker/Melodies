@@ -5,10 +5,10 @@
     ViewData["Title"] = "Мелодія - країни";
 }
 
-<h1>Index</h1>
+<h1>Країни</h1>
 
 <p>
-    <a asp-page="Create">Create New</a>
+    <a asp-page="Create">Додати країну</a>
 </p>
 <table class="table">
     <thead>
@@ -23,12 +23,11 @@
 @foreach (var item in Model.Country) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                    <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Name)</a>
             </td>
             <td>
-                <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.ID">Детальна інформація</a>  |
-                <a asp-page="./Delete" asp-route-id="@item.ID">Вилучити</a> 
+                    <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark">Редагуватти</a> |                    
+                    <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger">Вилучити</a>
             </td>
         </tr>
 }

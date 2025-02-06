@@ -2,13 +2,13 @@
 @model Melodies25.Pages.Authors.IndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Мелодія - автори";
 }
 
-<h1>Index</h1>
+<h1>Автори</h1>
 
 <p>
-    <a asp-page="Create">Create New</a>
+    <a asp-page="Create">Створити автора</a>
 </p>
 <table class="table">
     <thead>
@@ -21,14 +21,16 @@
             <th>
                 Країна
             </th>
-            <th></th>
+            <th>
+                Мелодій на сайті
+            </th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model.Author) {
         <tr>
             <td>
-                    @Html.DisplayFor(modelItem => item.Name) @Html.DisplayFor(modelItem => item.Surname)           
+                    <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Name) @Html.DisplayFor(modelItem => item.Surname)</a>
                 
             </td>
             <td>
@@ -38,9 +40,11 @@
                     @(item.Country != null ? item.Country.Name : "Немає даних")
             </td>
             <td>
-                <a asp-page="./Edit" asp-route-id="@item.ID">Редагувати</a> |
-                <a asp-page="./Details" asp-route-id="@item.ID">Детальна інформація</a>  |
-                <a asp-page="./Delete" asp-route-id="@item.ID">Вилучити</a> 
+                    @Html.DisplayFor(modelItem => item.MelodiesCount)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark">Редагувати</a> |
+                <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger">Вилучити</a> 
             </td>
         </tr>
 }

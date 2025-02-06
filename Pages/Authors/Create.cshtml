@@ -14,23 +14,23 @@
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Author.Surname" class="control-label"></label>
-                <input asp-for="Author.Surname" class="form-control" />
-                <span asp-validation-for="Author.Surname" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Author.Name" class="control-label"></label>
+                <label asp-for="Author.Name" class="control-label">Ім'я'</label>
                 <input asp-for="Author.Name" class="form-control" />
                 <span asp-validation-for="Author.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Author.DateOfBirth" class="control-label"></label>
-                <input asp-for="Author.DateOfBirth" class="form-control" />
+                <label asp-for="Author.Surname" class="control-label">Прізвище</label>
+                <input asp-for="Author.Surname" class="form-control" />
+                <span asp-validation-for="Author.Surname" class="text-danger"></span>
+            </div>            
+            <div class="form-group">
+                <label asp-for="Author.DateOfBirth" class="control-label">Рік народження</label>
+                <input asp-for="Author.DateOfBirth" type="number" class="form-control" />
                 <span asp-validation-for="Author.DateOfBirth" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Author.DateOfDeath" class="control-label"></label>
-                <input asp-for="Author.DateOfDeath" class="form-control" />
+                <label asp-for="Author.DateOfDeath" class="control-label">Рік смерті</label>
+                <input asp-for="Author.DateOfDeath" type="number" class="form-control" />
                 <span asp-validation-for="Author.DateOfDeath" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -41,7 +41,7 @@
                 <span asp-validation-for="Author.CountryID" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Author.Description" class="control-label"></label>
+                <label asp-for="Author.Description" class="control-label">Додаткова інформація</label>
                 <input asp-for="Author.Description" class="form-control" />
                 <span asp-validation-for="Author.Description" class="text-danger"></span>
             </div>

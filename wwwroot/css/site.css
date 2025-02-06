@@ -22,6 +22,17 @@ html {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
+.btn-light{
+    transition: linear 0.5s;
+
+}
+
+
+.btn-light:hover {
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* Збільшена тінь при наведенні */
+    transform: translateY(-2px); /* Невеликий підйом кнопки */
+}
+
 html {
     position: relative;
     width: 100%;
@@ -80,7 +91,14 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
 .navmelody {
     font-size: 1.2em;
-    margin: 0px 35px 0px 35px 
+    margin: 0px 35px 0px 35px; 
+    transition: linear 0.5s;
+}
+
+.navmelody:hover {    
+    color: lemonchiffon !important;
+    transform: scale(1.08) translateY(-2px);
+    
 }
 
 .singerellamenue {
@@ -88,18 +106,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     letter-spacing: -0.2px;
 }
 
-.indextext {
-    color: rgba(50, 0, 125,.9);
-    font-size: 3em;
-}
-
-.haslo {
-    min-width: 400px;
-}
-
-.searchfield {
-    width: 400px;
-}
 
 .indexcontainer {
     display: flex;
@@ -137,11 +143,55 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 .searchfield {
-    width: 300px;
+    width: 250px;
 }
 
-.indextext {
-    font-size: 2.5em;
+
+.homepagetitle {
+    font-size: 48px;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: linear-gradient(45deg, #ff6347, #ff8c00, #ffcc00);
+    color: #fff5e1;
+    margin: 25px 25px 20px 10px;
+    transform: rotate(-2deg);
+    padding: 10px;
+    display: inline-block;
+    border-radius: 10px;    
+    animation: glow 1.2s infinite alternate;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.homepagetitle:hover {
+    transform: scale(1.05);
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Анімація м'якого пульсування світла */
+@keyframes glow {
+    from {
+        text-shadow: 4px 4px 15px rgb(230 255 15), 0px 0px 16px rgb(255 247 11)
+    }
+
+    to {
+        text-shadow: 0px 0px 12px rgb(255 50 50), 0px 0px 20px rgb(255 100 50);
+    }
+}
+
+.homepagesubtitle {
+    color: #5a3d1c; /* Темно-коричневий */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    font-size: 1.2em;
+}
+
+
+.btn-index {
+    background-color: rgba(100,100,255,.8);
+}
+
+.btn-index:hover {
+    background-color: rgba(120,150,255,.8);
 }
 
 @media (max-width: 768px) {
@@ -167,7 +217,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
         width: 200px;
     }
 
-    .indextext {
+    .homepagetitle {
         font-size: 2em;
     }
 
@@ -196,6 +246,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 @keyframes float {
     0% {
         transform: translateX(0) translateY(0) scale(1.1) rotate(0deg);
+        
     }
 
     100% {

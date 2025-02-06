@@ -20,11 +20,18 @@ namespace Melodies25.Pages.Authors
         }
 
         public IList<Author> Author { get;set; } = default!;
+        
 
         public async Task OnGetAsync()
         {
             Author = await _context.Author.Include(m=>m.Country).ToListAsync();
-                
+
+            foreach(var currentAuthor in Author) {
+                var meloides = await _context.Melody.Where(m => m.AuthorID == currentAuthor.ID).ToListAsync();
+                currentAuthor.MelodiesCount = meloides.Count;
+            }
+
+
         }
     }
 }

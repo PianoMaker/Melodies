@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.Metrics;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.Metrics;
 
 namespace Melodies25.Models
 {
@@ -15,5 +16,8 @@ namespace Melodies25.Models
         public int? DateOfDeath { get; set; }  // Рік смерті (може бути null, якщо автор живий)
 
         public string? Description { get; set; }
+
+        [NotMapped]
+        public int? MelodiesCount { get; set; }
     }
 }

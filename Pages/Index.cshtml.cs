@@ -13,7 +13,7 @@ namespace Melodies25.Pages
         public bool Singerella { get; set; }
 
         [BindProperty]
-        public string Search { get; set; }
+        public string? Search { get; set; }
 
 
 
@@ -22,11 +22,18 @@ namespace Melodies25.Pages
             Console.WriteLine("Index OnGet");
         }
 
-        public IActionResult OnPost()
+        public IActionResult OnPostSearch()
         {
-            Console.WriteLine("Index OnPost");
+            Console.WriteLine("Index OnPostSearch");
 
             return RedirectToPage("./Melodies/Search", new { search = Search });
+        }
+
+
+        public IActionResult OnPostChangeDesign()
+        {
+            Console.WriteLine("OnPostChangeDesign");
+            return Page();
         }
     }
 }

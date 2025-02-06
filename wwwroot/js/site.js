@@ -1,6 +1,6 @@
 ﻿// АНІМАЦІЯ НОТОК
 
-const maxNotes = 30; // максимальна кількість нот
+const maxNotes = 50; // максимальна кількість нот
 
 const addNote = () => {
     if (window.location.pathname !== "/" && window.location.pathname !== "/Index") {
@@ -21,12 +21,12 @@ const addNote = () => {
     document.body.appendChild(note);
 
     // початкова позиція (у % від розміру екрана)
-    const randomHorizontalStart = Math.random() * 100 - 100;
-    const randomVerticalStart = Math.random() * 50 + 50; // 
+    const randomHorizontalStart = Math.random() * 10 + 95;
+    const randomVerticalStart = Math.random() * 10 + 50; // 
 
     // кінцева позиція (зміна позиції віждносно початковоґ у %)
-    const randomHorizontalEnd = Math.random() * 100 + 100;
-    const randomVerticalEnd = Math.random() * 100 - 80;  
+    const randomHorizontalEnd = Math.random() * 100 - 80;
+    const randomVerticalEnd = Math.random() * 20 - 100;  
     const randomRotate = Math.round(Math.random() * 60) - 30
 
     // Розташування нотки випадковим чином
@@ -34,7 +34,7 @@ const addNote = () => {
     note.style.left = `${randomHorizontalStart}vw`; // по горизонталі
 
     // Випадкова тривалість анімації
-    note.style.animationDuration = `${Math.random() * 10 + 10}s`;
+    note.style.animationDuration = `${Math.random() * 15 + 10}s`;
 
     // Додаємо випадкові значення до анімації за допомогою JavaScript
     note.style.animationName = `float`;
@@ -50,5 +50,5 @@ const addNote = () => {
     });
 };
 
-// Додаємо нотки кожні 0.5 секунди
-setInterval(addNote, 500);
+// Додаємо нотки кожні 0.3 секунди
+setInterval(addNote, 400);

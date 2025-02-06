@@ -41,7 +41,7 @@
         @foreach (var item in Model.Melody) {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Title)
+                    <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
                 </td>
                 <td>
                     @if (!string.IsNullOrEmpty(item.Filepath))
@@ -67,10 +67,9 @@
                     @Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)
                 </td>
                 <td>
-                    <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |
-                    <a asp-page="./Details" asp-route-id="@item.ID">Детальна інформація</a>  |
-                    <a asp-page="./Delete" asp-route-id="@item.ID">Вилучити</a> 
-                </td>
+                    <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark">Редагуватти</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger">Вилучити</a>
+            </td>
             </tr>
         }
     </tbody>
