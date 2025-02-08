@@ -11,6 +11,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Routing.Constraints;
 using System.Text;
 using Melodies25.Utilities;
+using NAudio.Midi;
+using Music;
+using static Music.Messages;
+using Microsoft.EntityFrameworkCore;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -21,7 +25,7 @@ namespace Melodies25.Pages.Melodies
         private readonly IWebHostEnvironment _environment;
 
         [BindProperty]
-        public Melody Melody { get; set; } = default!;
+        public Models.Melody Melody { get; set; } = default!;
 
 
         public CreateModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
@@ -48,6 +52,16 @@ namespace Melodies25.Pages.Melodies
                 //return Page();
             }
 
+            Melody.Author = await _context.Author
+    .FirstOrDefaultAsync(a => a.ID == Melody.AuthorID);
+
+            if (Melody.Author == null)
+            {
+                Console.WriteLine("Author not found!");
+                return Page(); // або обробити помилку іншим чином
+            }
+
+
             var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies");
 
 
@@ -65,7 +79,7 @@ namespace Melodies25.Pages.Melodies
             //завантаження файлу якщо є
             if (fileupload is not null)
             {
-                string newfilename = Translit.Transliterate(fileupload.FileName);
+                string newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
 
                 var filePath = Path.Combine(uploadsPath, newfilename);
 
@@ -75,20 +89,42 @@ namespace Melodies25.Pages.Melodies
                     await fileupload.CopyToAsync(stream);
                 }
 
+
+                try
+                {
+                    var midiFile = new MidiFile(filePath);
+
+                    var ispoliphonic = MidiConverter.CheckForPolyphony(midiFile);
+
+
+                    if (ispoliphonic)
+                        MessageL(COLORS.yellow, "Виявлено поліфонію!");
+                    else
+                        MessageL(COLORS.blue, "Одноголосний!");
+                }
+                catch (Exception ex)
+                {
+                    ErrorMessage($"failed to check file: {ex}");
+                }
+
+
                 ViewData["Message"] = "Файл успішно завантажено!";
                 
                 Melody.Filepath = newfilename; //назву файлу фіксуємо
+                              
+
             }
             else
             {
                 Console.WriteLine("fileupload is null");
-            }
-
-
+            }        
 
 
             _context.Melody.Add(Melody);
             await _context.SaveChangesAsync();
+
+            
+
 
             return RedirectToPage("./Index");
         }

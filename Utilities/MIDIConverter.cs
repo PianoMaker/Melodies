@@ -6,6 +6,8 @@ using NAudio.Midi;
 using NAudio.Wave;
 using static Music.Engine;
 using static Music.Globals;
+using static Music.Messages;
+using Microsoft.DotNet.Scaffolding.Shared;
 
 namespace Music
 {
@@ -197,6 +199,46 @@ namespace Music
 
         }
 
+        // Пошук одночасно взятих нот 
+        public static bool CheckForPolyphony(MidiFile midiFile)
+        {
+            foreach (var track in midiFile.Events)
+            {
+                MessageL(COLORS.gray, "explore track");
+                var noteOnGroups = track
+                    .OfType<NoteOnEvent>()
+                    .GroupBy(e => e.AbsoluteTime)
+                    .Where(g => g.Count() > 1); 
+
+                if (noteOnGroups.Any()) 
+                {
+                    MessageL(COLORS.yellow, "Polyphony detected");
+                    return true;
+                }
+            }
+
+            MessageL(COLORS.blue, "No polyphony detected");
+            return false;
+        }
+
+
+
+        public static bool CheckForPolyphony2(MidiFile midiFile)
+        {//перевірка на наявність різних одночасних подій типу NoteOn
+            var groupedEvents = midiFile.Events
+                .OfType<NoteOnEvent>()
+                .GroupBy(e => e.AbsoluteTime)
+                .Where(g => g.Count() > 1); // Тільки ті, де більше 1 події в той самий момент
+
+            if (groupedEvents.Any())
+            {
+                MessageL(COLORS.yellow, "polyphony detected");
+                return true;
+            }
+            MessageL(COLORS.blue, "no polyphony detected");
+            return false;
+        }
+
         public static string ConvertMidiToWav(MidiFile midiFile, string outputDirectory)
         {
             string wavFile = Path.Combine(outputDirectory, "output.wav");
@@ -272,6 +314,7 @@ namespace Music
         }
     }
 
+
 }
 
 public class SineWaveProvider16 : WaveProvider16
@@ -294,19 +337,7 @@ public class SineWaveProvider16 : WaveProvider16
         return sampleCount;
     }
 
-    public static bool CheckForPolyphony(MidiFile midiFile)
-    {//перевірка на наявність різних одночасних подій типу NoteOn
-        
-        long currenttime = 0;
-        foreach(var midievent in midiFile.Events)    
-            if(midievent is NoteOnEvent noteOnevent)
-            {
-                if (noteOnevent.AbsoluteTime == currenttime) 
-                return true;
-                currenttime = noteOnevent.AbsoluteTime;
-            }
-        return false;                         
-    }
+   
 
 
 

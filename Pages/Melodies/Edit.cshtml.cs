@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Authorization;
 using System;
 using Microsoft.AspNetCore.Identity;
 using Melodies25.Utilities;
+using Music;
+using NAudio.Midi;
+using static Music.Messages;
+using Melody = Melodies25.Models.Melody;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -46,10 +50,17 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more information, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync(IFormFile? fileupload)
+        public async Task<IActionResult> OnPostAsync(IFormFile? fileupload, int? id)
         {
+
+            var melody = await _context.Melody
+                .Include(m => m.Author)
+                .FirstOrDefaultAsync(m => m.ID == id);
+                
+                        
+            if(melody is null) return NotFound();
+            else Melody = melody;
+
             if (!ModelState.IsValid)
             {
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
@@ -74,10 +85,11 @@ namespace Melodies25.Pages.Melodies
                 Console.WriteLine($"{uploadsPath} exists");
             }
 
+            
             //завантаження файлу якщо є
             if (fileupload is not null)
             {
-                var newfilename = Translit.Transliterate(fileupload.FileName);
+                var newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
                 var filePath = Path.Combine(uploadsPath, newfilename);
 
                 // Записуємо файл на сервер
@@ -95,6 +107,30 @@ namespace Melodies25.Pages.Melodies
             }
 
             _context.Attach(Melody).State = EntityState.Modified;
+
+
+            if (Melody.Filepath is not null)
+            {
+                try
+                {
+                    var filePath = Path.Combine(_environment.WebRootPath, "melodies", Melody.Filepath);
+
+                    var midiFile = new MidiFile(filePath);
+
+                    var ispoliphonic = MidiConverter.CheckForPolyphony(midiFile);
+
+
+                    if (ispoliphonic)
+                        MessageL(COLORS.yellow, "Виявлено поліфонію!");
+                    else
+                        MessageL(COLORS.blue, "Одноголосний!");
+                }
+                catch (Exception ex)
+                {
+                    ErrorMessage($"failed to check file: {ex}");
+                }
+            }
+
 
             try
             {
