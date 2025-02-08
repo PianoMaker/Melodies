@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using NuGet.Packaging;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Melodies25.Pages.Account
 {
- //   [Authorize(Roles = "Admin")]  // Тільки для адміністратора
+    [Authorize(Roles = "Admin")]  // Доступ лише для адміністратора
     public class UsersModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -23,125 +23,179 @@ namespace Melodies25.Pages.Account
 
         public IList<IdentityUser> Users { get; set; }
         public IList<string> Roles { get; set; }
-        public IList<string> UserRoles { get; set; }
+        public Dictionary<string, List<string>> UserRoles { get; set; }
 
-        public async Task<IActionResult>OnGetAsync()
+        // Метод OnGetAsync для завантаження користувачів та їх ролей
+        public async Task<IActionResult> OnGetAsync()
         {
-
-            /*м'яке посилання користувача */
+            // Перевірка наявності адміністратора
             var user = await _userManager.GetUserAsync(User);
-            if (user is not null)
+            if (user == null || !await _userManager.IsInRoleAsync(user, "Admin"))
             {
-                var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-                if (!isAdmin)
-                {
-                    return RedirectToPage("/Shared/AccessDenied");
-                }
+                return RedirectToPage("/Shared/AccessDenied");
             }
-            else return RedirectToPage("/Shared/AccessDenied");
-            /**/
 
-            // Отримуємо список користувачів  і ролей
+            // Завантажуємо список користувачів та ролей
             Users = _userManager.Users.ToList();
+            Roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
 
-            Roles = _roleManager.Roles.Select(r => r.Name).ToList();
-
+            // Перевірка на наявність даних
             if (Users == null || Roles == null)
-            {             
-                ModelState.AddModelError(string.Empty, "Data could not be loaded.");
-            }
-
-            UserRoles = new List<string>();
-
-            // Додаємо ролі для кожного користувача 
-            if (Users?.Count > 0)
             {
-                foreach (var currentuser in Users)
-                {
-                    var roles = await _userManager.GetRolesAsync(currentuser);
-                    UserRoles.AddRange(roles);
-                }
+                ModelState.AddModelError(string.Empty, "Дані не можуть бути завантажені.");
+                return Page();
             }
+
+            UserRoles = new Dictionary<string, List<string>>();
+
+            // Завантажуємо ролі для кожного користувача
+            foreach (var currentuser in Users)
+            {
+                var roles = await _userManager.GetRolesAsync(currentuser);
+                UserRoles[currentuser.Id] = roles.ToList();
+            }
+
             return Page();
         }
 
-        // кнопка додати роль
-        /*
-        [BindProperty]
-        public string UserId { get; set; }
-        */
-
+        // Додавання ролі адміністратора до користувача
         public async Task<IActionResult> OnPostAssignAdminRoleAsync(string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user != null)
+            if (string.IsNullOrEmpty(userId))
             {
-                // Додавання ролі адміністратора
-                var result = await _userManager.AddToRoleAsync(user, "Admin");
-                if (result.Succeeded)
-                {
-                    Console.WriteLine($"user {user.Email} is granted as admin"); 
-                    return RedirectToPage();
-                }
-                else
-                {                
-                    ModelState.AddModelError(string.Empty, "Error assigning role.");
-                }
+                return NotFound();
             }
 
-            return RedirectToPage();
-        }
-
-        
-
-            public async Task<IActionResult> OnPostRemoveAdminRoleAsync(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user != null)
-            {
-                // Зняття ролі адміністратора
-                var result = await _userManager.RemoveFromRoleAsync(user, "Admin");
-                if (result.Succeeded)
-                {
-                    Console.WriteLine($"user {user.Email} більше не є адміністратором");
-                    return RedirectToPage();
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Error assigning role.");
-                }
-            }
-
-            return RedirectToPage();
-        }
-
-        // Встановлення статусу підтвердження електронної пошти на true
-
-        public async Task<IActionResult> OnPostConfirmEmailAsync(string userId)
-        {
-
-            Console.WriteLine("Trying to confirm user");
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound($"User with ID {userId} not found.");
+                return NotFound();
             }
-                        
-            user.EmailConfirmed = true;
 
-            var result = await _userManager.UpdateAsync(user);
+            var result = await _userManager.AddToRoleAsync(user, "Admin");
             if (result.Succeeded)
             {
-                TempData["SuccessMessage"] = "Email confirmed successfully.";
+                TempData["SuccessMessage"] = $"{user.Email} отримав роль адміністратора.";
+                return RedirectToPage();
+            }
+
+            ModelState.AddModelError(string.Empty, "Помилка при призначенні ролі.");
+            return RedirectToPage();
+        }
+
+        // Видалення ролі адміністратора від користувача
+        public async Task<IActionResult> OnPostRemoveAdminRoleAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
+            if (adminUsers.Count == 1 && adminUsers.Contains(user))
+            {
+                ModelState.AddModelError("", "Неможливо видалити останнього адміністратора.");
+                return Page();
+            }
+
+            var result = await _userManager.RemoveFromRoleAsync(user, "Admin");
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = $"{user.Email} втратив роль адміністратора.";
+                return RedirectToPage();
+            }
+
+            ModelState.AddModelError("", "Не вдалося видалити роль адміністратора.");
+            return Page();
+        }
+
+        // Підтвердження електронної пошти
+        public async Task<IActionResult> OnPostConfirmEmailAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound($"Користувача з ID {userId} не знайдено.");
+            }
+
+            user.EmailConfirmed = true;
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Електронну пошту підтверджено успішно.";
             }
             else
             {
-                TempData["ErrorMessage"] = "Error occurred while confirming the email.";
+                TempData["ErrorMessage"] = "Сталася помилка під час підтвердження електронної пошти.";
             }
 
-            return RedirectToPage(); // Перехід назад на сторінку
+            return RedirectToPage();
         }
 
+        // Призначення ролі модератора користувачу
+        public async Task<IActionResult> OnPostAssignModeratorAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return NotFound();
+            }
 
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, "Moderator");
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = $"{user.Email} отримав роль модератора.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Не вдалося призначити роль модератора.";
+            }
+
+            return RedirectToPage();
+        }
+
+        // Видалення ролі модератора від користувача
+        public async Task<IActionResult> OnPostRemoveModeratorAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _userManager.RemoveFromRoleAsync(user, "Moderator");
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = $"{user.Email} втратив роль модератора.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Не вдалося видалити роль модератора.";
+            }
+
+            return RedirectToPage();
+        }
     }
 }

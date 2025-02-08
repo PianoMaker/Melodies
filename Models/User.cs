@@ -5,4 +5,9 @@ namespace Melodies25.Models
     {
         
     }
+
+
+    public class SharedResource
+    {
+    }
 }

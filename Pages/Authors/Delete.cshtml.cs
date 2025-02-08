@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Melodies25.Data;
 using Melodies25.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Melodies25.Pages.Authors
 {
+    [Authorize(Roles = "Admin, Moderator")]
     public class DeleteModel : PageModel
     {
         private readonly Melodies25.Data.Melodies25Context _context;
@@ -37,8 +39,10 @@ namespace Melodies25.Pages.Authors
             var user = await _userManager.GetUserAsync(User);
             if (user is not null)
             {
-                var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-                if (!isAdmin)
+                var isAdminOrModerator = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "Moderator");
+
+
+                if (!isAdminOrModerator)
                 {
                     return RedirectToPage("/Shared/AccessDenied");
                 }

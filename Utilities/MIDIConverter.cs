@@ -129,6 +129,8 @@ namespace Music
 
 
 
+
+
         // Перетворення номеру ноти в ім'я
         private static string NoteToName(int noteNumber)
         {
@@ -247,8 +249,6 @@ namespace Music
         {
             return (int)(440.0 * Math.Pow(2, (noteNumber - 69) / 12.0)); // A4 = 440 Hz
         }
-
-
     }
 
     public class SineWaveProvider16 : WaveProvider16
@@ -293,6 +293,26 @@ public class SineWaveProvider16 : WaveProvider16
 
         return sampleCount;
     }
+
+    public static bool CheckForPolyphony(MidiFile midiFile)
+    {//перевірка на наявність різних одночасних подій типу NoteOn
+        
+        long currenttime = 0;
+        foreach(var midievent in midiFile.Events)    
+            if(midievent is NoteOnEvent noteOnevent)
+            {
+                if (noteOnevent.AbsoluteTime == currenttime) 
+                return true;
+                currenttime = noteOnevent.AbsoluteTime;
+            }
+        return false;                         
+    }
+
+
+
+
+
+
 }
 
 

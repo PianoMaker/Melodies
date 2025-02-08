@@ -34,9 +34,10 @@ namespace Melodies25.Pages.Countries
 
             /*м'яке посилання користувача */
             var user = await _userManager.GetUserAsync(User);
-            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+            var isAdminOrModerator = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "Moderator");
 
-            if (!isAdmin)
+
+            if (!isAdminOrModerator)
             {
                 return RedirectToPage("/Shared/AccessDenied"); 
             }

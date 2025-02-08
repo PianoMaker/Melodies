@@ -3,15 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Melodies25.Models;
 using System.Threading.Tasks;
+using static Music.Messages;
 
 namespace Melodies25.Pages.Account
 {
     public class RegisterModel : PageModel
     {
+        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public RegisterModel(UserManager<IdentityUser> userManager)
+        public RegisterModel(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager)
         {
+            _signInManager = signInManager;
             _userManager = userManager;
         }
 
@@ -33,12 +36,26 @@ namespace Melodies25.Pages.Account
 
                 if (result.Succeeded)
                 {
-                    return RedirectToPage("/Index"); // Перехід після реєстрації
+                    //Автоматично входимо якщо зареєструвалися
+
+                    var login = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, false, false);
+
+                    if (login.Succeeded)
+                    {
+                     MessageL(Music.COLORS.green, "logged in as " + Input.Password);
+                        return RedirectToPage("/Index"); // Перехід після входу
+                    }
+
+                    if (login.IsLockedOut)
+                    {
+                        ErrorMessage("Account is locked out.");
+                    }
                 }
 
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
+                    ErrorMessage(error.Description);
                 }
             }
 

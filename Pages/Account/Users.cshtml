@@ -1,70 +1,80 @@
 ﻿@page
 @model Melodies25.Pages.Account.UsersModel
 @{
-    ViewData["Title"] = "User List";
+    ViewData["Title"] = "Управління користувачами";
 }
 
-<h2>Registered Users</h2>
+<h2>@ViewData["Title"]</h2>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Roles</th>
-            <th>Admin</th>
-            <th>Confirmation</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Users != null && Model.Roles != null)
-        {
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (Model.Users.Any())
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Ролі</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
             @foreach (var user in Model.Users)
             {
                 <tr>
-                    <td>@user.UserName</td>
                     <td>@user.Email</td>
                     <td>
-                        @foreach (var role in Model.Roles)
+                        @foreach (var role in Model.UserRoles[user.Id])
                         {
-                            @if (Model.UserRoles.Contains(role))
-                            {
-                                <span>@role</span>
+                            <span class="badge bg-info">@role</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!Model.UserRoles[user.Id].Contains("Admin"))
+                        {
+                            <form method="post" asp-page-handler="AssignAdminRole" asp-route-userId="@user.Id" class="d-inline">
+                                <button type="submit" class="btn btn-primary">Призначити адміністратора</button>
+                            </form>
+                        }
+                        @if (Model.UserRoles[user.Id].Contains("Admin") && Model.UserRoles[user.Id].Count > 1)
+                        {
+                            <form method="post" asp-page-handler="RemoveAdminRole" asp-route-userId="@user.Id" class="d-inline">
+                                <button type="submit" class="btn btn-danger">Видалити адміністратора</button>
+                            </form>
+                        }
 
-                                <br />
-                            }
-                        }
-                    </td>
-                    <td>
-                        <!-- Кнопка для надання прав адміністратора -->
-                        @if (!Model.UserRoles.Contains("Admin"))
+                        @if (!Model.UserRoles[user.Id].Contains("Moderator"))
                         {
-                            <form method="post" asp-page-handler="AssignAdminRole" asp-route-userId="@user.Id">
-                                <button type="submit" class="btn btn-primary">Make Admin</button>
+                            <form method="post" asp-page-handler="AssignModerator" asp-route-userId="@user.Id" class="d-inline">
+                                <button type="submit" class="btn btn-secondary">Призначити модератора</button>
                             </form>
                         }
-                        else if (Model.UserRoles.Contains("Admin"))
+                        @if (Model.UserRoles[user.Id].Contains("Moderator"))
                         {
-                        <form method="post" asp-page-handler="RemoveAdminRole" asp-route-userId="@user.Id">
-                            <button type="submit" class="btn btn-primary">Remove Admin</button>
-                        </form>
-                        }
-                    </td>
-                    <!-- Кнопка для підтвердження пошти користувача -->
-                    <td>
-                        @if (!user.EmailConfirmed)
-                        {
-                            <form method="post" asp-page-handler="ConfirmEmail" asp-route-userId="@user.Id">
-                                <button type="submit" class="btn btn-success">Confirm Email</button>
+                            <form method="post" asp-page-handler="RemoveModerator" asp-route-userId="@user.Id" class="d-inline">
+                                <button type="submit" class="btn btn-warning">Видалити модератора</button>
                             </form>
-                        }
-                        else
-                        {
-                            <span>Email Confirmed</span>
                         }
                     </td>
                 </tr>
             }
-        }
-    </tbody>
-</table>
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Немає користувачів для відображення.</p>
+}
+

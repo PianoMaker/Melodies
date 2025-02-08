@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Numerics;
 using static Music.Engine;
 using static Music.Globals;
+using static Music.Messages;
 
 namespace Music
 {
@@ -27,39 +28,34 @@ namespace Music
         public new Note this[int index]
         { get { return notes[index]; } set { this[index] = value; } }
 
-        public new List<Note> GetNotes() { return notes; }
 
-        /*
-                public Tonalities DetectTonality()
+        //повертає мелодичний малюнок по інтервалах
+        public List<int> IntervalList { get
+            {
+                List<int> list = new List<int>();
+                for (int i = 1; i < Notes.Count; i++)
                 {
-                    float maxsharpness = notes[^1].Sharpness();
-                    float minsharpness = notes[^1].Sharpness();
-
-                    MODE mode;
-
-                    foreach (Note note in notes)
+                    try
                     {
-                        if (note.Sharpness() > maxsharpness) maxsharpness = note.Sharpness();
-                        else if (note.Sharpness() < minsharpness) minsharpness = note.Sharpness();
+                        var interval = Notes[i].AbsPitch() - Notes[i - 1].AbsPitch();
+                        list.Add(interval);
                     }
-
-                    if (maxsharpness - minsharpness > 9) return null;
-                    if (notes[^1].Sharpness() - minsharpness <= 1 && maxsharpness - notes[^1].Sharpness() <= 5) mode = MODE.dur;
-                    else if (notes[^1].Sharpness() - minsharpness <= 4 && maxsharpness - notes[^1].Sharpness() <= 5) mode = MODE.moll;
-                    else return null;
-
-
-                    Tonalities tonality = new Tonalities(Notes[^1], mode);
-                    return tonality;
+                    catch
+                    {
+                        list.Add(0);
+                        ErrorMessage($"unable to read {Notes[i]} or {Notes[i - 1]} ");
+                    }
                 }
-        */
+                return list;
+            }
+        }
+       
+        //Чи починається з ноти
         public bool IfStartsFromNote(Note note)
         {
             Console.WriteLine($"first pitch is {pitch_to_notename(note.Step, note.Pitch)}"); 
             return Notes[0].Pitch == note.Pitch;
         }
-
-
 
 
         public bool IfStartsFromNote(string input)
@@ -68,15 +64,22 @@ namespace Music
             return IfStartsFromNote(note);
         }
 
-
+        // Найдовше співпадіння мелодій (перевіряє по інтервалах, а не по звуках,
+        // таким чином однакові мелодії в різних тональностях розпінаються як однакові)
         public int LongestCommonSubstring(Melody other)
+        {
+            var notesThis = IntervalList.ToArray();
+            var notesOther = other.IntervalList.ToArray();
+            return LongestCommonSubstring(notesThis, notesOther).Count;
+        }
+
+        // Найдовше співпадіння мелодій в заданій тональності
+        public int LongestAbsoulteCommonSubstring(Melody other)
         {
             var notesThis = GetPitches().ToArray();
             var notesOther = other.GetPitches().ToArray();
             return LongestCommonSubstring(notesThis, notesOther).Count;
         }
-
-        
 
 
         static List<int> LongestCommonSubstring(int[] A, int[] B)
@@ -399,20 +402,6 @@ namespace Music
             }
             return cloned;
         }
-/*
-        internal void PlayMelody()
-        {
-            Player.Play(this);
-        }
-
-        public bool SaveMidi(string filepath="output.mid")
-        {
-            return MidiFile0.SaveMidi(this, filepath);
-        }
-        */
-
-
-
 
     }
 }
