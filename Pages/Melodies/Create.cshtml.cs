@@ -111,7 +111,9 @@ namespace Melodies25.Pages.Melodies
                 ViewData["Message"] = "Файл успішно завантажено!";
                 
                 Melody.Filepath = newfilename; //назву файлу фіксуємо
-                              
+
+                var telegramService = new TelegramService();
+                await telegramService.SendNotificationAsync($"{DateTime.Now} - на нашому сайті оновлення: завантажено файл {newfilename}");
 
             }
             else
