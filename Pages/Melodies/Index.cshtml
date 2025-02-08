@@ -49,9 +49,13 @@
                         var filepath = Url.Content($"~/melodies/{item.Filepath}");
                         Console.WriteLine($"filepath = {filepath}");
                         <div style="display:inline-flex">
-                        <a href="@filepath" download class="btn btn-primary">Завантажити MIDI</a>
+                            <a href="@filepath" download class="btn btn-outline-dark light-background">
+                                <i class="fas fa-download"></i>
+                            </a>
                         <form method="post">
-                            <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-success">Відтворити MIDI</button>
+                                <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-outline-dark light-background">
+                                    <i class="fas fa-play"></i> 
+                                </button>
                         </form>
                         </div>
                     }

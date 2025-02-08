@@ -7,13 +7,13 @@ html {
         font-size: 16px;
     }
 }
-/*
+
+
+/*смуга на горі */
 .bg-sky {
-    background: repeating-linear-gradient(90deg, skyblue, lightblue, skyblue 66%);
-}
-*/
-.bg-sky {
-    background: linear-gradient(90deg, rgba(100,100,255,.8), rgba(255,150,150,.8) 15%, rgba(200,200,255,.8));
+    background: linear-gradient(90deg, rgba(100,100,255,.8), rgba(255,120,120,.8) 15%, rgba(150,150,255,.8));
+    border-bottom: 1px solid black !important;
+    z-index: 1;
 }
 
 
@@ -22,13 +22,14 @@ html {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-.btn-light{
+.btn-light {
     transition: linear 0.5s;
-
+    z-index: 3;
 }
 
 
 .btn-light:hover {
+    background-color: darkgray;
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* Збільшена тінь при наведенні */
     transform: translateY(-2px); /* Невеликий підйом кнопки */
 }
@@ -51,12 +52,27 @@ body {
 
 
 .logoimage {
-    height: 70px;
+    position: absolute;
+    top: 10px;
+    left: 30px;
+    height: 100px;
 }
 
 table {
-    background-color: transparent;
+    background-color: white;
+    opacity: 0.9;
+    font-family: 'Times New Roman';
+    font-style: normal;    
 }
+
+    table a {
+        font-style: normal;
+        text-decoration: none;
+    }
+
+    table a:hover{
+        color:blueviolet !important; 
+    }
 
 .mainpage {
     height: 100%;
@@ -75,23 +91,23 @@ table {
 
 
 .h-85{
-    height: 81%;
+    height: 75%;
 }
 /* слід ще поексперементувати...
 https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     */
 .title, .navmelody {
-    padding: 10px;
+    padding: 0px 25px 5px 15px;
     color: aliceblue !important;
     font-size: 3em;
-    text-shadow: 3px 3px 4px violet;
+    text-shadow: 2px 2px 2px darkviolet;
     font-family: var(--heading-font);
     text-decoration: none;
 }
 
 .navmelody {
-    font-size: 1.2em;
-    margin: 0px 35px 0px 35px; 
+    font-size: 1.5em;
+    margin: 20px 20px 0px 35px; 
     transition: linear 0.5s;
 }
 
@@ -100,6 +116,16 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     transform: scale(1.08) translateY(-2px);
     
 }
+
+.notestaff {
+    margin: 3px;
+}
+
+.notestaff-container {
+    position: absolute;
+    z-index: 2;
+}
+
 
 .singerellamenue {
     font-family: sans-serif;
@@ -136,6 +162,10 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     background-color: lightgray;
 }
 
+.light-background
+{
+    background-color: lightgray;
+}
 
 
 .haslo {
@@ -205,6 +235,11 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     .w-25, .w-75 {
         width: 100% !important; /* Робимо елементи повної ширини */
     }
+
+    .navmelody {
+        margin: 20px 10px 0px 10px;
+        padding-right: 0px !important;
+    }
 }
 
 
@@ -223,6 +258,12 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
     .title {
         font-size: 1.5em;
+    }
+
+    .navmelody,   {
+        margin: 20px 0px 0px 0px;
+        padding-right: 0px;
+
     }
 }
 
