@@ -33,8 +33,11 @@ namespace Melodies25.Pages.Countries
             }
 
             /*м'яке посилання користувача */
+            bool isAdminOrModerator;
             var user = await _userManager.GetUserAsync(User);
-            var isAdminOrModerator = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "Moderator");
+            if (user is not null)
+            { isAdminOrModerator = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "Moderator"); }
+            else isAdminOrModerator = false;
 
 
             if (!isAdminOrModerator)

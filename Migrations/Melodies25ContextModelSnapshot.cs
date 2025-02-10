@@ -53,7 +53,7 @@ namespace Melodies25.Migrations
 
                     b.HasIndex("CountryID");
 
-                    b.ToTable("Author", (string)null);
+                    b.ToTable("Author");
                 });
 
             modelBuilder.Entity("Melodies25.Models.Country", b =>
@@ -70,7 +70,7 @@ namespace Melodies25.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Country", (string)null);
+                    b.ToTable("Country");
                 });
 
             modelBuilder.Entity("Melodies25.Models.Melody", b =>
@@ -101,7 +101,7 @@ namespace Melodies25.Migrations
 
                     b.HasIndex("AuthorID");
 
-                    b.ToTable("Melody", (string)null);
+                    b.ToTable("Melody");
                 });
 
             modelBuilder.Entity("Melodies25.Models.Author", b =>

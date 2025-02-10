@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Melodies25.Pages.Account
 {
-    [Authorize(Roles = "Admin")]  // Доступ лише для адміністратора
+    //[Authorize(Roles = "Admin")]  // Доступ лише для адміністратора
     public class UsersModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -28,13 +28,14 @@ namespace Melodies25.Pages.Account
         // Метод OnGetAsync для завантаження користувачів та їх ролей
         public async Task<IActionResult> OnGetAsync()
         {
-            // Перевірка наявності адміністратора
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null || !await _userManager.IsInRoleAsync(user, "Admin"))
-            {
-                return RedirectToPage("/Shared/AccessDenied");
-            }
-
+            /*
+                  // Перевірка наявності адміністратора
+                  var user = await _userManager.GetUserAsync(User);
+                  if (user == null || !await _userManager.IsInRoleAsync(user, "Admin"))
+                  {
+                      return RedirectToPage("/Shared/AccessDenied");
+                  }
+            */
             // Завантажуємо список користувачів та ролей
             Users = _userManager.Users.ToList();
             Roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
@@ -196,6 +197,22 @@ namespace Melodies25.Pages.Account
             }
 
             return RedirectToPage();
+        }
+
+        // Обробник для видалення користувача
+        public async Task<IActionResult> OnPostDeleteUserAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                var result = await _userManager.DeleteAsync(user);
+                if (result.Succeeded)
+                {
+                    // Успішне видалення
+                    return RedirectToPage();
+                }
+            }
+            return BadRequest("Не вдалося видалити користувача.");
         }
     }
 }

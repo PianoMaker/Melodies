@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Melodies25.Migrations
 {
     [DbContext(typeof(Melodies25Context))]
-    [Migration("20250204133138_AuthorDescr")]
-    partial class AuthorDescr
+    [Migration("20250209114038_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

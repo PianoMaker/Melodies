@@ -40,57 +40,61 @@ namespace Melodies25.Pages.Melodies
                 return NotFound();
             }
 
-            var melody =  await _context.Melody.FirstOrDefaultAsync(m => m.ID == id);
+            var melody = await _context.Melody.Include(m => m.Author).
+                FirstOrDefaultAsync(m => m.ID == id);
             if (melody == null)
             {
                 return NotFound();
             }
             Melody = melody;
-           ViewData["AuthorID"] = new SelectList(_context.Author, "ID", "Surname");
+
+            ViewData["AuthorID"] = new SelectList(_context.Author, "ID", "Surname");
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(IFormFile? fileupload, int? id)
+        public async Task<IActionResult> OnPostAsync(IFormFile? fileupload)
         {
-
-            var melody = await _context.Melody
-                .Include(m => m.Author)
-                .FirstOrDefaultAsync(m => m.ID == id);
-                
-                        
-            if(melody is null) return NotFound();
-            else Melody = melody;
-
+            
             if (!ModelState.IsValid)
             {
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
                 {
-                    Console.WriteLine(error.ErrorMessage);
+                    ErrorMessage(error.ErrorMessage);
                 }
-                //return Page();
-                //тестовий режим
             }
 
             var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies");
 
-
-            // Створюємо папку, якщо її немає
-            if (!Directory.Exists(uploadsPath))
-            {
-                Directory.CreateDirectory(uploadsPath);
-                Console.WriteLine($"{uploadsPath} created");
-            }
-            else
-            {
-                Console.WriteLine($"{uploadsPath} exists");
-            }
-
-            
-            //завантаження файлу якщо є
+                        //завантаження файлу якщо є
             if (fileupload is not null)
             {
-                var newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
+                // Створюємо папку, якщо її немає
+                if (!Directory.Exists(uploadsPath))
+                {
+                    Directory.CreateDirectory(uploadsPath);
+                    Console.WriteLine($"{uploadsPath} created");
+                }
+                else
+                {
+                    Console.WriteLine($"{uploadsPath} exists");
+                }
+                //підвантажуємо імена авторів
+                Melody.Author = await _context.Author
+    .FirstOrDefaultAsync(a => a.ID == Melody.AuthorID);
+
+                string newfilename;
+
+                if (Melody.Author is not null)
+                {
+                    newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
+
+                }
+                else
+                {
+                    newfilename = $"{Translit.Transliterate(Melody.Title)}.mid";
+                }
                 var filePath = Path.Combine(uploadsPath, newfilename);
+
 
                 // Записуємо файл на сервер
                 using (var stream = new FileStream(filePath, FileMode.Create))
@@ -98,19 +102,20 @@ namespace Melodies25.Pages.Melodies
                     await fileupload.CopyToAsync(stream);
                 }
 
-                ViewData["Message"] = "Файл успішно завантажено!";                
+                ViewData["Message"] = "Файл успішно завантажено!";
                 Melody.Filepath = newfilename; //назву файлу фіксуємо
             }
             else
             {
-                Console.WriteLine("fileupload is null");
+                Console.WriteLine("fileupload is null or author is null");
             }
 
             _context.Attach(Melody).State = EntityState.Modified;
 
-
+            //перевірка на поліфоню
             if (Melody.Filepath is not null)
             {
+               
                 try
                 {
                     var filePath = Path.Combine(_environment.WebRootPath, "melodies", Melody.Filepath);
@@ -130,11 +135,25 @@ namespace Melodies25.Pages.Melodies
                     ErrorMessage($"failed to check file: {ex}");
                 }
             }
-
-
+            //тестова 
+            /*
+            Console.WriteLine($"Entity State: {_context.Entry(Melody).State}");
+            _context.Entry(Melody).State = EntityState.Modified;
+            _context.Entry(Melody).Property(m => m.Title).IsModified = true;
+            Console.WriteLine($"Entity State: {_context.Entry(Melody).State}");
+            */
             try
-            {
-                await _context.SaveChangesAsync();
+            {               
+
+                var result = await _context.SaveChangesAsync();
+                if (result > 0)
+                {
+                    MessageL(COLORS.green, $"{result} rows updated");
+                }
+                else
+                {
+                    MessageL(COLORS.yellow, "No rows were updated.");
+                }
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -151,7 +170,7 @@ namespace Melodies25.Pages.Melodies
             return RedirectToPage("./Index");
         }
 
-        
+
         public async Task<IActionResult> OnPostDeleteFileAsync()
         {
             var melody = await _context.Melody.FindAsync(Melody.ID);
@@ -160,18 +179,23 @@ namespace Melodies25.Pages.Melodies
                 return NotFound();
             }
 
+            
             /*м'яке посилання користувача */
+            bool isAdminOrModerator;
             var user = await _userManager.GetUserAsync(User);
             if (user is not null)
+            { isAdminOrModerator = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "Moderator"); }
+            else isAdminOrModerator = false;
+
+
+            if (!isAdminOrModerator)
             {
-                var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-                if (!isAdmin)
-                {
-                    return RedirectToPage("/Shared/AccessDenied");
-                }
+                return RedirectToPage("/Shared/AccessDenied");
             }
-            else return RedirectToPage("/Shared/AccessDenied");
+
             /**/
+            /**/
+
 
             if (!string.IsNullOrEmpty(melody.Filepath))
             {

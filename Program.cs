@@ -23,11 +23,7 @@ namespace Melodies25
                options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            /*
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
-            builder.Services.AddRazorPages();
-            */
+            
 
             builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
             {
@@ -71,8 +67,10 @@ namespace Melodies25
             {
                 var services = scope.ServiceProvider;
                 var seeder = services.GetRequiredService<DataSeeder>();
-                _ = seeder.SeedRolesAndAdmin();
+                seeder.SeedRolesAndAdmin().GetAwaiter().GetResult();
             }
+
+
 
 
             app.UseHttpsRedirection();

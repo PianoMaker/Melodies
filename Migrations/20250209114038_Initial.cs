@@ -5,7 +5,7 @@
 namespace Melodies25.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,7 +33,8 @@ namespace Melodies25.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CountryID = table.Column<int>(type: "int", nullable: true),
                     DateOfBirth = table.Column<int>(type: "int", nullable: true),
-                    DateOfDeath = table.Column<int>(type: "int", nullable: true)
+                    DateOfDeath = table.Column<int>(type: "int", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -51,7 +52,7 @@ namespace Melodies25.Migrations
                 {
                     ID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    File = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Filepath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Year = table.Column<int>(type: "int", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),

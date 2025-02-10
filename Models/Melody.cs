@@ -16,9 +16,9 @@ namespace Melodies25.Models
         public string? Description { get; set; }  // Опис (необов'язковий)
 
         public int AuthorID { get; set; }  // Зовнішній ключ для автора
-        public Author Author { get; set; }  // Автор пісні
+        public Author? Author { get; set; }  // Автор пісні
 
-        [Required]
+       
         [Display(Name = "MIDI файл")]
         [NotMapped]
         public IFormFile? File { get; set; }

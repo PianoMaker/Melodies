@@ -67,6 +67,19 @@
                                 <button type="submit" class="btn btn-warning">Видалити модератора</button>
                             </form>
                         }
+                        @if (!user.EmailConfirmed)
+                        {
+                            <form method="post" asp-page-handler="ConfirmEmail" asp-route-userId="@user.Id" class="d-inline">
+                                <button type="submit" class="btn btn-success">Підтвердити email</button>
+                            </form>
+                        }
+                        @if (!Model.UserRoles[user.Id].Contains("Admin") && Model.UserRoles[user.Id].Count > 1)
+                        {
+                            <form method="post" asp-page-handler="DeleteUser" asp-route-userId="@user.Id" class="d-inline">
+                                <button type="submit" class="btn btn-danger">Видалити користувача</button>
+                            </form>
+                        }
+
                     </td>
                 </tr>
             }
