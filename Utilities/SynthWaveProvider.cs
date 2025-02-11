@@ -174,7 +174,7 @@ public class SynthWaveProvider : WaveProvider32
         using (var waveStream = new WaveFileWriter(wavPath, waveProvider.WaveFormat))
         {
             byte[] buffer = new byte[Math.Min(waveProvider.WaveFormat.BlockAlign * 1024, 65536)];
-            int maxBytes = sampleRate * 60 * waveProvider.WaveFormat.BlockAlign;
+            int maxBytes = sampleRate * 120 * waveProvider.WaveFormat.BlockAlign; //обмеження у 2 хвилини
             int bytesRead;
             long totalBytesWritten = 0;
 

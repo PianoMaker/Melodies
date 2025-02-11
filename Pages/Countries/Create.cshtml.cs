@@ -7,12 +7,15 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Melodies25.Data;
 using Melodies25.Models;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 
 namespace Melodies25.Pages.Countries
 {
     public class CreateModel : PageModel
     {
         private readonly Melodies25.Data.Melodies25Context _context;
+
+        public string Msg { get; set; }
 
         public CreateModel(Melodies25.Data.Melodies25Context context)
         {
@@ -35,8 +38,20 @@ namespace Melodies25.Pages.Countries
                 return Page();
             }
 
-            _context.Country.Add(Country);
-            await _context.SaveChangesAsync();
+            try
+            {
+
+                _context.Country.Add(Country);
+                await _context.SaveChangesAsync();
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"помилка бази даних\n{ex}");
+                Msg = $"Країна з такою назвою вже створена";
+                return Page();
+            }
+
 
             return RedirectToPage("./Index");
         }

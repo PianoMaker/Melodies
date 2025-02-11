@@ -1,5 +1,8 @@
-﻿namespace Melodies25.Models
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Melodies25.Models
 {
+    [Index(nameof(Name), IsUnique = true)]
     public class Country
     {
         public int ID { get; set; }  // Унікальний ідентифікатор для автора

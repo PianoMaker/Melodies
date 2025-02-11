@@ -295,4 +295,27 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
         ;
     }
 }
+
+.searchrightcontainer {
+    display: inline-block;
+    
+    width: 70%;
+    height: 400px
+}
+
+.searchleftcontainer {
+    display: inline-block;
+    
+    width: 30%;
+    height: 400px
+}
+
+.searchcontainer {
+    display: inline-flex;
+    width: 100%;
+    border: 1px solid black;
+    border-radius: 15px;    
+    box-shadow: darkgray 0px 1px 10px 5px;
+    padding: 25px;
+    margin-top: 10px;
 }

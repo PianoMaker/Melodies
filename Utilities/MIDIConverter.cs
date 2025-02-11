@@ -158,7 +158,7 @@ namespace Music
                     {
                         activeNotes[noteOn.NoteNumber] = starttime;
                         
-                        Console.WriteLine($"fact currentTime = {midiEvent.AbsoluteTime} vs expected {expectedcurrentticktime}");
+                       // Console.WriteLine($"fact currentTime = {midiEvent.AbsoluteTime} vs expected {expectedcurrentticktime}");
 
                         if (midiEvent.AbsoluteTime > expectedcurrentticktime)
                         {
@@ -186,6 +186,10 @@ namespace Music
 
                 }
             }
+
+
+            notes.Add((0, 500));//для уникнення різкого обриву звучання в кінці додаємо тишу
+            
             /*
             Console.WriteLine("result:");
             foreach (var note in notes)
@@ -193,6 +197,7 @@ namespace Music
                 Console.WriteLine($"{note.frequency} Hz - {note.durationMs} мс.");
             }
             */
+
             return notes;
         }
 
