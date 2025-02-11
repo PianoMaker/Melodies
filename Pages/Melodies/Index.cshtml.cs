@@ -42,11 +42,15 @@ namespace Melodies25.Pages.Melodies
             Melody = await _context.Melody
                 .Include(m => m.Author).ToListAsync();
 
+            MessageL(COLORS.yellow, "Index OnGet");
+
         }
 
 
         public IActionResult OnPostPlay(string midiPath)
         {
+
+            MessageL(COLORS.yellow, "Index OnPost");
             MessageL(COLORS.green, $"Trying to get {midiPath}");
             try
             {
@@ -54,12 +58,13 @@ namespace Melodies25.Pages.Melodies
                 var midiFile = new MidiFile(path);
                 var hzmslist = GetHzMsListFromMidi(midiFile);
 
-                string newPath = ConvertToMp3Path(path);
-                MessageL(COLORS.green, $"Starting to prepare {newPath}");
+                string mp3Path = ConvertToMp3Path(path);
+                MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
 
-                GenerateMp3(hzmslist, newPath);
-                ViewData["AudioFile"] = newPath;
-                Console.WriteLine(newPath);
+                GenerateMp3(hzmslist, mp3Path);
+                var relativePath = "/mp3/" + Path.GetFileName(mp3Path);
+                TempData["AudioFile"] = relativePath;
+                MessageL(COLORS.green, relativePath);
             }
             catch (Exception ex)
             {

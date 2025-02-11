@@ -186,13 +186,13 @@ namespace Music
 
                 }
             }
-            
+            /*
             Console.WriteLine("result:");
             foreach (var note in notes)
             {
                 Console.WriteLine($"{note.frequency} Hz - {note.durationMs} мс.");
             }
-            
+            */
             return notes;
         }
 
