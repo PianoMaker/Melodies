@@ -129,13 +129,14 @@ namespace Music
             });
         }
 
-
+        // трансформує MIDI файд у список нот у форматі герци-мілісекунди
         public static List<(double frequency, int durationMs)> GetHzMsListFromMidi(MidiFile midiFile)
         {
             List<(double frequency, int durationMs)> notes = new();
             Dictionary<int, double> activeNotes = new(); // {NoteNumber, StartTime в мс}
             MessageL(COLORS.blue, "starting hzms list");
-            double totalTimeMs = 0;
+            double starttime = 0;
+            long expectedcurrentticktime = 0;
             int ticksPerQuarterNote = midiFile.DeltaTicksPerQuarterNote;
             double microsecondsPerQuarterNote = 500000; // за замовченням для 120 BPM
             double ticksToMsFactor = microsecondsPerQuarterNote / (ticksPerQuarterNote * 1000.0);
@@ -155,14 +156,24 @@ namespace Music
                     }
                     else if (midiEvent is NoteOnEvent noteOn && noteOn.Velocity > 0)
                     {
+                        activeNotes[noteOn.NoteNumber] = starttime;
+                        
+                        Console.WriteLine($"fact currentTime = {midiEvent.AbsoluteTime} vs expected {expectedcurrentticktime}");
 
-                        activeNotes[noteOn.NoteNumber] = totalTimeMs;                        
+                        if (midiEvent.AbsoluteTime > expectedcurrentticktime)
+                        {
+                            var pauseTickTime = midiEvent.AbsoluteTime - expectedcurrentticktime;
+                            double pauseDurationMs = pauseTickTime * ticksToMsFactor;
+                            notes.Add((0, (int)pauseDurationMs)); // Додаємо паузу
+                            expectedcurrentticktime += pauseTickTime;
+                        }
                     }
                     else if (midiEvent is NoteEvent noteEvent && noteEvent.CommandCode == MidiCommandCode.NoteOff)
                     {
                         if (activeNotes.TryGetValue(noteEvent.NoteNumber, out double startTimeMs))
                         {
                             double durationMs = midiEvent.DeltaTime * ticksToMsFactor;
+                            expectedcurrentticktime += midiEvent.DeltaTime;
 
                             double frequency = NoteToFrequency(noteEvent.NoteNumber);
 
