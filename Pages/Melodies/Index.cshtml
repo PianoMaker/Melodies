@@ -47,13 +47,13 @@
                     @if (!string.IsNullOrEmpty(item.Filepath))
                     {
                         var filepath = Url.Content($"~/melodies/{item.Filepath}");
-                        Console.WriteLine($"filepath = {filepath}");
+                        Console.WriteLine($"filepath = {filepath}");    
                         <div style="display:inline-flex">
                             <a href="@filepath" download class="btn btn-outline-dark light-background">
                                 <i class="fas fa-download"></i>
                             </a>
                         <form method="post">
-                                <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-outline-dark light-background">
+                                <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.Filepath" class="btn btn-outline-dark light-background">
                                     <i class="fas fa-play"></i> 
                                 </button>
                         </form>
@@ -77,6 +77,26 @@
             </tr>
         }
     </tbody>
+
 </table>
+
+    <div class="controlcontainer infocontainer">
+
+        <p>@Model.Msg</p>
+        <p>@Model.Errormsg</p>
+        @if (ViewData["AudioFile"] != null)
+        {
+            <p>@ViewData["AudioFile"]</p>
+            <audio controls autoplay style="display: none">
+                <source src="@ViewData["AudioFile"]" type="audio/mpeg" />
+                Your browser does not support the audio element.
+            </audio>
+        }
+        else
+        {
+            <p>File is not ready</p>
+        }
+    </div>
+
 
 

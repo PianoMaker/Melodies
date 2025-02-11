@@ -8,6 +8,7 @@ using static Music.Engine;
 using static Music.Globals;
 using static Music.Messages;
 using Microsoft.DotNet.Scaffolding.Shared;
+using Microsoft.CodeAnalysis.Elfie.Serialization;
 
 namespace Music
 {
@@ -29,7 +30,7 @@ namespace Music
             MidiFile midiFile = new MidiFile(file);
             return GetMelodyFromMidi(midiFile);
         }
-
+        // трансформує міді-файл у формат мелодії
         public static Melody GetMelodyFromMidi(MidiFile midiFile)
         {
             var ticksperquater = midiFile.DeltaTicksPerQuarterNote;
@@ -37,7 +38,6 @@ namespace Music
 
             Melody melody = new Melody();
             List<string> noteDurations = new List<string>(); // Для збереження тривалості нот
-            double totalTime = 0;
 
 
             foreach (var track in midiFile.Events)
@@ -49,13 +49,13 @@ namespace Music
 
                 foreach (var midiEvent in track)
                 {
+                    //темп
                     if (midiEvent is TempoEvent tempoEvent)
 
                         SetTempo(GetBpmFromTempoEvent(tempoEvent));
-
+                    //власне ноти
                     if (midiEvent is NoteOnEvent noteOn)
                     {
-                        // Записуємо стартову позицію ноти
                         var time = midiEvent.DeltaTime;
                         //Console.WriteLine("note on time = " + midiEvent.DeltaTime);
 
@@ -64,13 +64,14 @@ namespace Music
                         var step = key_to_step(noteOn.NoteName);
                         var note = new Note(pitch, step, oct);
                         melody.AddNote(note);
-                        //int dur = 4 * time / ticksperquater;
+                        int dur = 4 * time / ticksperquater;
                         Console.Write($"note on {noteOn.NoteNumber} - ");
-                        //note.SetDuration(dur);
+                        note.SetDuration(dur);
                     }
                     else if (NoteEvent.IsNoteOff(midiEvent))
                     {
                         var time = midiEvent.DeltaTime;
+                        //Console.WriteLine("note of time = " + midiEvent.DeltaTime);
                         int dur = 4 * ticksperquater / time;
                         melody.Notes[melody.Notes.Count - 1].SetDuration(dur);
                         Console.WriteLine(melody.Notes[melody.Notes.Count - 1].AbsDuration());
@@ -80,7 +81,7 @@ namespace Music
 
             return melody;
         }
-
+        //те саме асинхронно
         public static async Task<Melody> GetMelodyFromMidiAsync(MidiFile midiFile)
         {
             // Використовуємо Task.Run для асинхронної обробки в окремому потоці
@@ -89,7 +90,6 @@ namespace Music
                 var ticksperquater = midiFile.DeltaTicksPerQuarterNote;
                 Melody melody = new Melody();
                 List<string> noteDurations = new List<string>(); // Для збереження тривалості нот
-                double totalTime = 0;
 
                 int trackcounter = 0;
 
@@ -130,20 +130,64 @@ namespace Music
         }
 
 
-
-
-
-        // Перетворення номеру ноти в ім'я
-        private static string NoteToName(int noteNumber)
+        public static List<(double frequency, int durationMs)> GetHzMsListFromMidi(MidiFile midiFile)
         {
-            string[] noteNames = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
-            int octave = (noteNumber / 12) - 1; // Для визначення октави
-            string noteName = noteNames[noteNumber % 12];
-            return $"{noteName}{octave}";
+            List<(double frequency, int durationMs)> notes = new();
+            Dictionary<int, double> activeNotes = new(); // {NoteNumber, StartTime в мс}
+            MessageL(COLORS.blue, "starting hzms list");
+            double totalTimeMs = 0;
+            int ticksPerQuarterNote = midiFile.DeltaTicksPerQuarterNote;
+            double microsecondsPerQuarterNote = 500000; // за замовченням для 120 BPM
+            double ticksToMsFactor = microsecondsPerQuarterNote / (ticksPerQuarterNote * 1000.0);
+
+            foreach (var track in midiFile.Events)
+            {
+                foreach (var midiEvent in track)
+                {
+                    if (midiEvent is TempoEvent tempoEvent)
+                    {
+                        var tempoBPM = tempoEvent.Tempo;
+                        Console.WriteLine($"Tempo = {tempoBPM}");
+                        microsecondsPerQuarterNote = 60000000.0 / tempoBPM;
+                        ticksToMsFactor = microsecondsPerQuarterNote / (ticksPerQuarterNote * 1000.0);
+                        Console.WriteLine($"PQN = { microsecondsPerQuarterNote }");
+                        Console.WriteLine($"ticksToMsFactor  = {ticksToMsFactor}");
+                    }
+                    else if (midiEvent is NoteOnEvent noteOn && noteOn.Velocity > 0)
+                    {
+
+                        activeNotes[noteOn.NoteNumber] = totalTimeMs;                        
+                    }
+                    else if (midiEvent is NoteEvent noteEvent && noteEvent.CommandCode == MidiCommandCode.NoteOff)
+                    {
+                        if (activeNotes.TryGetValue(noteEvent.NoteNumber, out double startTimeMs))
+                        {
+                            double durationMs = midiEvent.DeltaTime * ticksToMsFactor;
+
+                            double frequency = NoteToFrequency(noteEvent.NoteNumber);
+
+                            activeNotes.Remove(noteEvent.NoteNumber);
+
+                            notes.Add((frequency, (int)durationMs));                            
+                            
+                        }
+                    }
+
+                }
+            }
+            
+            Console.WriteLine("result:");
+            foreach (var note in notes)
+            {
+                Console.WriteLine($"{note.frequency} Hz - {note.durationMs} мс.");
+            }
+            
+            return notes;
         }
 
-      
 
+       
+        /*
         public static string ConvertMidiToString(MidiFile midiFile, string outputDirectory)
         {
             string wavFile = Path.Combine(outputDirectory, "output.wav");
@@ -192,7 +236,7 @@ namespace Music
             return wavFile;
         }
 
-
+        */
         public static MidiFile GetMidiFile(string path)
         {
             return new MidiFile(path);
@@ -208,9 +252,9 @@ namespace Music
                 var noteOnGroups = track
                     .OfType<NoteOnEvent>()
                     .GroupBy(e => e.AbsoluteTime)
-                    .Where(g => g.Count() > 1); 
+                    .Where(g => g.Count() > 1);
 
-                if (noteOnGroups.Any()) 
+                if (noteOnGroups.Any())
                 {
                     MessageL(COLORS.yellow, "Polyphony detected");
                     return true;
@@ -222,22 +266,6 @@ namespace Music
         }
 
 
-
-        public static bool CheckForPolyphony2(MidiFile midiFile)
-        {//перевірка на наявність різних одночасних подій типу NoteOn
-            var groupedEvents = midiFile.Events
-                .OfType<NoteOnEvent>()
-                .GroupBy(e => e.AbsoluteTime)
-                .Where(g => g.Count() > 1); // Тільки ті, де більше 1 події в той самий момент
-
-            if (groupedEvents.Any())
-            {
-                MessageL(COLORS.yellow, "polyphony detected");
-                return true;
-            }
-            MessageL(COLORS.blue, "no polyphony detected");
-            return false;
-        }
 
         public static string ConvertMidiToWav(MidiFile midiFile, string outputDirectory)
         {
@@ -274,12 +302,12 @@ namespace Music
                                 synth.Read(buffer, 0, buffer.Length);
                                 writer.WriteSamples(buffer, 0, buffer.Length);
 
-                                activeNotes.Remove(noteEvent.NoteNumber);
+                                activeNotes.Remove(noteEvent.NoteNumber);//щойно нота відзвучала вилучаємо
 
                                 Console.WriteLine($"Нота {noteEvent.NoteNumber} ({frequency} Hz) - {duration} сек.");
                             }
                         }
-                        totalTime += midiEvent.DeltaTime / (double)midiFile.DeltaTicksPerQuarterNote;
+                        totalTime += midiEvent.DeltaTime / (double)midiFile.DeltaTicksPerQuarterNote;//пере
                     }
                 }
             }
@@ -305,7 +333,7 @@ namespace Music
 
             for (int i = 0; i < sampleCount; i++)
             {
-                buffer[offset + i] = (short)(Amplitude * short.MaxValue * Math.Sin(phaseAngle));
+                buffer[offset + i] = (short)(Amplitude * short.MaxValue * Math.Sin(phaseAngle));//формула
                 phaseAngle += phaseIncrement;
                 if (phaseAngle > 2 * Math.PI) phaseAngle -= 2 * Math.PI;
             }
@@ -336,13 +364,6 @@ public class SineWaveProvider16 : WaveProvider16
 
         return sampleCount;
     }
-
-   
-
-
-
-
-
 
 }
 

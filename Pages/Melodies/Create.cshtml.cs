@@ -107,10 +107,11 @@ namespace Melodies25.Pages.Melodies
                     ErrorMessage($"failed to check file: {ex}");
                 }
 
-
                 ViewData["Message"] = "Файл успішно завантажено!";
                 
                 Melody.Filepath = newfilename; //назву файлу фіксуємо
+
+                // СПОІВЩЕННЯ НА ТЕЛЕГРАМ 
 
                 var telegramService = new TelegramService();
                 await telegramService.SendNotificationAsync($"{DateTime.Now} - на нашому сайті оновлення: завантажено файл {newfilename}");
