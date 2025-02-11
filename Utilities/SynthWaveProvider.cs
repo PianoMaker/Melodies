@@ -85,6 +85,8 @@ public class SynthWaveProvider : WaveProvider32
 
     }
 
+
+   
     public override int Read(float[] buffer, int offset, int count)
     {
         int samplesPerMs = _sampleRate / 1000;
@@ -94,12 +96,27 @@ public class SynthWaveProvider : WaveProvider32
         {
             var (frequency, durationMs) = _sequence[_noteIndex];
 
-            if (_samplesRemaining <= 0) // Початок нової ноти
+            //паузи представлені як звуки 0 hz
+            if (frequency == 0)
+            {                
+                if (_samplesRemaining <= 0)
+                {
+                    
+                    _adsr.Gate(false);  // Запуск фази релізу
+                    Console.WriteLine($"Release phase started for note {_noteIndex}");
+                    _samplesRemaining = durationMs * samplesPerMs; // Задаємо тривалість релізу
+                }
+            }
+            //нормальні ноти
+            else
             {
-                _phaseIncrement = 2 * Math.PI * frequency / _sampleRate;
-                _samplesRemaining = durationMs * samplesPerMs;
-                _adsr.Gate(true);  // Запуск ADSR 
-                Console.WriteLine($"Starting note {_noteIndex}: {frequency} Hz, {durationMs} ms");
+                if (_samplesRemaining <= 0) // Початок нової ноти
+                {
+                    _phaseIncrement = 2 * Math.PI * frequency / _sampleRate;
+                    _samplesRemaining = durationMs * samplesPerMs;
+                    _adsr.Gate(true);  // Запуск ADSR
+                    Console.WriteLine($"Starting note {_noteIndex}: {frequency} Hz, {durationMs} ms");
+                }
             }
 
             int samplesToProcess = Math.Min(_samplesRemaining, count - index);
@@ -126,7 +143,7 @@ public class SynthWaveProvider : WaveProvider32
 
         return index;
     }
-
+    
     private float SynthFormula(double phase)
     {
         return (float)Math.Sin(_phase); // Синусоїда. 
@@ -144,10 +161,10 @@ public class SynthWaveProvider : WaveProvider32
             Console.WriteLine($"Processing note: {note.frequency} Hz, {note.durationMs} ms");
         }
 
-        Console.WriteLine($"Trying to write to {outputPath}");
+        //Console.WriteLine($"Trying to write to {outputPath}");
 
         var waveProvider = new SynthWaveProvider(sequence, sampleRate);
-        Console.WriteLine("waveProvider is ready");
+        //Console.WriteLine("waveProvider is ready");
 
         string wavPath = "output.wav";
         string mp3Path = outputPath;
@@ -165,7 +182,7 @@ public class SynthWaveProvider : WaveProvider32
             {
                 waveStream.Write(buffer, 0, bytesRead);
                 totalBytesWritten += bytesRead;
-                Console.WriteLine($"Written {totalBytesWritten / 1024} Kbytes to WAV file...");
+                //Console.WriteLine($"Written {totalBytesWritten / 1024} Kbytes to WAV file...");
 
                 if (totalBytesWritten >= maxBytes)
                 {
