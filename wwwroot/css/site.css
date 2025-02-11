@@ -296,26 +296,116 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     }
 }
 
+/*<!--SEARCH PAGE -->*/
+
+.notesinfo {
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: lightgray;
+    width: 750px;
+    padding: 10px;
+    margin: 10px;
+}
+
 .searchrightcontainer {
     display: inline-block;
-    
     width: 70%;
-    height: 400px
+    height: 100%
 }
 
 .searchleftcontainer {
     display: inline-block;
-    
+    height: 100%;
     width: 30%;
-    height: 400px
 }
 
 .searchcontainer {
     display: inline-flex;
     width: 100%;
     border: 1px solid black;
-    border-radius: 15px;    
+    border-radius: 15px;
     box-shadow: darkgray 0px 1px 10px 5px;
     padding: 25px;
     margin-top: 10px;
+    margin-bottom: 10px;
+    height: 350px
+}
+
+.controlcontainer {
+    display: inline-block;
+    border: 0px solid grey;
+    flex: 1 2 100px;
+}
+
+#pianoroll {
+    position: relative;
+    width: 800px;
+    height: 200px;
+    font-size: 0;
+    padding-left: 10px;
+}
+
+.blackpianobutton {
+    position: absolute;
+    width: 40px;
+    height: 110px;
+    background: linear-gradient(black, darkslategrey);
+    margin: 0;
+}
+
+.cis1 {
+    top: 0px; /* Відступ зверху */
+    left: 35px; /* Відступ зліва */
+}
+
+.dis1 {
+    top: 0px;
+    left: 90px;
+}
+
+.fis1 {
+    top: 0px;
+    left: 180px;
+}
+
+.gis1 {
+    top: 0px;
+    left: 235px;
+}
+
+.b1 {
+    top: 0px;
+    left: 290px;
+}
+
+.cis2 {
+    top: 0px; /* Відступ зверху */
+    left: 385px; /* Відступ зліва */
+}
+
+.dis2 {
+    top: 0px;
+    left: 440px;
+}
+
+.fis2 {
+    top: 0px;
+    left: 530px;
+}
+
+.gis2 {
+    top: 0px;
+    left: 585px;
+}
+
+.b2 {
+    top: 0px;
+    left: 640px;
+}
+
+.whitepianobutton {
+    height: 200px;
+    width: 50px;
+    margin: 0;
+    gap: 0px;
 }

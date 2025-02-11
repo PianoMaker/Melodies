@@ -43,8 +43,39 @@
         </form>
     </div>
     <div class="searchrightcontainer">
+        <div class="notesinfo">
+        Місце для нот
+        </div>
+        <div class="controlcontainer">
+            <form method="post" id="pianoroll">
+                <button type="submit" asp-route-key="c" class="whitepianobutton">C1</button>
+                <button type="submit" asp-route-key="cis" class="blackpianobutton cis1">Cis1</button>
+                <button type="submit" asp-route-key="d" class="whitepianobutton">D1</button>
+                <button type="submit" asp-route-key="dis" class="blackpianobutton dis1">Dis1</button>
+                <button type="submit" asp-route-key="e" class="whitepianobutton">E1</button>
+                <button type="submit" asp-route-key="f" class="whitepianobutton">F1</button>
+                <button type="submit" asp-route-key="fis" class="blackpianobutton fis1">Fis1</button>
+                <button type="submit" asp-route-key="g" class="whitepianobutton">G1</button>
+                <button type="submit" asp-route-key="gis" class="blackpianobutton gis1">Gis1</button>
+                <button type="submit" asp-route-key="a" class="whitepianobutton">A1</button>
+                <button type="submit" asp-route-key="b" class="blackpianobutton b1">B1</button>
+                <button type="submit" asp-route-key="h" class="whitepianobutton">H1</button>
+                <button type="submit" asp-route-key="c'" class="whitepianobutton">C2</button>
+                <button type="submit" asp-route-key="cis'" class="blackpianobutton cis2">Cis2</button>
+                <button type="submit" asp-route-key="d'" class="whitepianobutton">D2</button>
+                <button type="submit" asp-route-key="dis'" class="blackpianobutton dis2">Dis2</button>
+                <button type="submit" asp-route-key="e'" class="whitepianobutton">E2</button>
+                <button type="submit" asp-route-key="f'" class="whitepianobutton">F2</button>
+                <button type="submit" asp-route-key="fis'" class="blackpianobutton fis2">Fis2</button>
+                <button type="submit" asp-route-key="g'" class="whitepianobutton">G2</button>
+                <button type="submit" asp-route-key="gis'" class="blackpianobutton gis2">Gis2</button>
+                <button type="submit" asp-route-key="a'" class="whitepianobutton">A2</button>
+                <button type="submit" asp-route-key="b'" class="blackpianobutton b2">B2</button>
+                <button type="submit" asp-route-key="h'" class="whitepianobutton">H2</button>
+                <button type="submit" asp-route-key="c''" class="whitepianobutton">C3</button>
+            </form>
 
-        Місце під клаву
+        </div>
     </div>
 </div>
 
@@ -83,9 +114,9 @@
                         var filepath = Url.Content($"~/melodies/{item.Filepath}");
                         Console.WriteLine($"filepath = {filepath}");
                         <div style="display:inline-flex">
-                            <a href="@filepath" download class="btn btn-primary">Завантажити MIDI</a>
+                                <a href="@filepath" download class="btn btn-primary"><i class="fas fa-download"></i></a>
                             <form method="post">
-                                <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-success">Відтворити MIDI</button>
+                                    <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-success"><i class="fas fa-play"></i></button>
                             </form>
                         </div>
                     }
