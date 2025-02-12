@@ -8,8 +8,11 @@
 
 <h1>Пошук</h1>
 <div class="searchcontainer">
+
+    <!--ЛІВОРУЧ-->
+
     <div class="searchleftcontainer">
-        <form method="post">
+        <form method="post" asp-page-handler="search">
             <label>Автор</label>
             <input type="text" asp-for="Author" class="form-control w-75" placeholder="шукати серед усіх" />
 
@@ -42,12 +45,22 @@
             <button type="submit" class="btn btn-primary">Пошук</button>
         </form>
     </div>
+
+    <!--ПРАВОРУЧ-->
+
     <div class="searchrightcontainer">
-        <div class="notesinfo">
-        Місце для нот
+        <div class="notesinfo d-inline-flex">
+            <div class="d-inline-block" style="width:80%">@Model.Keys</div>
+            <form method="post" asp-page-handler="reset" class="d-inline-block m-1">
+                <button type="submit" class="btn btn-outline-dark">Reset</button>
+            </form>
+            <form method="post" asp-page-handler="notesearch" class="d-inline-block m-1">
+                <button type="submit" class="btn btn-outline-dark">Search</button>
+            </form>
         </div>
+        <!--МІЙ СТЕЙНВЕЙ-->
         <div class="controlcontainer">
-            <form method="post" id="pianoroll">
+            <form method="post" asp-page-handler="piano" id="pianoroll">
                 <button type="submit" asp-route-key="c" class="whitepianobutton">C1</button>
                 <button type="submit" asp-route-key="cis" class="blackpianobutton cis1">Cis1</button>
                 <button type="submit" asp-route-key="d" class="whitepianobutton">D1</button>
@@ -146,3 +159,64 @@ else
     <p>@Model.Description </p>
 }
 
+<div class="controlcontainer infocontainer">
+
+    <p>@Model.Msg</p>
+    <p>@Model.Errormsg</p>
+    @if (TempData["AudioFile"] != null)
+    {
+        <p>@TempData["AudioFile"]</p>
+        <audio id="audioPlayer" controls autoplay style="display: none">
+            <source src="@TempData["AudioFile"]" type="audio/mpeg" />
+            Your browser does not support the audio element.
+        </audio>
+    }
+    else
+    {
+        <p>File is not ready</p>
+    }
+</div>
+
+<script>
+    // Отримуємо доступ до аудіо елемента та кнопок
+    var audioPlayer = document.getElementById('audioPlayer');
+    var stopButton = document.getElementById('stopButton');
+    var playButton = document.getElementById('playButton');
+
+    stopButton.onclick = function() {
+        console.log(new Date().toLocaleString() + " playing stopped")
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        playButton.disabled = false;
+    };
+
+    audioPlayer.oncanplaythrough = function() {
+
+        if (!audioPlayer.paused) {
+            console.log(new Date().toLocaleString() + " ready to play file")
+            playButton.disabled = true;
+        }
+    };
+
+
+    audioPlayer.onpause = function() {
+        console.log(new Date().toLocaleString() + " stop button disabled")
+        stopButton.disabled = true;
+    };
+
+
+
+    audioPlayer.onplay = function() {
+        console.log(new Date().toLocaleString() + " stop button disabled")
+        stopButton.disabled = false;
+    };
+
+
+    playButton.onclick = function() {
+        console.log(Date.now.toString() + " start to play file")
+        audioPlayer.play();
+        playButton.disabled = true; //
+    };
+
+
+</script>

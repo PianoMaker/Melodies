@@ -9,7 +9,7 @@ using Melodies25.Data;
 using Melodies25.Models;
 using static Music.MidiConverter;
 using static Music.Messages;
-using static SynthWaveProvider;
+using static Melodies25.Utilities.SynthWaveProvider;
 using NAudio.Midi;
 using System.IO;
 using Music;

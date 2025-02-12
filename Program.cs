@@ -45,13 +45,14 @@ namespace Melodies25
 
             // Add services to the container.
             builder.Services.AddRazorPages()
-    .AddDataAnnotationsLocalization(options =>
-        options.DataAnnotationLocalizerProvider = (type, factory) =>
-            factory.Create(typeof(SharedResource))
-    );
-
+                .AddDataAnnotationsLocalization(options =>
+                    options.DataAnnotationLocalizerProvider = (type, factory) =>
+                        factory.Create(typeof(SharedResource))
+                );
 
             builder.Services.AddScoped<DataSeeder>();
+
+            builder.Services.AddSession();            
 
             var app = builder.Build();
 
@@ -70,8 +71,7 @@ namespace Melodies25
                 seeder.SeedRolesAndAdmin().GetAwaiter().GetResult();
             }
 
-
-
+            app.UseSession();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

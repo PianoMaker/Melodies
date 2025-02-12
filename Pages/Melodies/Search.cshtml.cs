@@ -2,7 +2,11 @@ using Melodies25.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Music;
+using Newtonsoft.Json;
+using System.IO;
+using static Melodies25.Utilities.SynthWaveProvider;
 using static Music.Messages;
 using Melody = Melodies25.Models.Melody;
 
@@ -14,6 +18,10 @@ namespace Melodies25.Pages.Melodies
         private readonly IWebHostEnvironment _environment;
 
         public IList<Melody> Melody { get; set; } = default!;
+
+        public string Msg { get; set; }
+
+        public string Errormsg { get; set; }
 
         public SearchModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
         {
@@ -36,9 +44,16 @@ namespace Melodies25.Pages.Melodies
 
         public string Description { get; set; }
 
+        [TempData]
+        public string Keys { get; set; }
+
+        
+
+
 
         public void OnGetAsync(string search)
         {
+            
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -91,7 +106,8 @@ namespace Melodies25.Pages.Melodies
             }
         }
 
-        public async Task OnPostAsync()
+        
+        public async Task OnPostSearchAsync()
         {
             // Ініціалізую властивість midiMelody
             await NotesSearchInitialize();
@@ -167,8 +183,65 @@ namespace Melodies25.Pages.Melodies
             
         }
 
+        public void OnPostAsync(string key)
+        {
+            
+                Console.WriteLine($"onPost is running {key}");
+                OnPostPiano(key);
+            
+
+        }
+
+        public IActionResult OnPostPiano(string key)
+        {
+            Globals.notation = Notation.eu;
+
+            if (!string.IsNullOrEmpty(key))
+            {
+                Console.WriteLine($"OnPostPiano is running {key}");
+                Keys += key + " ";
+            }
+            else
+            {
+                Console.WriteLine($"OnPost: empty key");                
+                return Page();
+            }                        
+            var note = new Note(key);
+            
+            // відтворення ноти
+            try
+            {
+                string mp3Path = Path.Combine(_environment.WebRootPath, "sounds", $"{key}.mp3");
+                if (!System.IO.File.Exists(mp3Path))
+                    GenerateMp3(note, mp3Path);
+                else Console.WriteLine("using existing file");
+                var relativePath = "/sounds/" + Path.GetFileName(mp3Path);
+                TempData["AudioFile"] = relativePath;
+                Console.WriteLine($"playing mp3 {mp3Path}");
+            }
+            catch (Exception ex)
+            {
+                Msg = ex.ToString();
+            }
 
 
+            return Page();
+        }
+
+        public void OnPostReset()
+        {
+            Console.WriteLine($"reset");
+            Keys = string.Empty;
+            Page();
+        }
+
+
+        public void OnPostNotesearch()
+        {
+            Console.WriteLine("starting notesearch method");
+
+            
+            }
 
     }
 }
