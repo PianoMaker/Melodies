@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Music;
 using Newtonsoft.Json;
+using System.Globalization;
 using System.IO;
+using static Melodies25.Utilities.Algorythm;
 using static Melodies25.Utilities.SynthWaveProvider;
 using static Music.Messages;
 using Melody = Melodies25.Models.Melody;
@@ -88,7 +90,7 @@ namespace Melodies25.Pages.Melodies
             {
                 var wwwRootPath = Path.Combine(_environment.WebRootPath, "melodies");
 
-                if (melody.Filepath is not null)
+                if (melody.Filepath is not null && melody.MidiMelody is null)
                 {
                     var path = Path.Combine(wwwRootPath, melody.Filepath);
 
@@ -98,9 +100,13 @@ namespace Melodies25.Pages.Melodies
 
                     melody.MidiMelody = await MidiConverter.GetMelodyFromMidiAsync(midifile);
                 }
-                else
+                else if (melody.Filepath is null)
                 {
                     MessageL(COLORS.yellow, $"{melody.Title} has no file path");
+                }
+                else if (melody.MidiMelody is not null)
+                {
+                    MessageL(COLORS.yellow, $"{melody.MidiMelody} already exists");
                 }
 
             }
@@ -236,12 +242,60 @@ namespace Melodies25.Pages.Melodies
         }
 
 
-        public void OnPostNotesearch()
+        public async Task OnPostNotesearch()
         {
-            Console.WriteLine("starting notesearch method");
+            MessageL(COLORS.blue, "starting notesearch method");
+            await NotesSearchInitialize();            
 
-            
+            Music.Melody MelodyPattern = new();
+            Globals.notation = Notation.eu;
+
+            if (Keys is not null)
+            {
+                var pattern = Keys.Split(" ");
+                foreach (var key in pattern)
+                {
+                    try
+                    {
+                        var note = new Note(key);
+                        MelodyPattern.AddNote(note);
+                    }
+                    catch
+                    {
+                        ErrorMessage($"impossible to read note {key}\n");
+                    }
+                }
+
+                /* ÀŒ√”¬¿ÕÕﬂ */
+                MessageL(COLORS.olive, "melodies to analyze:");
+                foreach (var melody in Melody)
+                    MessageL(COLORS.gray, melody.Title);
+                MessageL(COLORS.olive, "notes in patten:");
+                foreach (var note in MelodyPattern)
+                    MessageL(COLORS.gray, note.Name());
+                /*   */
+
+                int[] patternShape = MelodyPattern.IntervalList.ToArray();
+                var filteredMelodies = new List<(Melody melody, int length)>();
+
+                foreach (var melody in Melody)
+                {
+                    if (melody.MidiMelody is null) continue;
+
+                    var melodyshape = melody.MidiMelody.IntervalList.ToArray();
+                    int commonLength = LongestCommonSubstring(patternShape, melodyshape.ToArray());
+                    if (commonLength > 0)
+                    {
+                        filteredMelodies.Add((melody, commonLength));
+                    }
+                }
+
+                Melody = filteredMelodies.OrderByDescending(m => m.length).Select(m => m.melody).ToList();
+
+
             }
+            else { Console.WriteLine("no pattern"); }
+        }
 
     }
 }

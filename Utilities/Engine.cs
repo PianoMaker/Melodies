@@ -872,7 +872,7 @@ namespace Music
                 else
                 {
                     // Якщо не знайдено відповідності, видаємо помилку
-                    throw new IncorrectNote("помилка розпізнання рядку");
+                    throw new IncorrectNote($"помилка розпізнання рядку {match} під час генерування ноти");
                 }
 
             }
