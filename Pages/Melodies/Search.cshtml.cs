@@ -21,6 +21,9 @@ namespace Melodies25.Pages.Melodies
 
         public IList<Melody> Melody { get; set; } = default!;
 
+        public List<(Melody melody, int commonLength)> MatchedMelodies { get; set; } = new();
+
+
         public string Msg { get; set; }
 
         public string Errormsg { get; set; }
@@ -278,6 +281,24 @@ namespace Melodies25.Pages.Melodies
                 int[] patternShape = MelodyPattern.IntervalList.ToArray();
                 var filteredMelodies = new List<(Melody melody, int length)>();
 
+                MatchedMelodies.Clear();  // Очистимо перед новим пошуком
+
+                foreach (var melody in Melody)
+                {
+                    if (melody.MidiMelody is null) continue;
+
+                    var melodyshape = melody.MidiMelody.IntervalList.ToArray();
+                    int commonLength = LongestCommonSubstring(patternShape, melodyshape);
+                    if (commonLength > 0)
+                    {
+                        MatchedMelodies.Add((melody, commonLength));
+                    }
+                }
+
+                // Сортуємо за довжиною збігу
+                MatchedMelodies = MatchedMelodies.OrderByDescending(m => m.commonLength).ToList();
+
+                /*
                 foreach (var melody in Melody)
                 {
                     if (melody.MidiMelody is null) continue;
@@ -291,7 +312,7 @@ namespace Melodies25.Pages.Melodies
                 }
 
                 Melody = filteredMelodies.OrderByDescending(m => m.length).Select(m => m.melody).ToList();
-
+                */
 
             }
             else { Console.WriteLine("no pattern"); }

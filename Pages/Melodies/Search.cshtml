@@ -92,71 +92,107 @@
     </div>
 </div>
 
-@if (Model.Melody is not null && Model.Melody.Count > 0)
+@if (Model.MatchedMelodies is not null && Model.MatchedMelodies.Count > 0)
 {
-
-    <p>@Model.Description </p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                Назва
-            </th>
-            <th>
-                Файл
-            </th>
-            <th>
-                Рік
-            </th>
-            <th>
-                Автор
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Melody)
-        {
+    <p>Результати пошуку:</p>
+    <table class="table">
+        <thead>
             <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Title)
-                </td>
-                <td>
-                    @if (!string.IsNullOrEmpty(item.Filepath))
-                    {
-                        var filepath = Url.Content($"~/melodies/{item.Filepath}");
-                        Console.WriteLine($"filepath = {filepath}");
-                        <div style="display:inline-flex">
-                                <a href="@filepath" download class="btn btn-primary"><i class="fas fa-download"></i></a>
-                            <form method="post">
-                                    <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-success"><i class="fas fa-play"></i></button>
-                            </form>
-                        </div>
-                    }
-                    else
-                    {
-                        <span>Файл не доступний</span>
-                    }
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Year)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)
-                </td>
-                <td>
-                    <a asp-page="./Edit" asp-route-id="@item.ID">Редагувати</a> |
-                    <a asp-page="./Details" asp-route-id="@item.ID">Детальна інформація</a>  |
-                    <a asp-page="./Delete" asp-route-id="@item.ID">Вилучити</a> 
-                </td>
+                <th>Назва</th>
+                <th>Файл</th>
+                <th>Рік</th>
+                <th>Автор</th>
+                <th>Довжина збігу</th> @* Додано цей стовпець *@
+                <th></th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var (item, matchLength) in Model.MatchedMelodies)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.Filepath))
+                        {
+                            var filepath = Url.Content($"~/melodies/{item.Filepath}");
+                            <div style="display:inline-flex">
+                                <a href="@filepath" download class="btn btn-primary"><i class="fas fa-download"></i></a>
+                                <form method="post">
+                                    <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-success">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                        else
+                        {
+                            <span>Файл не доступний</span>
+                        }
+                    </td>
+                    <td>@Html.DisplayFor(modelItem => item.Year)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</td>
+                    <td>@matchLength</td> @* Відображаємо довжину збігу *@
+                    <td>
+                        <a asp-page="./Edit" asp-route-id="@item.ID">Редагувати</a> |
+                        <a asp-page="./Details" asp-route-id="@item.ID">Детальна інформація</a>  |
+                        <a asp-page="./Delete" asp-route-id="@item.ID">Вилучити</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (Model.Melody is not null && Model.Melody.Count > 0)
+{
+    <p>Всі мелодії:</p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Назва</th>
+                <th>Файл</th>
+                <th>Рік</th>
+                <th>Автор</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Melody)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.Filepath))
+                        {
+                            var filepath = Url.Content($"~/melodies/{item.Filepath}");
+                            <div style="display:inline-flex">
+                                <a href="@filepath" download class="btn btn-primary"><i class="fas fa-download"></i></a>
+                                <form method="post">
+                                    <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-success">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                        else
+                        {
+                            <span>Файл не доступний</span>
+                        }
+                    </td>
+                    <td>@Html.DisplayFor(modelItem => item.Year)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</td>
+                    <td>
+                        <a asp-page="./Edit" asp-route-id="@item.ID">Редагувати</a> |
+                        <a asp-page="./Details" asp-route-id="@item.ID">Детальна інформація</a>  |
+                        <a asp-page="./Delete" asp-route-id="@item.ID">Вилучити</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 else
 {
-    <p>@Model.Description </p>
+    <p>@Model.Description</p>
 }
 
 <div class="controlcontainer infocontainer">
