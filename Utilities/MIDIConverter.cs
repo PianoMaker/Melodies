@@ -113,14 +113,14 @@ namespace Music
                             var step = key_to_step(noteOn.NoteName);
                             var note = new Note(pitch, step, oct);
                             melody.AddNote(note);
-                            Console.Write($"note on {noteOn.NoteNumber} - ");
+                            Message(COLORS.gray, $"note on {noteOn.NoteNumber} - ");
                         }
                         else if (NoteEvent.IsNoteOff(midiEvent))
                         {
                             var time = midiEvent.DeltaTime;
                             int dur = 4 * ticksperquater / time;
                             melody.Notes[melody.Notes.Count - 1].SetDuration(dur);
-                            Console.WriteLine(melody.Notes[melody.Notes.Count - 1].AbsDuration());
+                            MessageL(COLORS.gray, $"{melody.Notes[melody.Notes.Count - 1].AbsDuration()}");
                         }
                     }
                 }

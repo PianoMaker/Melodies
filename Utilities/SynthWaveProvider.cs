@@ -162,12 +162,12 @@ namespace Melodies25.Utilities
             int sampleRate = 44100;
             Console.WriteLine("Starting GenerateMp3 method...");
 
+            /*
             foreach (var note in sequence)
             {
                 Console.WriteLine($"Processing note: {note.frequency} Hz, {note.durationMs} ms");
-            }
-
-            //Console.WriteLine($"Trying to write to {outputPath}");
+            }            
+            */
 
             var waveProvider = new SynthWaveProvider(sequence, sampleRate);
             //Console.WriteLine("waveProvider is ready");

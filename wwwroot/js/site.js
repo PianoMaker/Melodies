@@ -52,3 +52,5 @@ const addNote = () => {
 
 // Додаємо нотки кожні 0.3 секунди
 setInterval(addNote, 400);
+
+

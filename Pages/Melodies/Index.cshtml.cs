@@ -25,6 +25,8 @@ namespace Melodies25.Pages.Melodies
 
         public string Errormsg { get; set; }
 
+
+
         public IndexModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
         {
             _context = context;
@@ -75,12 +77,12 @@ namespace Melodies25.Pages.Melodies
         }
 
 
-        private string ConvertToMp3Path(string midiPath)
+        public string ConvertToMp3Path(string midiPath)
         {
             
             string directory = Path.GetDirectoryName(midiPath)?.Replace("melodies", "mp3") ?? "";
             //string directory = Path.Combine(_environment.WebRootPath, directory);
-            if (!Directory.Exists(directory))
+            if (!Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
             {
                 Directory.CreateDirectory(directory);
             }

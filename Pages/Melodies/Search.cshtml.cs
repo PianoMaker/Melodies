@@ -23,7 +23,7 @@ namespace Melodies25.Pages.Melodies
 
         public List<(Melody melody, int commonLength)> MatchedMelodies { get; set; } = new();
 
-
+        public bool NoteSearch { get; set; }
         public string Msg { get; set; }
 
         public string Errormsg { get; set; }
@@ -34,6 +34,7 @@ namespace Melodies25.Pages.Melodies
             _environment = environment;
         }
 
+        private int minimummatch = 2;//вивести на контроллер
 
         [BindProperty]
         public string Note { get; set; }
@@ -47,12 +48,11 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public bool IfPartly { get; set; }
 
+        [TempData]
         public string Description { get; set; }
 
         [TempData]
         public string Keys { get; set; }
-
-        
 
 
 
@@ -118,6 +118,8 @@ namespace Melodies25.Pages.Melodies
         
         public async Task OnPostSearchAsync()
         {
+            NoteSearch = false;
+
             // Ініціалізую властивість midiMelody
             await NotesSearchInitialize();
             
@@ -183,13 +185,12 @@ namespace Melodies25.Pages.Melodies
                     }
                 }
 
-                Melody = filteredMelodies;
-
-                if (Melody.Count == 0) Description = ($"За результатами пошуку \"{Author}\", \"{Title}\" Нічого не знайдено");
-                else Description = ($"За результатами пошуку \"{Author}\", \"{Title}\" знайдено:");
+                Melody = filteredMelodies;                
             }
 
-            
+            if (Melody.Count == 0) Description = ($"За результатами пошуку \"{Author}\", \"{Title}\" Нічого не знайдено");
+            else Description = ($"За результатами пошуку \"{Author}\", \"{Title}\" знайдено:");
+
         }
 
         public void OnPostAsync(string key)
@@ -248,6 +249,9 @@ namespace Melodies25.Pages.Melodies
         public async Task OnPostNotesearch()
         {
             MessageL(COLORS.blue, "starting notesearch method");
+            
+            NoteSearch = true;
+
             await NotesSearchInitialize();            
 
             Music.Melody MelodyPattern = new();
@@ -289,7 +293,7 @@ namespace Melodies25.Pages.Melodies
 
                     var melodyshape = melody.MidiMelody.IntervalList.ToArray();
                     int commonLength = LongestCommonSubstring(patternShape, melodyshape);
-                    if (commonLength > 0)
+                    if (commonLength >= minimummatch)
                     {
                         MatchedMelodies.Add((melody, commonLength));
                     }
@@ -297,6 +301,8 @@ namespace Melodies25.Pages.Melodies
 
                 // Сортуємо за довжиною збігу
                 MatchedMelodies = MatchedMelodies.OrderByDescending(m => m.commonLength).ToList();
+
+                Description = $"Знайдено {MatchedMelodies.Count} мелодій, в яких співпадають не менше ніж {minimummatch} нот поспіль";
 
                 /*
                 foreach (var melody in Melody)
@@ -315,7 +321,11 @@ namespace Melodies25.Pages.Melodies
                 */
 
             }
-            else { Console.WriteLine("no pattern"); }
+            else { 
+                
+                Console.WriteLine("no pattern");             
+            
+            }
         }
 
     }

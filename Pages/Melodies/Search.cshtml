@@ -92,9 +92,14 @@
     </div>
 </div>
 
-@if (Model.MatchedMelodies is not null && Model.MatchedMelodies.Count > 0)
+<!-- ТАБЛИЦЯ РЕЗУЛЬТАТІВ -->
+
+
+
+@if (Model.MatchedMelodies is not null && Model.MatchedMelodies.Count > 0 && Model.NoteSearch is true)
 {
-    <p>Результати пошуку:</p>
+    <!--якщо пошук за нотами-->
+    <p>@Model.Description</p>
     <table class="table">
         <thead>
             <tr>
@@ -102,7 +107,7 @@
                 <th>Файл</th>
                 <th>Рік</th>
                 <th>Автор</th>
-                <th>Довжина збігу</th> @* Додано цей стовпець *@
+                <th>Довжина збігу</th>
                 <th></th>
             </tr>
         </thead>
@@ -142,9 +147,10 @@
         </tbody>
     </table>
 }
-else if (Model.Melody is not null && Model.Melody.Count > 0)
+else if (Model.Melody is not null && Model.Melody.Count >0 && Model.NoteSearch is false)
 {
-    <p>Всі мелодії:</p>
+    <!--якщо пошук за назвами-->
+    <p>@Model.Description</p>
     <table class="table">
         <thead>
             <tr>
@@ -192,8 +198,12 @@ else if (Model.Melody is not null && Model.Melody.Count > 0)
 }
 else
 {
+    <!--якщо нічого не знайдено-->
     <p>@Model.Description</p>
 }
+
+
+<!-- АУДІО   -->
 
 <div class="controlcontainer infocontainer">
 
@@ -213,7 +223,12 @@ else
     }
 </div>
 
-<script>
+<script src="~/js/play.js">
+
+
+</script>
+<!--
+    <script>
     // Отримуємо доступ до аудіо елемента та кнопок
     var audioPlayer = document.getElementById('audioPlayer');
     var stopButton = document.getElementById('stopButton');
@@ -256,3 +271,4 @@ else
 
 
 </script>
+-->
