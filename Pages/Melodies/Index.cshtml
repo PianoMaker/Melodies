@@ -37,38 +37,45 @@
         @foreach (var item in Model.Melody)
         {
             <tr>
+                <!--НАЗВА-->
                 <td>
-                    <!--НАЗВА-->
+                    
                     <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
                 </td>
-                <td><!--АВТОР-->
+                <!--АВТОР-->
+                <td>
                     @Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)
-                </td>                
-                <td><!--ФАЙЛ-->
+                </td>
+                <!--ФАЙЛ-->
+                <td>
                     @if (!string.IsNullOrEmpty(item.Filepath))
                     {
-                        var filepath = Url.Content($"~/melodies/{item.Filepath}");
+                        var midifilepath = Url.Content($"~/melodies/{item.Filepath}");
+                        var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
                         <div style="display:inline-flex">
-                            <a href="@filepath" download class="btn btn-outline-dark light-background">
+                            <a href="@midifilepath" download class="btn btn-outline-dark light-background">
                                 <i class="fas fa-download"></i>
                             </a>
-                            <form method="post">
-                                <button type="submit"  asp-page-handler="Play" asp-route-midiPath="@item.Filepath" 
-                                class="btn btn-outline-dark light-background playbutton"
-                                        data-filepath="@item.Filepath">
-                                    <i class="fas fa-play"></i>
-                                </button>
-                            </form>
-                            <button id="@item.Filepath" disabled="disabled" 
-                            class="stopButton btn btn-outline-dark light-background">
-                            <i class="fas fa-stop"></i></button>
+                            <button class="btn btn-outline-dark light-background playbutton"
+                                    data-filepath="@item.Filepath" id="playButton_@item.Filepath">
+                                <i class="fas fa-play"></i>
+                            </button>
+
+                            <button id="stopButton_@item.Filepath" disabled="disabled"
+                                    class="stopButton btn btn-outline-dark light-background">
+                                <i class="fas fa-stop"></i>
+                            </button>
+                            <audio id="audioPlayer_@item.Filepath" class="audioPlayer" controls style="display: none">
+                                <source src="@mp3filepath" type="audio/mpeg" />
+                                Your browser does not support the audio element.
+                            </audio>
                         </div>
                     }
                     else
                     {
                         <span>Файл не доступний</span>
                     }
-                </td>                                           
+                </td>
                 <td>
                     <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
                     <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>

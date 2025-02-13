@@ -63,7 +63,7 @@ namespace Melodies25.Pages.Melodies
         public void OnGetAsync(string search)
         {
 
-            MessageL(COLORS.purple, "SEARCH - OnGetAsync method");
+            MessageL(COLORS.yellow, "SEARCH - OnGetAsync method");
             if (!string.IsNullOrEmpty(search))
             {
                 Console.WriteLine($"Received search: {search}");
@@ -128,7 +128,7 @@ namespace Melodies25.Pages.Melodies
         {
             NoteSearch = false;
 
-            MessageL(COLORS.purple, "SEARCH - OnPostSearchAsync method");
+            MessageL(COLORS.yellow, "SEARCH - OnPostSearchAsync method");
 
             // Ініціалізую властивість midiMelody
             await NotesSearchInitialize();
@@ -206,7 +206,7 @@ namespace Melodies25.Pages.Melodies
         public void OnPostAsync(string key)
         {
 
-            MessageL(COLORS.purple, $"SEARCH - OnPostAsync method {key}");
+            MessageL(COLORS.yellow, $"SEARCH - OnPostAsync method {key}");
             
                 OnPostPiano(key);
             
@@ -219,12 +219,12 @@ namespace Melodies25.Pages.Melodies
 
             if (!string.IsNullOrEmpty(key))
             {
-                MessageL(COLORS.purple, $"SEARCH - OnPostPiano method {key}");
+                MessageL(COLORS.yellow, $"SEARCH - OnPostPiano method {key}");
                 Keys += key + " ";
             }
             else
             {
-                MessageL(COLORS.purple, $"SEARCH - OnPostPiano method, no key, return");
+                MessageL(COLORS.yellow, $"SEARCH - OnPostPiano method, no key, return");
                 return Page();
             }                        
             var note = new Note(key);
@@ -251,7 +251,7 @@ namespace Melodies25.Pages.Melodies
 
         public void OnPostReset()
         {
-            MessageL(COLORS.purple, $"SEARCH - OnPostReset method");
+            MessageL(COLORS.yellow, $"SEARCH - OnPostReset method");
             Keys = string.Empty;
             Page();
         }
@@ -259,7 +259,7 @@ namespace Melodies25.Pages.Melodies
 
         public async Task OnPostNotesearch()
         {
-            MessageL(COLORS.purple, $"SEARCH - OnPostNotesearch method");
+            MessageL(COLORS.yellow, $"SEARCH - OnPostNotesearch method");
 
             NoteSearch = true;
 
@@ -324,11 +324,11 @@ namespace Melodies25.Pages.Melodies
             }
         }
 
-
+        
         public IActionResult OnPostPlay(string midiPath)
         {
-
-            MessageL(COLORS.purple, $"SEARCH - OnPostPlay. Trying to get {midiPath}");
+            
+            MessageL(COLORS.yellow, $"SEARCH - OnPostPlay. Trying to get {midiPath}");
             
             try
             {

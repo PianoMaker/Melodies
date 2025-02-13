@@ -32,10 +32,6 @@ namespace Melodies25.Pages.Melodies
         {
             _context = context;
             _environment = environment;
-            /*
-            Msg = "сторінку завантажено";
-            Errormsg = "->";
-            */
         }
 
         public IList<Melody> Melody { get;set; } = default!;
@@ -47,39 +43,9 @@ namespace Melodies25.Pages.Melodies
             Melody = await _context.Melody
                 .Include(m => m.Author).ToListAsync();
 
-            MessageL(COLORS.yellow, "Index OnGet");
+            MessageL(COLORS.yellow, $"MELODTY/INDEX -  OnGET");
 
         }
-
-
-        public IActionResult OnPostPlay(string midiPath)
-        {
-
-            MessageL(COLORS.yellow, "Index OnPostPlay");
-            MessageL(COLORS.green, $"Trying to get {midiPath}");
-            try
-            {
-                var path = Path.Combine(_environment.WebRootPath, "melodies", midiPath);
-                var midiFile = new MidiFile(path);
-                var hzmslist = GetHzMsListFromMidi(midiFile);
-
-                string mp3Path = ConvertToMp3Path(path);
-                MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
-
-                GenerateMp3(hzmslist, mp3Path);
-                var relativePath = "/mp3/" + Path.GetFileName(mp3Path);
-                TempData["AudioFile"] = relativePath;
-                MessageL(COLORS.green, relativePath);
-            }
-            catch (Exception ex)
-            {
-                Errormsg = ex.Message;
-                ErrorMessage($"Неможливо згенерувати MP3:\n {ex.Message}\n");
-            }
-            return RedirectToPage();
-        }
-
-
-        
+      
     }
 }

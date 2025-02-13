@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Melodies25.Data;
 using Melodies25.Models;
+using Music;
+using static Music.Messages;
 
 namespace Melodies25.Pages.Authors
 {
@@ -24,6 +26,7 @@ namespace Melodies25.Pages.Authors
 
         public async Task OnGetAsync()
         {
+            MessageL(COLORS.yellow, $"AUTHORS/INDEX -  OnGET");
             Author = await _context.Author.Include(m=>m.Country).ToListAsync();
 
             foreach(var currentAuthor in Author) {

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Melodies25.Data;
 using Melodies25.Models;
+using static Music.Messages;
+using Music;
 
 namespace Melodies25.Pages.Countries
 {
@@ -25,7 +27,7 @@ namespace Melodies25.Pages.Countries
         {
             Country = await _context.Country.ToListAsync();
 
-            
+            MessageL(COLORS.yellow, $"COUNTRIES/INDEX -  OnGET");
             foreach (var currentCountry in Country)
             {
                 int melodycount = 0;

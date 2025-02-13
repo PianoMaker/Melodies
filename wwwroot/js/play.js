@@ -1,70 +1,31 @@
-﻿console.log("STARTING PLAY SCRIPT");
-var audioPlayer = document.getElementById('audioPlayer');
+﻿document.addEventListener('DOMContentLoaded', function () {
+    console.log("Play.js starts");
 
-let stopButton;
-
-const savedStopButtonId = sessionStorage.getItem('stopButtonId');
-
-
-document.addEventListener("DOMContentLoaded", function () {           
-
-    document.querySelectorAll(".playbutton").forEach(function (playButton) {
-        playButton.addEventListener("click", function () {
-            var filePath = this.dataset.filepath; 
-            console.log("File path:", filePath);
-            stopButton = document.getElementById(filePath);            
-
-            if (stopButton) {
-                console.log("Stop button found:", stopButton);
-                stopButton.disabled = false; // Активуємо кнопку Stop
-                console.log("Stop button enabled:", stopButton);
-                sessionStorage.setItem('stopButtonId', stopButton.id); 
-            } else {
-                console.log("Stop button not found for filePath:", filePath);
-            }
+    
+    document.querySelectorAll('.playbutton').forEach(function (playButton) {
+        playButton.addEventListener('click', function (e) {
+            e.preventDefault(); // Запобігаємо відправці форми
+            console.log("Play.js play button works");
             
+            var filepath = playButton.getAttribute('data-filepath');
+            var audioPlayer = document.getElementById('audioPlayer_' + filepath);
+            var stopButton = document.getElementById('stopButton_' + filepath);
+            
+            audioPlayer.style.display = 'none'; 
+            audioPlayer.play();
+                        
+            stopButton.disabled = false;
+                        
+            playButton.disabled = true;
+
+            // Додаємо подію на зупинку
+            stopButton.addEventListener('click', function () {
+                console.log("Play.js stop button works");
+                audioPlayer.pause(); 
+                audioPlayer.currentTime = 0; 
+                stopButton.disabled = true; 
+                playButton.disabled = false;                 
+            });
         });
     });
 });
-
-// Обробка кнопки Stop
-document.querySelectorAll(".stopButton").forEach(function (stopButton) {
-    stopButton.addEventListener("click", function () {
-        console.log(new Date().toLocaleString() + " playing stopped");
-        stopButton.disabled = true;
-        audioPlayer.pause();
-        audioPlayer.currentTime = 0;
-        sessionStorage.removeItem('stopButton'); 
-
-        // Відновлюємо кнопку play
-        var playButton = document.querySelector(`.playbutton[data-filepath="${stopButton.id}"]`);
-        if (playButton) {
-            playButton.disabled = false;
-        }
-
-        
-    });
-});
-
-
-
-audioPlayer.onpause = function () {
-    console.log(new Date().toLocaleString() + " audio paused");
-};
-
-audioPlayer.onplay = function () {
-    console.log(new Date().toLocaleString() + " audio started playing");
-    if (!stopButton) {
-        console.log(new Date().toLocaleString() + " try to restore stopButton");
-        stopButton = document.getElementById(savedStopButtonId);
-        console.log(new Date().toLocaleString() + " activating stopButton");
-        stopButton.disabled = false; // Активуємо кнопку Stop   
-        console.log(new Date().toLocaleString() + " trying to move screen");
-        stopButton.scrollIntoView({
-            behavior: "auto", // Плавна прокрутка
-            block: "center"    // Кнопка буде по центру екрану
-        });
- 
-
-    }
-}
