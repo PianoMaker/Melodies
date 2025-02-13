@@ -53,7 +53,7 @@ audioPlayer.onpause = function () {
 audioPlayer.onplay = function () {
     console.log(new Date().toLocaleString() + " audio started playing");    
     if (!stopButton) {
-        console.log(new Date().toLocaleString() + "try to restore stopButton");          
+        console.log(new Date().toLocaleString() + " try to restore stopButton");          
         stopButton = document.getElementById(savedStopButtonId);
         
     }

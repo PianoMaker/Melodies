@@ -14,27 +14,23 @@
 
 <h1>Мелодії в Базі даних</h1>
 
-<a asp-page="search">Розширений пошук</a>
+<a asp-page="search" class="btn btn-outline-dark light-background border-dark">Розширений пошук</a>
+<a asp-page="Create" class="btn btn-outline-dark light-background border-dark m-4">Додати мелодію</a>
 
-<p>
-    <a asp-page="Create">Додати мелодію</a>
-</p>
 <table class="table">
     <thead>
         <tr>
             <th>
                 Назва
+            </th>                       
+            <th>
+                Автор
             </th>
             <th>
                 Файл
             </th>
-            <th>
-                Рік
-            </th>
-            <th>
-                Автор
-            </th>
-            <th></th>
+            
+            <th>Редагувати/Вилучити</th>
         </tr>
     </thead>
     <tbody>
@@ -42,9 +38,13 @@
         {
             <tr>
                 <td>
+                    <!--НАЗВА-->
                     <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
                 </td>
-                <td>
+                <td><!--АВТОР-->
+                    @Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)
+                </td>                
+                <td><!--ФАЙЛ-->
                     @if (!string.IsNullOrEmpty(item.Filepath))
                     {
                         var filepath = Url.Content($"~/melodies/{item.Filepath}");
@@ -68,16 +68,10 @@
                     {
                         <span>Файл не доступний</span>
                     }
-                </td>
+                </td>                                           
                 <td>
-                    @Html.DisplayFor(modelItem => item.Year)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)
-                </td>
-                <td>
-                    <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark">Редагуватти</a> |
-                    <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger">Вилучити</a>
+                    <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
+                    <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
                 </td>
             </tr>
         }
