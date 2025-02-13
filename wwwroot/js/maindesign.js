@@ -7,9 +7,22 @@ document.getElementById("singerellaCheckbox").addEventListener("change", functio
 
 document.addEventListener("DOMContentLoaded", function () {
     var navbar = document.getElementById("navbarstrip");
+    var checkbox = document.getElementById("singerellaCheckbox");
     if (navbar) {
-        console.log("changing navbar");
-        navbar.style.backgroundColor = "red"; // змінюємо фон
-        navbar.style.borderBottom = "5px solid black"; // додаємо рамку
+
+        if (checkbox.checked) {
+            console.log("changing navbar");
+            navbar.style.backgroundColor = "#54423a"; // змінюємо фон
+            navbar.classList.remove("bg-sky");
+            navbar.style.borderBottom = "5px solid black"; // додаємо рамку
+        }
+        else {
+            console.log("Reverting navbar style");
+            navbar.style.backgroundColor = "";
+            navbar.style.borderBottom = "";
+            navbar.classList.add("bg-sky");
+            
+        }
     }
+
 });

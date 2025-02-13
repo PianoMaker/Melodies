@@ -3,64 +3,84 @@
 
 @{
     ViewData["Title"] = "Мелодія";
+    var item = Model.Melody;
 }
 
-<h1>Детальна інформація</h1>
+<h1>@item.Title</h1>
 
 <div>
-    <h4>Мелодія</h4>
+    @if (@item.Author is not null && !@item.Author.Surname.Contains("народна"))
+    {
+        <h4>автор - @item.Author.Name @item.Author.Surname</h4>
+    }
+    else
+    {
+        <h4>@item.Author.Surname</h4>
+    }
+
     <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            Файл
-        </dt>
-        <dd>
-            @if (!string.IsNullOrEmpty(Model.Melody.Filepath))
-            {
-                var filepath = Url.Content($"~/melodies/{Model.Melody.Filepath}");
-                Console.WriteLine($"filepath = {filepath}");
-                <div style="display:inline-flex">
-                    <a href="@filepath" download class="btn btn-primary">
-                        <i class="fas fa-download"></i> 
-                    </a>
+    <div class="container">
 
-                    <form method="post">
-                        <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-success">Відтворити MIDI</button>
-                    </form>
-                </div>
-            }
-            else
-            {
-                <span>Файл не доступний</span>
-            }
-        </dd>
-        <dt class="col-sm-2">
-            Назва
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Melody.Title)
-        </dd>
-        <dt class="col-sm-2">
-            Рік
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Melody.Year)
-        </dd>
-        <dt class="col-sm-2">
-            Примітки
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Melody.Description)
-        </dd>
-        <dt class="col-sm-2">
-            Автор
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Melody.Author.Surname)  @Html.DisplayFor(model => model.Melody.Author.Name)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-page="./Edit" asp-route-id="@Model.Melody.ID">Редагувати</a> |
-    <a asp-page="./Index">Назад до списку мелодій</a>
-</div>
+        @if (!string.IsNullOrEmpty(item.Filepath))
+        {
+            var midifilepath = Url.Content($"~/melodies/{item.Filepath}");
+            var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
+
+            <div style="display:inline-flex">
+
+                <audio id="audioPlayer_@item.Filepath" class="audioPlayer" controls style="display: inline; width:500px;">
+                    <source src="@mp3filepath" type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                </audio>
+                <a href="@midifilepath" download class="btn btn-outline-dark light-background">
+                    Завантажити Midi <i class="fas fa-download"></i>
+                </a>
+                <a href="@mp3filepath" download class="btn btn-outline-dark light-background">
+                    Завантажити mp3 <i class="fas fa-download"></i>
+                </a>
+            </div>
+        }
+        else
+        {
+            <span>Файл не доступний</span>
+        }
+
+
+        <hr />
+        @if (item.Year is not null)
+        {
+            <p>Написана у @item.Year році</p>
+        }
+
+        @if (@item.MidiMelody is null)
+        {
+
+            <form method="post">
+                <button type="submit">Порахувати статистику</button>
+            </form>
+
+        }
+        else
+        {
+            <p>Нот у мелодії - @item.MidiMelody.Notes.Count </p>
+            Music.Globals.lng = Music.LNG.uk;
+            Music.Globals.notation = Music.Notation.eu;
+            <p>
+                @foreach (var note in @item.MidiMelody.Notes)
+                {
+                    <text>
+                        @note.Name(); 
+                    - </text>
+                }
+            </p>
+
+
+        }
+
+        <p>@item.Description</p>
+    </div>
+    <div>
+        <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="link-dark">Редагувати</a>
+        <a asp-page="./Index" class="link-dark">Назад до списку мелодій</a>
+    </div>
+    <script src="~/js/play.js"></script>

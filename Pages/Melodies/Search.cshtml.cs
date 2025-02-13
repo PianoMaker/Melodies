@@ -307,6 +307,7 @@ namespace Melodies25.Pages.Melodies
                     int commonLength = LongestCommonSubstring(patternShape, melodyshape);
                     if (commonLength >= minimummatch)
                     {
+                        commonLength++; //рахуємо ноти, не інтервали  
                         MatchedMelodies.Add((melody, commonLength));
                     }
                 }

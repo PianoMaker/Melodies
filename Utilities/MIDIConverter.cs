@@ -89,6 +89,7 @@ namespace Music
             {
                 var ticksperquater = midiFile.DeltaTicksPerQuarterNote;
                 Melody melody = new Melody();
+                Music.Globals.notation = Music.Notation.eu;
                 List<string> noteDurations = new List<string>(); // Для збереження тривалості нот
 
                 int trackcounter = 0;
