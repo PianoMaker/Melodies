@@ -119,7 +119,14 @@ namespace Music
                         {
                             var time = midiEvent.DeltaTime;
                             int dur = 4 * ticksperquater / time;
-                            melody.Notes[melody.Notes.Count - 1].SetDuration(dur);
+                            try
+                            {
+                                melody.Notes[melody.Notes.Count - 1].SetDuration(dur);
+                            }
+                            catch
+                            {
+                                ErrorMessage("possible duration error");
+                            }
                             MessageL(COLORS.gray, $"{melody.Notes[melody.Notes.Count - 1].AbsDuration()}");
                         }
                     }

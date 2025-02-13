@@ -85,7 +85,7 @@ namespace Melodies25.Pages.Melodies
 
         private async Task NotesSearchInitialize()
         {
-            Melody = _context.Melody.ToList();
+            Melody = _context.Melody.Include(m => m.Author).ToList();
 
             Music.Globals.notation = Notation.eu;
 
@@ -252,7 +252,8 @@ namespace Melodies25.Pages.Melodies
             
             NoteSearch = true;
 
-            await NotesSearchInitialize();            
+            await NotesSearchInitialize();
+            
 
             Music.Melody MelodyPattern = new();
             Globals.notation = Notation.eu;
@@ -303,22 +304,6 @@ namespace Melodies25.Pages.Melodies
                 MatchedMelodies = MatchedMelodies.OrderByDescending(m => m.commonLength).ToList();
 
                 Description = $"Знайдено {MatchedMelodies.Count} мелодій, в яких співпадають не менше ніж {minimummatch} нот поспіль";
-
-                /*
-                foreach (var melody in Melody)
-                {
-                    if (melody.MidiMelody is null) continue;
-
-                    var melodyshape = melody.MidiMelody.IntervalList.ToArray();
-                    int commonLength = LongestCommonSubstring(patternShape, melodyshape.ToArray());
-                    if (commonLength > 0)
-                    {
-                        filteredMelodies.Add((melody, commonLength));
-                    }
-                }
-
-                Melody = filteredMelodies.OrderByDescending(m => m.length).Select(m => m.melody).ToList();
-                */
 
             }
             else { 

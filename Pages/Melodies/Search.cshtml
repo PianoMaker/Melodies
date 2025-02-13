@@ -94,113 +94,132 @@
 
 <!-- ТАБЛИЦЯ РЕЗУЛЬТАТІВ -->
 
-
+<p>@Model.Description</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Назва</th>
+            <th>Автор</th>
+            <th>Файл</th>            
+            @if(Model.NoteSearch is true)
+            {
+                <th>Довжина збігу</th>
+            }
+            <th></th>
+        </tr>
+    </thead>
 
 @if (Model.MatchedMelodies is not null && Model.MatchedMelodies.Count > 0 && Model.NoteSearch is true)
 {
     <!--якщо пошук за нотами-->
-    <p>@Model.Description</p>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Назва</th>
-                <th>Файл</th>
-                <th>Рік</th>
-                <th>Автор</th>
-                <th>Довжина збігу</th>
-                <th></th>
-            </tr>
-        </thead>
+
         <tbody>
             @foreach (var (item, matchLength) in Model.MatchedMelodies)
             {
                 <tr>
-                    <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                    <!--Назва-->
                     <td>
-                        @if (!string.IsNullOrEmpty(item.Filepath))
-                        {
+                        <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
+                    </td>
+                    <!--Автор-->
+                    <td>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</td>
+                    <!--файл-->
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.Filepath))                        {
+                            
                             var filepath = Url.Content($"~/melodies/{item.Filepath}");
                             <div style="display:inline-flex">
-                                <a href="@filepath" download class="btn btn-primary"><i class="fas fa-download"></i></a>
+                                <a href="@filepath" download class="btn btn-outline-dark light-background">
+                                    <i class="fas fa-download"></i>
+                                </a>
                                 <form method="post">
-                                    <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-success">
+                                    <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.Filepath"
+                                            class="btn btn-outline-dark light-background playbutton"
+                                            data-filepath="@item.Filepath">
                                         <i class="fas fa-play"></i>
                                     </button>
                                 </form>
+                                <button id="@item.Filepath" disabled="disabled"
+                                        class="stopButton btn btn-outline-dark light-background">
+                                    <i class="fas fa-stop"></i>
+                                </button>
                             </div>
                         }
                         else
                         {
                             <span>Файл не доступний</span>
                         }
-                    </td>
-                    <td>@Html.DisplayFor(modelItem => item.Year)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</td>
+                    </td>                  
+                    
+                    
                     <td>@matchLength</td> @* Відображаємо довжину збігу *@
                     <td>
-                        <a asp-page="./Edit" asp-route-id="@item.ID"><i class="fas fa-edit"></i></a> |
-                        <a asp-page="./Details" asp-route-id="@item.ID">Детальна інформація</a>  |
-                        <a asp-page="./Delete" asp-route-id="@item.ID">Вилучити</a>
+                        <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
+                        <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
                     </td>
                 </tr>
             }
         </tbody>
-    </table>
+    
 }
 else if (Model.Melody is not null && Model.Melody.Count >0 && Model.NoteSearch is false)
 {
     <!--якщо пошук за назвами-->
-    <p>@Model.Description</p>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Назва</th>
-                <th>Файл</th>
-                <th>Рік</th>
-                <th>Автор</th>
-                <th></th>
-            </tr>
-        </thead>
+
         <tbody>
             @foreach (var item in Model.Melody)
             {
                 <tr>
-                    <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                    <!--Назва-->
+                    <td>
+                    <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
+                    </td>
+                    <!--Автор-->
+                    <td>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</td>
+                    <!--Файл-->
                     <td>
                         @if (!string.IsNullOrEmpty(item.Filepath))
                         {
                             var filepath = Url.Content($"~/melodies/{item.Filepath}");
                             <div style="display:inline-flex">
-                                <a href="@filepath" download class="btn btn-primary"><i class="fas fa-download"></i></a>
+                                <a href="@filepath" download class="btn btn-outline-dark light-background">
+                                    <i class="fas fa-download"></i>
+                                </a>
                                 <form method="post">
-                                    <button type="submit" asp-page-handler="Play" asp-route-path="@filepath" class="btn btn-success">
+                                    <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.Filepath"
+                                            class="btn btn-outline-dark light-background playbutton"
+                                            data-filepath="@item.Filepath">
                                         <i class="fas fa-play"></i>
                                     </button>
                                 </form>
+                                <button id="@item.Filepath" disabled="disabled"
+                                        class="stopButton btn btn-outline-dark light-background">
+                                    <i class="fas fa-stop"></i>
+                                </button>
                             </div>
                         }
                         else
                         {
                             <span>Файл не доступний</span>
                         }
-                    </td>
-                    <td>@Html.DisplayFor(modelItem => item.Year)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</td>
+                    </td>                                        
                     <td>
-                        <a asp-page="./Edit" asp-route-id="@item.ID"><i class="fas fa-edit"></i></a> |
-                        <a asp-page="./Details" asp-route-id="@item.ID">Детальна інформація</a>  |
-                        <a asp-page="./Delete" asp-route-id="@item.ID">Вилучити</a>
+                        <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
+                        <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
                     </td>
                 </tr>
             }
         </tbody>
-    </table>
+    
 }
 else
 {
     <!--якщо нічого не знайдено-->
-    <p>@Model.Description</p>
+     <tbody>
+            <tr><td>@Model.Description</td></tr>
+     </tbody>
 }
+</table>
 
 
 <!-- АУДІО   -->
@@ -224,51 +243,4 @@ else
 </div>
 
 <script src="~/js/play.js">
-
-
 </script>
-<!--
-    <script>
-    // Отримуємо доступ до аудіо елемента та кнопок
-    var audioPlayer = document.getElementById('audioPlayer');
-    var stopButton = document.getElementById('stopButton');
-    var playButton = document.getElementById('playButton');
-
-    stopButton.onclick = function() {
-        console.log(new Date().toLocaleString() + " playing stopped")
-        audioPlayer.pause();
-        audioPlayer.currentTime = 0;
-        playButton.disabled = false;
-    };
-
-    audioPlayer.oncanplaythrough = function() {
-
-        if (!audioPlayer.paused) {
-            console.log(new Date().toLocaleString() + " ready to play file")
-            playButton.disabled = true;
-        }
-    };
-
-
-    audioPlayer.onpause = function() {
-        console.log(new Date().toLocaleString() + " stop button disabled")
-        stopButton.disabled = true;
-    };
-
-
-
-    audioPlayer.onplay = function() {
-        console.log(new Date().toLocaleString() + " stop button disabled")
-        stopButton.disabled = false;
-    };
-
-
-    playButton.onclick = function() {
-        console.log(Date.now.toString() + " start to play file")
-        audioPlayer.play();
-        playButton.disabled = true; //
-    };
-
-
-</script>
--->
