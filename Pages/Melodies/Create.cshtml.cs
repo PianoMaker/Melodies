@@ -132,7 +132,15 @@ namespace Melodies25.Pages.Melodies
             return RedirectToPage("./Index");
         }
 
-        
+
+        public async Task<IActionResult> OnGetCheckTitleAsync(string title)
+        {
+            bool exists = await _context.Melody.AnyAsync(m => m.Title == title);
+            Console.WriteLine("Checking for title");
+            return new JsonResult(new { exists });
+        }
+
+
     }
 
 }

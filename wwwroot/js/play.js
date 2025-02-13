@@ -1,4 +1,4 @@
-﻿console.log("STARTING SCRIPT");
+﻿console.log("STARTING PLAY SCRIPT");
 var audioPlayer = document.getElementById('audioPlayer');
 
 let stopButton;
@@ -41,6 +41,8 @@ document.querySelectorAll(".stopButton").forEach(function (stopButton) {
         if (playButton) {
             playButton.disabled = false;
         }
+
+        
     });
 });
 
@@ -51,14 +53,18 @@ audioPlayer.onpause = function () {
 };
 
 audioPlayer.onplay = function () {
-    console.log(new Date().toLocaleString() + " audio started playing");    
+    console.log(new Date().toLocaleString() + " audio started playing");
     if (!stopButton) {
-        console.log(new Date().toLocaleString() + " try to restore stopButton");          
+        console.log(new Date().toLocaleString() + " try to restore stopButton");
         stopButton = document.getElementById(savedStopButtonId);
-        
+        console.log(new Date().toLocaleString() + " activating stopButton");
+        stopButton.disabled = false; // Активуємо кнопку Stop   
+        console.log(new Date().toLocaleString() + " trying to move screen");
+        stopButton.scrollIntoView({
+            behavior: "auto", // Плавна прокрутка
+            block: "center"    // Кнопка буде по центру екрану
+        });
+ 
+
     }
-    stopButton.disabled = false; // Активуємо кнопку Stop    
-};
-
-
-
+}

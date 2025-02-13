@@ -115,7 +115,7 @@ namespace Music
                             melody.AddNote(note);
                             Message(COLORS.gray, $"note on {noteOn.NoteNumber} - ");
                         }
-                        else if (NoteEvent.IsNoteOff(midiEvent))
+                        else if (NoteEvent.IsNoteOff(midiEvent) && midiEvent.DeltaTime > 0)
                         {
                             var time = midiEvent.DeltaTime;
                             int dur = 4 * ticksperquater / time;

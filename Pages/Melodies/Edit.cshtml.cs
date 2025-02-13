@@ -135,16 +135,23 @@ namespace Melodies25.Pages.Melodies
                     ErrorMessage($"failed to check file: {ex}");
                 }
             }
-            //тестова 
-            /*
-            Console.WriteLine($"Entity State: {_context.Entry(Melody).State}");
-            _context.Entry(Melody).State = EntityState.Modified;
-            _context.Entry(Melody).Property(m => m.Title).IsModified = true;
-            Console.WriteLine($"Entity State: {_context.Entry(Melody).State}");
-            */
-            try
-            {               
 
+
+            _context.Entry(Melody).Property(m => m.Title).IsModified = true;
+            _context.Entry(Melody).Property(m => m.Year).IsModified = true;
+            _context.Entry(Melody).Property(m => m.AuthorID).IsModified = true;
+            _context.Entry(Melody).Property(m => m.Description).IsModified = true;
+
+            if (fileupload is not null)
+            {
+                _context.Entry(Melody).Property(m => m.Filepath).IsModified = true;
+            }
+            else //якщо не перезавантажено файл, зміни в це поле БД не вносяться
+                _context.Entry(Melody).Property(m => m.Filepath).IsModified = false;
+            
+
+            try
+            {
                 var result = await _context.SaveChangesAsync();
                 if (result > 0)
                 {
@@ -168,6 +175,7 @@ namespace Melodies25.Pages.Melodies
             }
 
             return RedirectToPage("./Index");
+
         }
 
 

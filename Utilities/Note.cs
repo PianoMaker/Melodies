@@ -2,6 +2,7 @@
 using static System.Console;
 using static System.Convert;
 using static Music.Globals;
+using static Music.Messages;
 using System.Diagnostics.Metrics;
 using NAudio.Midi;
 
@@ -226,7 +227,15 @@ namespace Music
             pitch = key_to_pitch(key, true);                        
             step = key_to_step(key);
             oct = octave;
-            this.duration = new Duration(duration, durmodifier);
+            try
+            {
+                this.duration = new Duration(duration, durmodifier);
+            }
+            catch (Exception ex)
+            {
+                this.duration = new Duration(DURATION.quater);
+                ErrorMessage("Possible incorrect duration");
+            }
            
         }
 

@@ -15,6 +15,12 @@ namespace Music
         public Duration()
         { duration = DURATION.quater; modifier = DURMODIFIER.none; tuplet = 1; }
 
+        public Duration(DURATION duration)
+        {
+            this.duration = duration;           
+            
+        }
+
         public Duration(DURATION duration, DURMODIFIER modifier, int tuplet)
         {
             this.duration = duration;

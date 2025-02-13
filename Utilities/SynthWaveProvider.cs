@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis.Elfie.Serialization;
 using Microsoft.DotNet.Scaffolding.Shared;
 using Music;
 using static Music.Engine;
+using static Music.Messages;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 
 namespace Melodies25.Utilities
 {
@@ -119,7 +121,7 @@ namespace Melodies25.Utilities
                         _phaseIncrement = 2 * Math.PI * frequency / _sampleRate;
                         _samplesRemaining = durationMs * samplesPerMs;
                         _adsr.Gate(true);  // Запуск ADSR
-                        Console.WriteLine($"Starting note {_noteIndex}: {frequency} Hz, {durationMs} ms");
+                        MessageL(COLORS.gray, $"Recording note {_noteIndex}: {frequency} Hz, {durationMs} ms");
                     }
                 }
 
@@ -139,7 +141,7 @@ namespace Melodies25.Utilities
                 if (_samplesRemaining <= 0) // Закінчили поточну ноту
                 {
                     _adsr.Gate(false);  // Закриття ASDR
-                    Console.WriteLine($"Finished note {_noteIndex}: {frequency} Hz");
+                    //Console.WriteLine($"Finished note {_noteIndex}: {frequency} Hz");
 
                     _noteIndex++; // Перехід до наступної ноти
                 }
