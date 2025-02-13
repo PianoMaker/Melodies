@@ -100,20 +100,19 @@
         <tr>
             <th>Назва</th>
             <th>Автор</th>
-            <th>Файл</th>            
-            @if(Model.NoteSearch is true)
+            <th>Файл</th>
+            @if (Model.NoteSearch is true)
             {
                 <th>Довжина збігу</th>
             }
             <th></th>
         </tr>
     </thead>
+    <tbody>
 
-@if (Model.MatchedMelodies is not null && Model.MatchedMelodies.Count > 0 && Model.NoteSearch is true)
-{
-    <!--якщо пошук за нотами-->
-
-        <tbody>
+        @if (Model.MatchedMelodies is not null && Model.MatchedMelodies.Count > 0 && Model.NoteSearch is true)
+        {
+            <!--якщо пошук за нотами-->
             @foreach (var (item, matchLength) in Model.MatchedMelodies)
             {
                 <tr>
@@ -125,33 +124,36 @@
                     <td>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</td>
                     <!--файл-->
                     <td>
-                        @if (!string.IsNullOrEmpty(item.Filepath))                        {
-                            
-                            var filepath = Url.Content($"~/melodies/{item.Filepath}");
+                        @if (!string.IsNullOrEmpty(item.Filepath))
+                        {
+                            var midifilepath = Url.Content($"~/melodies/{item.Filepath}");
+                            var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
                             <div style="display:inline-flex">
-                                <a href="@filepath" download class="btn btn-outline-dark light-background">
+                                <a href="@midifilepath" download class="btn btn-outline-dark light-background">
                                     <i class="fas fa-download"></i>
                                 </a>
                                 <form method="post">
                                     <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.Filepath"
                                             class="btn btn-outline-dark light-background playbutton"
-                                            data-filepath="@item.Filepath">
+                                            data-filepath="@item.Filepath" id="playButton_@item.Filepath">
                                         <i class="fas fa-play"></i>
                                     </button>
                                 </form>
-                                <button id="@item.Filepath" disabled="disabled"
+                                <button id="stopButton_@item.Filepath" disabled="disabled"
                                         class="stopButton btn btn-outline-dark light-background">
                                     <i class="fas fa-stop"></i>
                                 </button>
+                                <audio id="audioPlayer_@item.Filepath" class="audioPlayer" controls style="display: none">
+                                    <source src="@mp3filepath" type="audio/mpeg" />
+                                    Your browser does not support the audio element.
+                                </audio>
                             </div>
                         }
                         else
                         {
                             <span>Файл не доступний</span>
                         }
-                    </td>                  
-                    
-                    
+                    </td>
                     <td>@matchLength</td> @* Відображаємо довжину збігу *@
                     <td>
                         <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
@@ -159,20 +161,16 @@
                     </td>
                 </tr>
             }
-        </tbody>
-    
-}
-else if (Model.Melody is not null && Model.Melody.Count >0 && Model.NoteSearch is false)
-{
-    <!--якщо пошук за назвами-->
-
-        <tbody>
+        }
+        else if (Model.Melody is not null && Model.Melody.Count > 0 && Model.NoteSearch is false)
+        {
+            <!--якщо пошук за назвами-->
             @foreach (var item in Model.Melody)
             {
                 <tr>
                     <!--Назва-->
                     <td>
-                    <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
+                        <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
                     </td>
                     <!--Автор-->
                     <td>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</td>
@@ -180,45 +178,52 @@ else if (Model.Melody is not null && Model.Melody.Count >0 && Model.NoteSearch i
                     <td>
                         @if (!string.IsNullOrEmpty(item.Filepath))
                         {
-                            var filepath = Url.Content($"~/melodies/{item.Filepath}");
+                            var midifilepath = Url.Content($"~/melodies/{item.Filepath}");
+                            var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
                             <div style="display:inline-flex">
-                                <a href="@filepath" download class="btn btn-outline-dark light-background">
+                                <a href="@midifilepath" download class="btn btn-outline-dark light-background">
                                     <i class="fas fa-download"></i>
                                 </a>
                                 <form method="post">
                                     <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.Filepath"
                                             class="btn btn-outline-dark light-background playbutton"
-                                            data-filepath="@item.Filepath">
+                                            data-filepath="@item.Filepath" id="playButton_@item.Filepath">
                                         <i class="fas fa-play"></i>
                                     </button>
                                 </form>
-                                <button id="@item.Filepath" disabled="disabled"
+                                <button id="stopButton_@item.Filepath" disabled="disabled"
                                         class="stopButton btn btn-outline-dark light-background">
                                     <i class="fas fa-stop"></i>
                                 </button>
+                                <audio id="audioPlayer_@item.Filepath" class="audioPlayer" controls style="display: none">
+                                    <source src="@mp3filepath" type="audio/mpeg" />
+                                    Your browser does not support the audio element.
+                                </audio>
                             </div>
                         }
                         else
                         {
                             <span>Файл не доступний</span>
                         }
-                    </td>                                        
+                    </td>
+
                     <td>
                         <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
                         <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
                     </td>
                 </tr>
             }
-        </tbody>
-    
-}
-else
-{
-    <!--якщо нічого не знайдено-->
-     <tbody>
+
+        }
+
+        else
+        {
+            <!--якщо нічого не знайдено-->
+
             <tr><td>@Model.Description</td></tr>
-     </tbody>
-}
+
+        }
+    </tbody>
 </table>
 
 
@@ -242,5 +247,5 @@ else
     }
 </div>
 
-<script src="~/js/play.js">
+<script src="~/js/play2.js">
 </script>

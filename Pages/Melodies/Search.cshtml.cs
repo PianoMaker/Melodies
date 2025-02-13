@@ -4,13 +4,17 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Music;
+using NAudio.Midi;
 using Newtonsoft.Json;
 using System.Globalization;
 using System.IO;
+using static Music.MidiConverter;
 using static Melodies25.Utilities.Algorythm;
+using static Melodies25.Utilities.PrepareFiles;
 using static Melodies25.Utilities.SynthWaveProvider;
 using static Music.Messages;
 using Melody = Melodies25.Models.Melody;
+using Melodies25.Utilities;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -58,8 +62,8 @@ namespace Melodies25.Pages.Melodies
 
         public void OnGetAsync(string search)
         {
-            
 
+            MessageL(COLORS.purple, "SEARCH - OnGetAsync method");
             if (!string.IsNullOrEmpty(search))
             {
                 Console.WriteLine($"Received search: {search}");
@@ -86,6 +90,7 @@ namespace Melodies25.Pages.Melodies
         private async Task NotesSearchInitialize()
         {
             Melody = _context.Melody.Include(m => m.Author).ToList();
+            
 
             Music.Globals.notation = Notation.eu;
 
@@ -95,13 +100,16 @@ namespace Melodies25.Pages.Melodies
 
                 if (melody.Filepath is not null && melody.MidiMelody is null)
                 {
-                    var path = Path.Combine(wwwRootPath, melody.Filepath);
+                    var path = Path.Combine(wwwRootPath, melody.Filepath);                    
 
                     MessageL(COLORS.green, $"{melody.Title} exploring file {path}");
 
                     var midifile = MidiConverter.GetMidiFile(path);
 
                     melody.MidiMelody = await MidiConverter.GetMelodyFromMidiAsync(midifile);
+
+                    //якщо mp3 не існує, створює
+                    await PrepareMp3Async(_environment, path, true);
                 }
                 else if (melody.Filepath is null)
                 {
@@ -119,6 +127,8 @@ namespace Melodies25.Pages.Melodies
         public async Task OnPostSearchAsync()
         {
             NoteSearch = false;
+
+            MessageL(COLORS.purple, "SEARCH - OnPostSearchAsync method");
 
             // Ініціалізую властивість midiMelody
             await NotesSearchInitialize();
@@ -195,8 +205,9 @@ namespace Melodies25.Pages.Melodies
 
         public void OnPostAsync(string key)
         {
+
+            MessageL(COLORS.purple, $"SEARCH - OnPostAsync method {key}");
             
-                Console.WriteLine($"onPost is running {key}");
                 OnPostPiano(key);
             
 
@@ -208,12 +219,12 @@ namespace Melodies25.Pages.Melodies
 
             if (!string.IsNullOrEmpty(key))
             {
-                Console.WriteLine($"OnPostPiano is running {key}");
+                MessageL(COLORS.purple, $"SEARCH - OnPostPiano method {key}");
                 Keys += key + " ";
             }
             else
             {
-                Console.WriteLine($"OnPost: empty key");                
+                MessageL(COLORS.purple, $"SEARCH - OnPostPiano method, no key, return");
                 return Page();
             }                        
             var note = new Note(key);
@@ -240,7 +251,7 @@ namespace Melodies25.Pages.Melodies
 
         public void OnPostReset()
         {
-            Console.WriteLine($"reset");
+            MessageL(COLORS.purple, $"SEARCH - OnPostReset method");
             Keys = string.Empty;
             Page();
         }
@@ -248,8 +259,8 @@ namespace Melodies25.Pages.Melodies
 
         public async Task OnPostNotesearch()
         {
-            MessageL(COLORS.blue, "starting notesearch method");
-            
+            MessageL(COLORS.purple, $"SEARCH - OnPostNotesearch method");
+
             NoteSearch = true;
 
             await NotesSearchInitialize();
@@ -311,6 +322,34 @@ namespace Melodies25.Pages.Melodies
                 Console.WriteLine("no pattern");             
             
             }
+        }
+
+
+        public IActionResult OnPostPlay(string midiPath)
+        {
+
+            MessageL(COLORS.purple, $"SEARCH - OnPostPlay. Trying to get {midiPath}");
+            
+            try
+            {
+                var path = Path.Combine(_environment.WebRootPath, "melodies", midiPath);
+                var midiFile = new MidiFile(path);
+                var hzmslist = GetHzMsListFromMidi(midiFile);
+
+                string mp3Path = ConvertToMp3Path(path);
+                MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
+
+                GenerateMp3(hzmslist, mp3Path);
+                var relativePath = "/mp3/" + Path.GetFileName(mp3Path);
+                TempData["AudioFile"] = relativePath;
+                MessageL(COLORS.green, relativePath);
+            }
+            catch (Exception ex)
+            {
+                Errormsg = ex.Message;
+                ErrorMessage($"Неможливо згенерувати MP3:\n {ex.Message}\n");
+            }
+            return Page();
         }
 
     }

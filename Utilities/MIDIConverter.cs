@@ -209,57 +209,34 @@ namespace Music
         }
 
 
-       
-        /*
-        public static string ConvertMidiToString(MidiFile midiFile, string outputDirectory)
+        public static bool IfMonody(string midifilePath)
         {
-            string wavFile = Path.Combine(outputDirectory, "output.wav");
-
-            using (var writer = new WaveFileWriter(wavFile, new WaveFormat(44100, 16, 2)))
+            try
             {
-                var synth = new SineWaveProvider16();
-                synth.SetWaveFormat(44100, 1); // 1 канал (моно)
+                var midiFile = new MidiFile(midifilePath);
 
-                Dictionary<int, double> activeNotes = new Dictionary<int, double>(); // {NoteNumber, StartTime}
-                double totalTime = 0;
+                var ispoliphonic = MidiConverter.CheckForPolyphony(midiFile);
 
-                foreach (var track in midiFile.Events)
+
+                if (ispoliphonic)
                 {
-                    foreach (var midiEvent in track)
-                    {
-                        if (midiEvent is NoteOnEvent noteOn && noteOn.Velocity > 0)
-                        {
-                            activeNotes[noteOn.NoteNumber] = totalTime;
-                        }
-                        else if (midiEvent is NoteEvent noteEvent && noteEvent.CommandCode == MidiCommandCode.NoteOff)
-                        {
-                            if (activeNotes.TryGetValue(noteEvent.NoteNumber, out double startTime))
-                            {
-                                double duration = totalTime - startTime; // Тривалість ноти в тіках
+                    MessageL(COLORS.yellow, "Виявлено поліфонію!");
+                    return false;
+                }
 
-                                int frequency = NoteToFrequency(noteEvent.NoteNumber);
-                                synth.Frequency = frequency;
-                                synth.Amplitude = 0.5f;
-
-                                int samples = (int)(duration * 44100); // Перетворення у семпли
-                                var buffer = new short[samples];
-                                synth.Read(buffer, 0, buffer.Length);
-                                writer.WriteSamples(buffer, 0, buffer.Length);
-
-                                activeNotes.Remove(noteEvent.NoteNumber);
-
-                                Console.WriteLine($"Нота {noteEvent.NoteNumber} ({frequency} Hz) - {duration} сек.");
-                            }
-                        }
-                        totalTime += midiEvent.DeltaTime / (double)midiFile.DeltaTicksPerQuarterNote;
-                    }
+                else
+                {
+                    MessageL(COLORS.blue, "Одноголосний!");
+                    return true;
                 }
             }
-
-            return wavFile;
+            catch (Exception ex)
+            {
+                ErrorMessage($"failed to check file: {ex}");
+                return false;
+            }
         }
-
-        */
+   
         public static MidiFile GetMidiFile(string path)
         {
             return new MidiFile(path);

@@ -11,9 +11,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Routing.Constraints;
 using System.Text;
 using Melodies25.Utilities;
+using static Melodies25.Utilities.Algorythm;
+using static Melodies25.Utilities.SynthWaveProvider;
 using NAudio.Midi;
 using Music;
 using static Music.Messages;
+using static Music.MidiConverter;
+using static Melodies25.Utilities.PrepareFiles;
 using Microsoft.EntityFrameworkCore;
 
 namespace Melodies25.Pages.Melodies
@@ -57,7 +61,7 @@ namespace Melodies25.Pages.Melodies
 
             if (Melody.Author == null)
             {
-                Console.WriteLine("Author not found!");
+                Console.WriteLine("Author has not been not found!");
                 return Page(); // або обробити помилку іншим чином
             }
 
@@ -80,35 +84,28 @@ namespace Melodies25.Pages.Melodies
             if (fileupload is not null)
             {
                 string newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
-
-                var filePath = Path.Combine(uploadsPath, newfilename);
+                var midifilePath = Path.Combine(uploadsPath, newfilename);
 
                 // Записуємо файл на сервер
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                using (var stream = new FileStream(midifilePath, FileMode.Create))
                 {
                     await fileupload.CopyToAsync(stream);
                 }
 
+                // перевірка на поліфоню (допрацювати)
+                var ifeligible = IfMonody(midifilePath);
 
-                try
+                // завантажує mp3 на сервер (існуючий перезаписує)
+                if (ifeligible)
                 {
-                    var midiFile = new MidiFile(filePath);
-
-                    var ispoliphonic = MidiConverter.CheckForPolyphony(midiFile);
-
-
-                    if (ispoliphonic)
-                        MessageL(COLORS.yellow, "Виявлено поліфонію!");
-                    else
-                        MessageL(COLORS.blue, "Одноголосний!");
+                    await PrepareMp3Async(_environment, midifilePath, false);
+                    ViewData["Message"] = "Файл успішно завантажено!";
                 }
-                catch (Exception ex)
+                else
                 {
-                    ErrorMessage($"failed to check file: {ex}");
+                    ViewData["Message"] = "Файл не є мелодією. Перевірте.";
                 }
 
-                ViewData["Message"] = "Файл успішно завантажено!";
-                
                 Melody.Filepath = newfilename; //назву файлу фіксуємо
 
                 // СПОІВЩЕННЯ НА ТЕЛЕГРАМ 
@@ -132,7 +129,9 @@ namespace Melodies25.Pages.Melodies
             return RedirectToPage("./Index");
         }
 
-
+       
+        
+       
         public async Task<IActionResult> OnGetCheckTitleAsync(string title)
         {
             bool exists = await _context.Melody.AnyAsync(m => m.Title == title);

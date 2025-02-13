@@ -2,6 +2,8 @@
 {
     public static class Algorythm
     {
+
+        
         public static int LongestCommonSubstring(int[] arr1, int[] arr2)
         {
             int[,] dp = new int[arr1.Length + 1, arr2.Length + 1];

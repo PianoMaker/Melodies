@@ -12,24 +12,36 @@
        class="btn btn-outline-dark light-background border-dark">>
        Додати країну</a>
 </p>
-<table class="table">
+<table class="table w-75">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Country[0].Name)
+            <th class="w-50">
+               Назва
             </th>
-            <th></th>
+            <th class="w-25">
+                Авторів у базі даних
+            </th>
+            <th class="w-25">
+                Мелодій у базі даних
+            </th>
+            <th class="w-50">Радегування/Вилучення</th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model.Country) {
         <tr>
             <td>
-                    <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Name)</a>
+                    @Html.DisplayFor(modelItem => item.Name)
             </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AuthorsCount)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MelodiesCount)
+                </td>
             <td>
-                    <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark">Редагуватти</a> |                    
-                    <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger">Вилучити</a>
+                    <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
+                    <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
             </td>
         </tr>
 }

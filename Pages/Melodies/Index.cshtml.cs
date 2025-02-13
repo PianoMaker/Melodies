@@ -9,6 +9,7 @@ using Melodies25.Data;
 using Melodies25.Models;
 using static Music.MidiConverter;
 using static Music.Messages;
+using static Melodies25.Utilities.PrepareFiles;
 using static Melodies25.Utilities.SynthWaveProvider;
 using NAudio.Midi;
 using System.IO;
@@ -31,8 +32,10 @@ namespace Melodies25.Pages.Melodies
         {
             _context = context;
             _environment = environment;
+            /*
             Msg = "сторінку завантажено";
             Errormsg = "->";
+            */
         }
 
         public IList<Melody> Melody { get;set; } = default!;
@@ -52,7 +55,7 @@ namespace Melodies25.Pages.Melodies
         public IActionResult OnPostPlay(string midiPath)
         {
 
-            MessageL(COLORS.yellow, "Index OnPost");
+            MessageL(COLORS.yellow, "Index OnPostPlay");
             MessageL(COLORS.green, $"Trying to get {midiPath}");
             try
             {
@@ -77,17 +80,6 @@ namespace Melodies25.Pages.Melodies
         }
 
 
-        public string ConvertToMp3Path(string midiPath)
-        {
-            
-            string directory = Path.GetDirectoryName(midiPath)?.Replace("melodies", "mp3") ?? "";
-            //string directory = Path.Combine(_environment.WebRootPath, directory);
-            if (!Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-            string filenameWithoutExt = Path.GetFileNameWithoutExtension(midiPath);
-            return Path.Combine(directory, filenameWithoutExt + ".mp3");
-        }
+        
     }
 }

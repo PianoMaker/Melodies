@@ -218,6 +218,51 @@ namespace Melodies25.Utilities
             Console.WriteLine($"File is ready at {outputPath}");
         }
 
+        public static async Task GenerateMp3Async(List<(double frequency, int durationMs)> sequence, string outputPath)
+        {
+            int sampleRate = 44100;
+            Console.WriteLine("Starting GenerateMp3Async method...");
+
+            var waveProvider = new SynthWaveProvider(sequence, sampleRate);
+            string wavPath = "output.wav";
+            string mp3Path = outputPath;
+
+            Console.WriteLine("Starting WAV file creation...");
+
+            using (var waveStream = new WaveFileWriter(wavPath, waveProvider.WaveFormat))
+            {
+                byte[] buffer = new byte[Math.Min(waveProvider.WaveFormat.BlockAlign * 1024, 65536)];
+                int maxBytes = sampleRate * 120 * waveProvider.WaveFormat.BlockAlign; // обмеження у 2 хвилини
+                int bytesRead;
+                long totalBytesWritten = 0;
+
+                while ((bytesRead = waveProvider.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    await waveStream.WriteAsync(buffer, 0, bytesRead);
+                    totalBytesWritten += bytesRead;
+
+                    if (totalBytesWritten >= maxBytes)
+                    {
+                        Console.WriteLine("Reached maximum file size. Stopping.");
+                        break;
+                    }
+                }
+            }
+
+            Console.WriteLine("WAV file created successfully.");
+            Console.WriteLine("Starting MP3 conversion...");
+
+            using (var reader = new WaveFileReader(wavPath))
+            using (var mp3Writer = new LameMP3FileWriter(mp3Path, reader.WaveFormat, LAMEPreset.ABR_128))
+            {
+                await reader.CopyToAsync(mp3Writer);
+                Console.WriteLine("MP3 conversion completed.");
+            }
+
+            File.Delete(wavPath);
+            Console.WriteLine("Temporary WAV file deleted.");
+            Console.WriteLine($"File is ready at {outputPath}");
+        }
 
 
         public static void GenerateMp3(Note note, string outputPath)
