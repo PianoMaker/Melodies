@@ -21,10 +21,14 @@
     <thead>
         <tr>
             <th>
-                Назва
-            </th>                       
+                <a asp-page="./Index" asp-route-sortOrder="@(Model.TitleSort)" class="link-light">
+                    Назва  @(Model.TitleSort == "title_asc" ? "▲" : "▼")
+                </a>
+            </th>
             <th>
-                Автор
+                <a asp-page="./Index" asp-route-sortOrder="@(Model.AuthorSort)" class="link-light">
+                    Автор @(Model.AuthorSort == "title_asc" ? "▲" : "▼")
+                </a>
             </th>
             <th>
                 Файл

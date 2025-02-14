@@ -16,15 +16,21 @@
     <thead>
         <tr>
             <th>
-                Автор
+                <a asp-page="./Index" asp-route-sortOrder="@Model.SurnameSort" class="link-light">
+                    Автор @(Model.SurnameSort == "title_asc" ? "▲" : "▼")
+                </a>
             </th>
             <th>
                 Роки життя
             <th>
-                Країна
+                <a asp-page="./Index" asp-route-sortOrder="@Model.CountrySort" class="link-light">
+                    Країна  @(Model.SurnameSort == "surname_asc" ? "▲" : "▼")
+                </a>
             </th>
             <th>
-                Мелодій на сайті
+                <a asp-page="./Index" asp-route-sortOrder="@Model.MelodiesCountSort" class="link-light">
+                    Мелодій на сайті  @(Model.SurnameSort == "melody_asc" ? "▲" : "▼")
+                </a>
             </th>
         </tr>
     </thead>

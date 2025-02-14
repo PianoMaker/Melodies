@@ -8,6 +8,9 @@ html {
     }
 }
 
+a.link-light:hover{
+    color: yellow !important;
+}
 
 /*смуга на горі */
 .bg-sky {
