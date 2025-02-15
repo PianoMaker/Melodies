@@ -137,7 +137,7 @@ namespace Music
             });
         }
 
-        // трансформує MIDI файд у список нот у форматі герци-мілісекунди
+        // трансформує MIDI файл у список нот у форматі герци-мілісекунди
         public static List<(double frequency, int durationMs)> GetHzMsListFromMidi(MidiFile midiFile)
         {
             List<(double frequency, int durationMs)> notes = new();

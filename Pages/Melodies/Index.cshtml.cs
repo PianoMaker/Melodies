@@ -45,7 +45,7 @@ namespace Melodies25.Pages.Melodies
 
         public async Task OnGetAsync(string sortOrder)
         {
-            MessageL(COLORS.yellow, $"MELODTY/INDEX -  OnGET");
+            MessageL(COLORS.yellow, $"MELODY/INDEX -  OnGET");
 
             TitleSort = sortOrder == "title_asc" ? "title_desc" : "title_asc";
             AuthorSort = sortOrder == "author_asc" ? "author_desc" : "author_asc";

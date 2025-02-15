@@ -10,12 +10,12 @@ namespace Melodies25.Models
         public int ID { get; set; }  // Унікальний ідентифікатор для мелодії
         public string? Filepath { get; set; }  // Назва файлу, що зберігається у wwwroot (включно з розширенням)
         [Required(ErrorMessage = "Назва є обов'язковою.")]
-        public string Title { get; set; }  // Назва пісні
-        public int? Year { get; set; }  // Рік створення пісні
+        public string Title { get; set; }  
+        public int? Year { get; set; }  
 
-        public string? Description { get; set; }  // Опис (необов'язковий)
+        public string? Description { get; set; }  
 
-        public int AuthorID { get; set; }  // Зовнішній ключ для автора
+        public int AuthorID { get; set; }  
         public Author? Author { get; set; }  // Автор пісні
 
        
@@ -28,7 +28,7 @@ namespace Melodies25.Models
         public Music.Melody? MidiMelody { get; set; }
 
         [NotMapped]
-        public string? Mp3Filepath
+        public string? Mp3Filepath 
         {
             get
             {
