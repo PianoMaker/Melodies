@@ -10,7 +10,7 @@ using Melodies25.Models;
 using static Music.MidiConverter;
 using static Music.Messages;
 using static Melodies25.Utilities.PrepareFiles;
-using static Melodies25.Utilities.SynthWaveProvider;
+using static Melodies25.Utilities.WaveConverter;
 using NAudio.Midi;
 using System.IO;
 using Music;

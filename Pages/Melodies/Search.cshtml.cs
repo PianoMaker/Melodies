@@ -11,7 +11,7 @@ using System.IO;
 using static Music.MidiConverter;
 using static Melodies25.Utilities.Algorythm;
 using static Melodies25.Utilities.PrepareFiles;
-using static Melodies25.Utilities.SynthWaveProvider;
+using static Melodies25.Utilities.WaveConverter;
 using static Music.Messages;
 using Melody = Melodies25.Models.Melody;
 using Melodies25.Utilities;

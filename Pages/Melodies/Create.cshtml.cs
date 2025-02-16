@@ -19,6 +19,7 @@ using static Music.Messages;
 using static Music.MidiConverter;
 using static Melodies25.Utilities.PrepareFiles;
 using Microsoft.EntityFrameworkCore;
+using Melody = Melodies25.Models.Melody;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -28,9 +29,21 @@ namespace Melodies25.Pages.Melodies
 
         private readonly IWebHostEnvironment _environment;
 
+        public int? SelectedAuthorID { get; set; }
+
+        [BindProperty]
+        public bool ShowAuthor { get; set; }
+
+        [BindProperty]
+        public string TempAuthor { get; set; }
+
         [BindProperty]
         public Models.Melody Melody { get; set; } = default!;
 
+        [BindProperty]
+        public string? SelectedMode { get; set; }
+
+        public string? ErrorWarning { get; set; }
 
         public CreateModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
         {
@@ -38,15 +51,29 @@ namespace Melodies25.Pages.Melodies
             _environment = environment;
         }
 
-        public IActionResult OnGet()
-        {
-            ViewData["AuthorID"] = new SelectList(_context.Author, "ID", "Surname");
+        public IActionResult OnGet(int selectedAuthorId)
+        {           
+                        
+                if (Melody == null)
+                    Melody = new Melody();
+
+                if (selectedAuthorId > 0)
+                    Melody.AuthorID = selectedAuthorId;
+            
+
+            MessageL(COLORS.yellow, "MELODIES/CREATE OnGet");
+            ViewData["AuthorID"] = new SelectList(_context.Author, "ID", "Surname", Melody?.AuthorID);
+            
+            ShowAuthor = false;
             return Page();
         }
 
 
         public async Task<IActionResult> OnPostAsync(IFormFile? fileupload)
         {
+
+            MessageL(COLORS.yellow, "MELODIES/CREATE OnPostAsync");
+
             if (!ModelState.IsValid)
             {
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
@@ -117,25 +144,85 @@ namespace Melodies25.Pages.Melodies
             else
             {
                 Console.WriteLine("fileupload is null");
-            }        
+            }
 
 
             _context.Melody.Add(Melody);
             await _context.SaveChangesAsync();
+            var recentmelody = await _context.Melody.FirstOrDefaultAsync(m => m.Title == Melody.Title && m.Author == Melody.Author);
 
-            
-
-
-            return RedirectToPage("./Index");
+            return RedirectToPage("./Details", new { id = recentmelody?.ID});
         }
 
        
+        public async Task<IActionResult> OnPostAddform()
+        {
+            Console.WriteLine($"Adding author form - {TempAuthor}");
+            ShowAuthor = true;
+
+            if (!string.IsNullOrEmpty(TempAuthor))
+            {
+                if (TempAuthor.Contains(",.;?!"))
+                {
+                    ErrorWarning = "Некоректно введено автора";
+                    return Page();
+                }
+
+                string tempName = "", tempSurname = "";
+
+                var author = (TempAuthor.Split(" "));
+                if (author.Length == 1)
+                    tempSurname = author[0];
+                else if (author.Length == 2)
+                {
+                    tempName = author[0];
+                    tempSurname = author[1];
+                }
+                else if (author.Length == 3)
+                {
+                    tempName = author[0] + " " + author[1];
+                    tempSurname = author[2];
+                }
+                else
+                {
+                    ErrorWarning = "Некоректне введено автора";
+                    return Page(); 
+                }
+
+                var newAuthor = new Author { Name = tempName, Surname = tempSurname };
+
+                _context.Author.Add(newAuthor);
+
+                await _context.SaveChangesAsync();
+
+                var tryaddauthor = await _context.Author.FirstOrDefaultAsync(a => a.Surname == tempSurname && a.Name == tempName);
+
+                Console.WriteLine("current title is " + Melody.Title);
+
+                if (tryaddauthor is not null)
+                {
+                    Console.WriteLine($"trying to pass value {tryaddauthor.ID}");
+                    return RedirectToPage("Create", new { selectedAuthorId = tryaddauthor.ID });
+
+                }
+                else
+                {
+                    ErrorWarning = $"Не вдалося додати автора {TempAuthor}";
+                    return Page(); 
+                }             
+
+            }
+
+            else return Page();
+
+
+        }
         
        
         public async Task<IActionResult> OnGetCheckTitleAsync(string title)
         {
             bool exists = await _context.Melody.AnyAsync(m => m.Title == title);
-            Console.WriteLine("Checking for title");
+            Console.WriteLine($"Checking for title");
             return new JsonResult(new { exists });
         }
 

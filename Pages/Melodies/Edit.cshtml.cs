@@ -12,6 +12,7 @@ using Melodies25.Utilities;
 using Music;
 using NAudio.Midi;
 using static Music.Messages;
+using static Melodies25.Utilities.PrepareFiles;
 using Melody = Melodies25.Models.Melody;
 
 namespace Melodies25.Pages.Melodies
@@ -54,7 +55,7 @@ namespace Melodies25.Pages.Melodies
 
         public async Task<IActionResult> OnPostAsync(IFormFile? fileupload)
         {
-            
+
             if (!ModelState.IsValid)
             {
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
@@ -65,7 +66,7 @@ namespace Melodies25.Pages.Melodies
 
             var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies");
 
-                        //завантаження файлу якщо є
+            //завантаження файлу якщо є
             if (fileupload is not null)
             {
                 // Створюємо папку, якщо її немає
@@ -115,7 +116,7 @@ namespace Melodies25.Pages.Melodies
             //перевірка на поліфоню
             if (Melody.Filepath is not null)
             {
-               
+
                 try
                 {
                     var filePath = Path.Combine(_environment.WebRootPath, "melodies", Melody.Filepath);
@@ -148,7 +149,7 @@ namespace Melodies25.Pages.Melodies
             }
             else //якщо не перезавантажено файл, зміни в це поле БД не вносяться
                 _context.Entry(Melody).Property(m => m.Filepath).IsModified = false;
-            
+
 
             try
             {
@@ -187,7 +188,7 @@ namespace Melodies25.Pages.Melodies
                 return NotFound();
             }
 
-            
+
             /*м'яке посилання користувача */
             bool isAdminOrModerator;
             var user = await _userManager.GetUserAsync(User);
@@ -223,6 +224,34 @@ namespace Melodies25.Pages.Melodies
         private bool MelodyExists(int id)
         {
             return _context.Melody.Any(e => e.ID == id);
+        }
+    
+
+    
+        public async Task<IActionResult> OnPostUpdate(int? id)
+        {
+            MessageL(Music.COLORS.yellow, "MELODY/EDIT OnPostUpdate method");
+
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var melody = await _context.Melody
+                .Include(m => m.Author)
+                .FirstOrDefaultAsync(m => m.ID == id);
+
+            if (melody == null)
+            {
+                return NotFound();
+            }
+
+            if (melody.Filepath is not null)
+            {
+                await PrepareMp3Async(_environment, melody.Filepath, false);
+            }
+
+            return RedirectToPage("Details", new { id = melody.ID });
         }
     }
 }

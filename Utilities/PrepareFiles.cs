@@ -1,7 +1,7 @@
 ﻿using Music;
 using static Music.Messages;
 using static Music.MidiConverter;
-using static Melodies25.Utilities.SynthWaveProvider;
+using static Melodies25.Utilities.WaveConverter;
 
 using NAudio.Midi;
 using System.Diagnostics;
@@ -60,6 +60,7 @@ namespace Melodies25.Utilities
 
         public static async Task PrepareMp3Async(IWebHostEnvironment _environment, string midifilePath, bool ifcheck)
         {
+            MessageL(COLORS.olive, "PrepateMp3Async method");
             try
             {
                 var path = Path.Combine(_environment.WebRootPath, "melodies", midifilePath);

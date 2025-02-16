@@ -3,24 +3,61 @@
 
 @{
     ViewData["Title"] = "Create";
+    var SelectedMode  = @Model.SelectedMode;
 }
 
-<h1>Create</h1>
+<h1>Додати автора</h1>
 
-<h4>Автори</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="container-fluid">
+        <form method="post" id="modeForm">
+            <label>
+                <input type="radio" asp-for="SelectedMode" value="composer" onchange="submitType()" /> Композитор
+            </label>
+            <label>
+                <input type="radio" asp-for="SelectedMode" value="band" onchange="submitType()" /> Гурт
+            </label>
+            <label>
+                <input type="radio" asp-for="SelectedMode" value="folk" onchange="submitType()" /> Народна пісня
+            </label>            
+            <script>
+                           function submitType() {
+                               console.log("change mode");
+                    document.getElementById("modeForm").submit();
+                }
+            </script>
+        </form>
+    </div>
+    <div class="col-md-4">        
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Author.Name" class="control-label">Ім'я'</label>
-                <input asp-for="Author.Name" class="form-control" />
+                @if (@SelectedMode == "composer")
+                {
+                    <label asp-for="Author.Name" class="control-label">Ім'я'</label>
+                    <input asp-for="Author.Name" class="form-control" />
+                }
+                else
+                {
+                    <label asp-for="Author.Name" class="control-label"><text></text></label>
+                    <input asp-for="Author.Name" class="form-control" disabled />
+                }                
                 <span asp-validation-for="Author.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Author.Surname" class="control-label">Прізвище</label>
+                @if (SelectedMode == "composer")
+                {
+                    <label asp-for="Author.Surname" class="control-label">Прізвище</label>
+                }
+                else if (@SelectedMode == "band") {
+                    <label asp-for="Author.Surname" class="control-label">Назва гурту</label>
+                }
+                else{
+                    <label asp-for="Author.Surname" class="control-label">Народна пісня</label>
+                }
                 <input asp-for="Author.Surname" class="form-control" />
+
                 <span asp-validation-for="Author.Surname" class="text-danger"></span>
             </div>            
             <div class="form-group">

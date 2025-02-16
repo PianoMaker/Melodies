@@ -19,8 +19,17 @@ namespace Melodies25.Pages.Authors
             _context = context;
         }
 
+
+        [BindProperty]
+        public string? SelectedMode { get; set; }
         public IActionResult OnGet()
         {
+
+            if (string.IsNullOrEmpty(SelectedMode))
+            {
+                SelectedMode = "composer"; // Значення за замовчуванням
+            }
+
             ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
             return Page();
         }
@@ -31,6 +40,8 @@ namespace Melodies25.Pages.Authors
         // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
         {
+            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
+
             if (!ModelState.IsValid)
             {
                 return Page();

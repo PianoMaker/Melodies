@@ -157,7 +157,7 @@ namespace Melodies25.Utilities
         }
 
 
-
+        /*
         // створює mp3 файл зі шляхом outputPath (шлях давати з розширенням .mp3)
         public static void GenerateMp3(List<(double frequency, int durationMs)> sequence, string mp3Path)
         {
@@ -317,8 +317,9 @@ namespace Melodies25.Utilities
             }
             sequence.Add(new(0, 200));
             await GenerateMp3Async(sequence, outputPath);
-        }
+        }*/
     }
+        
 }
 /*
 // Використання:
