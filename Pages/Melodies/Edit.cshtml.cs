@@ -36,6 +36,8 @@ namespace Melodies25.Pages.Melodies
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
+            MessageL(COLORS.yellow, "MELODIES/EDIT OnGet");
+
             if (id == null)
             {
                 return NotFound();
@@ -55,7 +57,7 @@ namespace Melodies25.Pages.Melodies
 
         public async Task<IActionResult> OnPostAsync(IFormFile? fileupload)
         {
-
+            MessageL(COLORS.yellow, "MELODIES/EDIT OnPost");
             if (!ModelState.IsValid)
             {
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
@@ -182,6 +184,7 @@ namespace Melodies25.Pages.Melodies
 
         public async Task<IActionResult> OnPostDeleteFileAsync()
         {
+            MessageL(COLORS.yellow, "MELODIES/EDIT OnPostDeleteFile");
             var melody = await _context.Melody.FindAsync(Melody.ID);
             if (melody == null)
             {

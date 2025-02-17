@@ -11,12 +11,19 @@
 <div>
     @if (@item.Author is not null && !@item.Author.Surname.Contains("народна"))
     {
-        <h4>автор - @item.Author.Name @item.Author.Surname</h4>
+        <h4>автор - <a asp-page="/Authors/Details" asp-route-id="@item.AuthorID">@item.Author.Name @item.Author.Surname</a></h4>
+        <p>(@item.Author.DateOfBirth - @item.Author.DateOfDeath)</p>
     }
     else
     {
-        <h4>@item.Author.Surname</h4>
+        <p>@item.Author.Surname</p>
+        
     }
+    @if (item.Year is not null)
+    {
+        <p>Написана у @item.Year році</p>
+    }
+</div>
 
     <hr />
     <div class="container">
@@ -48,10 +55,7 @@
 
 
         <hr />
-        @if (item.Year is not null)
-        {
-            <p>Написана у @item.Year році</p>
-        }
+       
 
         @if (@item.MidiMelody is null)
         {

@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var currentPage = Context.Request.Path.Value ?? ""; 
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -15,37 +18,70 @@
 
 </head>
 <body>
-    <header>
-        <nav id="navbarstrip" class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-sky border-bottom box-shadow mb-0"><!--mb-3 дає відступ, випиляв-->
-            <div class="notestaff-container">
-                <hr class="notestaff">
-                <hr class="notestaff">
-                <hr class="notestaff">
-                <hr class="notestaff">
-                <hr class="notestaff">
-            </div>            
-            <div class="container mb-1">
-                <img src="~/images/wcu_newLogo_Монтажна область 1.png" class="logoimage" alt="logo"/>
+    <header >
+        <nav id="navbarstrip" class="navbar navbar-expand-sm navbar-toggleable-sm bg-sky border-bottom box-shadow p-0">            
+            <div class="container">
+                <div class="imgcontainer">
+                    <img src="~/images/wcu_newLogo_Монтажна область 1.png" class="logoimage" alt="logo" />
+                </div>
+                <!--ось тут виходжить велика дірка-->
                 <a class="title" asp-area="" asp-page="/Index">Мелодія</a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">                        
-                        <li class="nav-item">
-                            <a class="nav-link navmelody" asp-page="/Melodies/Index">Мелодії</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link navmelody" asp-page="/Authors/Index">Автори</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link navmelody" asp-page="/Countries/Index">Країни</a>
-                        </li>                        
-                        <li class="nav-item">
-                            <a class="nav-link navmelody" asp-area="" asp-page="/Privacy">Про сайт</a>
-                        </li>
+                <div class="navbar-collapse collapse d-sm-flex justify-content-between" >
+                    <ul class="navbar-nav flex-grow-1" style="padding:0; align-items: center; ">
+
+                        @if (currentPage.StartsWith("/Melodies"))
+                        {
+                            <li class="nav-item melodyitem active">
+                                <a class="nav-link navmelody" asp-page="/Melodies/Index">Мелодії</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item melodyitem">
+                                <a class="nav-link navmelody" asp-page="/Melodies/Index">Мелодії</a>
+                            </li>
+                        }
+                        @if (currentPage.StartsWith("/Authors"))
+                        {
+                            <li class="nav-item melodyitem active">
+                                <a class="nav-link navmelody @(currentPage == "/Authors/Index" ? "active" : "")" asp-page="/Authors/Index">Автори</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link navmelody @(currentPage == "/Authors/Index" ? "active" : "")" asp-page="/Authors/Index">Автори</a>
+                            </li>
+                        }
+                        @if (currentPage.StartsWith("/Countries"))
+                        {
+                            <li class="nav-item melodyitem active">
+                                <a class="nav-link navmelody @(currentPage == "/Countries/Index" ? "active" : "")" asp-page="/Countries/Index">Країни</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item melodyitem">
+                                <a class="nav-link navmelody @(currentPage == "/Countries/Index" ? "active" : "")" asp-page="/Countries/Index">Країни</a>
+                            </li>
+                        }
+                        @if (currentPage.StartsWith("/Privacy"))
+                        {
+                            <li class="nav-item melodyitem active">
+                                <a class="nav-link navmelody" asp-area="" asp-page="/Privacy">Про сайт</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item melodyitem">
+                                <a class="nav-link navmelody" asp-area="" asp-page="/Privacy">Про сайт</a>
+                            </li>
+                        }
                         <!--
                         <partial name="_LoginPartial" />
                         -->                        
