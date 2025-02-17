@@ -24,6 +24,7 @@ namespace Melodies25.Utilities
         }
 
         // створення mp3 файлу на основі MIDI. 
+        /*
         public static void PrepareMp3(IWebHostEnvironment _environment, string midifilePath, bool ifcheck)
         {
             try
@@ -56,7 +57,7 @@ namespace Melodies25.Utilities
                 ErrorMessage($"Неможливо згенерувати MP3:\n {ex.Message}\n");
             }
         }
-
+        */
 
         public static async Task PrepareMp3Async(IWebHostEnvironment _environment, string midifilePath, bool ifcheck)
         {

@@ -16,9 +16,9 @@ namespace Melodies25
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddDbContext<Melodies25Context>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("Melodies25Context") ?? throw new InvalidOperationException("Connection string 'Melodies25Context' not found.")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("SQLExpress") ?? throw new InvalidOperationException("Connection string 'Melodies25Context' not found.")));/*Melodies25Context*//*SQLExpress*/
 
-            var connectionString = builder.Configuration.GetConnectionString("Melodies25Context") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            var connectionString = builder.Configuration.GetConnectionString("SQLExpress") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");/*Melodies25Context*//*SQLExpress*/
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();

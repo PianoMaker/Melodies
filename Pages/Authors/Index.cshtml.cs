@@ -36,15 +36,16 @@ namespace Melodies25.Pages.Authors
             CountrySort = sortOrder == "country_asc" ? "country_desc" : "country_asc";
             MelodiesCountSort = sortOrder == "melody_asc" ? "melody_desc" : "melody_asc";
 
-
             var authorQuery = _context.Author.Include(m => m.Country).AsQueryable();
 
+            // Отримуємо всі мелодії, пов'язані з авторами, за один запит
+            var melodies = await _context.Melody.ToListAsync();
+
+            // Збираємо кількість мелодій для кожного автора
             foreach (var currentAuthor in authorQuery)
             {
-                var meloides = await _context.Melody.Where(m => m.AuthorID == currentAuthor.ID).ToListAsync();
-                currentAuthor.MelodiesCount = meloides.Count;
+                currentAuthor.MelodiesCount = melodies.Count(m => m.AuthorID == currentAuthor.ID);
             }
-
 
             authorQuery = sortOrder switch
             {
@@ -57,9 +58,8 @@ namespace Melodies25.Pages.Authors
                 _ => authorQuery // Якщо немає сортування, залишаємо список без змін
             };
 
-            Author = await authorQuery.ToListAsync();           
-
-
+            Author = await authorQuery.ToListAsync();
         }
+
     }
 }
