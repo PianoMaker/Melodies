@@ -60,15 +60,32 @@
                             <a href="@midifilepath" download class="btn btn-outline-dark light-background">
                                 <i class="fas fa-download"></i>
                             </a>
-                            <button class="btn btn-outline-dark light-background playbutton"
-                                    data-filepath="@item.Filepath" id="playButton_@item.Filepath">
-                                <i class="fas fa-play"></i>
-                            </button>
-
-                            <button id="stopButton_@item.Filepath" disabled="disabled"
+                            @if (@item.IsFileEligible is null)
+                            {
+                                <button class="btn btn-outline-dark light-background playbutton"
+                                        data-filepath="@item.Filepath" id="playButton_@item.Filepath">
+                                    <i class="fas fa-play">?</i>
+                                </button>
+                                <button id="stopButton_@item.Filepath" disabled="disabled"
+                                        class="stopButton btn btn-outline-dark light-background">
+                                    <i class="fas fa-stop">?</i>
+                                </button>
+                            }
+                            else if (@item.IsFileEligible is true)
+                            {
+                                <button class="btn btn-outline-dark light-background playbutton"
+                                        data-filepath="@item.Filepath" id="playButton_@item.Filepath">
+                                    <i class="fas fa-play"></i>
+                                </button>                           
+                                <button id="stopButton_@item.Filepath" disabled="disabled"
                                     class="stopButton btn btn-outline-dark light-background">
                                 <i class="fas fa-stop"></i>
-                            </button>
+                                </button>
+                            }                           
+                            else if (@item.IsFileEligible is false)
+                            {
+                               <p>Midi File is not correct</p>
+                            }
                             <audio id="audioPlayer_@item.Filepath" class="audioPlayer" controls style="display: none">
                                 <source src="@mp3filepath" type="audio/mpeg" />
                                 Your browser does not support the audio element.
@@ -80,31 +97,25 @@
                         <span>Файл не доступний</span>
                     }
                 </td>
+                
                 <td>
                     <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
                     <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
+                    
+
                 </td>
             </tr>
         }
     </tbody>
 </table>
-
+<form method="post">
+    <button type="submit">Refresh</button>
+</form>
 <div class="controlcontainer infocontainer">
 
     <p>@Model.Msg</p>
     <p>@Model.Errormsg</p>
-    @if (TempData["AudioFile"] != null)
-    {
-        <p>@TempData["AudioFile"]</p>
-        <audio id="audioPlayer" controls autoplay style="display: none">
-            <source src="@TempData["AudioFile"]" type="audio/mpeg" />
-            Your browser does not support the audio element.
-        </audio>
-    }
-    else
-    {
-        <p>File is not ready</p>
-    }
+  
 </div>
 
 <script src="~/js/play.js">

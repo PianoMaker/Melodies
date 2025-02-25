@@ -16,6 +16,7 @@ using System.IO;
 using Music;
 using Melody = Melodies25.Models.Melody;
 using Microsoft.Data.SqlClient;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -39,9 +40,9 @@ namespace Melodies25.Pages.Melodies
             _environment = environment;
         }
 
-        public IList<Melody> Melody { get;set; } = default!;
+        public IList<Melody> Melody { get; set; } = default!;
 
-        
+
 
         public async Task OnGetAsync(string sortOrder)
         {
@@ -65,6 +66,60 @@ namespace Melodies25.Pages.Melodies
             Melody = await melodiesQuery.ToListAsync();
 
         }
-      
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            MessageL(COLORS.yellow, $"MELODY/INDEX -  OnPOST");
+
+            if (_context?.Melody == null)
+            {
+                ErrorMessage("Помилка: База даних недоступна.");
+                return Page();
+            }
+
+            if (_environment == null)
+            {
+                ErrorMessage("Помилка: IWebHostEnvironment не ініціалізовано.");
+                return Page();
+            }
+
+            var melodiesQuery = _context.Melody.ToList();
+
+            foreach (var melody in melodiesQuery)
+            {
+                if (!string.IsNullOrEmpty(melody.Filepath))
+                {
+                    try
+                    {
+                        var path = Path.Combine(_environment.WebRootPath, "melodies", melody.Filepath);
+                        var ifeligible = IfMonody(path);
+                        if (ifeligible)
+                        {
+                            await PrepareMp3Async(_environment, melody.Filepath, true);
+                            melody.IsFileEligible = true;
+                        }
+                        else
+                        {
+                            melody.IsFileEligible = false;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ErrorMessage("\nНеможливо обробити файл:");
+                        MessageL(COLORS.gray, ex.Message);
+                        return Page();
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync(); // Винесли з циклу
+
+            Melody = await _context.Melody.Include(m => m.Author).ToListAsync();
+
+            return Page();
+        }
+
     }
 }
+
+

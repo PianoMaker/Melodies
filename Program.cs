@@ -15,15 +15,24 @@ namespace Melodies25
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddDbContext<Melodies25Context>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("SQLExpress") ?? throw new InvalidOperationException("Connection string 'Melodies25Context' not found.")));/*Melodies25Context*//*SQLExpress*/
+            var env = builder.Environment;
 
-            var connectionString = builder.Configuration.GetConnectionString("SQLExpress") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");/*Melodies25Context*//*SQLExpress*/
+            var connectionString = env.IsDevelopment()
+                ? builder.Configuration.GetConnectionString("SQLExpress") // Локальна БД
+                : builder.Configuration.GetConnectionString("Azure"); // Azure БД
+
+            if (string.IsNullOrEmpty(connectionString))
+                throw new InvalidOperationException("Connection string not found.");
+
+            builder.Services.AddDbContext<Melodies25Context>(options =>
+                options.UseSqlServer(connectionString));
+
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-               options.UseSqlServer(connectionString));
+                options.UseSqlServer(connectionString));
+
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            
+
 
             builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
             {
@@ -53,6 +62,9 @@ namespace Melodies25
             builder.Services.AddScoped<DataSeeder>();
 
             builder.Services.AddSession();            
+
+
+
 
             var app = builder.Build();
 

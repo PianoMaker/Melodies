@@ -433,8 +433,15 @@ namespace Music
 
         internal void SetDuration(int dur)
         {
-            var duration = new Duration(dur);
-            Duration = duration;
+            try
+            {
+                var duration = new Duration(dur);
+                Duration = duration;
+            }
+            catch (Exception e)
+            {
+                ErrorMessage(e.Message);
+            }
 
         }
 

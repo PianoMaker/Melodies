@@ -12,6 +12,7 @@ using Melodies25.Utilities;
 using Music;
 using NAudio.Midi;
 using static Music.Messages;
+using static Music.MidiConverter;
 using static Melodies25.Utilities.PrepareFiles;
 using Melody = Melodies25.Models.Melody;
 
@@ -121,17 +122,29 @@ namespace Melodies25.Pages.Melodies
 
                 try
                 {
-                    var filePath = Path.Combine(_environment.WebRootPath, "melodies", Melody.Filepath);
+                    var path = Path.Combine(_environment.WebRootPath, "melodies", Melody.Filepath);
 
-                    var midiFile = new MidiFile(filePath);
+                    var midiFile = new MidiFile(path);
 
-                    var ispoliphonic = MidiConverter.CheckForPolyphony(midiFile);
+                    int changed = 0;
 
+                    StraightMidiFile(path, ref changed);
+                    
+                    var ifeligible = IfMonody(path);
 
-                    if (ispoliphonic)
-                        MessageL(COLORS.yellow, "Виявлено поліфонію!");
+                    // завантажує mp3 на сервер (існуючий перезаписує)
+                    if (ifeligible)
+                    {
+                        MessageL(COLORS.standart, $"перезаписуємо файл {path}");
+                        await PrepareMp3Async(_environment, path, false);
+                        ViewData["Message"] = "Файл успішно завантажено!";
+                        Melody.IsFileEligible = true;
+                    }
                     else
-                        MessageL(COLORS.blue, "Одноголосний!");
+                    {
+                        ViewData["Message"] = "Файл не є мелодією";
+                        Melody.IsFileEligible = false;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -144,6 +157,7 @@ namespace Melodies25.Pages.Melodies
             _context.Entry(Melody).Property(m => m.Year).IsModified = true;
             _context.Entry(Melody).Property(m => m.AuthorID).IsModified = true;
             _context.Entry(Melody).Property(m => m.Description).IsModified = true;
+            _context.Entry(Melody).Property(m => m.IsFileEligible).IsModified = true;   
 
             if (fileupload is not null)
             {

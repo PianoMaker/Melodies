@@ -15,6 +15,7 @@ using static Melodies25.Utilities.WaveConverter;
 using static Music.Messages;
 using Melody = Melodies25.Models.Melody;
 using Melodies25.Utilities;
+using System.Diagnostics;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -26,6 +27,7 @@ namespace Melodies25.Pages.Melodies
         public IList<Melody> Melody { get; set; } = default!;
 
         public List<(Melody melody, int commonLength)> MatchedMelodies { get; set; } = new();
+
 
         public bool NoteSearch { get; set; }
         public string Msg { get; set; }
@@ -89,50 +91,73 @@ namespace Melodies25.Pages.Melodies
 
         private async Task NotesSearchInitialize()
         {
-            Melody = _context.Melody.Include(m => m.Author).ToList();
-            
+            MessageL(COLORS.yellow, "NotesSearchInitialize Method");
 
-            Music.Globals.notation = Notation.eu;
+            Melody = _context.Melody.Include(m => m.Author).ToList();
+
+            Music.Globals.notation = Notation.eu;           
+
+            int numberoffileschecked = 0;
+            var sw = new Stopwatch();
+            sw.Start();
 
             foreach (var melody in Melody)
             {
-                var wwwRootPath = Path.Combine(_environment.WebRootPath, "melodies");
-
-                if (melody.Filepath is not null && melody.MidiMelody is null)
+                try
                 {
-                    var path = Path.Combine(wwwRootPath, melody.Filepath);                    
+                    var wwwRootPath = Path.Combine(_environment.WebRootPath, "melodies");
 
-                    MessageL(COLORS.green, $"{melody.Title} exploring file {path}");
+                    if (melody.Filepath is not null && melody.MidiMelody is null)
+                    {
+                        var path = Path.Combine(wwwRootPath, melody.Filepath);
 
-                    var midifile = MidiConverter.GetMidiFile(path);
+                        MessageL(COLORS.green, $"{melody.Title} exploring file {path}");
 
-                    melody.MidiMelody = await MidiConverter.GetMelodyFromMidiAsync(midifile);
+                        if (!System.IO.File.Exists(path))
+                        {
+                            MessageL(COLORS.red, $"{path} does not exist");
+                            return;
+                        }
 
-                    //якщо mp3 не існує, створює
-                    await PrepareMp3Async(_environment, path, true);
+                        var midifile = GetMidiFile(path);
+
+                        melody.MidiMelody = await GetMelodyFromMidiAsync(midifile);
+
+                        await PrepareMp3Async(_environment, path, true);
+
+                        numberoffileschecked++;
+
+                    }
+                    else if (melody.Filepath is null)
+                    {
+                        MessageL(COLORS.yellow, $"{melody.Title} has no file path");
+                    }
+                    else if (melody.MidiMelody is not null)
+                    {
+                        MessageL(COLORS.yellow, $"{melody.MidiMelody} already exists");
+                    }
                 }
-                else if (melody.Filepath is null)
+
+                catch (Exception ex)
                 {
-                    MessageL(COLORS.yellow, $"{melody.Title} has no file path");
-                }
-                else if (melody.MidiMelody is not null)
-                {
-                    MessageL(COLORS.yellow, $"{melody.MidiMelody} already exists");
+                    ErrorMessage(ex.Message);
                 }
 
             }
+
+            sw.Stop();
+            MessageL(COLORS.olive, "NotesSearchInitialize finished");
+            MessageL(COLORS.standart, $"{numberoffileschecked} file analyzed, {sw.ElapsedMilliseconds} ms spent");
         }
 
-        
+
         public async Task OnPostSearchAsync()
         {
             NoteSearch = false;
 
             MessageL(COLORS.yellow, "SEARCH - OnPostSearchAsync method");
 
-            // Ініціалізую властивість midiMelody
-            await NotesSearchInitialize();
-            
+
             // Очищення попередніх результатів
             Melody = new List<Melody>();
 
@@ -169,20 +194,23 @@ namespace Melodies25.Pages.Melodies
             }
 
             Melody = await query.ToListAsync();
-                        
+
             if (!string.IsNullOrWhiteSpace(Note))
             {
+                // Ініціалізую властивість midiMelody
+                await NotesSearchInitialize();
+
                 var firstnote = new Note(Note);
                 var filteredMelodies = new List<Melody>();
-                
-                
+
+
                 foreach (var melody in Melody)
                 {
                     MessageL(COLORS.green, $"checking melody {melody.Title}");
-                                        
+
                     if (melody.MidiMelody is null)
-                    { 
-                        ErrorMessage("no midi found\n");                     
+                    {
+                        ErrorMessage("no midi found\n");
                     }
                     else if (melody.MidiMelody.IfStartsFromNote(firstnote))
                     {
@@ -195,7 +223,7 @@ namespace Melodies25.Pages.Melodies
                     }
                 }
 
-                Melody = filteredMelodies;                
+                Melody = filteredMelodies;
             }
 
             if (Melody.Count == 0) Description = ($"За результатами пошуку \"{Author}\", \"{Title}\" Нічого не знайдено");
@@ -207,9 +235,9 @@ namespace Melodies25.Pages.Melodies
         {
 
             MessageL(COLORS.yellow, $"SEARCH - OnPostAsync method {key}");
-            
-                OnPostPiano(key);
-            
+
+            OnPostPiano(key);
+
 
         }
 
@@ -226,9 +254,9 @@ namespace Melodies25.Pages.Melodies
             {
                 MessageL(COLORS.yellow, $"SEARCH - OnPostPiano method, no key, return");
                 return Page();
-            }                        
+            }
             var note = new Note(key);
-            
+
             // відтворення ноти
             try
             {
@@ -263,9 +291,10 @@ namespace Melodies25.Pages.Melodies
 
             NoteSearch = true;
 
+            /*ІНІЦІАЛІЗАЦІЯ БАЗИ*/
             await NotesSearchInitialize();
-            
 
+            /*ІНІЦІАЛІЗАЦІЯ ВВЕДЕНОГО МАЛЮНКУ*/
             Music.Melody MelodyPattern = new();
             Globals.notation = Notation.eu;
 
@@ -286,7 +315,7 @@ namespace Melodies25.Pages.Melodies
                 }
 
                 /* ЛОГУВАННЯ */
-                MessageL(COLORS.olive, "melodies to analyze:");
+                MessageL(COLORS.olive, "melodies to compare with pattern:");
                 foreach (var melody in Melody)
                     MessageL(COLORS.gray, melody.Title);
                 MessageL(COLORS.olive, "notes in patten:");
@@ -294,23 +323,7 @@ namespace Melodies25.Pages.Melodies
                     MessageL(COLORS.gray, note.Name());
                 /*   */
 
-                int[] patternShape = MelodyPattern.IntervalList.ToArray();
-                var filteredMelodies = new List<(Melody melody, int length)>();
-
-                MatchedMelodies.Clear();  // Очистимо перед новим пошуком
-
-                foreach (var melody in Melody)
-                {
-                    if (melody.MidiMelody is null) continue;
-
-                    var melodyshape = melody.MidiMelody.IntervalList.ToArray();
-                    int commonLength = LongestCommonSubstring(patternShape, melodyshape);
-                    if (commonLength >= minimummatch)
-                    {
-                        commonLength++; //рахуємо ноти, не інтервали  
-                        MatchedMelodies.Add((melody, commonLength));
-                    }
-                }
+                CompareMelodies(MelodyPattern);
 
                 // Сортуємо за довжиною збігу
                 MatchedMelodies = MatchedMelodies.OrderByDescending(m => m.commonLength).ToList();
@@ -318,19 +331,45 @@ namespace Melodies25.Pages.Melodies
                 Description = $"Знайдено {MatchedMelodies.Count} мелодій, в яких співпадають не менше ніж {minimummatch} нот поспіль";
 
             }
-            else { 
-                
-                Console.WriteLine("no pattern");             
-            
+            else
+            {
+
+                Console.WriteLine("no pattern");
+
             }
         }
 
-        
+        private void CompareMelodies(Music.Melody MelodyPattern)
+        {
+            MessageL(COLORS.olive, "CompareMelodies method");
+            var sw = new Stopwatch();
+            sw.Start();
+            int[] patternShape = MelodyPattern.IntervalList.ToArray();
+            var filteredMelodies = new List<(Melody melody, int length)>();
+
+            MatchedMelodies.Clear();  // Очистимо перед новим пошуком
+
+            foreach (var melody in Melody)
+            {
+                if (melody.MidiMelody is null) continue;
+
+                var melodyshape = melody.MidiMelody.IntervalList.ToArray();
+                int commonLength = LongestCommonSubstring(patternShape, melodyshape);
+                if (commonLength >= minimummatch)
+                {
+                    commonLength++; //рахуємо ноти, не інтервали  
+                    MatchedMelodies.Add((melody, commonLength));
+                }
+            }
+            sw.Stop();
+            Console.WriteLine($"{sw.ElapsedMilliseconds} ms spent");
+        }
+
         public IActionResult OnPostPlay(string midiPath)
         {
-            
+
             MessageL(COLORS.yellow, $"SEARCH - OnPostPlay. Trying to get {midiPath}");
-            
+
             try
             {
                 var path = Path.Combine(_environment.WebRootPath, "melodies", midiPath);

@@ -65,25 +65,46 @@ namespace Melodies25.Utilities
             try
             {
                 var path = Path.Combine(_environment.WebRootPath, "melodies", midifilePath);
+                if (!File.Exists(path))
+                {
+                    ErrorMessage($"Неможливо знайти MIDI-файл за адресою {path}");
+                    return;
+                }
+
+
                 string mp3Path = ConvertToMp3Path(path);
+
 
                 if (ifcheck && File.Exists(mp3Path))
                 {
+
                     MessageL(COLORS.blue, $"File {mp3Path} already exists, skip creating");
                     return;
                 }
 
                 var midiFile = new MidiFile(path);
-                var hzmslist = GetHzMsListFromMidi(midiFile);
+                var ifeligible = CheckForPolyphony(midiFile);
 
-                MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
-                Stopwatch sw = new();
-                sw.Start();
+                if (!ifeligible)
+                {
+                    var changes = MultiStraightFile(path);
+                    MessageL(COLORS.green, $"File adjusted, {changes} changes applied");
+                    var newFile = new MidiFile(path);
+                    var hzmslist = GetHzMsListFromMidi(newFile);
 
-                await GenerateMp3Async(hzmslist, mp3Path);
+                    MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
+                    Stopwatch sw = new();
+                    sw.Start();
 
-                sw.Stop();
-                MessageL(COLORS.green, $"File {mp3Path} was generated in {sw.ElapsedMilliseconds} ms");
+                    await GenerateMp3Async(hzmslist, mp3Path);
+
+                    sw.Stop();
+                    MessageL(COLORS.green, $"File {mp3Path} was generated in {sw.ElapsedMilliseconds} ms");
+                }
+                else
+                {
+                    MessageL(COLORS.red, "refused to generate mp3");
+                }
             }
             catch (Exception ex)
             {

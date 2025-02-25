@@ -112,6 +112,7 @@ namespace Melodies25.Pages.Melodies
             {
                 string newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
                 var midifilePath = Path.Combine(uploadsPath, newfilename);
+                
 
                 // Записуємо файл на сервер
                 using (var stream = new FileStream(midifilePath, FileMode.Create))
@@ -119,18 +120,20 @@ namespace Melodies25.Pages.Melodies
                     await fileupload.CopyToAsync(stream);
                 }
 
-                // перевірка на поліфоню (допрацювати)
+                // перевірка на поліфоню 
                 var ifeligible = IfMonody(midifilePath);
 
-                // завантажує mp3 на сервер (існуючий перезаписує)
+                // завантажує mp3 на сервер якщо не поліфонічний (існуючий перезаписує)
                 if (ifeligible)
                 {
                     await PrepareMp3Async(_environment, midifilePath, false);
+                    Melody.IsFileEligible = true;
                     ViewData["Message"] = "Файл успішно завантажено!";
                 }
                 else
                 {
                     ViewData["Message"] = "Файл не є мелодією. Перевірте.";
+                    Melody.IsFileEligible = false;
                 }
 
                 Melody.Filepath = newfilename; //назву файлу фіксуємо

@@ -43,6 +43,7 @@ namespace Music
         }
         public Duration(int digit)
         {
+            
             Digit_to_duration(digit);
             modifier = DURMODIFIER.none;
         }

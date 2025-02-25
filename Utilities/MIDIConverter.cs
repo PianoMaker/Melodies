@@ -7,8 +7,10 @@ using NAudio.Wave;
 using static Music.Engine;
 using static Music.Globals;
 using static Music.Messages;
-using Microsoft.DotNet.Scaffolding.Shared;
-using Microsoft.CodeAnalysis.Elfie.Serialization;
+using System.ComponentModel.Design;
+using System.Drawing.Drawing2D;
+//using Microsoft.DotNet.Scaffolding.Shared;
+//using Microsoft.CodeAnalysis.Elfie.Serialization;
 
 namespace Music
 {
@@ -16,14 +18,7 @@ namespace Music
     public static class MidiConverter
     {
 
-        public static void ReadMidi(string file)
-        {
-            Melody melody = GetMelodyFromMidi(file);
 
-            // Виводимо інформацію про всі ноти в консоль
-            melody.Display();
-            // melody.Play();
-        }
 
         public static Melody GetMelodyFromMidi(string file)
         {
@@ -43,56 +38,76 @@ namespace Music
             foreach (var track in midiFile.Events)
             {
                 int trackcounter = 0;
-
                 Console.WriteLine($"track {trackcounter}");
                 trackcounter++;
+                long starttime = 0;
 
-                foreach (var midiEvent in track)
+                foreach (var me in track)
                 {
                     //темп
-                    if (midiEvent is TempoEvent tempoEvent)
+                    if (me is TempoEvent tempoEvent)
 
                         SetTempo(GetBpmFromTempoEvent(tempoEvent));
                     //власне ноти
-                    if (midiEvent is NoteOnEvent noteOn)
+                    if (me is NoteEvent ne)
                     {
-                        var time = midiEvent.DeltaTime;
-                        //Console.WriteLine("note on time = " + midiEvent.DeltaTime);
-
-                        Note note = GetNoteFromMidiEvent(noteOn);
-                        melody.AddNote(note);
-                        int dur = 4 * time / ticksperquater;
-                        Console.Write($"note on {noteOn.NoteNumber} - ");
-                        note.SetDuration(dur);
-                    }
-                    else if (NoteEvent.IsNoteOff(midiEvent))
-                    {
-                        var time = midiEvent.DeltaTime;
-                        //Console.WriteLine("note of time = " + midiEvent.DeltaTime);
-                        int dur = 4 * ticksperquater / time;
-                        melody.Notes[melody.Notes.Count - 1].SetDuration(dur);
-                        Console.WriteLine(melody.Notes[melody.Notes.Count - 1].AbsDuration());
+                        if (IfNoteOn(ne))
+                        {
+                            starttime = ne.AbsoluteTime;                            
+                            var pitch = ne.NoteNumber % 12;
+                            var oct = ne.NoteNumber / 12 - 4;
+                            var step = key_to_step(ne.NoteName);
+                            var note = new Note(pitch, step, oct);
+                            melody.AddNote(note);                            
+                            //Console.Write($"note on {ne.NoteNumber} - ");                            
+                        }
+                        else if (IfNoteOff(ne))
+                        {
+                            try
+                            {
+                                var time = ne.DeltaTime;
+                                //Console.Write(me.DeltaTime);
+                                int dur = 4 * ticksperquater / time;
+                                melody.Notes[melody.Notes.Count - 1].SetDuration(dur);
+                                //Console.WriteLine(melody.Notes[melody.Notes.Count - 1].AbsDuration());
+                            }
+                            catch
+                            {
+                                ErrorMessage("impossible to set duration");
+                            }
+                        }
                     }
                 }
             }
 
             return melody;
         }
-
-        private static Note GetNoteFromMidiEvent(NoteOnEvent noteOn)
-        {
-            var pitch = noteOn.NoteNumber % 12;
-            var oct = noteOn.NoteNumber / 12 - 4;
-            var step = key_to_step(noteOn.NoteName);
-            var note = new Note(pitch, step, oct);
-            return note;
-        }
-
         //те саме асинхронно
         public static async Task<Melody> GetMelodyFromMidiAsync(MidiFile midiFile)
         {
-            
-            return await Task.Run(() => GetMelodyFromMidi(midiFile));
+            // Використовуємо Task.Run для асинхронної обробки в окремому потоці
+            return await Task.Run(() =>
+            {
+                MessageL(COLORS.olive, "GetMelodyFromMidiAsync is rinning");
+
+                return GetMelodyFromMidi(midiFile);
+
+            });
+        }
+
+        public static double GetBpmFromTempoEvent(TempoEvent tempoEvent)
+        {
+            double tempo = tempoEvent.Tempo;
+            Console.WriteLine($"tempo from event = {tempo}");
+            return tempo;
+        }
+
+        public static void SetTempo(double bpm)
+        {
+
+            playspeed = (int)Math.Round(48000 / bpm);
+            Console.WriteLine($"tempo = {bpm}bpm, playspeed = {playspeed} ms / quater");
+
         }
 
         // трансформує MIDI файл у список нот у форматі герци-мілісекунди
@@ -100,7 +115,7 @@ namespace Music
         {
             List<(double frequency, int durationMs)> notes = new();
             Dictionary<int, double> activeNotes = new(); // {NoteNumber, StartTime в мс}
-            MessageL(COLORS.blue, "starting hzms list");
+            MessageL(COLORS.blue, "starting Hz_Ms list");
             double starttime = 0;
             long expectedcurrentticktime = 0;
             int ticksPerQuarterNote = midiFile.DeltaTicksPerQuarterNote;
@@ -113,40 +128,44 @@ namespace Music
                 {
                     if (midiEvent is TempoEvent tempoEvent)
                     {
-                        var tempoBPM = tempoEvent.Tempo;
-                        Console.WriteLine($"Tempo = {tempoBPM}");
-                        microsecondsPerQuarterNote = 60000000.0 / tempoBPM;
-                        ticksToMsFactor = microsecondsPerQuarterNote / (ticksPerQuarterNote * 1000.0);
-                        Console.WriteLine($"PQN = {microsecondsPerQuarterNote}");
-                        Console.WriteLine($"ticksToMsFactor  = {ticksToMsFactor}");
+                        double tempoBPM;
+                        SetupTempo(ticksPerQuarterNote, out microsecondsPerQuarterNote, out ticksToMsFactor, tempoEvent, out tempoBPM);
+                        LogTempo(microsecondsPerQuarterNote, ticksToMsFactor, tempoBPM);
                     }
-                    else if (midiEvent is NoteOnEvent noteOn && noteOn.Velocity > 0)
+                    if (midiEvent is NoteEvent ne)
                     {
-                        activeNotes[noteOn.NoteNumber] = starttime;
+                        Console.WriteLine($"Analyzing event {ne.NoteNumber} {ne.CommandCode} {ne.Velocity}");
 
-                        // Console.WriteLine($"fact currentTime = {midiEvent.AbsoluteTime} vs expected {expectedcurrentticktime}");
-
-                        if (midiEvent.AbsoluteTime > expectedcurrentticktime)
+                        if (IfNoteOn(ne))
                         {
-                            var pauseTickTime = midiEvent.AbsoluteTime - expectedcurrentticktime;
-                            double pauseDurationMs = pauseTickTime * ticksToMsFactor;
-                            notes.Add((0, (int)pauseDurationMs)); // Додаємо паузу
-                            expectedcurrentticktime += pauseTickTime;
+
+                            activeNotes[ne.NoteNumber] = starttime;
+
+                            Console.WriteLine($"\tNote On fact currentTime = {midiEvent.AbsoluteTime} vs expected {expectedcurrentticktime}");
+
+                            if (midiEvent.AbsoluteTime > expectedcurrentticktime)
+                            {
+                                var pauseTickTime = midiEvent.AbsoluteTime - expectedcurrentticktime;
+                                double pauseDurationMs = pauseTickTime * ticksToMsFactor;
+                                notes.Add((0, (int)pauseDurationMs)); // Додаємо паузу
+                                expectedcurrentticktime += pauseTickTime;
+                            }
                         }
-                    }
-                    else if (midiEvent is NoteEvent noteEvent && noteEvent.CommandCode == MidiCommandCode.NoteOff)
-                    {
-                        if (activeNotes.TryGetValue(noteEvent.NoteNumber, out double startTimeMs))
+                        else if (IfNoteOff(ne))
                         {
-                            double durationMs = midiEvent.DeltaTime * ticksToMsFactor;
-                            expectedcurrentticktime += midiEvent.DeltaTime;
+                            Console.WriteLine($"\tNote Off {ne.NoteNumber}");
+                            if (activeNotes.TryGetValue(ne.NoteNumber, out double startTimeMs))
+                            {
+                                double durationMs = midiEvent.DeltaTime * ticksToMsFactor;
+                                expectedcurrentticktime += midiEvent.DeltaTime;
 
-                            double frequency = NoteToFrequency(noteEvent.NoteNumber);
+                                double frequency = NoteToFrequency(ne.NoteNumber);
 
-                            activeNotes.Remove(noteEvent.NoteNumber);
+                                activeNotes.Remove(ne.NoteNumber);
 
-                            notes.Add((frequency, (int)durationMs));
+                                notes.Add((frequency, (int)durationMs));
 
+                            }
                         }
                     }
 
@@ -156,22 +175,46 @@ namespace Music
 
             notes.Add((0, 500));//для уникнення різкого обриву звучання в кінці додаємо тишу
 
-            /*
+
             Console.WriteLine("result:");
             foreach (var note in notes)
             {
                 Console.WriteLine($"{note.frequency} Hz - {note.durationMs} мс.");
             }
-            */
+
 
             return notes;
         }
 
+        private static double NoteToFrequency(int noteNumber)
+        {
+            return 440.0 * Math.Pow(2, (noteNumber - 69) / 12.0); // A4 = 440 Hz
+        }
+        private static void LogTempo(double microsecondsPerQuarterNote, double ticksToMsFactor, double tempoBPM)
+        {
+            Console.WriteLine($"Tempo = {tempoBPM}");
+            Console.WriteLine($"PQN = {microsecondsPerQuarterNote}");
+            Console.WriteLine($"ticksToMsFactor  = {ticksToMsFactor}");
+        }
+
+        private static void SetupTempo(int ticksPerQuarterNote, out double microsecondsPerQuarterNote, out double ticksToMsFactor, TempoEvent tempoEvent, out double tempoBPM)
+        {
+            tempoBPM = tempoEvent.Tempo;
+            microsecondsPerQuarterNote = 60000000.0 / tempoBPM;
+            ticksToMsFactor = microsecondsPerQuarterNote / (ticksPerQuarterNote * 1000.0);
+        }
 
         public static bool IfMonody(string midifilePath)
         {
             try
             {
+                if(!File.Exists(midifilePath))
+                {
+                    ErrorMessage($"Невірна адреса файлу {midifilePath}");
+                    return false;
+                }
+
+
                 var midiFile = new MidiFile(midifilePath);
 
                 var ispoliphonic = MidiConverter.CheckForPolyphony(midiFile);
@@ -179,7 +222,7 @@ namespace Music
 
                 if (ispoliphonic)
                 {
-                    MessageL(COLORS.yellow, "Виявлено поліфонію!");
+                    MessageL(COLORS.red, "Виявлено поліфонію!");
                     return false;
                 }
 
@@ -201,6 +244,222 @@ namespace Music
             return new MidiFile(path);
 
         }
+
+        public static void ReadMidiFile(string path)
+        {
+            var mifidile = new MidiFile(path);
+            int currentNoteNumber = 0;
+            int currenttrack = 0;
+            long currenttime = 0;
+            Console.WriteLine("start reading file");
+            MessageL(COLORS.gray, "eventType - note number - AbsTime - DeltaTime");
+
+            foreach (var track in mifidile.Events)
+            {
+
+                Console.WriteLine($"track {currenttrack}");
+                currenttrack++;
+                foreach (var me in track)
+                {
+
+                    if (me is TempoEvent te)
+                        Console.WriteLine(te.Tempo);
+                    else if (me is NoteEvent note)
+                    {
+                        if (IfNoteOn(note))
+                        {
+                            // MessageL(COLORS.gray, $"\t\tafternote = {note.AbsoluteTime - currenttime}");
+                            Console.WriteLine($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                            currentNoteNumber = note.NoteNumber;
+                            currenttime = note.AbsoluteTime;
+                        }
+                        else if (IfNoteOff(note))
+                        {
+                            MessageL(COLORS.gray, $"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                            // MessageL(COLORS.gray, $"\tduration = {note.AbsoluteTime - currenttime}");
+                        }
+                    }
+                    else Message(COLORS.gray, ".");
+                }
+            }
+        }
+
+        private static bool IfNoteOff(NoteEvent note)
+        {
+            return note.CommandCode == MidiCommandCode.NoteOff || note.Velocity == 0;
+        }
+
+        private static bool IfNoteOn(NoteEvent note)
+        {
+            return note.CommandCode == MidiCommandCode.NoteOn && note.Velocity > 0;
+        }
+
+        public static int MultiStraightFile(string path)
+        {
+            int allchanges = 0;
+            int attempt = 0;
+            int currentchanges = 0;
+            StraightMidiFile(path, ref currentchanges);
+            while (currentchanges > 0)
+            {
+                allchanges += currentchanges;
+                currentchanges = 0;
+                attempt++;
+                StraightMidiFile(path, ref currentchanges);
+                if (attempt > 100) break;
+            };
+            return  allchanges; 
+        }
+
+
+        public static void StraightMidiFile(string path, ref int ifchanged)
+        {
+            var midiFile = new MidiFile(path);
+
+
+            Console.WriteLine("Start straighting file");
+
+            //MessageL(COLORS.gray, "eventType - note number - AbsTime - DeltaTime");
+
+            var EventCollection = midiFile.Events;
+
+            MidiEventCollection monoEventCollection = MonoEventCollection(ref ifchanged, midiFile, EventCollection);
+
+            MidiEventCollection straightEventCollection = StraigtEventCollection(ref ifchanged, midiFile, monoEventCollection);
+
+            MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
+
+            // Запис нового MIDI-файлу
+            
+            MidiFile.Export(path, straightEventCollection);
+            
+        }
+
+        private static MidiEventCollection MonoEventCollection(ref int ifchanged, MidiFile midiFile, MidiEventCollection eventCollection)
+        {
+            var monoEventCollection = new MidiEventCollection(midiFile.FileFormat, midiFile.DeltaTicksPerQuarterNote);
+            long currentstarttime = 0;
+
+            foreach (var track in eventCollection)
+            {
+                var newTrack = new List<MidiEvent>();
+                bool isopen = false;
+                Dictionary<int, long> activenotes = new();
+
+                foreach (var me in track)
+                {
+                    if (me is NoteEvent ne)
+                    {
+                        if (IfNoteOn(ne))
+                        {
+                            currentstarttime = ne.AbsoluteTime;
+
+                            if (!activenotes.ContainsValue(ne.AbsoluteTime))
+                            {
+                                newTrack.Add(ne);
+                                activenotes.Add(ne.NoteNumber, ne.AbsoluteTime);
+                            }
+                            else { MessageL(COLORS.darkred, $"removing {ne.NoteNumber}"); }
+
+                        }
+                        else if (IfNoteOff(ne))
+                        {
+                            if (activenotes.ContainsKey(ne.NoteNumber))
+                                newTrack.Add(ne);
+                            activenotes.Remove(ne.NoteNumber);
+                        }
+                    }
+                    else
+                    {
+                        // Message(COLORS.gray, ".");
+                        newTrack.Add(me); // Копіюємо інші події
+                    }
+
+                }
+                monoEventCollection.AddTrack(newTrack);
+            }
+            return monoEventCollection;
+        }
+
+        private static MidiEventCollection StraigtEventCollection(ref int ifchanged, MidiFile midiFile, MidiEventCollection EventCollection)
+        {
+            int noteToCorrect = 0;
+            int previousNote = 0;
+            int currentTrack = 0;
+            long timeCorrection = 0;
+            int currentchanges = 0;
+            var newEventCollection = new MidiEventCollection(midiFile.FileFormat, midiFile.DeltaTicksPerQuarterNote);
+
+            foreach (var track in EventCollection)
+            {
+                Console.WriteLine($"Track {currentTrack}");
+                currentTrack++;
+                bool isOpen = false;
+                var newTrack = new List<MidiEvent>();
+
+                foreach (var me in track)
+                {
+                    if (me is TempoEvent te)
+                    {
+                        Console.WriteLine(te.Tempo);
+                        newTrack.Add(te); // Копіюємо подію у новий трек
+                    }
+                    else if (me is NoteEvent note)
+                    {
+                        if (IfNoteOn(note))
+                        {
+                            if (isOpen)
+                            {
+                                timeCorrection = note.AbsoluteTime;
+                                noteToCorrect = previousNote;
+                                MessageL(COLORS.darkred, $"got opennote {note.NoteNumber}");
+                            }
+
+                            Console.WriteLine($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                            long currentTime = note.AbsoluteTime;
+
+                            newTrack.Add(note); // Копіюємо подію у новий трек
+
+                            isOpen = true;
+                            previousNote = note.NoteNumber;
+                        }
+                        else if (IfNoteOff(note))
+                        {
+                            if (timeCorrection > 0 && note.NoteNumber == noteToCorrect)
+                            {
+                                note.AbsoluteTime = timeCorrection - 1;
+                                MessageL(COLORS.darkred, $"Time corrected for {noteToCorrect}");
+                                timeCorrection = 0;
+                                currentchanges++;
+                                isOpen = false;
+                            }
+                            else if (note.NoteNumber == previousNote)
+                                isOpen = false;
+
+                            MessageL(COLORS.gray, $"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+
+                            //MessageL(COLORS.gray, $"\tduration = {note.AbsoluteTime - currentTime}");
+
+                            newTrack.Add(note); // Копіюємо подію у новий трек
+
+                        }
+                    }
+                    else
+                    {
+                        // Message(COLORS.gray, ".");
+                        newTrack.Add(me); // Копіюємо інші події
+                    }
+
+                }
+
+
+                newEventCollection.AddTrack(newTrack);
+            }
+            ifchanged += currentchanges;
+            return newEventCollection;
+        }
+
+
 
         // Пошук одночасно взятих нот 
         public static bool CheckForPolyphony(MidiFile midiFile)
@@ -225,10 +484,10 @@ namespace Music
         }
 
 
-        private static int NoteToFrequency(int noteNumber)
-        {
-            return (int)(440.0 * Math.Pow(2, (noteNumber - 69) / 12.0)); // A4 = 440 Hz
-        }
     }
-
 }
+
+
+
+
+

@@ -9,6 +9,9 @@ namespace Melodies25.Models
     {
         public int ID { get; set; }  // Унікальний ідентифікатор для мелодії
         public string? Filepath { get; set; }  // Назва файлу, що зберігається у wwwroot (включно з розширенням)
+
+        public bool? IsFileEligible { get; set; }
+
         [Required(ErrorMessage = "Назва є обов'язковою.")]
         public string Title { get; set; }  
         public int? Year { get; set; }  

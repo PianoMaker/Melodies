@@ -150,6 +150,8 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     max-width: 100px;
 }
 
+
+/* Надписи на горі */
 .navbar-nav {
     display: flex;
     width: 100%;
@@ -161,9 +163,10 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 .navmelody {
-    font-size: 1.5em;
-    margin: 20px 0px 0px 15px; 
+    font-size: 1.4em;
+    margin: 20px 0px 0px 15px;
     transition: linear 0.5s;
+    font-family: "Montserrat", serif;
 }
 
 .navmelody:hover {    

@@ -5,21 +5,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>ff60f097-6b7c-4493-80c4-3dd323ef10c9</UserSecretsId>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="wwwroot\lib\MIDI.js-master\**" />
-    <Compile Remove="wwwroot\NewFolder1\**" />
-    <Content Remove="wwwroot\lib\MIDI.js-master\**" />
-    <Content Remove="wwwroot\NewFolder1\**" />
-    <EmbeddedResource Remove="wwwroot\lib\MIDI.js-master\**" />
-    <EmbeddedResource Remove="wwwroot\NewFolder1\**" />
-    <None Remove="wwwroot\lib\MIDI.js-master\**" />
-    <None Remove="wwwroot\NewFolder1\**" />
-  </ItemGroup>
+    <SatelliteResourceLanguages>en;uk</SatelliteResourceLanguages>
+  </PropertyGroup>	
+	
 
   <ItemGroup>
     <Compile Remove="IdentityDbContext.cs" />
+    <Compile Remove="Utilities\SoundToWaveProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,6 +33,10 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\melodies\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="NuGet.Config" />
   </ItemGroup>
 
 </Project>
