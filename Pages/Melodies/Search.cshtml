@@ -1,9 +1,10 @@
 ﻿@page
 @model Melodies25.Pages.Melodies.SearchModel
-@{
-}
+
 @{
     ViewData["Title"] = "Мелодія - пошук";
+    var melodyPattern = ViewData["melodypattern"] as List<int>;    
+    var songPattern = ViewData["songpattern"] as List<int>;
 }
 
 <h1>Пошук</h1>
@@ -92,6 +93,29 @@
     </div>
 </div>
 
+
+<!-- ОПИС СПІВПАДІННЯ -->
+@if (melodyPattern != null)
+{
+    <p>Інтервали введено:</p>
+    <p>
+        @foreach (var interval in melodyPattern)
+        {
+            <text>@interval </text>
+        }
+    </p>
+}
+@if (songPattern != null)
+{
+    <p>Інтервали у пісні:</p>
+    <p>
+        @foreach (var interval in songPattern)
+        {
+            <text>@interval </text>
+        }
+    </p>
+}
+
 <!-- ТАБЛИЦЯ РЕЗУЛЬТАТІВ -->
 
 <p>@Model.Description</p>
@@ -103,7 +127,8 @@
             <th>Файл</th>
             @if (Model.NoteSearch is true)
             {
-                <th>Довжина збігу</th>
+                <th>Довжина <br>збігу</th>
+                <th>на позиції</th>
             }
             <th></th>
         </tr>
@@ -113,7 +138,7 @@
         @if (Model.MatchedMelodies is not null && Model.MatchedMelodies.Count > 0 && Model.NoteSearch is true)
         {
             <!--якщо пошук за нотами-->
-            @foreach (var (item, matchLength) in Model.MatchedMelodies)
+            @foreach (var (item, matchLength, position) in Model.MatchedMelodies)
             {
                 <tr>
                     <!--Назва-->
@@ -155,6 +180,7 @@
                         }
                     </td>
                     <td>@matchLength</td> @* Відображаємо довжину збігу *@
+                    <td>@position</td> @* На якій позиції співпадає *@
                     <td>
                         <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
                         <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
@@ -225,6 +251,9 @@
         }
     </tbody>
 </table>
+
+
+
 
 
 <!-- АУДІО   -->

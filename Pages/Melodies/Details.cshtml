@@ -17,7 +17,7 @@
     else
     {
         <p>@item.Author.Surname</p>
-        
+
     }
     @if (item.Year is not null)
     {
@@ -25,67 +25,75 @@
     }
 </div>
 
+<hr />
+<div class="container">
+
+    @if (!string.IsNullOrEmpty(item.Filepath))
+    {
+        var midifilepath = Url.Content($"~/melodies/{item.Filepath}");
+        var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
+
+        <div style="display:inline-flex">
+
+            <audio id="audioPlayer_@item.Filepath" class="audioPlayer" controls style="display: inline; width:500px;">
+                <source src="@mp3filepath" type="audio/mpeg" />
+                Your browser does not support the audio element.
+            </audio>
+            <a href="@midifilepath" download class="btn btn-outline-dark light-background">
+                Завантажити Midi <i class="fas fa-download"></i>
+            </a>
+            <a href="@mp3filepath" download class="btn btn-outline-dark light-background">
+                Завантажити mp3 <i class="fas fa-download"></i>
+            </a>
+
+        </div>
+    }
+    else
+    {
+        <span>Файл не доступний</span>
+    }
+
+
     <hr />
-    <div class="container">
-
-        @if (!string.IsNullOrEmpty(item.Filepath))
-        {
-            var midifilepath = Url.Content($"~/melodies/{item.Filepath}");
-            var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
-
-            <div style="display:inline-flex">
-
-                <audio id="audioPlayer_@item.Filepath" class="audioPlayer" controls style="display: inline; width:500px;">
-                    <source src="@mp3filepath" type="audio/mpeg" />
-                    Your browser does not support the audio element.
-                </audio>
-                <a href="@midifilepath" download class="btn btn-outline-dark light-background">
-                    Завантажити Midi <i class="fas fa-download"></i>
-                </a>
-                <a href="@mp3filepath" download class="btn btn-outline-dark light-background">
-                    Завантажити mp3 <i class="fas fa-download"></i>
-                </a>
-               
-            </div>
-        }
-        else
-        {
-            <span>Файл не доступний</span>
-        }
 
 
-        <hr />
-       
+    @if (@item.MidiMelody is null)
+    {
 
-        @if (@item.MidiMelody is null)
-        {
+        <form method="post">
+            <button type="submit">Порахувати статистику</button>
+        </form>
 
-            <form method="post">
-                <button type="submit">Порахувати статистику</button>
-            </form>
+    }
+    else
+    {
+        <h3>Нот у мелодії - @item.MidiMelody.Notes.Count </h3>
+        <p>
+            @foreach (var note in @item.MidiMelody.Notes)
+            {
+                <text>
+                    @note.Name();
+                    -
+                </text>
+            }
+        </p>
+        <h3>Інтервальний ряд у півонах</h3>
+        <p>
+            @foreach (var interval in @item.MidiMelody.IntervalList)
+            {
+                <text>
+                    <text>@interval </text>
+                </text>
+            }
+        </p>
 
         }
-        else
-        {
-            <p>Нот у мелодії - @item.MidiMelody.Notes.Count </p>
-            Music.Globals.lng = Music.LNG.uk;
-            Music.Globals.notation = Music.Notation.eu;
-            <p>
-                @foreach (var note in @item.MidiMelody.Notes)
-                {
-                    <text>
-                        @note.Name(); 
-                    - </text>
-                }
-            </p>
+    }
 
-
-        }
-
-        <p>@item.Description</p>
-    </div>
-    <div>
-        <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="link-dark">Редагувати</a>
-        <a asp-page="./Index" class="link-dark">Назад до списку мелодій</a>
-    </div>
-    <script src="~/js/play.js"></script>
+    <p>@item.Description</p>
+</div>
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="link-dark">Редагувати</a>
+    <a asp-page="./Index" class="link-dark">Назад до списку мелодій</a>
+</div>
+<script src="~/js/play.js"></script>

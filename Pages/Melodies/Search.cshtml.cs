@@ -26,8 +26,7 @@ namespace Melodies25.Pages.Melodies
 
         public IList<Melody> Melody { get; set; } = default!;
 
-        public List<(Melody melody, int commonLength)> MatchedMelodies { get; set; } = new();
-
+        public List<(Melody melody, int commonLength, int position)> MatchedMelodies { get; set; } = new();
 
         public bool NoteSearch { get; set; }
         public string Msg { get; set; }
@@ -40,7 +39,7 @@ namespace Melodies25.Pages.Melodies
             _environment = environment;
         }
 
-        private int minimummatch = 2;//вивести на контроллер
+        private int minimummatch = 3;//вивести на контроллер
 
         [BindProperty]
         public string Note { get; set; }
@@ -323,12 +322,18 @@ namespace Melodies25.Pages.Melodies
                     MessageL(COLORS.gray, note.Name());
                 /*   */
 
+                
+
                 CompareMelodies(MelodyPattern);
 
                 // Сортуємо за довжиною збігу
                 MatchedMelodies = MatchedMelodies.OrderByDescending(m => m.commonLength).ToList();
 
                 Description = $"Знайдено {MatchedMelodies.Count} мелодій, в яких співпадають не менше ніж {minimummatch} нот поспіль";
+
+                ViewData["melodypattern"] = MelodyPattern.IntervalList;
+                ViewData["songpattern"] = MatchedMelodies[0].melody.MidiMelody?.IntervalList;
+
 
             }
             else
@@ -354,11 +359,11 @@ namespace Melodies25.Pages.Melodies
                 if (melody.MidiMelody is null) continue;
 
                 var melodyshape = melody.MidiMelody.IntervalList.ToArray();
-                int commonLength = LongestCommonSubstring(patternShape, melodyshape);
-                if (commonLength >= minimummatch)
+                var (length, position) = LongestCommonSubstring(patternShape, melodyshape);                
+                if (length >= minimummatch)
                 {
-                    commonLength++; //рахуємо ноти, не інтервали  
-                    MatchedMelodies.Add((melody, commonLength));
+                    length++; //рахуємо ноти, не інтервали  
+                    MatchedMelodies.Add((melody, length, position));
                 }
             }
             sw.Stop();

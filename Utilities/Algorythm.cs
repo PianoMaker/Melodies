@@ -3,11 +3,15 @@
     public static class Algorythm
     {
 
-        
-        public static int LongestCommonSubstring(int[] arr1, int[] arr2)
+
+        public static (int length, int startIndex) LongestCommonSubstring(int[] arr1, int[] arr2)
         {
+            if (arr1.Length == 0 || arr2.Length == 0)
+                return (0, -1);
+
             int[,] dp = new int[arr1.Length + 1, arr2.Length + 1];
             int maxLength = 0;
+            int endIndex = -1; // Індекс останнього елемента підрядка
 
             for (int i = 1; i <= arr1.Length; i++)
             {
@@ -16,12 +20,17 @@
                     if (arr1[i - 1] == arr2[j - 1])
                     {
                         dp[i, j] = dp[i - 1, j - 1] + 1;
-                        maxLength = Math.Max(maxLength, dp[i, j]);
+                        if (dp[i, j] > maxLength)
+                        {
+                            maxLength = dp[i, j];
+                            endIndex = j - 1; // Останній збіг у `arr2`
+                        }
                     }
                 }
             }
 
-            return maxLength;
+            int startIndex = (maxLength > 0) ? (endIndex - maxLength + 1) : -1;
+            return (maxLength, startIndex);
         }
 
 

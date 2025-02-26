@@ -29,8 +29,7 @@ namespace Melodies25.Pages.Melodies
         }
 
         public Models.Melody Melody { get; set; } = default!;
-
-
+       
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -39,6 +38,7 @@ namespace Melodies25.Pages.Melodies
             {
                 return NotFound();
             }
+                       
 
             var melody = await _context.Melody
                 .Include(m => m.Author)
@@ -82,6 +82,8 @@ namespace Melodies25.Pages.Melodies
             var path = Path.Combine(wwwRootPath, melody.Filepath);
 
             var midifile = MidiConverter.GetMidiFile(path);
+            Globals.lng = Music.LNG.uk;
+            Globals.notation = Music.Notation.eu;
             melody.MidiMelody = await MidiConverter.GetMelodyFromMidiAsync(midifile);
 
             Melody = melody; // Оновлюємо модель
