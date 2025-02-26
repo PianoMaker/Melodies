@@ -3,8 +3,8 @@
 
 @{
     ViewData["Title"] = "Мелодія - пошук";
-    var melodyPattern = ViewData["melodypattern"] as List<int>;    
-    var songPattern = ViewData["songpattern"] as List<int>;
+    var melodyPattern = ViewData["melodypattern"] as List<string>;    
+    var matchedMelodiesCount = ViewData["matchedMelodiesCount"] as int? ?? 0;    
 }
 
 <h1>Пошук</h1>
@@ -95,17 +95,43 @@
 
 
 <!-- ОПИС СПІВПАДІННЯ -->
+<div class="notescontainer">
 @if (melodyPattern != null)
 {
-    <p>Інтервали введено:</p>
-    <p>
-        @foreach (var interval in melodyPattern)
+    <p>Введено мелодію:     
+        @foreach (var notes in melodyPattern)
         {
-            <text>@interval </text>
+            <text>@notes </text>
         }
     </p>
 }
-@if (songPattern != null)
+</div>
+
+<!-- ВІДОБРАЖЕННЯ  МЕЛОДІЇ ЩО ЗБІГАЄТЬСЯ-->
+<div class="notescontainer">
+    @for (int i = 0; i < matchedMelodiesCount; i++)
+    {
+        var songPattern = ViewData[$"songpattern{i}"] as List<string>;
+        var title = Model.MatchedMelodies[i].melody.Title;
+
+    if (songPattern != null)
+    {
+        var @melodyId = $"melody{i}";
+        <div id="@melodyId">
+            <h4>@title</h4>
+            <p>@string.Join(", ", songPattern)</p>
+        </div>
+    }
+    else
+    {
+        <p>Мелодія @i не знайдена.</p>
+    }
+}
+</div>
+
+<!--ВЕРСІЯ ДЛЯ ОДНІЄЇ МЕЛОДІЇ -->
+
+@* @if (songPattern != null)
 {
     <p>Інтервали у пісні:</p>
     <p>
@@ -115,6 +141,7 @@
         }
     </p>
 }
+ *@
 
 <!-- ТАБЛИЦЯ РЕЗУЛЬТАТІВ -->
 
@@ -141,7 +168,6 @@
             @foreach (var (item, matchLength, position) in Model.MatchedMelodies)
             {
                 <tr>
-                    <!--Назва-->
                     <td>
                         <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
                     </td>
@@ -253,18 +279,15 @@
 </table>
 
 
-
-
-
 <!-- АУДІО   -->
 
 <div class="controlcontainer infocontainer">
 
-    <p>@Model.Msg</p>
+    <p class="smallfont">@Model.Msg</p>
     <p>@Model.Errormsg</p>
     @if (TempData["AudioFile"] != null)
     {
-        <p>@TempData["AudioFile"]</p>
+        <p class="smallfont">@TempData["AudioFile"]</p>
         <audio id="audioPlayer" controls autoplay style="display: none">
             <source src="@TempData["AudioFile"]" type="audio/mpeg" />
             Your browser does not support the audio element.
@@ -272,9 +295,9 @@
     }
     else
     {
-        <p>File is not ready</p>
+        <p class="smallfont">File is not ready</p>
     }
 </div>
 
-<script src="~/js/play.js">
-</script>
+<script src="~/js/play.js"></script>
+<script src="~/js/searchResults.js"></script>

@@ -119,8 +119,6 @@ table, th, td {
     margin: 0;
 }
 
-
-
 .footer {
     position: fixed;
     bottom: 0;
@@ -128,7 +126,6 @@ table, th, td {
     background: #fef7e2;
     height: 30px;
 }
-
 
 .h-85{
     height: 85%;
@@ -179,11 +176,19 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     margin: 3px;
 }
 
+
 .notestaff-container {
     position: absolute;
     z-index: 2;
 }
 
+.notescontainer{
+    font-size: 0.8em;
+    border: 1px solid gray;
+    background-color:lightgoldenrodyellow;
+    padding: 8px;
+
+}
 
 .singerellamenue {
     font-family: sans-serif;
@@ -282,6 +287,11 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     background-color: rgba(120,150,255,.8);
 }
 
+.smallfont {
+    font-size: 0.8em !important;
+    color: darkslategrey;
+}
+
 @media (max-width: 768px) {
 
     .d-flex {
@@ -297,6 +307,11 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     .navmelody {
         margin: 20px 10px 0px 10px;
         padding-right: 0px !important;
+    }
+
+    .smallfont {
+        font-size: 0.7em !important;
+        color: darkslategrey;
     }
 }
 

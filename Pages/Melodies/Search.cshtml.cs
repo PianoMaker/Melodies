@@ -288,6 +288,7 @@ namespace Melodies25.Pages.Melodies
         {
             MessageL(COLORS.yellow, $"SEARCH - OnPostNotesearch method");
 
+            /*включаємо відображення за нотним пошуком*/
             NoteSearch = true;
 
             /*ІНІЦІАЛІЗАЦІЯ БАЗИ*/
@@ -296,22 +297,12 @@ namespace Melodies25.Pages.Melodies
             /*ІНІЦІАЛІЗАЦІЯ ВВЕДЕНОГО МАЛЮНКУ*/
             Music.Melody MelodyPattern = new();
             Globals.notation = Notation.eu;
+            Globals.lng = LNG.uk;
 
             if (Keys is not null)
             {
-                var pattern = Keys.Split(" ");
-                foreach (var key in pattern)
-                {
-                    try
-                    {
-                        var note = new Note(key);
-                        MelodyPattern.AddNote(note);
-                    }
-                    catch
-                    {
-                        ErrorMessage($"impossible to read note {key}\n");
-                    }
-                }
+                /* Будуємо послідовність введених нот */
+                BuildPattern(MelodyPattern);
 
                 /* ЛОГУВАННЯ */
                 MessageL(COLORS.olive, "melodies to compare with pattern:");
@@ -320,27 +311,57 @@ namespace Melodies25.Pages.Melodies
                 MessageL(COLORS.olive, "notes in patten:");
                 foreach (var note in MelodyPattern)
                     MessageL(COLORS.gray, note.Name());
-                /*   */
 
-                
 
+                /* будуємо список виявлених збігів MathedMelodies */
                 CompareMelodies(MelodyPattern);
+
 
                 // Сортуємо за довжиною збігу
                 MatchedMelodies = MatchedMelodies.OrderByDescending(m => m.commonLength).ToList();
 
                 Description = $"Знайдено {MatchedMelodies.Count} мелодій, в яких співпадають не менше ніж {minimummatch} нот поспіль";
 
-                ViewData["melodypattern"] = MelodyPattern.IntervalList;
-                ViewData["songpattern"] = MatchedMelodies[0].melody.MidiMelody?.IntervalList;
+                //Передаємо список введених нот 
+                ViewData["melodypattern"] = MelodyPattern.NotesList;
+                MessageL(COLORS.gray, $"melodypattern = {MelodyPattern.NotesList}");
 
+                //Передаємо списки нот по кожній мелодії
+                CreatingPatternsView();
 
             }
             else
             {
 
                 Console.WriteLine("no pattern");
+                Description = "Помилка розпізнавання введеної мелодії для пошуку";
+            }
+        }
 
+        private void CreatingPatternsView()
+        {
+            for (int i = 0; i < MatchedMelodies.Count; i++)
+            {
+                ViewData[$"songpattern{i}"] = MatchedMelodies[i].melody.MidiMelody?.NotesList;
+                MessageL(COLORS.gray, $"adding song pattern {i}, {MatchedMelodies[i].melody.MidiMelody?.NotesList.Count} нот");
+            }
+            ViewData["matchedMelodiesCount"] = MatchedMelodies.Count;
+        }
+
+        private void BuildPattern(Music.Melody MelodyPattern)
+        {
+            var pattern = Keys.Split(" ");
+            foreach (var key in pattern)
+            {
+                try
+                {
+                    var note = new Note(key);
+                    MelodyPattern.AddNote(note);
+                }
+                catch
+                {
+                    ErrorMessage($"impossible to read note {key}\n");
+                }
             }
         }
 

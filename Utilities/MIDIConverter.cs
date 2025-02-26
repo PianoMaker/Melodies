@@ -447,7 +447,7 @@ namespace Music
                     else
                     {
                         // Message(COLORS.gray, ".");
-                        newTrack.Add(me); // Копіюємо інші події
+                       // newTrack.Add(me); // Копіюємо інші події
                     }
 
                 }

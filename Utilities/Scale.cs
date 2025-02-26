@@ -14,6 +14,33 @@ namespace Music
         set { notes = value; }
         }
 
+
+        public List<int> Pitches
+        {
+            get
+            {
+                List<int> pitches = new List<int>();
+                foreach (var note in notes)
+                    pitches.Add(note.Pitch);
+
+                return pitches;
+            }
+        }
+
+        public List<int> Steps
+        {
+            get
+            {
+                List<int> steps = new List<int>();
+                foreach (var note in notes)
+                    steps.Add(note.Step);
+
+                return steps;
+            }
+        }
+
+
+
         public Scale() { }
         public Scale(List<Note> notes) { this.notes = notes; }
 

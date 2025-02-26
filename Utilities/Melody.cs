@@ -30,7 +30,9 @@ namespace Music
 
 
         //повертає мелодичний малюнок по інтервалах
-        public List<int> IntervalList { get
+        public List<int> IntervalList
+        {
+            get
             {
                 List<int> list = new List<int>();
                 for (int i = 1; i < Notes.Count; i++)
@@ -49,7 +51,55 @@ namespace Music
                 return list;
             }
         }
-       
+        //повертає список нот як індекс висоти звуку
+        public List<int> PitchesList
+        {
+            get
+            {
+                List<int> list = new List<int>();
+                for (int i = 0; i < Notes.Count; i++)
+                {
+                    try
+                    {
+                        var pitch = Notes[i].AbsPitch();
+                        list.Add(pitch);
+                    }
+                    catch
+                    {
+                        list.Add(-1);
+                        ErrorMessage($"unable to read {Notes[i]} ");
+                    }
+                }
+                return list;
+            }
+        }
+
+        //повертає список нот поіменно
+        public List<string> NotesList
+        {
+            get
+            {
+                var list = new List<string>();
+                MessageL(COLORS.olive, "creating NoteList");
+                for (int i = 0; i < Notes.Count; i++)
+                {
+                    try
+                    {
+                        var name = Notes[i].Name();
+                        list.Add(name);
+                        Message(COLORS.gray, name + " ");
+                    }
+                    catch
+                    {
+                        list.Add("?");
+                        ErrorMessage($"unable to read {Notes[i]} ");
+                    }
+                }
+                MessageL(COLORS.olive, "");
+                return list;
+            }
+        }
+
         //Чи починається з ноти
         public bool IfStartsFromNote(Note note)
         {
@@ -73,11 +123,12 @@ namespace Music
             return LongestCommonSubstring(notesThis, notesOther).Count;
         }
 
-        // Найдовше співпадіння мелодій в заданій тональності
+        // Найдовше співпадіння мелодій в заданій тональності,
+        // повертає кількість нот у послідовності
         public int LongestAbsoulteCommonSubstring(Melody other)
         {
-            var notesThis = GetPitches().ToArray();
-            var notesOther = other.GetPitches().ToArray();
+            var notesThis = Pitches.ToArray();
+            var notesOther = other.Pitches.ToArray();
             return LongestCommonSubstring(notesThis, notesOther).Count;
         }
 
