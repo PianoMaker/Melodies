@@ -122,6 +122,8 @@ namespace Melodies25.Pages.Melodies
 
                         melody.MidiMelody = await GetMelodyFromMidiAsync(midifile);
 
+                        melody.MidiMelody.Enharmonize();
+
                         await PrepareMp3Async(_environment, path, true);
 
                         numberoffileschecked++;
@@ -303,6 +305,7 @@ namespace Melodies25.Pages.Melodies
             {
                 /* Будуємо послідовність введених нот */
                 BuildPattern(MelodyPattern);
+                MelodyPattern.Enharmonize();
 
                 /* ЛОГУВАННЯ */
                 MessageL(COLORS.olive, "melodies to compare with pattern:");
@@ -336,6 +339,7 @@ namespace Melodies25.Pages.Melodies
                 Console.WriteLine("no pattern");
                 Description = "Помилка розпізнавання введеної мелодії для пошуку";
             }
+            MessageL(COLORS.cyan, $"finishing SEARCH method");
         }
 
         private void CreatingPatternsView()
@@ -343,9 +347,10 @@ namespace Melodies25.Pages.Melodies
             for (int i = 0; i < MatchedMelodies.Count; i++)
             {
                 ViewData[$"songpattern{i}"] = MatchedMelodies[i].melody.MidiMelody?.NotesList;
-                MessageL(COLORS.gray, $"adding song pattern {i}, {MatchedMelodies[i].melody.MidiMelody?.NotesList.Count} нот");
+                MessageL(COLORS.gray, $"adding song pattern {i}, {MatchedMelodies[i].melody.MidiMelody?.NotesList.Count} notes");
             }
             ViewData["matchedMelodiesCount"] = MatchedMelodies.Count;
+            MessageL(COLORS.gray, $"patterns are ready");
         }
 
         private void BuildPattern(Music.Melody MelodyPattern)

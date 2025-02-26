@@ -41,7 +41,7 @@ namespace Music
         public int MidiNote { get { return AbsPitch() + GMCorrection; } }
         // 1-а октава відповідає 4-й MIDI-октаві, нумерація MIDI-октав з нуля
 
-        
+        public float Sharpness { get { return sharpness_counter(step, Alter); } }
         public int MidiDur { get { return duration.MidiDuration(PPQN); } }
 
         public Note(Note note)
@@ -252,11 +252,11 @@ namespace Music
 
         public bool CheckIfFlatable()
         {
-            return Sharpness() >= 2;
+            return Sharpness >= 2;
         }
         public bool CheckIfSharpable()
         {
-                return Sharpness() <= -2;  
+                return Sharpness <= -2;  
         }
 
         public double PrintDuration 
@@ -279,15 +279,15 @@ namespace Music
 
         public void EnharmonizeSmart()
         {
-            if (Sharpness() > 6) step = addstep(step, ref oct, 1);
-            else if (Sharpness() < -6) step = addstep(step, ref oct, -1);
+            if (Sharpness > 6) step = addstep(step, ref oct, 1);
+            else if (Sharpness < -6) step = addstep(step, ref oct, -1);
             else;
         }
 
         public void EnharmonizeDoubles()
         {
-            if (Sharpness() > 10) step = addstep(step, ref oct, 1);
-            else if (Sharpness() < -10) step = addstep(step, ref oct, -1);
+            if (Sharpness > 10) step = addstep(step, ref oct, 1);
+            else if (Sharpness < -10) step = addstep(step, ref oct, -1);
         }
 
         public bool IfSoprano()
@@ -318,10 +318,7 @@ namespace Music
         public int Octave() { return Oct; }
         public void OctUp(int num = 1) { oct+= num; }
 
-        public void OctDown(int num = 1) { oct -= num; }
-
-        public float Sharpness() { return sharpness_counter(step, Alter); }
-
+        public void OctDown(int num = 1) { oct -= num; } 
 
         public static int PitchSort(Note a, Note b)
         {

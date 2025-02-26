@@ -87,8 +87,9 @@ namespace Melodies25.Utilities
 
                 if (!ifeligible)
                 {
-                    var changes = MultiStraightFile(path);
-                    MessageL(COLORS.green, $"File adjusted, {changes} changes applied");
+                    StraightMidiFile(path);
+                    StraightMidiFile(path);
+                    StraightMidiFile(path);
                     var newFile = new MidiFile(path);
                     var hzmslist = GetHzMsListFromMidi(newFile);
 

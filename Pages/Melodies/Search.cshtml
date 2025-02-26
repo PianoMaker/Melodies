@@ -96,15 +96,15 @@
 
 <!-- ОПИС СПІВПАДІННЯ -->
 <div class="notescontainer">
-@if (melodyPattern != null)
-{
-    <p>Введено мелодію:     
-        @foreach (var notes in melodyPattern)
-        {
-            <text>@notes </text>
-        }
-    </p>
-}
+    @if (melodyPattern != null)
+    {
+        <p>Введено мелодію:     
+            @foreach (var notes in melodyPattern)
+            {
+                <text>@notes </text>
+            }
+        </p>
+    }
 </div>
 
 <!-- ВІДОБРАЖЕННЯ  МЕЛОДІЇ ЩО ЗБІГАЄТЬСЯ-->
@@ -113,21 +113,38 @@
     {
         var songPattern = ViewData[$"songpattern{i}"] as List<string>;
         var title = Model.MatchedMelodies[i].melody.Title;
+        var startposition = Model.MatchedMelodies[i].position;
+        var length = Model.MatchedMelodies[i].commonLength;
+        var endposition = startposition + length;
 
-    if (songPattern != null)
-    {
-        var @melodyId = $"melody{i}";
-        <div id="@melodyId">
-            <h4>@title</h4>
-            <p>@string.Join(", ", songPattern)</p>
-        </div>
+        if (songPattern != null)
+        {
+            var @melodyId = $"melody{i}";
+            <div id="@melodyId">
+                <p>@title</p>
+                <p>
+                @for(int j = 0; j<songPattern.Count; j++)
+                {
+                    if(j>=startposition && j<endposition)
+                    {
+                        <span style="color:darkmagenta">@songPattern[j]</span>
+                    }
+                    else
+                    {
+                    <text>@songPattern[j] </text>
+                    }
+                }
+                </p> 
+                 @* <p>@string.Join(", ", songPattern)</p>  *@
+            </div>
+        }
+        else
+        {
+            <p>Мелодія @i не знайдена.</p>
+        }
     }
-    else
-    {
-        <p>Мелодія @i не знайдена.</p>
-    }
-}
 </div>
+
 
 <!--ВЕРСІЯ ДЛЯ ОДНІЄЇ МЕЛОДІЇ -->
 

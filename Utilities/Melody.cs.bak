@@ -80,14 +80,14 @@ namespace Music
             get
             {
                 var list = new List<string>();
-                Message(COLORS.gray, "creating NoteList");
+                MessageL(COLORS.olive, "creating NoteList");
                 for (int i = 0; i < Notes.Count; i++)
                 {
                     try
                     {
                         var name = Notes[i].Name();
                         list.Add(name);
-                        //Message(COLORS.gray, name + " ");
+                        Message(COLORS.gray, name + " ");
                     }
                     catch
                     {
@@ -95,7 +95,7 @@ namespace Music
                         ErrorMessage($"unable to read {Notes[i]} ");
                     }
                 }
-                MessageL(COLORS.olive, "+");
+                MessageL(COLORS.olive, "");
                 return list;
             }
         }
@@ -197,7 +197,8 @@ namespace Music
             var notesOther = other.Pitches.ToArray();
             return LongestCommonSubstring(notesThis, notesOther).Count;
         }
-        
+
+
         static List<int> LongestCommonSubstring(int[] A, int[] B)
         {
             int n = A.Length;
@@ -241,10 +242,9 @@ namespace Music
 
             return lcs;
         }
-
-
-        public void Enharmonize()
-        {
+        
+		public void Enharmonize()        
+		{
             int count = 0;
             
             for(int i = 1; i<Size() - 1; i++)

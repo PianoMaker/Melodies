@@ -160,25 +160,25 @@ namespace Music
         public bool CheckIfSharpable()
         {
             foreach (Note note in notes)
-                if (note.Sharpness() > -2) return false;
+                if (note.Sharpness > -2) return false;
             return true;
         }
 
         public float CheckForMaxSharp()
         {
             if (notes.Count == 0) return 0;
-            float max = notes[0].Sharpness();
+            float max = notes[0].Sharpness;
             foreach (Note note in notes)
-                if (note.Sharpness() > max) max = note.Sharpness();
+                if (note.Sharpness > max) max = note.Sharpness;
             return max;
         }
 
         public float CheckForMinSharp()
         {
             if (notes.Count == 0) return 0;
-            float min = notes[0].Sharpness();
+            float min = notes[0].Sharpness;
             foreach (Note note in notes)
-                if (note.Sharpness() < min) min = note.Sharpness();
+                if (note.Sharpness < min) min = note.Sharpness;
             return min;
         }
 
@@ -192,7 +192,7 @@ namespace Music
         public bool CheckIfFlatable()
         {
             foreach (Note note in notes)
-                if (note.Sharpness() < 2) return false;
+                if (note.Sharpness < 2) return false;
             return true;
         }
 

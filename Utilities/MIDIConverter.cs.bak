@@ -137,14 +137,14 @@ namespace Music
                     }
                     if (midiEvent is NoteEvent ne)
                     {
-                        //Console.WriteLine($"Analyzing event {ne.NoteNumber} {ne.CommandCode} {ne.Velocity}");
+                        Console.WriteLine($"Analyzing event {ne.NoteNumber} {ne.CommandCode} {ne.Velocity}");
 
                         if (IfNoteOn(ne))
                         {
 
                             activeNotes[ne.NoteNumber] = starttime;
 
-                            //Console.WriteLine($"\tNote On fact currentTime = {midiEvent.AbsoluteTime} vs expected {expectedcurrentticktime}");
+                            Console.WriteLine($"\tNote On fact currentTime = {midiEvent.AbsoluteTime} vs expected {expectedcurrentticktime}");
 
                             if (midiEvent.AbsoluteTime > expectedcurrentticktime)
                             {
@@ -156,7 +156,7 @@ namespace Music
                         }
                         else if (IfNoteOff(ne))
                         {
-                            //Console.WriteLine($"\tNote Off {ne.NoteNumber}");
+                            Console.WriteLine($"\tNote Off {ne.NoteNumber}");
                             if (activeNotes.TryGetValue(ne.NoteNumber, out double startTimeMs))
                             {
                                 double durationMs = midiEvent.DeltaTime * ticksToMsFactor;
@@ -314,30 +314,11 @@ namespace Music
             return  allchanges; 
         }
 
-        public static void StraightMidiFile(string path)
+
+        public static void StraightMidiFile(string path, ref int ifchanged)
         {
             var midiFile = new MidiFile(path);
 
-            int ifchanged = 0;
-
-            Console.WriteLine("Start straighting file");
-
-            //MessageL(COLORS.gray, "eventType - note number - AbsTime - DeltaTime");
-
-            var EventCollection = midiFile.Events;
-
-            MidiEventCollection monoEventCollection = MonoEventCollection(ref ifchanged, midiFile, EventCollection);
-
-            MidiEventCollection straightEventCollection = StraigtEventCollection(ref ifchanged, midiFile, monoEventCollection);
-
-            MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
-
-            MidiFile.Export(path, straightEventCollection);
-
-        }
-        public static string StraightMidiFile(string path, ref int ifchanged)
-        {
-            var midiFile = new MidiFile(path);
 
             Console.WriteLine("Start straighting file");
 
@@ -352,32 +333,25 @@ namespace Music
             MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
 
             // Запис нового MIDI-файлу
-            string newPath = path.Replace(".mid", "_straight.mid");
-            MidiFile.Export(newPath, straightEventCollection);
-
-            Console.WriteLine($"New MIDI file saved as {newPath}");
-
-            return newPath;
+            
+            MidiFile.Export(path, straightEventCollection);
+            
         }
 
         private static MidiEventCollection MonoEventCollection(ref int ifchanged, MidiFile midiFile, MidiEventCollection eventCollection)
         {
             var monoEventCollection = new MidiEventCollection(midiFile.FileFormat, midiFile.DeltaTicksPerQuarterNote);
-            long currentstarttime = 0;            
+            long currentstarttime = 0;
 
             foreach (var track in eventCollection)
             {
-                var newTrack = new List<MidiEvent>();                
-                Dictionary<int,long> activenotes = [];
+                var newTrack = new List<MidiEvent>();
+                bool isopen = false;
+                Dictionary<int, long> activenotes = new();
 
                 foreach (var me in track)
                 {
-                    if (me is TempoEvent tempo)
-                    {
-                         Message(COLORS.gray, $"{tempo}");
-                         newTrack.Add(tempo); // Копіюємо інші події
-                    }
-                    else if (me is NoteEvent ne)
+                    if (me is NoteEvent ne)
                     {
                         if (IfNoteOn(ne))
                         {
@@ -392,7 +366,7 @@ namespace Music
 
                         }
                         else if (IfNoteOff(ne))
-                        {                            
+                        {
                             if (activenotes.ContainsKey(ne.NoteNumber))
                                 newTrack.Add(ne);
                             activenotes.Remove(ne.NoteNumber);
@@ -401,7 +375,7 @@ namespace Music
                     else
                     {
                         // Message(COLORS.gray, ".");
-                        // newTrack.Add(me); // Копіюємо інші події
+                        newTrack.Add(me); // Копіюємо інші події
                     }
 
                 }
@@ -475,8 +449,8 @@ namespace Music
                     }
                     else
                     {
-                      // Message(COLORS.gray, ".");
-                        newTrack.Add(me); // Копіюємо інші події
+                        // Message(COLORS.gray, ".");
+                       // newTrack.Add(me); // Копіюємо інші події
                     }
 
                 }
