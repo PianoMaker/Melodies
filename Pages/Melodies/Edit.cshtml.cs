@@ -52,7 +52,7 @@ namespace Melodies25.Pages.Melodies
             }
             Melody = melody;
 
-            ViewData["AuthorID"] = new SelectList(_context.Author, "ID", "Surname");
+            ViewData["AuthorID"] = new SelectList(_context.Author.OrderBy(a => a.Surname), "ID", "Surname");
             return Page();
         }
 

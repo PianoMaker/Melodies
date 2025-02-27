@@ -62,7 +62,7 @@ namespace Melodies25.Pages.Melodies
             
 
             MessageL(COLORS.yellow, "MELODIES/CREATE OnGet");
-            ViewData["AuthorID"] = new SelectList(_context.Author, "ID", "Surname", Melody?.AuthorID);
+            ViewData["AuthorID"] = new SelectList(_context.Author.OrderBy(a => a.Surname), "ID", "Surname", Melody?.AuthorID);
             
             ShowAuthor = false;
             return Page();

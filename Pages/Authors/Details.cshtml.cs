@@ -20,6 +20,7 @@ namespace Melodies25.Pages.Authors
         }
 
         public Author Author { get; set; } = default!;
+        public List<Melody> Melody { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -29,6 +30,12 @@ namespace Melodies25.Pages.Authors
             }
 
             var author = await _context.Author.FirstOrDefaultAsync(m => m.ID == id);
+            var melody = await _context.Melody
+                .Where(m => m.AuthorID == id)
+                .ToListAsync();
+
+            Melody = melody;
+
             if (author == null)
             {
                 return NotFound();

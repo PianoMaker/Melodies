@@ -94,6 +94,7 @@ th, td {
     border: 1px solid #ddd;
     padding: 10px;
     text-align: left;
+    font-size: 0.9em;
 }
 
 th {
@@ -481,4 +482,12 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     width: 50px;
     margin: 0;
     gap: 0px;
+}
+
+h1 {
+    font-size: 1.3em;
+}
+
+p {
+    font-size: 0.9em;
 }

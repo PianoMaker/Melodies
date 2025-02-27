@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Мелодія - автор";
+    var Melodies = Model.Melody;
 }
 
 <h1>Інформація про автора</h1>
@@ -55,7 +56,90 @@
         </dd>
     </dl>
 </div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Назва                  
+            </th>
+            <th>
+                Файл
+            </th>
+            <th>Редагувати/Вилучити</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Melody)
+        {
+            <tr>
+                <!--НАЗВА-->
+                <td>
+
+                    <a asp-page="../Melodies/Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
+                </td>
+                <!--ФАЙЛ-->
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Filepath))
+                    {
+                        var midifilepath = Url.Content($"~/melodies/{item.Filepath}");
+                        var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
+                        <div style="display:inline-flex">
+                            <a href="@midifilepath" download class="btn btn-outline-dark light-background">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            @if (@item.IsFileEligible is null)
+                            {
+                                <button class="btn btn-outline-dark light-background playbutton"
+                                        data-filepath="@item.Filepath" id="playButton_@item.Filepath">
+                                    <i class="fas fa-play">?</i>
+                                </button>
+                                <button id="stopButton_@item.Filepath" disabled="disabled"
+                                        class="stopButton btn btn-outline-dark light-background">
+                                    <i class="fas fa-stop">?</i>
+                                </button>
+                            }
+                            else if (@item.IsFileEligible is true)
+                            {
+                                <button class="btn btn-outline-dark light-background playbutton"
+                                        data-filepath="@item.Filepath" id="playButton_@item.Filepath">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button id="stopButton_@item.Filepath" disabled="disabled"
+                                        class="stopButton btn btn-outline-dark light-background">
+                                    <i class="fas fa-stop"></i>
+                                </button>
+                            }
+                            else if (@item.IsFileEligible is false)
+                            {
+                                <p>Midi File is not correct</p>
+                            }
+                            <audio id="audioPlayer_@item.Filepath" class="audioPlayer" controls style="display: none">
+                                <source src="@mp3filepath" type="audio/mpeg" />
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    }
+                    else
+                    {
+                        <span>Файл не доступний</span>
+                    }
+                </td>
+
+                <td>
+                    <a asp-page="../Melodies/Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
+                    <a asp-page="../Melodies/Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
 <div>
     <a asp-page="./Edit" asp-route-id="@Model.Author.ID">Редагуватти</a> |
     <a asp-page="./Index">Назад до списку</a>
 </div>
+<script src="~/js/play.js">
+
+</script>
