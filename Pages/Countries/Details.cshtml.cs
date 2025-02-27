@@ -20,6 +20,7 @@ namespace Melodies25.Pages.Countries
         }
 
         public Country Country { get; set; } = default!;
+        public List<Author> Author { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -29,6 +30,16 @@ namespace Melodies25.Pages.Countries
             }
 
             var country = await _context.Country.FirstOrDefaultAsync(m => m.ID == id);
+            var authors = await _context.Author.Where(a => a.CountryID == id).ToListAsync();
+
+            foreach (var author in authors)
+            {
+                var melodies = await _context.Melody.Where(m => m.AuthorID == author.ID).ToListAsync();
+                author.MelodiesCount = melodies.Count;
+            }
+
+            Author = authors;
+
             if (country == null)
             {
                 return NotFound();

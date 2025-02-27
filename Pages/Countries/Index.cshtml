@@ -31,7 +31,7 @@
 @foreach (var item in Model.Country) {
         <tr>
             <td>
-                    @Html.DisplayFor(modelItem => item.Name)
+                   <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Name)</a>
             </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.AuthorsCount)
