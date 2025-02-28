@@ -73,10 +73,14 @@ namespace Melodies25.Pages.Melodies
 
                 string searchQuery = search.ToLower();
 
-                var query = _context.Melody.AsQueryable();
+                var query = _context.Melody.AsQueryable().Include(m => m.Author);
 
                 var results = query.Where(m => EF.Functions.Like(m.Author.Surname, $"%{searchQuery}%"))
-                                   .Concat(query.Where(m => EF.Functions.Like(m.Title, $"%{searchQuery}%")));
+                                   .Concat(query.Where(m => EF.Functions.Like(m.Title, $"%{searchQuery}%")))
+                                   .Concat(query.Where(m => EF.Functions.Like(m.Author.SurnameEn, $"%{searchQuery}%")))
+                                   .Concat(query.Where(m => EF.Functions.Like(m.Author.NameEn, $"%{searchQuery}%")))
+                                   .Concat(query.Where(m => EF.Functions.Like(m.Author.Name, $"%{searchQuery}%")))
+                                   .Distinct();
 
                 Melody = results.ToList();
 
@@ -169,7 +173,7 @@ namespace Melodies25.Pages.Melodies
                 if (!string.IsNullOrWhiteSpace(Author))
                 {
                     string authorLower = Author.ToLower();
-                    query = query.Where(m => m.Author.Surname.ToLower() == authorLower);
+                    query = query.Where(m => m.Author.Surname.ToLower() == authorLower || m.Author.SurnameEn.ToLower() == authorLower);
                 }
 
                 if (!string.IsNullOrWhiteSpace(Title))
@@ -184,7 +188,7 @@ namespace Melodies25.Pages.Melodies
                 if (!string.IsNullOrWhiteSpace(Author))
                 {
                     string authorLower = Author.ToLower();
-                    query = query.Where(m => m.Author.Surname.ToLower().Contains(authorLower));
+                    query = query.Where(m => m.Author.Surname.ToLower().Contains(authorLower) || m.Author.SurnameEn.ToLower().Contains(authorLower));
                 }
 
                 if (!string.IsNullOrWhiteSpace(Title))

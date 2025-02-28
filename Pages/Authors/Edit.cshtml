@@ -14,15 +14,31 @@
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Author.ID" />
-            <div class="form-group">
-                <label asp-for="Author.Surname" class="control-label">Прізвище</label>
-                <input asp-for="Author.Surname" class="form-control" />
-                <span asp-validation-for="Author.Surname" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Author.Name" class="control-label">Ім'я'</label>
-                <input asp-for="Author.Name" class="form-control" />
-                <span asp-validation-for="Author.Name" class="text-danger"></span>
+            <div style="display: inline-flex">
+                <div style="display:block">
+                    <div class="form-group">
+                        <label asp-for="Author.Surname" class="control-label">Прізвище</label>
+                        <input asp-for="Author.Surname" class="form-control" />
+                        <span asp-validation-for="Author.Surname" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Author.Name" class="control-label">Ім'я'</label>
+                        <input asp-for="Author.Name" class="form-control" />
+                        <span asp-validation-for="Author.Name" class="text-danger"></span>
+                    </div>
+                </div>
+                <div style="display:block">
+                    <div class="form-group">
+                        <label asp-for="Author.SurnameEn" class="control-label">Прізвище (англ.)</label>
+                        <input asp-for="Author.SurnameEn" class="form-control" />
+                        <span asp-validation-for="Author.Surname" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Author.NameEn" class="control-label">Ім'я (англ.)</label>
+                        <input asp-for="Author.NameEn" class="form-control" />
+                        <span asp-validation-for="Author.Name" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
             <div class="form-group">
                 <label asp-for="Author.DateOfBirth" class="control-label">Народився</label>
@@ -38,7 +54,7 @@
                 <label asp-for="Author.CountryID" class="control-label">Країна</label>
                 <select asp-for="Author.CountryID" class="form-control" asp-items="ViewBag.CountryID">
                     <option value="">-- Оберіть країну --</option>
-               </select>
+                </select>
                 <span asp-validation-for="Author.CountryID" class="text-danger"></span>
             </div>
 
@@ -59,5 +75,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

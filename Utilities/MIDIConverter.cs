@@ -314,6 +314,27 @@ namespace Music
             return  allchanges; 
         }
 
+        public static void StraightMidiFile(string path, string newpath)
+        {
+            var midiFile = new MidiFile(path);
+
+            int ifchanged = 0;
+
+            Console.WriteLine("Start straighting file");
+
+            //MessageL(COLORS.gray, "eventType - note number - AbsTime - DeltaTime");
+
+            var EventCollection = midiFile.Events;
+
+            MidiEventCollection monoEventCollection = MonoEventCollection(ref ifchanged, midiFile, EventCollection);
+
+            MidiEventCollection straightEventCollection = StraigtEventCollection(ref ifchanged, midiFile, monoEventCollection);
+
+            MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
+
+            MidiFile.Export(newpath, straightEventCollection);
+        }
+
         public static void StraightMidiFile(string path)
         {
             var midiFile = new MidiFile(path);

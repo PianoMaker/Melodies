@@ -91,7 +91,7 @@ namespace Music
             // Використовуємо Task.Run для асинхронної обробки в окремому потоці
             return await Task.Run(() =>
             {
-                MessageL(COLORS.olive, "GetMelodyFromMidiAsync is rinning");
+                MessageL(COLORS.olive, "GetMelodyFromMidiAsync is running");
 
                 return GetMelodyFromMidi(midiFile);
 
@@ -137,14 +137,14 @@ namespace Music
                     }
                     if (midiEvent is NoteEvent ne)
                     {
-                        Console.WriteLine($"Analyzing event {ne.NoteNumber} {ne.CommandCode} {ne.Velocity}");
+                        //Console.WriteLine($"Analyzing event {ne.NoteNumber} {ne.CommandCode} {ne.Velocity}");
 
                         if (IfNoteOn(ne))
                         {
 
                             activeNotes[ne.NoteNumber] = starttime;
 
-                            Console.WriteLine($"\tNote On fact currentTime = {midiEvent.AbsoluteTime} vs expected {expectedcurrentticktime}");
+                            //Console.WriteLine($"\tNote On fact currentTime = {midiEvent.AbsoluteTime} vs expected {expectedcurrentticktime}");
 
                             if (midiEvent.AbsoluteTime > expectedcurrentticktime)
                             {
@@ -156,7 +156,7 @@ namespace Music
                         }
                         else if (IfNoteOff(ne))
                         {
-                            Console.WriteLine($"\tNote Off {ne.NoteNumber}");
+                            //Console.WriteLine($"\tNote Off {ne.NoteNumber}");
                             if (activeNotes.TryGetValue(ne.NoteNumber, out double startTimeMs))
                             {
                                 double durationMs = midiEvent.DeltaTime * ticksToMsFactor;
@@ -255,7 +255,7 @@ namespace Music
             int currenttrack = 0;
             long currenttime = 0;
             Console.WriteLine("start reading file");
-            MessageL(COLORS.gray, "eventType - note number - AbsTime - DeltaTime");
+            GrayMessageL("eventType - note number - AbsTime - DeltaTime");
 
             foreach (var track in mifidile.Events)
             {
@@ -271,15 +271,15 @@ namespace Music
                     {
                         if (IfNoteOn(note))
                         {
-                            // MessageL(COLORS.gray, $"\t\tafternote = {note.AbsoluteTime - currenttime}");
+                            // GrayMessageL($"\t\tafternote = {note.AbsoluteTime - currenttime}");
                             Console.WriteLine($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
                             currentNoteNumber = note.NoteNumber;
                             currenttime = note.AbsoluteTime;
                         }
                         else if (IfNoteOff(note))
                         {
-                            MessageL(COLORS.gray, $"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
-                            // MessageL(COLORS.gray, $"\tduration = {note.AbsoluteTime - currenttime}");
+                            GrayMessageL($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                            // GrayMessageL($"\tduration = {note.AbsoluteTime - currenttime}");
                         }
                     }
                     else Message(COLORS.gray, ".");
@@ -297,6 +297,22 @@ namespace Music
             return note.CommandCode == MidiCommandCode.NoteOn && note.Velocity > 0;
         }
 
+public static int MultiStraightFile(string path, string newpath)
+        {
+            int allchanges = 0;
+            int attempt = 0;
+            int currentchanges = 0;
+            StraightMidiFile(path, ref currentchanges, newpath);
+            while (currentchanges > 0)
+            {
+                allchanges += currentchanges;
+                currentchanges = 0;
+                attempt++;
+                StraightMidiFile(path, ref currentchanges, newpath);
+                if (attempt > 100) break;
+            };
+            return allchanges;
+        }
         public static int MultiStraightFile(string path)
         {
             int allchanges = 0;
@@ -314,11 +330,11 @@ namespace Music
             return  allchanges; 
         }
 
-
-        public static void StraightMidiFile(string path, ref int ifchanged)
+  public static void StraightMidiFile(string path, string newpath)
         {
             var midiFile = new MidiFile(path);
 
+            int ifchanged = 0;
 
             Console.WriteLine("Start straighting file");
 
@@ -332,26 +348,72 @@ namespace Music
 
             MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
 
-            // Запис нового MIDI-файлу
-            
+            MidiFile.Export(newpath, straightEventCollection);
+        }
+        public static void StraightMidiFile(string path)
+        {
+            var midiFile = new MidiFile(path);
+
+            int ifchanged = 0;
+
+            Console.WriteLine("Start straighting file");
+
+            //GrayMessageL("eventType - note number - AbsTime - DeltaTime");
+
+            var EventCollection = midiFile.Events;
+
+            MidiEventCollection monoEventCollection = MonoEventCollection(ref ifchanged, midiFile, EventCollection);
+
+            MidiEventCollection straightEventCollection = StraigtEventCollection(ref ifchanged, midiFile, monoEventCollection);
+
+            MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
+
             MidiFile.Export(path, straightEventCollection);
-            
+
+        }
+        public static string StraightMidiFile(string path, ref int ifchanged)
+        {
+            var midiFile = new MidiFile(path);
+
+            Console.WriteLine("Start straighting file");
+
+            //GrayMessageL("eventType - note number - AbsTime - DeltaTime");
+
+            var EventCollection = midiFile.Events;
+
+            MidiEventCollection monoEventCollection = MonoEventCollection(ref ifchanged, midiFile, EventCollection);
+
+            MidiEventCollection straightEventCollection = StraigtEventCollection(ref ifchanged, midiFile, monoEventCollection);
+
+            MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
+
+            // Запис нового MIDI-файлу
+            string newPath = path.Replace(".mid", "_straight.mid");
+            MidiFile.Export(newPath, straightEventCollection);
+
+            Console.WriteLine($"New MIDI file saved as {newPath}");
+
+            return newPath;
         }
 
         private static MidiEventCollection MonoEventCollection(ref int ifchanged, MidiFile midiFile, MidiEventCollection eventCollection)
         {
             var monoEventCollection = new MidiEventCollection(midiFile.FileFormat, midiFile.DeltaTicksPerQuarterNote);
-            long currentstarttime = 0;
+            long currentstarttime = 0;            
 
             foreach (var track in eventCollection)
             {
-                var newTrack = new List<MidiEvent>();
-                bool isopen = false;
-                Dictionary<int, long> activenotes = new();
+                var newTrack = new List<MidiEvent>();                
+                Dictionary<int,long> activenotes = [];
 
                 foreach (var me in track)
                 {
-                    if (me is NoteEvent ne)
+                    if (me is TempoEvent tempo)
+                    {
+                         Message(COLORS.gray, $"{tempo}");
+                         newTrack.Add(tempo); // Копіюємо інші події
+                    }
+                    else if (me is NoteEvent ne)
                     {
                         if (IfNoteOn(ne))
                         {
@@ -366,7 +428,7 @@ namespace Music
 
                         }
                         else if (IfNoteOff(ne))
-                        {
+                        {                            
                             if (activenotes.ContainsKey(ne.NoteNumber))
                                 newTrack.Add(ne);
                             activenotes.Remove(ne.NoteNumber);
@@ -375,7 +437,7 @@ namespace Music
                     else
                     {
                         // Message(COLORS.gray, ".");
-                        newTrack.Add(me); // Копіюємо інші події
+                        // newTrack.Add(me); // Копіюємо інші події
                     }
 
                 }
@@ -439,9 +501,9 @@ namespace Music
                             else if (note.NoteNumber == previousNote)
                                 isOpen = false;
 
-                            MessageL(COLORS.gray, $"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                            GrayMessageL($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
 
-                            //MessageL(COLORS.gray, $"\tduration = {note.AbsoluteTime - currentTime}");
+                            //GrayMessageL($"\tduration = {note.AbsoluteTime - currentTime}");
 
                             newTrack.Add(note); // Копіюємо подію у новий трек
 
@@ -449,8 +511,8 @@ namespace Music
                     }
                     else
                     {
-                        // Message(COLORS.gray, ".");
-                       // newTrack.Add(me); // Копіюємо інші події
+                      // Message(COLORS.gray, ".");
+                        newTrack.Add(me); // Копіюємо інші події
                     }
 
                 }
@@ -469,7 +531,7 @@ namespace Music
         {
             foreach (var track in midiFile.Events)
             {
-                MessageL(COLORS.gray, "explore track");
+                GrayMessageL("explore track");
                 var noteOnGroups = track
                     .OfType<NoteOnEvent>()
                     .GroupBy(e => e.AbsoluteTime)
