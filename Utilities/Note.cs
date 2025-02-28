@@ -313,7 +313,7 @@ namespace Music
 
 
         public string Key(Notation? notation) { return note_to_key(step, pitch); }
-        public string Name() { return pitch_to_notename(step, pitch); }
+        public string Name() { return pitch_to_notename(step, pitch).Replace("b", "♭"); }
 
         public int Octave() { return Oct; }
         public void OctUp(int num = 1) { oct+= num; }

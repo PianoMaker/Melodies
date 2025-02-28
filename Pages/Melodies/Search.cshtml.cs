@@ -310,10 +310,10 @@ namespace Melodies25.Pages.Melodies
                 /* Ћќ√”¬јЌЌя */
                 MessageL(COLORS.olive, "melodies to compare with pattern:");
                 foreach (var melody in Melody)
-                    MessageL(COLORS.gray, melody.Title);
+                    GrayMessageL(melody.Title);
                 MessageL(COLORS.olive, "notes in patten:");
                 foreach (var note in MelodyPattern)
-                    MessageL(COLORS.gray, note.Name());
+                    GrayMessageL(note.Name());
 
 
                 /* будуЇмо список ви€влених зб≥г≥в MathedMelodies */
@@ -327,7 +327,7 @@ namespace Melodies25.Pages.Melodies
 
                 //ѕередаЇмо список введених нот 
                 ViewData["melodypattern"] = MelodyPattern.NotesList;
-                MessageL(COLORS.gray, $"melodypattern = {MelodyPattern.NotesList}");
+                GrayMessageL($"melodypattern = {MelodyPattern.NotesList}");
 
                 //ѕередаЇмо списки нот по кожн≥й мелод≥њ
                 CreatingPatternsView();
@@ -347,10 +347,10 @@ namespace Melodies25.Pages.Melodies
             for (int i = 0; i < MatchedMelodies.Count; i++)
             {
                 ViewData[$"songpattern{i}"] = MatchedMelodies[i].melody.MidiMelody?.NotesList;
-                MessageL(COLORS.gray, $"adding song pattern {i}, {MatchedMelodies[i].melody.MidiMelody?.NotesList.Count} notes");
+                GrayMessageL($"adding song pattern {i}, {MatchedMelodies[i].melody.MidiMelody?.NotesList.Count} notes");
             }
             ViewData["matchedMelodiesCount"] = MatchedMelodies.Count;
-            MessageL(COLORS.gray, $"patterns are ready");
+            GrayMessageL($"patterns are ready");
         }
 
         private void BuildPattern(Music.Melody MelodyPattern)

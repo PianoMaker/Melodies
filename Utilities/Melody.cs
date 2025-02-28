@@ -242,8 +242,22 @@ namespace Music
             return lcs;
         }
 
-
         public void Enharmonize()
+        {//бета-версія
+            
+            // виправлення MIDI-знаків альтерації відповідно
+            // до тональної логіки
+
+            EnharmonizeCommon(); // загальний для зменшених інтервалів
+            Desharp(); // утворені зайві дієзи 
+            Desharp();// утворені зайві дієзи 
+            UnDoubleFlat(); // утворені зайві дубль-бемолі
+            UnChromEnd(); // хроматизми наприкінці
+            UpChromatics(); // висхідна хроматика
+            AfterEffectUnflat(); // артефакти попередніх
+        }
+
+        public void EnharmonizeCommon()
         {
             int count = 0;
             
@@ -256,8 +270,122 @@ namespace Music
                     Notes[i + 1].Sharpness - Notes[i].Sharpness >= 0)
                 { Notes[i].EnharmonizeSharp(); count++; }
             }
-            MessageL(COLORS.gray, $"{count} changes");
+            GrayMessageL($"generally enharmonized {count} notes");
         }
+
+
+        public void Desharp()
+        {
+            int startsharprow = 0;
+            int doublesharpposition = 0;
+            int endsharprow = 0;
+            
+
+            for (int i = 1; i < Size() - 1; i++)
+            {
+                
+                if (Notes[i].Sharpness < 4 && doublesharpposition == 0)
+                {
+                    startsharprow = 0;
+                    continue;
+                }
+                if (Notes[i].Sharpness > 4 && startsharprow == 0)
+                    startsharprow = i;
+
+                if (notes[i].Sharpness > 9)
+                {
+                    doublesharpposition = i;
+                }
+                if (Notes[i].Sharpness < 4 && doublesharpposition > 0)
+                {
+                    endsharprow = i;
+                    break;
+                }
+            }
+
+            if (startsharprow > 0 && doublesharpposition >= startsharprow && endsharprow >= doublesharpposition)
+            {
+                Console.WriteLine($"Desharp notes from {startsharprow} to {endsharprow}");
+                for (int j = startsharprow; j < endsharprow; j++)
+                    Notes[j].EnharmonizeFlat();
+            }
+        }
+
+
+        public void UnDoubleFlat()
+        {
+            for (int i = 1; i < Size() - 1; i++)
+            {
+                if (Notes[i].Sharpness < -9)
+                    Notes[i].EnharmonizeDoubles();
+            }
+        }
+
+            
+
+        public void UnChromEnd()
+        {
+            int lastindex = Size() - 1;
+            if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == 7)
+            {
+                Notes[lastindex].EnharmonizeFlat();
+                GrayMessageL("unhromed end to flat");
+
+            }
+            else if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == -7)
+            {
+                Notes[lastindex].EnharmonizeSharp();
+                GrayMessageL("unhromed end to sharp");
+            }
+            else if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == 12)
+            {
+                Notes[lastindex].EnharmonizeFlat();
+                GrayMessageL("unhromed end to flat");
+            }
+            else if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == -12)
+            {
+                Notes[lastindex].EnharmonizeSharp();
+                GrayMessageL("unhromed end to sharp");
+            }
+        }
+
+      
+        public void UpChromatics()
+        {
+            for (int i = 3; i < Size(); i++)
+            {
+                if (Notes[i - 3].Sharpness > 5) continue;
+                if (Notes[i - 2].Sharpness - Notes[i - 3].Sharpness == -5 &&
+                    Notes[i - 1].Sharpness - Notes[i - 2].Sharpness == 7 &&
+                    Notes[i].Sharpness - Notes[i - 1].Sharpness == -5)
+                {
+                    Notes[i - 2].EnharmonizeSharp();
+                    GrayMessageL($"correct upgoing chromatics, position {i - 2}");
+                }
+                else if (Notes[i - 2].Sharpness - Notes[i - 3].Sharpness == -5 &&
+                    Notes[i - 1].Sharpness - Notes[i - 2].Sharpness == -5 &&
+                    Notes[i].Sharpness - Notes[i - 1].Sharpness == 7)
+                {
+                    Notes[i - 1].EnharmonizeSharp();
+                    GrayMessageL($"correct upgoing chromatics 2, position {i - 2}");
+                }
+            }
+
+        }
+      
+        public void AfterEffectUnflat()
+        {
+            for (int i = 1; i < Size() - 1; i++)
+            {
+                if (Notes[i].Sharpness - Notes[i - 1].Sharpness == 10)
+                {
+                    Notes[i - 1].EnharmonizeSharp();
+                    GrayMessageL($"unflat note {i}");
+                }
+            }
+        }
+
+
 
         public new void Inversion()
         {
@@ -406,7 +534,7 @@ namespace Music
         }
 
         //summary
-        // Enharmonize to avoid double accidentals
+        // EnharmonizeCommon to avoid double accidentals
         public void EnharmonizeSmart()
         {
             foreach (Note note in Notes)

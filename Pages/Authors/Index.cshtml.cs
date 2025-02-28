@@ -10,6 +10,7 @@ using Melodies25.Models;
 using Music;
 using static Music.Messages;
 using Microsoft.Identity.Client;
+using Melodies25.Utilities;
 
 namespace Melodies25.Pages.Authors
 {
@@ -31,6 +32,12 @@ namespace Melodies25.Pages.Authors
         public async Task OnGetAsync(string sortOrder)
         {
             MessageL(COLORS.yellow, $"AUTHORS/INDEX -  OnGET");
+            await LoadPage(sortOrder);
+        }
+
+        private async Task LoadPage(string sortOrder)
+        {
+            
 
             SurnameSort = sortOrder == "surname_asc" ? "surname_desc" : "surname_asc";
             CountrySort = sortOrder == "country_asc" ? "country_desc" : "country_asc";
@@ -61,5 +68,30 @@ namespace Melodies25.Pages.Authors
             Author = await authorQuery.ToListAsync();
         }
 
+        public async Task OnPostTranslitAsync(string sortOrder)
+        {
+            MessageL(COLORS.yellow, "AUTHOR/ONPOSTTRANSLIT");
+
+            await LoadPage(sortOrder);
+
+            foreach (var author in Author)
+            {
+                if(string.IsNullOrEmpty(author.NameEn) && !string.IsNullOrEmpty(author.Name))
+                {
+                    var nameEn = Translit.Transliterate(author.Name);
+                    author.NameEn = nameEn;
+                }
+
+                if (string.IsNullOrEmpty(author.SurnameEn) && !string.IsNullOrEmpty(author.Surname))
+                {
+                    var surnameEn = Translit.Transliterate(author.Surname);
+                    author.SurnameEn = surnameEn;
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            Page();
+        }
     }
 }

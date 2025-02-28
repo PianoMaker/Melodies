@@ -320,6 +320,13 @@ namespace Music
             ResetColor();
         }
 
+        public static void GrayMessageL(string msg)
+        {
+            ForegroundColor = (ConsoleColor)COLORS.gray;
+            WriteLine(msg);
+            ResetColor();
+        }
+
         public static void ErrorMessage(string msg)
         {
             ForegroundColor = (ConsoleColor)COLORS.red;

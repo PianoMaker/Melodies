@@ -188,8 +188,11 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     border: 1px solid gray;
     background-color:lightgoldenrodyellow;
     padding: 8px;
-
 }
+
+    .notescontainer h3 {
+        font-size: 1em ;
+    }
 
 .singerellamenue {
     font-family: sans-serif;

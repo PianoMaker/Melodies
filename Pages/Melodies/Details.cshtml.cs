@@ -85,7 +85,9 @@ namespace Melodies25.Pages.Melodies
             Globals.lng = Music.LNG.uk;
             Globals.notation = Music.Notation.eu;
             melody.MidiMelody = await MidiConverter.GetMelodyFromMidiAsync(midifile);
-            melody.MidiMelody.Enharmonize();
+            melody.MidiMelody.Enharmonize(); 
+            
+
 
             Melody = melody; // Оновлюємо модель
 

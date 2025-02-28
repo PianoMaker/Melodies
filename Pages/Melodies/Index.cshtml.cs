@@ -106,7 +106,7 @@ namespace Melodies25.Pages.Melodies
                     catch (Exception ex)
                     {
                         ErrorMessage("\nНеможливо обробити файл:");
-                        MessageL(COLORS.gray, ex.Message);
+                        GrayMessageL(ex.Message);
                         return Page();
                     }
                 }

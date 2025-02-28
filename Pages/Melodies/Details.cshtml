@@ -56,39 +56,50 @@
 
     <hr />
 
+    <div class="notescontainer">
+        @if (@item.MidiMelody is null)
+        {
 
-    @if (@item.MidiMelody is null)
-    {
-
-        <form method="post">
-            <button type="submit">Порахувати статистику</button>
-        </form>
-
-    }
-    else
-    {
-        <h3>Нот у мелодії - @item.MidiMelody.Notes.Count </h3>
-        <p>
-            @foreach (var note in @item.MidiMelody.Notes)
-            {
-                <text>
-                    @note.Name();
-                    -
-                </text>
-            }
-        </p>
-        <h3>Інтервальний ряд у півонах</h3>
-        <p>
-            @foreach (var interval in @item.MidiMelody.IntervalList)
-            {
-                <text>
-                    <text>@interval </text>
-                </text>
-            }
-        </p>
+            <form method="post">
+                <button type="submit">Порахувати статистику</button>
+            </form>
 
         }
-    }
+        else
+        {
+            <h3>Нот у мелодії - @item.MidiMelody.Notes.Count </h3>
+            <p>
+                @foreach (var note in @item.MidiMelody.Notes)
+                {
+                    <text>
+                        @note.Name()
+                        -
+                    </text>
+                }
+            </p>
+            <h3>Дієзність (beta)</h3>
+            <p>
+                @foreach (var note in @item.MidiMelody.Notes)
+                {
+                    <text>
+                        <text>@note.Sharpness </text>
+                    </text>
+                }
+            </p>
+
+            <h3>Інтервальний ряд у півонах</h3>
+            <p>
+                @foreach (var interval in @item.MidiMelody.IntervalList)
+                {
+                    <text>
+                        <text>@interval </text>
+                    </text>
+                }
+            </p>
+
+        }
+        }
+    </div>
 
     <p>@item.Description</p>
 </div>

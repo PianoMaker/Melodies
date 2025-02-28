@@ -91,7 +91,7 @@ namespace Music
             // Використовуємо Task.Run для асинхронної обробки в окремому потоці
             return await Task.Run(() =>
             {
-                MessageL(COLORS.olive, "GetMelodyFromMidiAsync is rinning");
+                MessageL(COLORS.olive, "GetMelodyFromMidiAsync is running");
 
                 return GetMelodyFromMidi(midiFile);
 
@@ -255,7 +255,7 @@ namespace Music
             int currenttrack = 0;
             long currenttime = 0;
             Console.WriteLine("start reading file");
-            MessageL(COLORS.gray, "eventType - note number - AbsTime - DeltaTime");
+            GrayMessageL("eventType - note number - AbsTime - DeltaTime");
 
             foreach (var track in mifidile.Events)
             {
@@ -271,15 +271,15 @@ namespace Music
                     {
                         if (IfNoteOn(note))
                         {
-                            // MessageL(COLORS.gray, $"\t\tafternote = {note.AbsoluteTime - currenttime}");
+                            // GrayMessageL($"\t\tafternote = {note.AbsoluteTime - currenttime}");
                             Console.WriteLine($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
                             currentNoteNumber = note.NoteNumber;
                             currenttime = note.AbsoluteTime;
                         }
                         else if (IfNoteOff(note))
                         {
-                            MessageL(COLORS.gray, $"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
-                            // MessageL(COLORS.gray, $"\tduration = {note.AbsoluteTime - currenttime}");
+                            GrayMessageL($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                            // GrayMessageL($"\tduration = {note.AbsoluteTime - currenttime}");
                         }
                     }
                     else Message(COLORS.gray, ".");
@@ -322,7 +322,7 @@ namespace Music
 
             Console.WriteLine("Start straighting file");
 
-            //MessageL(COLORS.gray, "eventType - note number - AbsTime - DeltaTime");
+            //GrayMessageL("eventType - note number - AbsTime - DeltaTime");
 
             var EventCollection = midiFile.Events;
 
@@ -341,7 +341,7 @@ namespace Music
 
             Console.WriteLine("Start straighting file");
 
-            //MessageL(COLORS.gray, "eventType - note number - AbsTime - DeltaTime");
+            //GrayMessageL("eventType - note number - AbsTime - DeltaTime");
 
             var EventCollection = midiFile.Events;
 
@@ -465,9 +465,9 @@ namespace Music
                             else if (note.NoteNumber == previousNote)
                                 isOpen = false;
 
-                            MessageL(COLORS.gray, $"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                            GrayMessageL($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
 
-                            //MessageL(COLORS.gray, $"\tduration = {note.AbsoluteTime - currentTime}");
+                            //GrayMessageL($"\tduration = {note.AbsoluteTime - currentTime}");
 
                             newTrack.Add(note); // Копіюємо подію у новий трек
 
@@ -495,7 +495,7 @@ namespace Music
         {
             foreach (var track in midiFile.Events)
             {
-                MessageL(COLORS.gray, "explore track");
+                GrayMessageL("explore track");
                 var noteOnGroups = track
                     .OfType<NoteOnEvent>()
                     .GroupBy(e => e.AbsoluteTime)
