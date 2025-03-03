@@ -319,6 +319,12 @@ namespace Music
             Write(msg);
             ResetColor();
         }
+        public static void GrayMessage(string msg)
+        {
+            ForegroundColor = (ConsoleColor)COLORS.gray;
+            Write(msg);
+            ResetColor();
+        }
 
         public static void GrayMessageL(string msg)
         {

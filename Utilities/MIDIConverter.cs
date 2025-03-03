@@ -41,7 +41,7 @@ namespace Music
             foreach (var track in midiFile.Events)
             {
                 int trackcounter = 0;
-                Console.WriteLine($"track {trackcounter}");
+                Console.WriteLine($"track {trackcounter}, ticksperquater = {ticksperquater}");
                 trackcounter++;
                 long starttime = 0;
 
@@ -68,11 +68,13 @@ namespace Music
                         {
                             try
                             {
-                                var time = ne.DeltaTime;
-                                //Console.Write(me.DeltaTime);
-                                int dur = 4 * ticksperquater / time;
-                                melody.Notes[melody.Notes.Count - 1].SetDuration(dur);
-                                //Console.WriteLine(melody.Notes[melody.Notes.Count - 1].AbsDuration());
+                                var time = ne.AbsoluteTime - starttime;
+                                
+                                
+                                var dur = 4 * (float)ticksperquater / time;
+                                GrayMessageL($"{4 * ticksperquater} / {time} = {dur}");
+                                melody.Notes[melody.Notes.Count - 1].SetDuration((int)time, ticksperquater);
+                                Console.WriteLine(melody.Notes[melody.Notes.Count - 1].AbsDuration());
                             }
                             catch
                             {

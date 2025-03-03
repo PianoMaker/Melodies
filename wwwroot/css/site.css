@@ -194,6 +194,14 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
         font-size: 1em ;
     }
 
+.notebox {
+    display: inline-block;
+    padding: 5px;
+    height: 60px;
+    width: 45px;
+    border: 1px solid gray
+}
+
 .singerellamenue {
     font-family: sans-serif;
     letter-spacing: -0.2px;

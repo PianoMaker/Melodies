@@ -7,19 +7,19 @@ namespace Music
 {
     public class Duration : ICloneable
     {
+        private const int quatersPerWholeNote = 4;
+        private const int quaterContains64thNotes = 16;
         private DURATION duration;
         private DURMODIFIER modifier;
         private int tuplet;
 
-
-        public Duration()
-        { duration = DURATION.quater; modifier = DURMODIFIER.none; tuplet = 1; }
-
         public Duration(DURATION duration)
         {
-            this.duration = duration;           
-            
+            this.duration = duration;
+
         }
+        public Duration()
+        { duration = DURATION.quater; modifier = DURMODIFIER.none; tuplet = 1; }
 
         public Duration(DURATION duration, DURMODIFIER modifier, int tuplet)
         {
@@ -43,10 +43,70 @@ namespace Music
         }
         public Duration(int digit)
         {
-            
             Digit_to_duration(digit);
             modifier = DURMODIFIER.none;
         }
+
+
+        public Duration(int mididuration, int tickperquater)
+        {
+            Messages.GrayMessageL($"input: {mididuration} : {tickperquater}");
+
+            int whole = tickperquater * quatersPerWholeNote;
+            var base64th = Math.Round((float)tickperquater / quaterContains64thNotes);
+
+            if (whole % mididuration == 0)
+            {
+                Digit_to_duration(whole / mididuration);
+            }
+            else
+            {
+                int dur64th = (int)Math.Round(mididuration / base64th);
+                DetermineDuration(dur64th);
+            }
+        }
+
+        private void DetermineDuration(int dur64th)
+        {
+            Messages.GrayMessage("determine method: ");
+            int[] baseDurations = { 1, 2, 4, 8, 16, 32 };
+            modifier = DURMODIFIER.none;
+
+            foreach (var baseDur in baseDurations)
+            {
+                if (dur64th == baseDur)
+                {
+                    Messages.GrayMessageL($"dur = {baseDur}");
+                    duration = (DURATION)baseDur;
+                    return;
+                }
+                else if (dur64th == (int)(baseDur * 1.5))
+                {
+                    Messages.GrayMessageL($"dur = {baseDur}.");
+                    duration = (DURATION)baseDur;
+                    modifier = DURMODIFIER.dotted;
+                    return;
+                }
+                else if (dur64th == (int)(baseDur * 1.75))
+                {
+                    Messages.GrayMessageL($"dur = {baseDur}..");
+                    duration = (DURATION)baseDur;
+                    modifier = DURMODIFIER.doubledotted;
+                    return;
+                }
+                else if (dur64th == (int)(baseDur * 1.875))
+                {
+                    Messages.GrayMessageL($"dur = {baseDur}...");
+                    duration = (DURATION)baseDur;
+                    modifier = DURMODIFIER.tripledotted;
+                    return;
+                }
+            }
+
+            modifier = DURMODIFIER.tuplet; // Якщо тривалість не відповідає стандартним значенням
+        }
+
+
         public Duration(int digit, string? modifier)
         {
             Digit_to_duration(digit);
@@ -82,10 +142,10 @@ namespace Music
         }
 
         public int AbsDuration()
-        { 
-        if (PlaySpeedLocal > 0)
+        {
+            if (PlaySpeedLocal > 0)
                 return (int)(PlaySpeedLocal * RelDuration());
-            else return (int)(playspeed * RelDuration()); 
+            else return (int)(playspeed * RelDuration());
         }
 
         public object Clone()
@@ -103,5 +163,31 @@ namespace Music
                 str.Append(" tuplet: " + tuplet.ToString());
             return str.ToString();
         }
+
+        public string Symbol()
+        {
+            string symbol = "";
+            switch (duration)
+            {
+                case DURATION.whole: symbol += "𝅝"; break;    // Ціла нота (U+1D15D)
+                case DURATION.half: symbol += "𝅗𝅥"; break;     // Половинна нота (U+1D15E)
+                case DURATION.quater: symbol += "♩"; break;  // Чверть нота (U+2669)
+                case DURATION.eigth: symbol += "♪"; break;    // Восьма нота (U+266A)
+                case DURATION.sixteenth: symbol += "𝅘𝅥𝅯"; break; // Шістнадцята нота (U+266B)                
+                default: return "??"; // Невідомий символ
+            }
+            switch (modifier)
+            {
+                default: break;
+                case DURMODIFIER.dotted: symbol += "."; break;
+                case DURMODIFIER.doubledotted: symbol += ".."; break;
+                case DURMODIFIER.tripledotted: symbol += ".."; break;
+                case DURMODIFIER.tuplet: symbol += $"/{tuplet}"; break;
+            }
+            return symbol;
+        }
+
+
+
     }
 }

@@ -51,14 +51,6 @@ namespace Music
             get { return duration.Symbol(); }
         }
 
-        public (string, string) DurName
-        {
-            get {
-                return (duration.Symbol(), Name());                  
-            }
-        }
-
-
         public Note(Note note)
         {
             this.pitch = note.pitch;
@@ -442,20 +434,6 @@ namespace Music
             }
             else throw new ArgumentException("Object is not of type Note");
         }
-
-        internal void SetDuration(int mididur, int tickperquater)
-        {
-            try
-            {
-                var duration = new Duration(mididur, tickperquater);
-                Duration = duration;
-            }
-            catch (Exception e)
-            {
-                ErrorMessage(e.Message);
-            }
-        }
-
 
         internal void SetDuration(int dur)
         {

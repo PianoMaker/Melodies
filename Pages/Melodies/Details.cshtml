@@ -68,21 +68,22 @@
         else
         {
             <h3>Нот у мелодії - @item.MidiMelody.Notes.Count </h3>
-            <p>
+            <div>
                 @foreach (var note in @item.MidiMelody.Notes)
                 {
-                    <text>
-                        @note.Name()
-                        -
-                    </text>
+                    <div class="notebox">
+                    <text>@note.DurSymbol</text><br>
+                        <text>@note.Name()</text>                    
+                    </div>
                 }
-            </p>
-            <h3>Дієзність (beta)</h3>
+            </div>
+            
+            <h3>Тривалості</h3>
             <p>
                 @foreach (var note in @item.MidiMelody.Notes)
                 {
                     <text>
-                        <text>@note.Sharpness </text>
+                        <text> @note.Duration.RelDuration() [@note.AbsDuration()]</text>
                     </text>
                 }
             </p>
@@ -93,6 +94,15 @@
                 {
                     <text>
                         <text>@interval </text>
+                    </text>
+                }
+            </p>
+            <h3>Дієзність (beta)</h3>
+            <p>
+                @foreach (var note in @item.MidiMelody.Notes)
+                {
+                    <text>
+                        <text>@note.Sharpness </text>
                     </text>
                 }
             </p>
