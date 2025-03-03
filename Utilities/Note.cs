@@ -381,6 +381,10 @@ namespace Music
         { Transpose(i.Interval_, i.Quality, i.Octaves); }
 
 
+        public int DisplayWidth(int minWidth)
+        {            
+            return minWidth + (int)(duration.RelDuration() * 16); 
+        }
 
         public void Transpose(Interval i, DIR dir)
         { Transpose(i.Interval_, i.Quality, dir, i.Octaves); }

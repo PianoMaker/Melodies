@@ -50,7 +50,7 @@ namespace Music
 
         public Duration(int mididuration, int tickperquater)
         {
-            Messages.GrayMessageL($"input: {mididuration} : {tickperquater}");
+            //Messages.GrayMessageL($"input: {mididuration} : {tickperquater}");
 
             int whole = tickperquater * quatersPerWholeNote;
             var base64th = Math.Round((float)tickperquater / quaterContains64thNotes);
@@ -68,7 +68,7 @@ namespace Music
 
         private void DetermineDuration(int dur64th)
         {
-            Messages.GrayMessage("determine method: ");
+           // Messages.GrayMessage("determine method: ");
             int[] baseDurations = { 1, 2, 4, 8, 16, 32 };
             modifier = DURMODIFIER.none;
 
@@ -76,27 +76,27 @@ namespace Music
             {
                 if (dur64th == baseDur)
                 {
-                    Messages.GrayMessageL($"dur = {baseDur}");
+                   // Messages.GrayMessageL($"dur = {baseDur}");
                     duration = (DURATION)baseDur;
                     return;
                 }
                 else if (dur64th == (int)(baseDur * 1.5))
                 {
-                    Messages.GrayMessageL($"dur = {baseDur}.");
+                   // Messages.GrayMessageL($"dur = {baseDur}.");
                     duration = (DURATION)baseDur;
                     modifier = DURMODIFIER.dotted;
                     return;
                 }
                 else if (dur64th == (int)(baseDur * 1.75))
                 {
-                    Messages.GrayMessageL($"dur = {baseDur}..");
+                   // Messages.GrayMessageL($"dur = {baseDur}..");
                     duration = (DURATION)baseDur;
                     modifier = DURMODIFIER.doubledotted;
                     return;
                 }
                 else if (dur64th == (int)(baseDur * 1.875))
                 {
-                    Messages.GrayMessageL($"dur = {baseDur}...");
+                   // Messages.GrayMessageL($"dur = {baseDur}...");
                     duration = (DURATION)baseDur;
                     modifier = DURMODIFIER.tripledotted;
                     return;

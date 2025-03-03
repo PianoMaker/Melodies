@@ -71,9 +71,10 @@
             <div>
                 @foreach (var note in @item.MidiMelody.Notes)
                 {
-                    <div class="notebox">
+                    string width = $"{note.DisplayWidth(40)}px";
+                    <div class="notebox" style="width:@width">
                     <text>@note.DurSymbol</text><br>
-                        <text>@note.Name()</text>                    
+                        <text>@note.Name()</text> <br>                        
                     </div>
                 }
             </div>
