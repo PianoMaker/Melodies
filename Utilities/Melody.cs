@@ -165,6 +165,21 @@ namespace Music
             }
         }
         
+        public int AbsLength
+        {
+            get
+            {
+                int length= 0;
+                foreach (var note in Notes)
+                {
+                    length += note.AbsDuration();                  
+
+                }
+                return length;
+            }
+
+        }
+
         
         //Чи починається з ноти
         public bool IfStartsFromNote(Note note)
@@ -571,6 +586,63 @@ namespace Music
         }
 
 
+        public Dictionary<string, float>? GetStats()
+        {
+            var stats = new Dictionary<string, float>();
+            
+            if(Size() == 0) return null;
+
+            float increment = 100f / Size();
+
+            foreach (Note note in Notes)
+            {
+                if (!stats.ContainsKey(note.Name()))  // Avoid duplicate key exception
+                    stats[note.Name()] = 0;
+            };
+            foreach (Note note in Notes)
+            {
+                stats[note.Name()] += increment;  
+            };
+            // values * 100 і округлити до одного знака
+
+            stats = stats.ToDictionary(pair => pair.Key, pair => (float)Math.Round(pair.Value, 1));
+            
+            return stats.OrderByDescending(x => x.Value)
+                .ToDictionary(pair => pair.Key, pair => pair.Value);
+
+        }
+
+        public Dictionary<string, float>? GetWeight()
+        {
+            var stats = new Dictionary<string, float>();
+            
+
+            if (AbsLength == 0) return null;
+
+            
+
+            foreach (Note note in Notes)
+            {
+                if (!stats.ContainsKey(note.Name()))  // Avoid duplicate key exception
+                    stats[note.Name()] = 0;
+            };
+            foreach (Note note in Notes)
+            {
+                
+                stats[note.Name()] += (float)note.AbsDuration() * 100 / AbsLength;
+            };        
+
+            stats = stats.ToDictionary(pair => pair.Key, pair => (float)Math.Round(pair.Value, 1));
+
+            return stats.OrderByDescending(x => x.Value)
+                .ToDictionary(pair => pair.Key, pair => pair.Value);
+
+        }
+
+
+
+
+
         /// <summary>
         /// ////////////////TEST SECTION///////////////////
         /// </summary>
@@ -616,7 +688,7 @@ namespace Music
             }
         }
         */
-        
+
 
 
 
@@ -625,7 +697,7 @@ namespace Music
         /// </summary>
         /// <returns></returns>
         /// 
-        
+
 
         public override object Clone()
         {
