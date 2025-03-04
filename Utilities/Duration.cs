@@ -50,7 +50,7 @@ namespace Music
 
         public Duration(int mididuration, int tickperquater)
         {
-            //Messages.GrayMessageL($"input: {mididuration} : {tickperquater}");
+            Messages.GrayMessageL($"input: {mididuration} : {tickperquater}");
 
             int whole = tickperquater * quatersPerWholeNote;
             var base64th = Math.Round((float)tickperquater / quaterContains64thNotes);
@@ -68,35 +68,43 @@ namespace Music
 
         private void DetermineDuration(int dur64th)
         {
-           // Messages.GrayMessage("determine method: ");
+            Messages.GrayMessage("determine method: ");
             int[] baseDurations = { 1, 2, 4, 8, 16, 32 };
             modifier = DURMODIFIER.none;
 
             foreach (var baseDur in baseDurations)
             {
-                if (dur64th == baseDur)
+                if (dur64th > baseDur*0.9 && dur64th > baseDur * 1.2)
                 {
-                   // Messages.GrayMessageL($"dur = {baseDur}");
+                    Messages.GrayMessageL($"dur = {baseDur}");
                     duration = (DURATION)baseDur;
                     return;
                 }
-                else if (dur64th == (int)(baseDur * 1.5))
+                else if (dur64th > baseDur * 1.2 && dur64th > baseDur * 1.4)
                 {
-                   // Messages.GrayMessageL($"dur = {baseDur}.");
+                    Messages.GrayMessageL($"dur = {baseDur}");
+                    duration = (DURATION)baseDur;
+                    modifier = DURMODIFIER.tuplet;
+                    tuplet = 3;
+                    return;
+                }
+                else if (dur64th > (int)(baseDur * 1.4) && dur64th <= (int)(baseDur * 1.6))
+                {
+                    Messages.GrayMessageL($"dur = {baseDur}.");
                     duration = (DURATION)baseDur;
                     modifier = DURMODIFIER.dotted;
                     return;
                 }
-                else if (dur64th == (int)(baseDur * 1.75))
+                else if (dur64th > (int)(baseDur * 1.6) && dur64th < (int)(baseDur * 1.8))
                 {
-                   // Messages.GrayMessageL($"dur = {baseDur}..");
+                    Messages.GrayMessageL($"dur = {baseDur}..");
                     duration = (DURATION)baseDur;
                     modifier = DURMODIFIER.doubledotted;
                     return;
                 }
-                else if (dur64th == (int)(baseDur * 1.875))
+                else if (dur64th > (int)(baseDur * 1.8) && dur64th < (int)(baseDur * 1.9))
                 {
-                   // Messages.GrayMessageL($"dur = {baseDur}...");
+                    Messages.GrayMessageL($"dur = {baseDur}...");
                     duration = (DURATION)baseDur;
                     modifier = DURMODIFIER.tripledotted;
                     return;
@@ -104,6 +112,7 @@ namespace Music
             }
 
             modifier = DURMODIFIER.tuplet; // Якщо тривалість не відповідає стандартним значенням
+            duration = DURATION.quater; // за замовченням
         }
 
 
