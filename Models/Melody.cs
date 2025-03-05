@@ -10,7 +10,9 @@ namespace Melodies25.Models
         public int ID { get; set; }  // Унікальний ідентифікатор для мелодії
         public string? Filepath { get; set; }  // Назва файлу, що зберігається у wwwroot (включно з розширенням)
 
-        public bool? IsFileEligible { get; set; }
+        public bool? IsFileEligible { get; set; } // Чи коректний файл
+
+        public string? Tonality { get; set; } // Тональність. працювати через модель Tonality 
 
         [Required(ErrorMessage = "Назва є обов'язковою.")]
         public string Title { get; set; }  
@@ -24,11 +26,11 @@ namespace Melodies25.Models
        
         [Display(Name = "MIDI файл")]
         [NotMapped]
-        public IFormFile? File { get; set; }
+        public IFormFile? File { get; set; } 
 
         // власна розробка  для роботи з нотним текстом
         [NotMapped]
-        public Music.Melody? MidiMelody { get; set; }
+        public Music.Melody? MidiMelody { get; set; } 
 
         [NotMapped]
         public string? Mp3Filepath 

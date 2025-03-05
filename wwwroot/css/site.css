@@ -209,6 +209,13 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
 }
 
+.noteanalysis {
+    display: inline-block;
+    background-color: lightgoldenrodyellow;
+    padding: 5px;
+    border: 1px solid darkred;
+}
+
 .singerellamenue {
     font-family: sans-serif;
     letter-spacing: -0.2px;

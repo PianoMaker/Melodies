@@ -354,6 +354,15 @@ namespace Music
             oct += octave;
         }
 
+        public Note TransposeToNote(INTERVALS interval, QUALITY quality, int octave = 0)
+        {
+            var note = (Note)Clone();
+            note.step = addstep(step, ref oct, (int)interval);
+            note.pitch = addpitch(pitch, /*ref oct,*/ int_to_pitch(interval, quality));
+            note.oct += octave;
+            return note;
+        }
+
         public void Transpose(int interval, int quality, int octave = 0)
         {
             step = addstep(step, ref oct, interval);

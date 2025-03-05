@@ -72,9 +72,9 @@ namespace Music
                                 
                                 
                                 var dur = 4 * (float)ticksperquater / time;
-                               // GrayMessageL($"input: {4 * ticksperquater} / {time} = {dur}");
+                                GrayMessageL($"input: [{ne.NoteNumber}]  {ticksperquater * 4} / {time} =  {dur}");
                                 melody.Notes[melody.Notes.Count - 1].SetDuration((int)time, ticksperquater);
-                                Console.WriteLine(melody.Notes[melody.Notes.Count - 1].AbsDuration());
+                                Console.WriteLine(melody.Notes[melody.Notes.Count - 1].Duration.RelDuration());
                             }
                             catch
                             {

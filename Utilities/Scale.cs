@@ -196,6 +196,36 @@ namespace Music
             return true;
         }
 
+        public static bool IfNoteInScale(Scale scale, Note note)
+        {
+            foreach(Note _note in scale.Notes)
+            {
+                if (_note == note)
+                    return true;
+            }
+            return false;
+        }
+
+        public static bool TryMakeToScale(Scale scale, ref Note note)
+        {
+            foreach (Note _note in scale.Notes)
+            {
+                if (_note.Equals(note))
+                    return true;
+                else if(_note.Pitch == note.Pitch)
+                {
+                    while (note.Sharpness < _note.Sharpness)
+                        note.EnharmonizeSharp();
+                    while (note.Sharpness > _note.Sharpness)
+                        note.EnharmonizeFlat();
+                    return true;
+                }
+                
+            }
+            return false;
+        }
+
+
         public void Clear() { notes.Clear(); }
         /*
         public void Display(ChordT chordT) { if (notes.Count > 0)  Notes.ForEach(note => note.Display()); }

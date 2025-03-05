@@ -71,7 +71,7 @@
             <div>
                 @foreach (var note in @item.MidiMelody.Notes)
                 {
-                    string width = $"{note.DisplayWidth(40, 18)}px";
+                    string width = $"{note.DisplayWidth(45, 18)}px";
                     string marginbottom = $"{note.AbsPitch() * 2}px";
                     <div style="display: inline-block; width:@width; height:90px; text-align: center">
                         <div class="notebox" style="height:30px; margin-bottom: @marginbottom; width:@width">
@@ -110,26 +110,32 @@
                     </text>
                 }
             </p>
-            
-            if (@item.MidiMelody.GetStats() is not null)
+            <div style="display:block">
+
+                <h3>Статистика нот (beta)</h3>
+            @if (@item.MidiMelody.GetStats() is not null)
             {
-                <h3>Статистика нот</h3>
+                <div class="noteanalysis">
+                <h3>без урахування тривалості</h3>
                 @foreach (var note in @item.MidiMelody.GetStats())
                 {
                     <p><text>@note.Key - @note.Value %</text></p>
                 }
+                </div>
             }
 
-            if (@item.MidiMelody.GetWeight() is not null)
-            {
-                <h3>Статистика з урахуванням тривалостей</h3>
+            @if (@item.MidiMelody.GetWeight() is not null)
+                {
+                    <div class="noteanalysis">
+                <h3>з урахуванням тривалостей</h3>
                 @foreach (var note in @item.MidiMelody.GetWeight())
                 {
                     <p><text>@note.Key - @note.Value %</text></p>
                 }
+                </div>
             }
 
-           
+            </div>
 
         }
         }

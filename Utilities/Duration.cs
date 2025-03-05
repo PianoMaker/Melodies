@@ -30,8 +30,15 @@ namespace Music
 
         private void Digit_to_duration(int digit)
         {
+            Messages.GrayMessage($"standart method ({digit}): ");
             int value = 1;
             if (digit == 0) throw new IncorrectNote("Incorrect duration: 0");
+            CountValue(ref digit, ref value);
+            modifier = DURMODIFIER.none;
+        }
+
+        private void CountValue(ref int digit, ref int value)
+        {
             while (digit % 2 == 0)
             {
                 digit /= 2;
@@ -39,8 +46,8 @@ namespace Music
             }
             duration = (DURATION)value;
             tuplet = digit;
-            modifier = DURMODIFIER.none;
         }
+
         public Duration(int digit)
         {
             Digit_to_duration(digit);
@@ -50,10 +57,10 @@ namespace Music
 
         public Duration(int mididuration, int tickperquater)
         {
-            Messages.GrayMessageL($"input: {mididuration} : {tickperquater}");
+           // Messages.GrayMessageL($"input: {mididuration} : {tickperquater}");
 
             int whole = tickperquater * quatersPerWholeNote;
-            var base64th = Math.Round((float)tickperquater / quaterContains64thNotes);
+            float base64th = (float)tickperquater / quaterContains64thNotes;
 
             if (whole % mididuration == 0)
             {
@@ -61,60 +68,81 @@ namespace Music
             }
             else
             {
-                int dur64th = (int)Math.Round(mididuration / base64th);
+                
+                double dur64th = mididuration / base64th;
+                Messages.GrayMessage($"determine method ({mididuration} / {base64th}) = {dur64th} ");
                 DetermineDuration(dur64th);
             }
         }
 
-        private void DetermineDuration(int dur64th)
+        private void DetermineDuration(double dur64th)
         {
-            Messages.GrayMessage("determine method: ");
+            
             int[] baseDurations = { 1, 2, 4, 8, 16, 32 };
             modifier = DURMODIFIER.none;
 
             foreach (var baseDur in baseDurations)
             {
-                if (dur64th > baseDur*0.9 && dur64th > baseDur * 1.2)
+                if (dur64th > baseDur*0.9 && dur64th < baseDur * 1.2)
                 {
                     Messages.GrayMessageL($"dur = {baseDur}");
-                    duration = (DURATION)baseDur;
+                    duration = ConvertValue(baseDur);
                     return;
                 }
-                else if (dur64th > baseDur * 1.2 && dur64th > baseDur * 1.4)
+                else if (dur64th >= baseDur * 1.2 && dur64th < baseDur * 1.3)
                 {
-                    Messages.GrayMessageL($"dur = {baseDur}");
-                    duration = (DURATION)baseDur;
+                    
+                    duration = ConvertValue(baseDur);
+                    Messages.GrayMessageL($"dur = {duration}_");
+                    modifier = DURMODIFIER.tied;                    
+                    return;
+                }
+                else if (dur64th >= baseDur * 1.3 && dur64th < baseDur * 1.4)
+                {
+                    
+                    duration = ConvertValue(baseDur);
+                    Messages.GrayMessageL($"dur = {duration}/3");
                     modifier = DURMODIFIER.tuplet;
                     tuplet = 3;
                     return;
                 }
-                else if (dur64th > (int)(baseDur * 1.4) && dur64th <= (int)(baseDur * 1.6))
+                else if (dur64th >= (int)(baseDur * 1.4) && dur64th <= (int)(baseDur * 1.6))
                 {
                     Messages.GrayMessageL($"dur = {baseDur}.");
-                    duration = (DURATION)baseDur;
+                    duration = ConvertValue(baseDur);
                     modifier = DURMODIFIER.dotted;
                     return;
                 }
-                else if (dur64th > (int)(baseDur * 1.6) && dur64th < (int)(baseDur * 1.8))
+                else if (dur64th > (int)(baseDur * 1.6) && dur64th <= (int)(baseDur * 1.8))
                 {
                     Messages.GrayMessageL($"dur = {baseDur}..");
-                    duration = (DURATION)baseDur;
+                    duration = ConvertValue(baseDur);
                     modifier = DURMODIFIER.doubledotted;
                     return;
                 }
-                else if (dur64th > (int)(baseDur * 1.8) && dur64th < (int)(baseDur * 1.9))
+                else if (dur64th > (int)(baseDur * 1.8) && dur64th <= (int)(baseDur * 1.9))
                 {
                     Messages.GrayMessageL($"dur = {baseDur}...");
-                    duration = (DURATION)baseDur;
+                    duration = ConvertValue(baseDur);
                     modifier = DURMODIFIER.tripledotted;
                     return;
                 }
             }
-
+            Messages.GrayMessageL($"dur = indef");
             modifier = DURMODIFIER.tuplet; // Якщо тривалість не відповідає стандартним значенням
             duration = DURATION.quater; // за замовченням
         }
 
+        private DURATION ConvertValue(int baseDur)
+        {
+            int value = 1;
+            while(baseDur > 0)
+            {
+                baseDur /= 2;
+                value *= 2;
+            }
+            return (DURATION)value;
+        }
 
         public Duration(int digit, string? modifier)
         {
@@ -140,7 +168,11 @@ namespace Music
             else if (modifier == DURMODIFIER.dotted) relduration *= 1.5;
             else if (modifier == DURMODIFIER.doubledotted) relduration *= 1.75;
             else if (modifier == DURMODIFIER.tripledotted) relduration *= 1.875;
-            if (tuplet > 0) relduration /= tuplet;
+            if (tuplet > 0)
+            {
+                relduration /= tuplet;
+                relduration = Math.Round(relduration, 2);
+            }
             return relduration;
         }
 

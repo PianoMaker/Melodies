@@ -12,6 +12,8 @@ namespace Music
         // private List<Note> notes = new List<Note>();
         Random rnd = new Random();
         public int Tempo { get; set; }
+
+        public Tonalities? tonality;
         public Melody() { }
         public Melody(List<Note> nt) { this.notes = nt; }
 
@@ -99,7 +101,7 @@ namespace Music
                 return list;
             }
         }
-        
+
         public List<float> SharpnessList
         {
             get
@@ -107,8 +109,19 @@ namespace Music
                 var list = new List<float>();
                 foreach (var note in Notes)
                 {
-                    list.Add(note.Sharpness);                   
+                    list.Add(note.Sharpness);
                 }
+                return list;
+            }
+        }
+
+        public List<(string, string)> DurName
+        {
+            get
+            {
+                var list = new List<(string, string)>();
+                foreach (var note in Notes)
+                    list.Add(note.DurName);
                 return list;
             }
         }
@@ -136,15 +149,15 @@ namespace Music
         }
 
         public string SharpnessString
-        {            
+        {
             get
             {
                 string list = "";
-                foreach(var note in Notes) 
-                { 
-                    list += note.Sharpness; 
+                foreach (var note in Notes)
+                {
+                    list += note.Sharpness;
                     list += " ";
-                
+
                 }
                 return list;
             }
@@ -157,22 +170,22 @@ namespace Music
                 string list = "";
                 foreach (var interval in IntervalList)
                 {
-                    list+= interval.ToString();
+                    list += interval.ToString();
                     list += " ";
 
                 }
                 return list;
             }
         }
-        
+
         public int AbsLength
         {
             get
             {
-                int length= 0;
+                int length = 0;
                 foreach (var note in Notes)
                 {
-                    length += note.AbsDuration();                  
+                    length += note.AbsDuration();
 
                 }
                 return length;
@@ -180,11 +193,11 @@ namespace Music
 
         }
 
-        
+
         //Чи починається з ноти
         public bool IfStartsFromNote(Note note)
         {
-            Console.WriteLine($"first pitch is {pitch_to_notename(note.Step, note.Pitch)}"); 
+            Console.WriteLine($"first pitch is {pitch_to_notename(note.Step, note.Pitch)}");
             return Notes[0].Pitch == note.Pitch;
         }
 
@@ -212,7 +225,7 @@ namespace Music
             var notesOther = other.Pitches.ToArray();
             return LongestCommonSubstring(notesThis, notesOther).Count;
         }
-        
+
         static List<int> LongestCommonSubstring(int[] A, int[] B)
         {
             int n = A.Length;
@@ -259,28 +272,30 @@ namespace Music
 
         public void Enharmonize()
         {//бета-версія
-            
+
             // виправлення MIDI-знаків альтерації відповідно
             // до тональної логіки
 
             EnharmonizeCommon(); // загальний для зменшених інтервалів
             Desharp(); // утворені зайві дієзи 
             Desharp();// утворені зайві дієзи 
+            DesharpFlatTonalities();// дієзні послідовності посеред бемолів
             UnDoubleFlat(); // утворені зайві дубль-бемолі
             UnChromEnd(); // хроматизми наприкінці
-            UpChromatics(); // висхідна хроматика
+            UpChromatics(); // висхідна хроматика            
             AfterEffectUnflat(); // артефакти попередніх
+             
         }
 
         public void EnharmonizeCommon()
         {
             int count = 0;
-            
-            for(int i = 1; i<Size() - 1; i++)
+
+            for (int i = 1; i < Size() - 1; i++)
             {
                 if (Notes[i].Sharpness - Notes[i - 1].Sharpness > 6 &&
                     Notes[i + 1].Sharpness - Notes[i].Sharpness <= 0)
-                { Notes[i].EnharmonizeFlat(); count++; }    
+                { Notes[i].EnharmonizeFlat(); count++; }
                 else if (Notes[i].Sharpness - Notes[i - 1].Sharpness < -6 &&
                     Notes[i + 1].Sharpness - Notes[i].Sharpness >= 0)
                 { Notes[i].EnharmonizeSharp(); count++; }
@@ -288,26 +303,26 @@ namespace Music
             GrayMessageL($"generally enharmonized {count} notes");
         }
 
-
+        //якщо надто дієзна тональність фрагменту
         public void Desharp()
         {
             int startsharprow = 0;
             int doublesharpposition = 0;
             int endsharprow = 0;
-            
+
 
             for (int i = 1; i < Size() - 1; i++)
             {
-                
-                if (Notes[i].Sharpness < 4 && doublesharpposition == 0)
+
+                if (Notes[i].Sharpness < 3 && doublesharpposition == 0)
                 {
                     startsharprow = 0;
                     continue;
                 }
-                if (Notes[i].Sharpness > 4 && startsharprow == 0)
+                if (Notes[i].Sharpness > 3 && startsharprow == 0)
                     startsharprow = i;
 
-                if (notes[i].Sharpness > 9)
+                if (notes[i].Sharpness > 8)
                 {
                     doublesharpposition = i;
                 }
@@ -326,17 +341,57 @@ namespace Music
             }
         }
 
-
-        public void UnDoubleFlat()
+        //великі дієзні фрагменти посеред бемолів
+        public void DesharpFlatTonalities()
         {
-            for (int i = 1; i < Size() - 1; i++)
+            int startposition = 0;
+            int endposition = 0;
+
+            for (int i = 1; i < Size(); i++)
             {
-                if (Notes[i].Sharpness < -9)
-                    Notes[i].EnharmonizeDoubles();
+
+                if (Notes[i].Sharpness - Notes[i - 1].Sharpness >= 7 && Notes[i].Sharpness > 0)
+                {
+                    GrayMessageL($"sharp jump at pos. {i}");
+                    startposition = i;
+                }
+
+                if (startposition > 0)
+                    if (Notes[i].Sharpness - Notes[i - 1].Sharpness <= -4 || i == (Size() - 1) /*&& Notes[i].Sharpness > 2*/)
+                    {
+                        endposition = i;
+                        break;
+                    }
+            }
+            if (startposition > 0 && endposition > startposition)
+            {
+                {
+                    GrayMessageL($"Desharp (flat) notes from {startposition} to {endposition}");
+                    for (int i = startposition; i <= endposition; i++)
+                    {
+
+                        Notes[i].EnharmonizeFlat();
+                    }
+                    DesharpFlatTonalities();
+                }
+
             }
         }
 
-            
+
+        public void UnDoubleFlat()
+        {
+            int lastindex = Size() - 1;
+            int startposition = 0;
+            for (int i = 1; i < Size() - 1; i++)
+            {
+                if (Notes[i].Sharpness - Notes[i - 1].Sharpness == 7)
+                    startposition = i;
+
+            }
+        }
+
+
 
         public void UnChromEnd()
         {
@@ -364,7 +419,7 @@ namespace Music
             }
         }
 
-      
+
         public void UpChromatics()
         {
             for (int i = 3; i < Size(); i++)
@@ -387,7 +442,7 @@ namespace Music
             }
 
         }
-      
+
         public void AfterEffectUnflat()
         {
             for (int i = 1; i < Size() - 1; i++)
@@ -422,7 +477,7 @@ namespace Music
 
         public void Join(Melody other)
         {
-            
+
             foreach (Note note in other.notes)
             {
                 Notes.Add(note);
@@ -440,55 +495,55 @@ namespace Music
         public new int Octaves()
         { return Range() / 12; }
 
-/*
-        public List<Melody> Permute() // генерування усіх можливих розташувань
-        {
-            PermutationsGenerator<Note> generator = new();
+        /*
+                public List<Melody> Permute() // генерування усіх можливих розташувань
+                {
+                    PermutationsGenerator<Note> generator = new();
 
-            var permutations = generator.GeneratePermutations(notes);
+                    var permutations = generator.GeneratePermutations(notes);
 
-            List<Melody> list = new();
-            foreach (List<Note> chord in permutations)
-            {
-                Melody newchord = new(chord);
-                //newchord.Adjust(0);
-                list.Add(newchord);
-            }
-            return list;
-        }
+                    List<Melody> list = new();
+                    foreach (List<Note> chord in permutations)
+                    {
+                        Melody newchord = new(chord);
+                        //newchord.Adjust(0);
+                        list.Add(newchord);
+                    }
+                    return list;
+                }
 
-        public new Melody[] PermuteList() // генерування усіх можливих розташувань
-        {
-            PermutationsGenerator<Note> generator = new();
+                public new Melody[] PermuteList() // генерування усіх можливих розташувань
+                {
+                    PermutationsGenerator<Note> generator = new();
 
-            List<List<Note>> permutations = generator.GeneratePermutations(notes);
+                    List<List<Note>> permutations = generator.GeneratePermutations(notes);
 
-            Melody[] list = new Melody[permutations.Count];
-            for (int i = 0; i < permutations.Count; i++)
-            {
-                Melody newchord = new(permutations[i]);
-                //newchord.Adjust(0);
-                list[i] = newchord;
-            }
-            return list;
-        }
+                    Melody[] list = new Melody[permutations.Count];
+                    for (int i = 0; i < permutations.Count; i++)
+                    {
+                        Melody newchord = new(permutations[i]);
+                        //newchord.Adjust(0);
+                        list[i] = newchord;
+                    }
+                    return list;
+                }
 
 
-        public new void Play()
-        {
-            if (player == PLAYER.beeper)
-                Beeper.Play(this);
-            if (player == PLAYER.naudio)
-                NAPlayer.Play(this);
-            if (player == PLAYER.midiplayer)
-                MidiFile0.Play(this);
-        }
-*/
+                public new void Play()
+                {
+                    if (player == PLAYER.beeper)
+                        Beeper.Play(this);
+                    if (player == PLAYER.naudio)
+                        NAPlayer.Play(this);
+                    if (player == PLAYER.midiplayer)
+                        MidiFile0.Play(this);
+                }
+        */
         public new void RemoveNote(Note note) { notes.Remove(note); }
 
         public new void Reverse()
         { notes.Reverse(); }
-                
+
 
         public new int Range()
         { return pitchdiff(notes[0].AbsPitch(), notes[^1].AbsPitch()); }
@@ -519,7 +574,7 @@ namespace Music
         public void TransposeToHighNote(Note note)
         {
 
-            if (note  == Notes[^1]) return;
+            if (note == Notes[^1]) return;
             DIR dir = new();
             if (note > Notes[^1]) dir = DIR.UP;
             else dir = DIR.DOWN;
@@ -574,7 +629,7 @@ namespace Music
 
 
         public void RandomizeOct(int oct)
-        {            
+        {
             foreach (Note note in Notes)
                 note.Oct = rnd.Next(oct);
         }
@@ -589,8 +644,8 @@ namespace Music
         public Dictionary<string, float>? GetStats()
         {
             var stats = new Dictionary<string, float>();
-            
-            if(Size() == 0) return null;
+
+            if (Size() == 0) return null;
 
             float increment = 100f / Size();
 
@@ -601,12 +656,12 @@ namespace Music
             };
             foreach (Note note in Notes)
             {
-                stats[note.Name()] += increment;  
+                stats[note.Name()] += increment;
             };
             // values * 100 і округлити до одного знака
 
             stats = stats.ToDictionary(pair => pair.Key, pair => (float)Math.Round(pair.Value, 1));
-            
+
             return stats.OrderByDescending(x => x.Value)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
 
@@ -615,11 +670,11 @@ namespace Music
         public Dictionary<string, float>? GetWeight()
         {
             var stats = new Dictionary<string, float>();
-            
+
 
             if (AbsLength == 0) return null;
 
-            
+
 
             foreach (Note note in Notes)
             {
@@ -628,9 +683,9 @@ namespace Music
             };
             foreach (Note note in Notes)
             {
-                
+
                 stats[note.Name()] += (float)note.AbsDuration() * 100 / AbsLength;
-            };        
+            };
 
             stats = stats.ToDictionary(pair => pair.Key, pair => (float)Math.Round(pair.Value, 1));
 

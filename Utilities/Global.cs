@@ -26,7 +26,7 @@ namespace Music
     public enum MODE { dur, moll, chrome }; // лад
 
     public enum DURATION { whole = 1, half = 2, quater = 4, eigth = 8, sixteenth = 16, thirtysecond = 32 } // тривалості
-    public enum DURMODIFIER { none, dotted, doubledotted, tripledotted, tuplet } // тривалості з крапками і види ритмічного поділу
+    public enum DURMODIFIER { none, dotted, doubledotted, tripledotted, tuplet, tied } // тривалості з крапками і види ритмічного поділу
 
     enum MAJTONALITIES { Cdur, Gdur, Ddur, Adur, Edur, Hdur, Fisdur, Cisdur, Fdur, Bdur, Esdur, Asdur, Desdur, Gesdur, Cesdur, Fesdur, Gisdur };
     enum MINTONALITIES { amoll, emoll, hmoll, fismoll, cismoll, gismoll, dismoll, aismoll, eismoll, dmoll, gmoll, cmoll, fmoll, bmoll, esmoll, asmoll, desmoll };
