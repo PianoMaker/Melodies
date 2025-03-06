@@ -9,9 +9,9 @@ namespace Music
     public class Interval
     {
 
-        INTERVALS interval;
-        QUALITY quality;
-        int octaves;
+        private INTERVALS interval;
+        private QUALITY quality;
+        private int octaves;
 
         public Interval() { }
 
@@ -54,7 +54,7 @@ namespace Music
         { this.interval = interval; this.quality = quality; }
 
         public Interval(int interval, int quality, int octaves = 0)
-        { this.interval = (INTERVALS)interval; this.quality = (QUALITY)quality; this.octaves = octaves;  }
+        { this.interval = (INTERVALS)interval; this.quality = (QUALITY)quality; this.octaves = octaves; }
 
 
         public Interval(Note notelow, Note notehigh)
@@ -65,8 +65,8 @@ namespace Music
             quality = int_quality(steps, pitchs);
             interval = (INTERVALS)steps;
             octaves = (notehigh.AbsPitch() - notelow.AbsPitch()) / 12;
-            if(Interval_ == INTERVALS.PRIMA && Quality == QUALITY.DIM)Interval_ = INTERVALS.OCTAVA;
-            
+            if (Interval_ == INTERVALS.PRIMA && Quality == QUALITY.DIM) Interval_ = INTERVALS.OCTAVA;
+
         }
 
         public INTERVALS Interval_
@@ -79,6 +79,22 @@ namespace Music
         {
             get { return quality; }
             set { this.Quality = value; }
+        }
+
+        public int Steps {
+            get {
+                switch (interval)
+                {
+                    default: return 0;
+                    case INTERVALS.PRIMA: return 0;
+                    case INTERVALS.SECUNDA: return 1;
+                    case INTERVALS.TERZIA: return 2;
+                    case INTERVALS.QUARTA: return 3;
+                    case INTERVALS.QUINTA: return 4;
+                    case INTERVALS.SEKSTA: return 5;
+                    case INTERVALS.SEPTYMA: return 6;
+                }
+            }
         }
 
         public int Octaves

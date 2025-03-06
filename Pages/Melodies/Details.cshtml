@@ -47,6 +47,14 @@
             </a>
 
         </div>
+        @if (!string.IsNullOrEmpty(Model.Melody.Tonality))
+        {
+            <p>MIDI файл завантажено в тональності @Model.Melody.Tonality</p>
+        }
+        else
+        {
+            <p>тональність MIDI файлу не визначено</p>
+        }
     }
     else
     {
@@ -124,6 +132,18 @@
                 </div>
             }
 
+                @if (@item.MidiMelody.GetDegreesStats() is not null)
+                {
+                    <div class="noteanalysis">
+                        <h3>по ступенях</h3>
+                        @foreach (var value in @item.MidiMelody.GetDegreesStats())
+                        {
+                            <p><text>@value.Key - @value.Value %</text></p>
+                        }
+                    </div>
+                }
+
+
             @if (@item.MidiMelody.GetWeight() is not null)
                 {
                     <div class="noteanalysis">
@@ -134,6 +154,8 @@
                 }
                 </div>
             }
+
+
 
             </div>
 

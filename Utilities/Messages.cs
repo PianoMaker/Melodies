@@ -188,7 +188,7 @@ namespace Music
         private const string notes_durations_uk = "Тривалості:\n 1 - ціла, 2 - половинка, 4 - четвертна, . - з крапками";
         private const string notes_durations_en = "Durations:\n 1 - whole note 2 - half note, 4 - quater note, . - dotted";
 
-        private const string notonality_en = "impossible to detect tonality";
+        private const string notonality_en = "impossible to detect Tonality";
         private const string notonality_uk = "неможливо визначити тональність";
 
         private const string nre_en = "re";
@@ -340,6 +340,12 @@ namespace Music
             ResetColor();
         }
 
+        public static void ErrorMessageL(string msg)
+        {
+            ForegroundColor = (ConsoleColor)COLORS.red;
+            WriteLine(msg);
+            ResetColor();
+        }
         public static void Header(string msg)
         {
             ForegroundColor = (ConsoleColor)11;

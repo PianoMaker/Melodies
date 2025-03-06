@@ -3,11 +3,12 @@
 
 @{
     ViewData["Title"] = "Мелодія - Редагування";
+    var melody = @Model.Melody;
 }
 
-<h1>Редагування</h1>
+<h1>@melody.Author.Name  @melody.Author.Name  - @melody.Title</h1>
 
-<h4>Мелодія</h4>
+<h4></h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -41,12 +42,19 @@
                 </button>
                 
             }
-
+            <div class="form-group">
+                <label asp-for="Melody.Tonality" class="control-label">Тональність (MIDI-файлу)</label>
+                <select asp-for="Melody.Tonality" class="form-control" asp-items="ViewBag.Tonalities" >
+                    <option value="">-- Тональність, в якій завантажено MIDI --</option>
+                </select>
+                <span asp-validation-for="Melody.Tonality" class="text-danger"></span>
+            </div>
             <div class="form-group">
                 <label asp-for="Melody.Title" class="control-label">Назва</label>
                 <input asp-for="Melody.Title" class="form-control" />
                 <span asp-validation-for="Melody.Title" class="text-danger"></span>
             </div>
+           
             <div class="form-group">
                 <label asp-for="Melody.Year" class="control-label">Рік</label>
                 <input asp-for="Melody.Year" class="form-control" />

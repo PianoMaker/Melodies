@@ -1,4 +1,6 @@
-﻿using System.CodeDom;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.CodeDom;
+using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
@@ -248,15 +250,23 @@ namespace Music
 
         public Scale NotesInTonality()
         {
+            Scale scale = CommonScale();
+
+            GrayMessageL("Scale:" + scale.ToString());
+            return scale;
+        }
+
+        private Scale CommonScale()
+        {
             var scale = new Scale();
             //I
-            var noteI = new Note(step, alter);            
+            var noteI = new Note(step, alter);
             scale.AddNote(noteI);
             //II
             var noteII = noteI.TransposeToNote(INTERVALS.SECUNDA, QUALITY.MAJ);
             scale.AddNote(noteII);
             //III
-            var noteIII = mode == MODE.moll?noteI.TransposeToNote(INTERVALS.TERZIA, QUALITY.MAJ) : noteI.TransposeToNote(INTERVALS.TERZIA, QUALITY.MIN);
+            var noteIII = mode == MODE.dur ? noteI.TransposeToNote(INTERVALS.TERZIA, QUALITY.MAJ) : noteI.TransposeToNote(INTERVALS.TERZIA, QUALITY.MIN);
             scale.AddNote(noteIII);
             //IV
             var noteIV = noteI.TransposeToNote(INTERVALS.QUARTA, QUALITY.PERFECT);
@@ -265,14 +275,117 @@ namespace Music
             var noteV = noteI.TransposeToNote(INTERVALS.QUINTA, QUALITY.PERFECT);
             scale.AddNote(noteV);
             //VI
-            var noteVI = mode == MODE.moll ? noteI.TransposeToNote(INTERVALS.SEKSTA, QUALITY.MAJ) : noteI.TransposeToNote(INTERVALS.SEKSTA, QUALITY.MIN);
+            var noteVI = mode == MODE.dur ? noteI.TransposeToNote(INTERVALS.SEKSTA, QUALITY.MAJ) : noteI.TransposeToNote(INTERVALS.SEKSTA, QUALITY.MIN);
             scale.AddNote(noteVI);
             //VII
-            var noteVII = mode == MODE.moll ? noteI.TransposeToNote(INTERVALS.SEKSTA, QUALITY.MAJ) : noteI.TransposeToNote(INTERVALS.SEPTYMA, QUALITY.MIN);
+            var noteVII = mode == MODE.dur ? noteI.TransposeToNote(INTERVALS.SEPTYMA, QUALITY.MAJ) : noteI.TransposeToNote(INTERVALS.SEPTYMA, QUALITY.MIN);
             scale.AddNote(noteVII);
-
             return scale;
         }
+
+        public Scale NotesInTonalityExtended()
+        {
+            
+            Scale scale = CommonScale();
+
+            var noteI = new Note(step, alter);
+            scale.AddNote(noteI);
+            //IIb
+            var noteII_ = noteI.TransposeToNote(INTERVALS.SECUNDA, QUALITY.MIN);
+            scale.AddNote(noteII_);
+
+
+            //IV#
+            var noteIV_ = noteI.TransposeToNote(INTERVALS.QUARTA, QUALITY.AUG);
+            scale.AddNote(noteIV_);
+
+            if (mode == MODE.moll) {
+                
+                //VI#
+                var noteVI_ = noteI.TransposeToNote(INTERVALS.SEKSTA, QUALITY.MAJ);
+                scale.AddNote(noteVI_);
+                //VII#
+                var noteVII_ = noteI.TransposeToNote(INTERVALS.SEPTYMA, QUALITY.MAJ);
+                scale.AddNote(noteVII_);
+            }
+
+            GrayMessageL("Scale:" + scale.ToString());
+            return scale;
+        }
+
+
+        public static string GetDegree(Note note, Tonalities tonality)
+        {
+            while (note.AbsPitch() < tonality.Pitch()) note.OctUp();
+            
+
+            Interval interval = new Interval(tonality.GetNote(), note);
+            
+            var degree = GetSteps(interval);
+            if (degree == "unknown") return degree;
+            switch(interval.Quality)
+            {
+                case QUALITY.AUG: degree += "#"; break;
+                case QUALITY.DIM: degree += "b"; break;
+                case QUALITY.MIN:
+                    {
+                        if (degree == "II") degree += "b"; 
+                        else if (degree == "VI" && tonality.mode == MODE.dur)  degree += "b"; 
+                        else if (degree == "VII" && tonality.mode == MODE.dur) degree += "b";
+                    }; break;
+                case QUALITY.MAJ:
+                    {
+                        if (degree == "VI" && tonality.mode == MODE.moll) degree += "#";
+                        else if (degree == "VII" && tonality.mode == MODE.moll) degree += "#";
+                    }; break;
+                default: return degree;
+            }; 
+            return degree;
+        }
+
+        private static string GetSteps(Interval interval)
+        {
+            //GrayMessageL($"interval.Steps = {interval.Steps}");
+            switch (interval.Steps)
+            {
+                default: return "unknown";
+                case 0: return "I"; 
+                case 1: return "II"; 
+                case 2: return "III";
+                case 3: return "IV"; 
+                case 4: return "V"; 
+                case 5: return "VI"; 
+                case 6: return "VII"; 
+            }
+        }
+
+        public static Dictionary<string, float> DegreeStats(List<Note> notes, Tonalities tonality)
+        {
+            var dictionary = new Dictionary<string, float>();
+            var increment = (float)Math.Round(100f / notes.Count);
+
+            foreach (var note in notes)
+            {
+                if (tonality is not null)
+                {
+                    var degree = GetDegree(note, tonality);
+                    
+                    if (dictionary.ContainsKey(degree))
+                    {
+                        dictionary[degree] += increment;
+                    }
+                    else
+                    {
+                        dictionary.Add(degree, increment);
+                    }
+                }
+            }
+            dictionary = dictionary.OrderByDescending(d => d.Value).ToDictionary(); 
+
+            return dictionary;
+        }
+
+
 
 
 

@@ -212,6 +212,7 @@ namespace Music
         public bool EqualDegree(Note obj)
         {
             Note note = (Note)obj;
+            //GrayMessageL($"{Step} vs {obj.Step} and {Pitch} vs {obj.Pitch}");
             return Pitch == note.Pitch && Step == note.Step;
         }
 

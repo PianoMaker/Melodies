@@ -29,8 +29,8 @@ namespace Melodies25.Pages.Melodies
         }
 
         public Models.Melody Melody { get; set; } = default!;
-       
 
+        public Dictionary<string, float> Degrees;
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             MessageL(Music.COLORS.yellow, "MELODY/DETAILS OnGet method");
@@ -85,11 +85,14 @@ namespace Melodies25.Pages.Melodies
             Globals.lng = Music.LNG.uk;
             Globals.notation = Music.Notation.eu;
             melody.MidiMelody = await MidiConverter.GetMelodyFromMidiAsync(midifile);
-            melody.MidiMelody.Enharmonize(); 
-            
-
+            if (melody.Tonality != null)
+            {
+                melody.MidiMelody.Tonality = new Tonalities(melody.Tonality);
+            }
+            melody.MidiMelody.Enharmonize();           
 
             Melody = melody; // Оновлюємо модель
+                        
 
             return Page();
         }

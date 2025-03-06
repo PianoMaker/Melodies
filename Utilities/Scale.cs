@@ -206,23 +206,41 @@ namespace Music
             return false;
         }
 
-        public static bool TryMakeToScale(Scale scale, ref Note note)
+        public static Note TryMakeToScale(Scale scale, Note note)
         {
+            bool ifskiped = true;
+            string confirmednotes = "Notes confirmed: ";
+            string affectednotes = "Notes affected: ";
+            string skipednotes = $"Notes out of tonality: {note}";
+            MessageL(COLORS.cyan, $"analize {note.Name()} {note.Pitch}");
+
             foreach (Note _note in scale.Notes)
             {
-                if (_note.Equals(note))
-                    return true;
-                else if(_note.Pitch == note.Pitch)
+                //GrayMessageL($"compare to {_note.Name()} {_note.Pitch}");
+                if (_note.EqualDegree(note))
                 {
+                    confirmednotes += $"{note.Name()} ";
+                    ifskiped = false;
+                    break;
+                }
+                else if (_note.Pitch == note.Pitch)
+                {
+                    ifskiped = false;
+                    GrayMessageL($"processing {note.Name()}");
                     while (note.Sharpness < _note.Sharpness)
                         note.EnharmonizeSharp();
                     while (note.Sharpness > _note.Sharpness)
                         note.EnharmonizeFlat();
-                    return true;
-                }
-                
+
+                    affectednotes += $"{note.Name()} ";
+                    break;
+                }                               
             }
-            return false;
+            GrayMessageL(affectednotes);
+            if (ifskiped)
+                ErrorMessageL(skipednotes);
+            MessageL(COLORS.standart, confirmednotes);
+            return note;
         }
 
 

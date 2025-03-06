@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using Melodies25.Migrations;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Numerics;
 using static Music.Engine;
@@ -13,7 +14,7 @@ namespace Music
         Random rnd = new Random();
         public int Tempo { get; set; }
 
-        public Tonalities? tonality;
+        public Tonalities? Tonality;
         public Melody() { }
         public Melody(List<Note> nt) { this.notes = nt; }
 
@@ -125,7 +126,7 @@ namespace Music
                 return list;
             }
         }
-        
+
         public string NotesString
         {
             get
@@ -273,18 +274,35 @@ namespace Music
         public void Enharmonize()
         {//бета-версія
 
-            // виправлення MIDI-знаків альтерації відповідно
-            // до тональної логіки
+            if (Tonality is not null)
+                EnharmonizeToTonality();
+            else
+            {
+                // виправлення MIDI-знаків альтерації відповідно
+                // до тональної логіки
 
-            EnharmonizeCommon(); // загальний для зменшених інтервалів
-            Desharp(); // утворені зайві дієзи 
-            Desharp();// утворені зайві дієзи 
-            DesharpFlatTonalities();// дієзні послідовності посеред бемолів
-            UnDoubleFlat(); // утворені зайві дубль-бемолі
-            UnChromEnd(); // хроматизми наприкінці
-            UpChromatics(); // висхідна хроматика            
-            AfterEffectUnflat(); // артефакти попередніх
-             
+                EnharmonizeCommon(); // загальний для зменшених інтервалів
+                Desharp(); // утворені зайві дієзи 
+                Desharp();// утворені зайві дієзи 
+                DesharpFlatTonalities();// дієзні послідовності посеред бемолів
+                UnDoubleFlat(); // утворені зайві дубль-бемолі
+                UnChromEnd(); // хроматизми наприкінці
+                UpChromatics(); // висхідна хроматика            
+                AfterEffectUnflat(); // артефакти попередніх
+            }
+
+        }
+
+        private void EnharmonizeToTonality()
+        {
+            if (Tonality is null) return;
+            MessageL(COLORS.olive, "Enharmonize to tonality");
+            var scale = Tonality.NotesInTonalityExtended();
+            for (int i = 0; i < Size(); i++)
+            {
+                if (Tonality is not null)
+                    Notes[i] = TryMakeToScale(scale, Notes[i]);
+            }
         }
 
         public void EnharmonizeCommon()
@@ -357,11 +375,18 @@ namespace Music
                 }
 
                 if (startposition > 0)
-                    if (Notes[i].Sharpness - Notes[i - 1].Sharpness <= -4 || i == (Size() - 1) /*&& Notes[i].Sharpness > 2*/)
+                    if (Notes[i].Sharpness < 4)
                     {
-                        endposition = i;
-                        break;
+                        startposition = 0;
+                        continue;
                     }
+
+
+                if (Notes[i].Sharpness - Notes[i - 1].Sharpness <= -4 || i == (Size() - 1) /*&& Notes[i].Sharpness > 2*/)
+                {
+                    endposition = i;
+                    break;
+                }
             }
             if (startposition > 0 && endposition > startposition)
             {
@@ -671,10 +696,7 @@ namespace Music
         {
             var stats = new Dictionary<string, float>();
 
-
             if (AbsLength == 0) return null;
-
-
 
             foreach (Note note in Notes)
             {
@@ -694,7 +716,14 @@ namespace Music
 
         }
 
-
+        public Dictionary<string, float>? GetDegreesStats()
+        {
+            if (Tonality is not null && Notes.Count > 0)
+            {
+                return Tonalities.DegreeStats(Notes, Tonality);
+            }
+            else return null;
+        }
 
 
 
