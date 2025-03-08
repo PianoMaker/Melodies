@@ -24,6 +24,11 @@
         </div>        
     </div>
 
+    <select asp-for="Melody.Tonality" class="form-control" asp-items="ViewBag.Tonalities">
+        <option value="">-- Тональність, в якій завантажено MIDI --</option>
+    </select>
+    <span asp-validation-for="Melody.Tonality" class="text-danger"></span>
+
     <div class="form-group">
         <label asp-for="Melody.Title" class="control-label" id="title">Назва</label>
         <input asp-for="Melody.Title" class="form-control" />

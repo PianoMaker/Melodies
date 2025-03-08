@@ -63,7 +63,14 @@ namespace Melodies25.Pages.Melodies
 
             MessageL(COLORS.yellow, "MELODIES/CREATE OnGet");
             ViewData["AuthorID"] = new SelectList(_context.Author.OrderBy(a => a.Surname), "ID", "Surname", Melody?.AuthorID);
-            
+            ViewData["Tonalities"] = new SelectList(new List<string>
+            {
+                "C-dur", "G-dur", "D-dur", "A-dur", "E-dur", "H-dur", "Fis-dur", "Cis-dur",
+                "F-dur", "B-dur", "Es-dur", "As-dur", "Des-dur", "Ges-dur", "Ces-dur",
+                "a-moll", "e-moll", "h-moll", "fis-moll", "cis-moll", "gis-moll", "dis-moll", "ais-moll",
+                "d-moll", "g-moll", "c-moll", "f-moll", "b-moll", "es-moll", "as-moll"
+            });
+
             ShowAuthor = false;
             return Page();
         }

@@ -198,7 +198,7 @@ namespace Melodies25.Pages.Melodies
                 }
             }
 
-            return RedirectToPage("./Index");
+            return RedirectToPage("./Edit", new { id = Melody.ID });
 
         }
 

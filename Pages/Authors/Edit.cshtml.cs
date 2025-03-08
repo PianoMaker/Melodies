@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Melodies25.Data;
 using Melodies25.Models;
+using Microsoft.DotNet.Scaffolding.Shared;
+using static Music.Messages;
+using Melodies25.Utilities;
 
 namespace Melodies25.Pages.Authors
 {
@@ -76,7 +79,45 @@ namespace Melodies25.Pages.Authors
 
             return RedirectToPage("./Index");
         }
+        /*
+        public async Task<IActionResult> OnPostTranslitAsync()
+        {
+            MessageL(Music.COLORS.yellow, "AUTHOR/EDIT translit method");
 
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            if (string.IsNullOrEmpty(Author.SurnameEn))
+            {
+                Author.SurnameEn = Translit.Transliterate(Author.Surname);
+            }
+            if (string.IsNullOrEmpty(Author.NameEn))
+            {
+                Author.NameEn = Translit.Transliterate(Author.Name);
+            }
+
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AuthorExists(Author.ID))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Page();
+        }
+        */
         private bool AuthorExists(int id)
         {
             return _context.Author.Any(e => e.ID == id);
