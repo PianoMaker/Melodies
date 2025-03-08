@@ -1,0 +1,197 @@
+﻿html {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    margin-bottom: 60px;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    /*overflow: hidden;*/
+    background: linear-gradient(rgba(245,255,200,.7), rgba(255,235,200,.5));
+}
+
+/*смуга на горі */
+
+
+.bg-sky {
+    /*background: linear-gradient(90deg, rgba(100,100,255,.8), rgba(255,120,120,.8) 15%, rgba(150,150,255,.8));*/
+    background: linear-gradient(90deg, rgb(255 100 100 / 80%), rgba(255, 120, 120, .8) 15%, rgb(193 143 34));
+    border-bottom: 1px solid black !important;
+    z-index: 1;
+}
+
+.logoimage {
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    height: 100px;
+}
+
+.mainpage {
+    height: 100%;
+    background: linear-gradient(217deg, rgba(255,100,100,.8), rgba(255,100,0,0) 70.71%), linear-gradient(127deg, rgba(255,255,100,.8), rgba(255,255,0,0) 70.71%), linear-gradient(336deg, rgba(100,100,255,.8), rgba(255,255,255,0) 70.71%);
+    margin: 0;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #fef7e2;
+    height: 30px;
+}
+
+/* Надписи на горі */
+.navbar-nav {
+    display: flex;
+    width: 100%;
+}
+
+.nav-item {
+    flex-grow: 1; /* Розтягує кожен елемент рівномірно */
+    text-align: center; /* Вирівнює текст по центру */
+}
+
+.navmelody {
+    font-size: 1.4em;
+    margin: 20px 0px 0px 15px;
+    transition: linear 0.5s;
+    font-family: "Montserrat", serif;
+}
+
+    .navmelody:hover {
+        color: lemonchiffon !important;
+        transform: scale(1.08) translateY(-2px);
+    }
+
+.singerellamenue {
+    font-family: sans-serif;
+    letter-spacing: -0.2px;
+}
+
+.homepagetitle {
+    font-size: 48px;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: linear-gradient(45deg, #ff6347, #ff8c00, #ffcc00);
+    color: #fff5e1;
+    margin: 25px 25px 20px 10px;
+    transform: rotate(-2deg);
+    padding: 10px;
+    display: inline-block;
+    border-radius: 10px;
+    animation: glow 1.2s infinite alternate;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .homepagetitle:hover {
+        transform: scale(1.05);
+        box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+.homepagesubtitle {
+    color: #5a3d1c; /* Темно-коричневий */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    font-size: 1.2em;
+
+
+}
+
+.haslo {
+    min-width: 300px;
+}
+
+.searchfield {
+    width: 250px;
+}
+
+.title, .navmelody {
+    padding: 0px 25px 5px 15px;
+    color: aliceblue !important;
+    font-size: 3em;
+    text-shadow: 2px 2px 2px darkviolet;
+    font-family: var(--heading-font);
+    text-decoration: none;
+}
+
+/* Анімація м'якого пульсування світла */
+@keyframes glow {
+    from {
+        text-shadow: 4px 4px 15px rgb(230 255 15), 0px 0px 16px rgb(255 247 11)
+    }
+
+    to {
+        text-shadow: 0px 0px 12px rgb(255 50 50), 0px 0px 20px rgb(255 100 50);
+    }
+}
+
+@media (max-width: 768px) {
+
+    .d-flex {
+        flex-direction: column;
+        align-items: center; /* Вирівнюємо по центру */
+    }
+
+
+    .w-25, .w-75 {
+        width: 100% !important; /* Робимо елементи повної ширини */
+    }
+
+    .navmelody {
+        margin: 20px 10px 0px 10px;
+        padding-right: 0px !important;
+    }
+
+
+
+    /* слід ще поексперементувати...
+https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
+    */
+    .title, .navmelody {
+        padding: 0px 25px 5px 15px;
+        color: aliceblue !important;
+        font-size: 3em;
+        text-shadow: 2px 2px 2px darkviolet;
+        font-family: var(--heading-font);
+        text-decoration: none;
+    }
+
+}
+
+
+
+
+@media (max-width: 512px) {
+    .haslo {
+        min-width: 200px;
+    }
+
+    .searchfield {
+        width: 200px;
+    }
+
+    .homepagetitle {
+        font-size: 2em;
+    }
+
+    .title {
+        font-size: 1.5em;
+    }
+
+    .navmelody {
+        margin: 20px 0px 0px 0px;
+        padding-right: 0px;
+    }
+}

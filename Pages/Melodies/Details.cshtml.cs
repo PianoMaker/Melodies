@@ -13,6 +13,8 @@ using Music;
 using System.IO;
 using Microsoft.Extensions.Hosting;
 using Melodies25.Utilities;
+using Newtonsoft.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace Melodies25.Pages.Melodies
@@ -21,6 +23,12 @@ namespace Melodies25.Pages.Melodies
     {
         private readonly Melodies25.Data.Melodies25Context _context;
         private readonly IWebHostEnvironment _environment;
+        public string Labels { get; set; }
+        public string Values { get; set; }
+
+        public string WeightValues { get; set; }
+
+        public string ErrorMsg { get; set; }
 
         public DetailsModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
         {
@@ -92,12 +100,30 @@ namespace Melodies25.Pages.Melodies
             melody.MidiMelody.Enharmonize();           
 
             Melody = melody; // Оновлюємо модель
-                        
+
+            // графік
+            try
+            {
+                var data = melody.MidiMelody.GetDegreesStats();
+                var weightdata = melody.MidiMelody.GetDegreesWeightStats();
+                if (data is not null && weightdata is not null)
+                {
+                    Labels = JsonConvert.SerializeObject(data.Keys.ToList());
+                    Values = JsonConvert.SerializeObject(data.Values.ToList());
+                    WeightValues = JsonConvert.SerializeObject(weightdata.Values.ToList());
+                }
+                else ErrorMessageL("Check if tonality is set.");
+            }
+            catch (Exception ex)
+            {
+                ErrorMessageL("impossible to build charts.");
+                MessageL(COLORS.standart, ex.Message);
+                ErrorMsg = ex.Message;
+
+            }
 
             return Page();
-        }
-
-        
+        }       
 
     }
 }

@@ -134,14 +134,7 @@ table, th, td {
 /* слід ще поексперементувати...
 https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     */
-.title, .navmelody {
-    padding: 0px 25px 5px 15px;
-    color: aliceblue !important;
-    font-size: 3em;
-    text-shadow: 2px 2px 2px darkviolet;
-    font-family: var(--heading-font);
-    text-decoration: none;
-}
+
 
 .imgcontainer {
     min-width:90px; 
@@ -199,14 +192,30 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     font-size: 0.9em; 
     text-align: center;
     padding: 2px;
-    height: 50px;
+    height: 30px;
     margin: 5px 1px 1px 1px;    
     min-width: 35px;
     border: 1px solid gray;
     background-color: antiquewhite;
     border-radius: 5px;
     box-shadow: rgba(55,55,0,0.3) 2px 2px;
+}
 
+#degreesChart, #weightChart {
+    width: 400px;
+    height: 200px;
+}
+
+.outerNoteBox {
+    display: inline-block;
+    text-align: center;
+    
+}
+
+.innerNotesContainer{
+    padding: 5px;
+    border: 1px solid darkred;
+    background-color: rgba(255,255,200,0.9);
 }
 
 .noteanalysis {
@@ -214,11 +223,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     background-color: lightgoldenrodyellow;
     padding: 5px;
     border: 1px solid darkred;
-}
-
-.singerellamenue {
-    font-family: sans-serif;
-    letter-spacing: -0.2px;
 }
 
 
@@ -257,35 +261,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 
-.haslo {
-    min-width: 300px;
-}
-
-.searchfield {
-    width: 250px;
-}
-
-
-.homepagetitle {
-    font-size: 48px;
-    font-weight: bold;
-    text-transform: uppercase;
-    background: linear-gradient(45deg, #ff6347, #ff8c00, #ffcc00);
-    color: #fff5e1;
-    margin: 25px 25px 20px 10px;
-    transform: rotate(-2deg);
-    padding: 10px;
-    display: inline-block;
-    border-radius: 10px;    
-    animation: glow 1.2s infinite alternate;
-    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.homepagetitle:hover {
-    transform: scale(1.05);
-    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
-}
 
 /* Анімація м'якого пульсування світла */
 @keyframes glow {

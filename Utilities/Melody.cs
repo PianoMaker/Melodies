@@ -711,7 +711,7 @@ namespace Music
 
             stats = stats.ToDictionary(pair => pair.Key, pair => (float)Math.Round(pair.Value, 1));
 
-            return stats.OrderByDescending(x => x.Value)
+            return stats.OrderByDescending(x => x.Key)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
 
         }
@@ -725,6 +725,14 @@ namespace Music
             else return null;
         }
 
+        public Dictionary<string, float>? GetDegreesWeightStats()
+        {
+            if (Tonality is not null && Notes.Count > 0)
+            {
+                return Tonalities.DegreeWeightStats(Notes, Tonality);
+            }
+            else return null;
+        }
 
 
         /// <summary>

@@ -362,7 +362,7 @@ namespace Music
         public static Dictionary<string, float> DegreeStats(List<Note> notes, Tonalities tonality)
         {
             var dictionary = new Dictionary<string, float>();
-            var increment = (float)Math.Round(100f / notes.Count);
+            var increment = 100f / notes.Count;
 
             foreach (var note in notes)
             {
@@ -380,7 +380,37 @@ namespace Music
                     }
                 }
             }
-            dictionary = dictionary.OrderByDescending(d => d.Value).ToDictionary(); 
+            dictionary = dictionary.OrderBy(d => d.Key).ToDictionary(pair => pair.Key, pair => (float)Math.Round(pair.Value, 1));  
+
+            return dictionary;
+        }
+
+        public static Dictionary<string, float> DegreeWeightStats(List<Note> notes, Tonalities tonality)
+        {
+            var dictionary = new Dictionary<string, float>();
+            var totallength = 0;
+            foreach (var note in notes)
+                totallength += note.AbsDuration();
+
+            var increment = 100f / totallength;
+
+            foreach (var note in notes)
+            {
+                if (tonality is not null)
+                {
+                    var degree = GetDegree(note, tonality);
+
+                    if (dictionary.ContainsKey(degree))
+                    {
+                        dictionary[degree] += increment * note.AbsDuration();
+                    }
+                    else
+                    {
+                        dictionary.Add(degree, increment);
+                    }
+                }
+            }
+            dictionary = dictionary.OrderBy(d => d.Key).ToDictionary(pair => pair.Key, pair => (float)Math.Round(pair.Value, 1));
 
             return dictionary;
         }

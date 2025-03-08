@@ -75,41 +75,61 @@
         }
         else
         {
-            <h3>Нот у мелодії - @item.MidiMelody.Notes.Count </h3>
-            <div>
+            <h3>Нот у мелодії - @item.MidiMelody.Notes.Count
+                <button class="toggle-btn" id="notesbtn" onclick="toggleContent('innerNotesContainer', 'notesbtn')">+</button>
+            </h3>
+            <div id="innerNotesContainer" style="display:none">
                 @foreach (var note in @item.MidiMelody.Notes)
                 {
-                    string width = $"{note.DisplayWidth(45, 18)}px";
-                    string marginbottom = $"{note.AbsPitch() * 2}px";
-                    <div style="display: inline-block; width:@width; height:90px; text-align: center">
-                        <div class="notebox" style="height:30px; margin-bottom: @marginbottom; width:@width">
-                            <text>@note.DurSymbol</text><br>                            
+                    string width = $"{note.DisplayWidth(45, 20)}px";
+                    string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
+                    <div class="outerNoteBox" style="width:@width; height:10px;">
+                        <div class="notebox" style="margin-bottom: @marginbottom; width:@width">
+                            <text>@note.DurSymbol</text><br>
                         </div>
-                        <text>@note.Name()</text> <br>
+                        <text class="notaname">@note.Name()</text> 
                     </div>
                 }
             </div>
-            
-            <h3>Тривалості</h3>
-            <p>
-                @foreach (var note in @item.MidiMelody.Notes)
-                {
-                    <text>
-                        <text> @note.Duration.RelDuration() [@note.AbsDuration()]</text>
-                    </text>
-                }
-            </p>
 
-            <h3>Інтервальний ряд у півонах</h3>
-            <p>
-                @foreach (var interval in @item.MidiMelody.IntervalList)
-                {
-                    <text>
-                        <text>@interval </text>
-                    </text>
-                }
-            </p>
-            <h3>Дієзність (beta)</h3>
+
+            <div>
+                <h3>
+                    Тривалості
+                    <button class="toggle-btn" id="durationsbtn" onclick="toggleContent('durations', 'durationsbtn')">+</button>
+                </h3>
+                <div class="hidden-content" id="durations" style="display: none;">
+                    <p>
+                        @foreach (var note in @item.MidiMelody.Notes)
+                        {
+                            <text>
+                                <text> @note.Duration.RelDuration() [@note.AbsDuration()]</text>
+                            </text>
+                        }
+                    </p>
+                </div>
+            </div>
+
+            <h3>
+                Інтервальний ряд у півонах
+                <button class="toggle-btn" id="intervalsbtn" onclick="toggleContent('intervals','intervalsbtn')">+</button>
+            </h3>
+            <div class="hidden-content" id="intervals" style="display: none;">
+                <p>
+                    @foreach (var interval in @item.MidiMelody.IntervalList)
+                    {
+                        <text>
+                            <text>@interval </text>
+                        </text>
+                    }
+                </p>
+            </div>
+
+
+            <h3>Дієзність (beta)
+                <button class="toggle-btn" id="sharpnessbtn" onclick="toggleContent('sharpness','sharpnessbtn')">+</button>
+            </h3>
+            <div class="hidden-content" id="sharpness" style="display: none;">
             <p>
                 @foreach (var note in @item.MidiMelody.Notes)
                 {
@@ -118,19 +138,25 @@
                     </text>
                 }
             </p>
+            </div>
+            /*  СТАТИСТИКА  */
+
             <div style="display:block">
 
-                <h3>Статистика нот (beta)</h3>
-            @if (@item.MidiMelody.GetStats() is not null)
-            {
-                <div class="noteanalysis">
-                <h3>без урахування тривалості</h3>
-                @foreach (var note in @item.MidiMelody.GetStats())
+                <h3>Статистика нот (beta)
+                    <button class="toggle-btn" id="statsbtn" onclick="toggleContent('stats','statsbtn')">+</button>
+                </h3>
+                <div class="hidden-content" id="stats" style="display: none;">
+                @if (@item.MidiMelody.GetStats() is not null)
                 {
-                    <p><text>@note.Key - @note.Value %</text></p>
+                    <div class="noteanalysis">
+                        <h3>без урахування тривалості</h3>
+                        @foreach (var note in @item.MidiMelody.GetStats())
+                        {
+                            <p><text>@note.Key - @note.Value %</text></p>
+                        }
+                    </div>
                 }
-                </div>
-            }
 
                 @if (@item.MidiMelody.GetDegreesStats() is not null)
                 {
@@ -143,30 +169,70 @@
                     </div>
                 }
 
+                
 
-            @if (@item.MidiMelody.GetWeight() is not null)
+                @if (@item.MidiMelody.GetWeight() is not null)
                 {
                     <div class="noteanalysis">
-                <h3>з урахуванням тривалостей</h3>
-                @foreach (var note in @item.MidiMelody.GetWeight())
+                        <h3>з урахуванням тривалостей</h3>
+                        @foreach (var note in @item.MidiMelody.GetWeight())
+                        {
+                            <p><text>@note.Key - @note.Value %</text></p>
+                        }
+                    </div>
+                }
+
+                @if (@item.MidiMelody.GetDegreesWeightStats() is not null)
                 {
-                    <p><text>@note.Key - @note.Value %</text></p>
+                    <div class="noteanalysis">
+                        <p>по ступенях </p>
+                        @foreach (var value in @item.MidiMelody.GetDegreesWeightStats())
+                        {
+                            <p><text>@value.Key - @value.Value %</text></p>
+                        }
+                    </div>
                 }
                 </div>
-            }
 
+                @* ДІАГРАМИ *@
 
+                <script>
+                    window.chartLabels = @Html.Raw(Model.Labels);
+                    window.chartValues = @Html.Raw(Model.Values);
+                    window.chartWeightValues = @Html.Raw(Model.WeightValues);
+                </script>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script src="~/js/chartDegree.js"></script>
+                <script src="~/js/togglecontent.js"></script>
+                <div style="width: 600px !important; height: 300px !important;">
+                @if (@item.MidiMelody.Tonality is not null)
+                {
 
+                        <input type="radio" id="degreesRadio" name="chartToggle" checked>
+                        <label for="degreesRadio">Графік значень</label>
+
+                        <input type="radio" id="weightRadio" name="chartToggle">
+                        <label for="weightRadio">Графік ваги</label>
+
+                        <canvas id="degreesChart" width="400" height="200" style="width: 400px !important; height: 200px !important;"></canvas>
+                        <canvas id="weightChart" width="400" height="200" style="width: 400px !important; height: 200px !important; display: none;"></canvas>
+
+                }
+                else
+                {
+                    <p> @Model.ErrorMsg</p>
+                }
+                </div>
             </div>
-
         }
-        }
+        <p>@item.Description</p>
     </div>
-
-    <p>@item.Description</p>
+  
 </div>
 <div>
-    <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="link-dark">Редагувати</a>
-    <a asp-page="./Index" class="link-dark">Назад до списку мелодій</a>
+    <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
+    <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку мелодій</a>
+    <p>.</p>
+    <p>.</p>
 </div>
 <script src="~/js/play.js"></script>
