@@ -2,7 +2,7 @@
 @model Melodies25.Pages.Melodies.CreateModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Додати мелодію";
 }
 
 <h1>Додати</h1>
@@ -47,41 +47,42 @@
     </div>
     
         <div class="form-group">
-            <label asp-for="Melody.AuthorID" class="control-label">Автор</label>
-        <select asp-for="Melody.AuthorID" class="form-control" asp-items="ViewBag.AuthorID">                      
+            <label asp-for="Melody.AuthorID" id="selectAuthorLabel" class="control-label">Автор</label>
+        <select id="selectAuthor" asp-for="Melody.AuthorID" class="form-control" asp-items="ViewBag.AuthorID">                      
         </select>
     </div>
     
-    <div class="form-group">
+    <div id="submitMelodyBtn" class="form-group">
         <input type="submit" value="Створити" class="btn btn-primary btn-outline-dark bg-light">
     </div>
 </form>
-<div class="container-fluid"></div>
+
 <form method="post">
     <div class="form-group">
-        <button asp-page-handler="addform" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light">Додати автора</button>
+        <button id="createAuthorBtn" asp-page-handler="addform" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light">Додати автора</button>
     </div>
     @if(Model.ShowAuthor)
     {
         <div class="form-group">
             <label asp-for="TempAuthor" class="control-label">Автор</label>
-            <input type="text" asp-for="TempAuthor" class="form-control" placeholder="Додайте ім'я та прізвище"/>
+            <input type="text" id="inputAuthor" asp-for="TempAuthor" class="form-control" placeholder="Додайте ім'я та прізвище"/>
         </div>
-        <div class="form-group">            
+        <div class="form-group mt-3">            
             <button type="submit" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light" onclick="processform">Додати</button>
+            
         </div>        
     }   
-
 </form>
+<a asp-page="Index" class="btn btn-primary btn-outline-dark bg-light">Назад до списку</a>
 
 
-<div>
-    <a asp-page="Index">Назад до списку</a>
-</div>
+
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script src="~/js/duplicate.js"></script>
 }
-<script src="~/js/duplicate.js"></script>
+
+
