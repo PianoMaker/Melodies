@@ -1,4 +1,6 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+﻿// працює для сторінки розширеного пошуку (search)
+
+document.addEventListener("DOMContentLoaded", function () {
     // Отримуємо всі рядки таблиці та всі контейнери мелодій
     let rows = document.querySelectorAll("table tbody tr");
     let melodies = document.querySelectorAll("div[id^='melody']");

@@ -236,6 +236,13 @@ namespace Melodies25.Pages.Melodies
             return new JsonResult(new { exists });
         }
 
+        public async Task<IActionResult> OnGetCheckAuthorAsync(string title)
+        {
+            bool exists = await _context.Author.AnyAsync(m => m.Surname == title || m.SurnameEn == title);
+            Console.WriteLine($"Checking for author");
+            return new JsonResult(new { exists });
+        }
+
 
     }
 
