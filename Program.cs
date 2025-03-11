@@ -63,8 +63,9 @@ namespace Melodies25
 
             builder.Services.AddScoped<DatabaseSyncService>();
 
-            builder.Services.AddSession();            
+            builder.Services.AddSession();
 
+            builder.Services.AddLogging();
 
             var app = builder.Build();
 
@@ -76,12 +77,6 @@ namespace Melodies25
                 app.UseHsts();
             }
 
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                var seeder = services.GetRequiredService<DataSeeder>();
-                seeder.SeedRolesAndAdmin().GetAwaiter().GetResult();
-            }
 
             app.UseSession();
 
@@ -95,6 +90,13 @@ namespace Melodies25
             app.UseAuthorization();
 
             app.MapRazorPages();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var syncService = services.GetRequiredService<DatabaseSyncService>();
+                syncService.SyncDatabasesAsync().GetAwaiter().GetResult(); // Викликаємо синхронізацію
+            }
 
             app.Run();
         }
