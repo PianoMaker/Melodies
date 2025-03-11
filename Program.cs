@@ -91,13 +91,14 @@ namespace Melodies25
 
             app.MapRazorPages();
 
+            
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 var syncService = services.GetRequiredService<DatabaseSyncService>();
                 syncService.SyncDatabasesAsync().GetAwaiter().GetResult(); // Викликаємо синхронізацію
             }
-
+            
             app.Run();
         }
     }
