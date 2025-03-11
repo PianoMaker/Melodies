@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Melodies25.Data;
 using Melodies25.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Melodies25.Pages.Authors
 {
@@ -22,6 +23,9 @@ namespace Melodies25.Pages.Authors
 
         [BindProperty]
         public string? SelectedMode { get; set; }
+
+        [BindProperty]
+        public Author Author { get; set; } = default!;
         public IActionResult OnGet()
         {
 
@@ -34,10 +38,13 @@ namespace Melodies25.Pages.Authors
             return Page();
         }
 
-        [BindProperty]
-        public Author Author { get; set; } = default!;
+        public async Task<IActionResult> OnGetCheckAuthorAsync(string author)
+        {
+            Console.WriteLine($"Checking for author {author}");
+            bool exists = await _context.Author.AnyAsync(m => m.Surname == author || m.SurnameEn == author);
+            return new JsonResult(new { exists });
+        }
 
-        // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
         {
             ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");

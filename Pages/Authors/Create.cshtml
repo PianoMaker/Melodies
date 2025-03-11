@@ -2,7 +2,7 @@
 @model Melodies25.Pages.Authors.CreateModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Додати автора";
     var SelectedMode  = @Model.SelectedMode;
 }
 
@@ -48,17 +48,19 @@
             <div class="form-group">
                 @if (SelectedMode == "composer")
                 {
-                    <label asp-for="Author.Surname" class="control-label">Прізвище</label>
+                    <label asp-for="Author.Surname" class="control-label">Прізвище</label>                    
 
                 }
                 else if (@SelectedMode == "band") {
                     <label asp-for="Author.Surname" class="control-label">Назва гурту</label>
+                    
                 }
                 else{
                     <label asp-for="Author.Surname" class="control-label">Народна пісня</label>
+                    
                 }
-                <input asp-for="Author.Surname" class="form-control" />
-
+                <input id="inputAuthor" asp-for="Author.Surname" class="form-control" />
+                <p id="authorWarning"></p>
                 <span asp-validation-for="Author.Surname" class="text-danger"></span>
             </div>            
             <div class="form-group">
@@ -97,3 +99,4 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
+<script src="~/js/newAuthor.js"></script>

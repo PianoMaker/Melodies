@@ -21,6 +21,10 @@ body {
     background: linear-gradient(rgba(245,255,200,.7), rgba(255,235,200,.5));
 }
 
+.home {
+    overflow: hidden;
+}
+
 /*смуга на горі */
 
 

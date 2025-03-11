@@ -1,14 +1,12 @@
 ﻿
 function updateButtons() {
-    console.log("starting update buttons");
+    console.log("try to update buttons");
 
-    let selectAuthor = document.getElementById("selectAuthor");
-    let createAuthorBtn = document.getElementById("createAuthorBtn");
-    let submitMelodyBtn = document.getElementById("submitMelodyBtn");
-    let warningField = document.getElementById("warning");
-    let selectAuthorLabel = document.getElementById("selectAuthorLabel");
+    let selectAuthor = document.getElementById("selectAuthor");        
 
     if (!selectAuthor) return;
+
+    let submitMelodyBtn = document.getElementById("submitMelodyBtn");       
 
     console.log("Значення selectAuthor:", selectAuthor.value);
     const selectedOption = selectAuthor.options[selectAuthor.selectedIndex];
@@ -17,14 +15,22 @@ function updateButtons() {
         submitMelodyBtn.style.display = 'none';
     } else {
         submitMelodyBtn.style.display = 'inline-block';
-    }
+    }    
+   
+}
 
+function searchAuthor() {
+    console.log("try to search author");
     let inputAuthor = document.getElementById("inputAuthor");
+    let warningField = document.getElementById("authorWarning");
+    if (!warningField) 
+        console.log("no warning Field!");
+
     if (inputAuthor) {
         hideSelectBtn();
-        inputAuthor.addEventListener("input", async function () {
+        inputAuthor.addEventListener("input", async function() {
             let author = inputAuthor.value.trim();
-            console.log("search author for duplicates");
+            console.log(`search author for duplicates ${author}`);
             if (author.length > 4) {
                 try {
                     let response = await fetch(`/Melodies/Create?handler=CheckAuthor&author=${encodeURIComponent(author)}`);
@@ -41,6 +47,7 @@ function updateButtons() {
                 }
             } else {
                 warningField.innerHTML = "";
+                warningField.style.color = "";
             }
         });
     }
@@ -64,6 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("if author eligible");
 
     updateButtons();
+    searchAuthor();
 
     let selectAuthor = document.getElementById("selectAuthor");//поле обрати автора
     let createAuthorBtn = document.getElementById("createAuthorBtn");//кнопка додати автора

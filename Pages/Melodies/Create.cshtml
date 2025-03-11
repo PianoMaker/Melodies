@@ -24,7 +24,7 @@
         </div>        
     </div>
 
-    <select asp-for="Melody.Tonality" class="form-control" asp-items="ViewBag.Tonalities">
+    <select asp-for="Melody.Tonality" class="form-control mt-2" asp-items="ViewBag.Tonalities">
         <option value="">-- Тональність, в якій завантажено MIDI --</option>
     </select>
     <span asp-validation-for="Melody.Tonality" class="text-danger"></span>
@@ -63,17 +63,18 @@
     </div>
     @if(Model.ShowAuthor)
     {
-        <div class="form-group">
+        <div class="form-group mt-3">
             <label asp-for="TempAuthor" class="control-label">Автор</label>
             <input type="text" id="inputAuthor" asp-for="TempAuthor" class="form-control" placeholder="Додайте ім'я та прізвище"/>
         </div>
+        <p id="authorWarning"></p>
         <div class="form-group mt-3">            
-            <button type="submit" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light" onclick="processform">Додати</button>
+            <button type="submit" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light">Додати</button>
             
         </div>        
     }   
 </form>
-<a asp-page="Index" class="btn btn-primary btn-outline-dark bg-light">Назад до списку</a>
+<a asp-page="Index" class="btn btn-primary btn-outline-dark bg-light mt-3">Назад до списку</a>
 
 
 
