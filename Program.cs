@@ -17,6 +17,8 @@ namespace Melodies25
             var builder = WebApplication.CreateBuilder(args);
             var env = builder.Environment;
 
+            /* Trying Azur Db*/
+
             var connectionString = env.IsDevelopment()
                 ? builder.Configuration.GetConnectionString("SQLExpress") // Локальна БД
                 : builder.Configuration.GetConnectionString("Azure"); // Azure БД

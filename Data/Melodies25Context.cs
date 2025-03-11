@@ -16,8 +16,8 @@ namespace Melodies25.Data
         {
         }
 
-        public DbSet<Melodies25.Models.Country> Country { get; set; } = default!;
-        public DbSet<Melodies25.Models.Author> Author { get; set; } = default!;
-        public DbSet<Melodies25.Models.Melody> Melody { get; set; } = default!;
+        public DbSet<Country> Country { get; set; } = default!;
+        public DbSet<Author> Author { get; set; } = default!;
+        public DbSet<Melody> Melody { get; set; } = default!;
     }
 }
