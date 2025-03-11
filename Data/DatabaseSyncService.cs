@@ -8,7 +8,8 @@ public class DatabaseSyncService
     private readonly Melodies25SyncContext _sqlExpressDb;
     private readonly ILogger<DatabaseSyncService> _logger;
     private List<Author> missingAuthorsInLocal;
-    private List<Author> missingAuthorsExpress;
+    private List<Country> missingCountriesInLocal;
+    private List<Melody> missingMelodiesInLocal;
 
     public DatabaseSyncService(Melodies25Context localDb, Melodies25SyncContext sqlExpressDb, ILogger<DatabaseSyncService> logger)
     {
@@ -20,42 +21,50 @@ public class DatabaseSyncService
     public async Task SyncDatabasesAsync()
     {
         _logger.LogInformation("Початок синхронізації баз даних...");
-
-        // Завантажуємо всі країни
-        var localCountries = await _localDb.Country.AsNoTracking().ToListAsync();
-        var expressCountries = await _sqlExpressDb.Country.AsNoTracking().ToListAsync();
+                
 
         // Знаходимо відсутні країни у локальній базі
-        var missingCountriesInLocal = expressCountries.Where(ec => !localCountries.Any(lc => lc.Name == ec.Name)).ToList();
-        if (missingCountriesInLocal.Any())
-        {
-            var countryNames = string.Join("\n", missingCountriesInLocal.Select(c => c.Name));
-            _logger.LogInformation("Відсутні країни у локальній БД: {CountryNames}", countryNames);
-        }
-        else
-            _logger.LogInformation("\nВідсутніх країн у локальній БД не виявлено");
+        bool ifmissingcountries = await AnalyzeCountries();
 
         // Завантажуємо всіх авторів з прив'язаними країнами
-        var localAuthors = await _localDb.Author.AsNoTracking().Include(a => a.Country).ToListAsync();
-        var expressAuthors = await _sqlExpressDb.Author.AsNoTracking().Include(a => a.Country).ToListAsync();
-
-        // Знаходимо відсутніх авторів у локальній базі
-        missingAuthorsInLocal = expressAuthors.Where(ea => !localAuthors.Any(la => la.Name == ea.Name && la.Surname == ea.Surname)).ToList();
-        
-        if (missingAuthorsInLocal.Any())
-        {
-            var authorNames = string.Join("\n", missingAuthorsInLocal.Select(a => $"{a.Name} {a.Surname}"));
-            _logger.LogInformation("\nВідсутні автори у локальній БД: {AuthorNames}", authorNames);
-        }
-        else
-            _logger.LogInformation("\nВідсутніх авторів не виявлено");
+        bool ifmissingauthors = await AnalyzeAuthors();
 
         // Завантажуємо всі мелодії з прив'язаними авторами і країнами
+        bool ifmissingmelodies = await AnalyzeMelodies();
+
+        _logger.LogInformation("Перевірка на відсутні записи завершена.");
+
+
+        // 1. Оновлення країн
+        if (ifmissingcountries)
+            await SyncCountries();
+        else
+            _logger.LogInformation("skip countries upd.");
+
+        // 2. Оновлення авторів
+        if (ifmissingauthors)
+            await SyncAuthors();
+        else
+            _logger.LogInformation("skip authors upd.");
+
+        // 3. Оновлення мелодій
+        if (ifmissingmelodies)
+            await SyncMelodies();
+        else
+            _logger.LogInformation("skip melodies upd.");
+
+        _logger.LogInformation("Синхронізація баз даних завершена.");
+    }
+
+    private async Task<bool> AnalyzeMelodies()
+    {
+        bool ifmissingmelodies = false;
+
         var localMelodies = await _localDb.Melody
-            .AsNoTracking()
-            .Include(m => m.Author)
-                .ThenInclude(a => a.Country)
-            .ToListAsync();
+                    .AsNoTracking()
+                    .Include(m => m.Author)
+                        .ThenInclude(a => a.Country)
+                    .ToListAsync();
 
         var expressMelodies = await _sqlExpressDb.Melody
             .AsNoTracking()
@@ -63,29 +72,65 @@ public class DatabaseSyncService
                 .ThenInclude(a => a.Country)
             .ToListAsync();
 
+        _logger.LogInformation("\nМелодій у локальній БД: {MelodyCount}", localMelodies.Count());
+        _logger.LogInformation("Мелодій у експрес БД: {MelodyCount}", expressMelodies.Count());
+
         // Знаходимо відсутні мелодії у локальній базі
-        var missingMelodiesInLocal = expressMelodies.Where(em => !localMelodies.Any(lm => lm.ID == em.ID)).ToList();
+        missingMelodiesInLocal = expressMelodies.Where(em => !localMelodies.Any(lm => lm.Title == em.Title && lm.Author.Surname == em.Author.Surname)).ToList();
         if (missingMelodiesInLocal.Any())
         {
             var melodyTitles = string.Join(", ", missingMelodiesInLocal.Select(m => $"\n{m.Title} ({m.Author.Name} {m.Author.Surname})"));
             _logger.LogInformation("Відсутні мелодії у локальній БД: {MelodyTitles}", melodyTitles);
+            ifmissingmelodies = true;
         }
         else
             _logger.LogInformation("\nВідсутніх мелодій не виявлено");
+        return ifmissingmelodies;
+    }
 
-        _logger.LogInformation("Перевірка на відсутні записи завершена.");
+    private async Task<bool> AnalyzeAuthors()
+    {
+        bool ifmissingauthors = false;
+        var localAuthors = await _localDb.Author.AsNoTracking().Include(a => a.Country).ToListAsync();
+        var expressAuthors = await _sqlExpressDb.Author.AsNoTracking().Include(a => a.Country).ToListAsync();
 
+        _logger.LogInformation("\nАвторів у локальній БД: {CountryCount}", localAuthors.Count());
+        _logger.LogInformation("Авторів у експрес БД: {CountryCount}", expressAuthors.Count());
 
-        // 1. Оновлення країн
-        await SyncCountries();
+        // Знаходимо відсутніх авторів у локальній базі
+        missingAuthorsInLocal = expressAuthors.Where(ea => !localAuthors.Any(la => la.Name == ea.Name && la.Surname == ea.Surname)).ToList();
 
-        // 2. Оновлення авторів
-        await SyncAuthors();
+        if (missingAuthorsInLocal.Any())
+        {
+            var authorNames = string.Join("\n", missingAuthorsInLocal.Select(a => $"{a.Name} {a.Surname}"));
+            _logger.LogInformation("\nВідсутні автори у локальній БД: {AuthorNames}", authorNames);
+            ifmissingauthors = true;
+        }
+        else
+            _logger.LogInformation("\nВідсутніх авторів не виявлено");
+        return ifmissingauthors;
+    }
 
-        // 3. Оновлення мелодій
-        await SyncMelodies();
+    private async Task<bool> AnalyzeCountries()
+    {
+        bool ifmissingcountries = false;
+        var localCountries = await _localDb.Country.AsNoTracking().ToListAsync();
+        var expressCountries = await _sqlExpressDb.Country.AsNoTracking().ToListAsync();
+        _logger.LogInformation("\nКраїн у локальній БД: {CountryCount}", localCountries.Count());
+        _logger.LogInformation("Країн у експрес БД: {CountryCount}", expressCountries.Count());
 
-        _logger.LogInformation("Синхронізація баз даних завершена.");
+        missingCountriesInLocal = expressCountries.Where(ec => !localCountries.Any(lc => lc.Name == ec.Name)).ToList();
+        if (missingCountriesInLocal.Any())
+        {
+            var countryNames = string.Join("\n", missingCountriesInLocal.Select(c => c.Name));         
+            _logger.LogInformation("\nВідсутні країни у локальній БД: {CountryNames}", countryNames);
+            ifmissingcountries = true;
+        }
+        else
+        {         
+            _logger.LogInformation("\nВідсутніх країн у локальній БД не виявлено");
+        }
+        return ifmissingcountries;
     }
 
     private async Task SyncCountries()
@@ -93,7 +138,7 @@ public class DatabaseSyncService
         var localCountries = await _localDb.Country.AsNoTracking().ToListAsync();
         var expressCountries = await _sqlExpressDb.Country.AsNoTracking().ToListAsync();
 
-        var missingInLocal = expressCountries.Where(ec => !localCountries.Any(lc => lc.Name == ec.Name)).ToList();
+        var missingInLocal = missingCountriesInLocal;
         var missingInExpress = localCountries.Where(lc => !expressCountries.Any(ec => ec.Name == lc.Name)).ToList();
 
         // Видаляємо явно вказані ID з нових записів
@@ -130,6 +175,7 @@ public class DatabaseSyncService
 
         var missingInLocal = missingAuthorsInLocal;
         var missingInExpress = localAuthors.Where(la => !expressAuthors.Any(ea => ea.Name == la.Name && ea.Surname == ea.Surname)).ToList();
+               
 
         // Скидаємо ID для нових авторів
         foreach (var author in missingInLocal)
@@ -143,7 +189,7 @@ public class DatabaseSyncService
         }
 
         await AddMissingAuthors(missingInLocal, _localDb, _sqlExpressDb);
-        await AddMissingAuthors(missingInExpress, _sqlExpressDb, _localDb);
+        //await AddMissingAuthors(missingInExpress, _sqlExpressDb, _localDb);
 
         _logger.LogInformation("\nСинхронізація авторів завершена.\n");
     }
@@ -206,11 +252,11 @@ public class DatabaseSyncService
             .Include(m => m.Author).ThenInclude(a => a.Country)
             .ToListAsync();
 
-        var missingInLocal = expressMelodies.Where(em => !localMelodies.Any(lm => lm.ID == em.ID)).ToList();
-        var missingInExpress = localMelodies.Where(lm => !expressMelodies.Any(em => em.ID == lm.ID)).ToList();
+        var missingInLocal = missingMelodiesInLocal;
+        var missingInExpress = localMelodies.Where(lm => !expressMelodies.Any(em => em.Title == lm.Title && em.Author.Surname == em.Author.Surname)).ToList();
 
         await AddMissingMelodies(missingInLocal, _localDb, _sqlExpressDb);
-        await AddMissingMelodies(missingInExpress, _sqlExpressDb, _localDb);
+        //await AddMissingMelodies(missingInExpress, _sqlExpressDb, _localDb);
 
         _logger.LogInformation("Синхронізація мелодій завершена.");
     }
