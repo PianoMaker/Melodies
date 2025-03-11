@@ -15,20 +15,20 @@ namespace Melodies25
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
             var env = builder.Environment;
 
-            var connectionString = env.IsDevelopment()
-                ? builder.Configuration.GetConnectionString("SQLExpress") // Локальна БД
-                : builder.Configuration.GetConnectionString("Azure"); // Azure БД
-
-            if (string.IsNullOrEmpty(connectionString))
-                throw new InvalidOperationException("Connection string not found.");
+            /*TWO DATABASES*/
 
             builder.Services.AddDbContext<Melodies25Context>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio"))); // Початкове підключення
+
+            builder.Services.AddDbContext<Melodies25SyncContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("SQLExpress"))); // БД для синхронізації
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // Вставте відповідний рядок підключення
+
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -59,11 +59,11 @@ namespace Melodies25
                         factory.Create(typeof(SharedResource))
                 );
 
-            builder.Services.AddScoped<DataSeeder>();
+           
+
+            builder.Services.AddScoped<DatabaseSyncService>();
 
             builder.Services.AddSession();            
-
-
 
 
             var app = builder.Build();
