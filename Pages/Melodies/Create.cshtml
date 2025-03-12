@@ -5,9 +5,8 @@
     ViewData["Title"] = "Додати мелодію";
 }
 
-<h1>Додати</h1>
+<h1>Додати пісню</h1>
 
-<h4>Завантажити MIDI файл</h4>
 <hr />
 
 @if (ViewData["Message"] != null)
@@ -17,67 +16,113 @@
     </div>
 }
 
-<form method="post" enctype="multipart/form-data">
-    <div class="form-group">        
-        <div class="input-group">
-            <input type="file" id="melodyFileInput" name="fileupload" class="form-control" accept=".mid" />
-        </div>        
-    </div>
+<div class="searchcontainer h-100">
 
-    <select asp-for="Melody.Tonality" class="form-control mt-2" asp-items="ViewBag.Tonalities">
-        <option value="">-- Тональність, в якій завантажено MIDI --</option>
-    </select>
-    <span asp-validation-for="Melody.Tonality" class="text-danger"></span>
+    <!--ЛІВОРУЧ-->
+    <div class="searchleftcontainer">        
+        <form method="post" asp-page-handler="create" enctype="multipart/form-data">
+            <div class="form-group">
+                <div class="input-group">
+                    <input type="file" id="melodyFileInput" name="fileupload" class="form-control" accept=".mid" />
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label asp-for="Melody.Title" class="control-label" id="title">Назва</label>
-        <input asp-for="Melody.Title" class="form-control" />
-        <span asp-validation-for="Melody.Title" class="text-danger"></span>
-    </div>
-    <p id="warning"></p>
-    <div class="form-group">
-        <label asp-for="Melody.Year" class="control-label">Рік</label>
-        <input asp-for="Melody.Year" class="form-control" />
-        <span asp-validation-for="Melody.Year" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Melody.Description" class="control-label">Примітки</label>
-        <input asp-for="Melody.Description" class="form-control" />
-        <span asp-validation-for="Melody.Description" class="text-danger"></span>
-    </div>
-    
-        <div class="form-group">
-            <label asp-for="Melody.AuthorID" id="selectAuthorLabel" class="control-label">Автор</label>
-        <select id="selectAuthor" asp-for="Melody.AuthorID" class="form-control" asp-items="ViewBag.AuthorID">                      
-        </select>
-    </div>
-    
-    <div id="submitMelodyBtn" class="form-group">
-        <input type="submit" value="Створити" class="btn btn-primary btn-outline-dark bg-light">
-    </div>
-</form>
+            <select asp-for="Melody.Tonality" class="form-control mt-2" asp-items="ViewBag.Tonalities">
+                <option value="">-- Тональність, в якій завантажено MIDI --</option>
+            </select>
+            <span asp-validation-for="Melody.Tonality" class="text-danger"></span>
 
-<form method="post">
-    <div class="form-group">
-        <button id="createAuthorBtn" asp-page-handler="addform" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light">Додати автора</button>
+            <div class="form-group">
+                <label asp-for="Melody.Title" class="control-label" id="title">Назва</label>
+                <input asp-for="Melody.Title" class="form-control" />
+                <span asp-validation-for="Melody.Title" class="text-danger"></span>
+            </div>
+            <p id="warning"></p>
+            <div class="form-group">
+                <label asp-for="Melody.Year" class="control-label">Рік</label>
+                <input asp-for="Melody.Year" class="form-control" />
+                <span asp-validation-for="Melody.Year" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Melody.Description" class="control-label">Примітки</label>
+                <input asp-for="Melody.Description" class="form-control" />
+                <span asp-validation-for="Melody.Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Melody.AuthorID" id="selectAuthorLabel" class="control-label">Автор</label>
+                <select id="selectAuthor" asp-for="Melody.AuthorID" class="form-control" asp-items="ViewBag.AuthorID">
+                </select>
+            </div>
+
+            <div id="submitMelodyBtn" class="form-group">
+                <input type="submit" value="Створити" class="btn btn-primary btn-outline-dark bg-light">
+            </div>
+        </form>
+
+        <form method="post">
+            <div class="form-group">
+                <button id="createAuthorBtn" asp-page-handler="addform" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light">Додати автора</button>
+            </div>
+            @if (Model.ShowAuthor)
+            {
+                <div class="form-group mt-3">
+                    <label asp-for="TempAuthor" class="control-label">Автор</label>
+                    <input type="text" id="inputAuthor" asp-for="TempAuthor" class="form-control" placeholder="Додайте ім'я та прізвище" />
+                </div>
+                <p id="authorWarning"></p>
+                <div class="form-group mt-3">
+                    <button type="submit" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light">Додати</button>
+
+                </div>
+            }
+        </form>
+        <a asp-page="Index" class="btn btn-primary btn-outline-dark bg-light mt-3">Назад до списку</a>
     </div>
-    @if(Model.ShowAuthor)
-    {
-        <div class="form-group mt-3">
-            <label asp-for="TempAuthor" class="control-label">Автор</label>
-            <input type="text" id="inputAuthor" asp-for="TempAuthor" class="form-control" placeholder="Додайте ім'я та прізвище"/>
+    <!--ПРАВОРУЧ-->
+
+    <div class="searchrightcontainer">
+        <div class="notesinfo d-inline-flex">
+            <div class="d-inline-block" style="width:80%">@Model.Keys</div>
+            <form method="post" asp-page-handler="reset" class="d-inline-block m-1">
+                <button type="submit" class="btn btn-outline-dark">Reset</button>
+            </form>
+            <form method="post" asp-page-handler="notesearch" class="d-inline-block m-1">
+                <button type="submit" class="btn btn-outline-dark">Search</button>
+            </form>
         </div>
-        <p id="authorWarning"></p>
-        <div class="form-group mt-3">            
-            <button type="submit" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light">Додати</button>
-            
-        </div>        
-    }   
-</form>
-<a asp-page="Index" class="btn btn-primary btn-outline-dark bg-light mt-3">Назад до списку</a>
-
-
-
+        <!--МІЙ СТЕЙНВЕЙ-->
+        <div class="controlcontainer">
+            <form method="post" asp-page-handler="piano" id="pianoroll">
+                <button type="submit" asp-route-key="c" class="whitepianobutton">C1</button>
+                <button type="submit" asp-route-key="cis" class="blackpianobutton cis1">Cis1</button>
+                <button type="submit" asp-route-key="d" class="whitepianobutton">D1</button>
+                <button type="submit" asp-route-key="dis" class="blackpianobutton dis1">Dis1</button>
+                <button type="submit" asp-route-key="e" class="whitepianobutton">E1</button>
+                <button type="submit" asp-route-key="f" class="whitepianobutton">F1</button>
+                <button type="submit" asp-route-key="fis" class="blackpianobutton fis1">Fis1</button>
+                <button type="submit" asp-route-key="g" class="whitepianobutton">G1</button>
+                <button type="submit" asp-route-key="gis" class="blackpianobutton gis1">Gis1</button>
+                <button type="submit" asp-route-key="a" class="whitepianobutton">A1</button>
+                <button type="submit" asp-route-key="b" class="blackpianobutton b1">B1</button>
+                <button type="submit" asp-route-key="h" class="whitepianobutton">H1</button>
+                <button type="submit" asp-route-key="c'" class="whitepianobutton">C2</button>
+                <button type="submit" asp-route-key="cis'" class="blackpianobutton cis2">Cis2</button>
+                <button type="submit" asp-route-key="d'" class="whitepianobutton">D2</button>
+                <button type="submit" asp-route-key="dis'" class="blackpianobutton dis2">Dis2</button>
+                <button type="submit" asp-route-key="e'" class="whitepianobutton">E2</button>
+                <button type="submit" asp-route-key="f'" class="whitepianobutton">F2</button>
+                <button type="submit" asp-route-key="fis'" class="blackpianobutton fis2">Fis2</button>
+                <button type="submit" asp-route-key="g'" class="whitepianobutton">G2</button>
+                <button type="submit" asp-route-key="gis'" class="blackpianobutton gis2">Gis2</button>
+                <button type="submit" asp-route-key="a'" class="whitepianobutton">A2</button>
+                <button type="submit" asp-route-key="b'" class="blackpianobutton b2">B2</button>
+                <button type="submit" asp-route-key="h'" class="whitepianobutton">H2</button>
+                <button type="submit" asp-route-key="c''" class="whitepianobutton">C3</button>
+            </form>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     @{
@@ -85,6 +130,29 @@
     }
     <script src="~/js/duplicate.js"></script>
     <script src="~/js/newAuthor.js"></script>
+    <script src="~/js/play.js"></script>
 }
+
+
+<!-- АУДІО   -->
+
+<div class="controlcontainer infocontainer">
+
+    <p class="smallfont">@Model.Msg</p>
+    
+    @if (TempData["AudioFile"] != null)
+    {
+        <p class="smallfont">@TempData["AudioFile"]</p>
+        <audio id="audioPlayer" controls autoplay style="display: none">
+            <source src="@TempData["AudioFile"]" type="audio/mpeg" />
+            Your browser does not support the audio element.
+        </audio>
+    }
+    else
+    {
+        <p class="smallfont">File is not ready</p>
+    }
+</div>
+
 
 

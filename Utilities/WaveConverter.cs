@@ -9,7 +9,7 @@ namespace Melodies25.Utilities
     public static class WaveConverter
     {
 
-
+        
         public static void GenerateWave(List<(double frequency, int durationMs)> sequence, string wavePath)
         {
             int sampleRate = 44100;
@@ -32,21 +32,7 @@ namespace Melodies25.Utilities
 
 
         // створює mp3 файл зі шляхом outputPath (шлях давати з розширенням .mp3)
-        public static void GenerateMp3(List<(double frequency, int durationMs)> sequence, string mp3Path)
-        {
-            int sampleRate = 44100;
-            Console.WriteLine("Starting GenerateMp3 method...");
-
-            var waveProvider = new SynthWaveProvider(sequence, sampleRate);
-            //Console.WriteLine("waveProvider is ready");
-
-            string wavPath = "output.wav";
-
-            CreateWave(sampleRate, waveProvider, wavPath);
-
-            WaveToMp3(wavPath, mp3Path);
-        }
-
+        
         private static void WaveToMp3(string wavPath, string mp3Path)
         {
             Console.WriteLine("Starting MP3 conversion...");
@@ -93,17 +79,6 @@ namespace Melodies25.Utilities
             Console.WriteLine("WAV file created successfully.");
         }
 
-        public static async Task GenerateMp3Async(List<(double frequency, int durationMs)> sequence, string mp3Path)
-        {
-            int sampleRate = 44100;
-            MessageL(COLORS.olive, "Starting GenerateMp3Async method...");
-
-            var waveProvider = new SynthWaveProvider(sequence, sampleRate);
-            string wavPath = "output.wav";
-            await CreateWaveAsync(sampleRate, waveProvider, wavPath);
-            await WavToMp3Async(wavPath, mp3Path);
-        }
-
         private static async Task WavToMp3Async(string wavPath, string mp3Path)
         {
             Console.WriteLine("Starting MP3 conversion...");
@@ -147,6 +122,23 @@ namespace Melodies25.Utilities
             Console.WriteLine($"WAV file {wavPath} created successfully.");
         }
 
+        #region GenerateMp3
+
+        public static void GenerateMp3(List<(double frequency, int durationMs)> sequence, string mp3Path)
+        {
+            int sampleRate = 44100;
+            Console.WriteLine("Starting GenerateMp3 method...");
+
+            var waveProvider = new SynthWaveProvider(sequence, sampleRate);
+            //Console.WriteLine("waveProvider is ready");
+
+            string wavPath = "output.wav";
+
+            CreateWave(sampleRate, waveProvider, wavPath);
+
+            WaveToMp3(wavPath, mp3Path);
+        }
+
         public static void GenerateMp3(Note note, string outputPath)
         {
             Console.WriteLine($"Preparing to play {note.Name()}...");
@@ -154,6 +146,17 @@ namespace Melodies25.Utilities
             sequence.Add(new(Pitch_to_hz(note.AbsPitch()), note.AbsDuration()));
             sequence.Add(new(0, 200));
             GenerateMp3(sequence, outputPath);
+        }
+
+        public static async Task GenerateMp3Async(List<(double frequency, int durationMs)> sequence, string mp3Path)
+        {
+            int sampleRate = 44100;
+            MessageL(COLORS.olive, "Starting GenerateMp3Async method...");
+
+            var waveProvider = new SynthWaveProvider(sequence, sampleRate);
+            string wavPath = "output.wav";
+            await CreateWaveAsync(sampleRate, waveProvider, wavPath);
+            await WavToMp3Async(wavPath, mp3Path);
         }
 
         public static void GenerateMp3(Melody melody, string outputPath)
@@ -192,5 +195,6 @@ namespace Melodies25.Utilities
             sequence.Add(new(0, 200));
             await GenerateMp3Async(sequence, outputPath);
         }
+        #endregion
     }
 }

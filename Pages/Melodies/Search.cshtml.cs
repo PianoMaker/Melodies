@@ -242,8 +242,6 @@ namespace Melodies25.Pages.Melodies
             MessageL(COLORS.yellow, $"SEARCH - OnPostAsync method {key}");
 
             OnPostPiano(key);
-
-
         }
 
         public IActionResult OnPostPiano(string key)

@@ -18,8 +18,6 @@ namespace Music
     public static class MidiConverter
     {
 
-
-
         public static Melody GetMelodyFromMidi(string file)
         {
             MidiFile midiFile = new MidiFile(file);

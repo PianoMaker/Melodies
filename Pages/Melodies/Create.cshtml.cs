@@ -18,6 +18,7 @@ using Music;
 using static Music.Messages;
 using static Music.MidiConverter;
 using static Melodies25.Utilities.PrepareFiles;
+using static Melodies25.Utilities.WaveConverter;
 using Microsoft.EntityFrameworkCore;
 using Melody = Melodies25.Models.Melody;
 
@@ -40,10 +41,15 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public Models.Melody Melody { get; set; } = default!;
 
+        public string Msg { get; set; }
+
         [BindProperty]
         public string? SelectedMode { get; set; }
 
         public string? ErrorWarning { get; set; }
+
+        [TempData]
+        public string Keys { get; set; }
 
         public CreateModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
         {
@@ -75,8 +81,15 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
+        public void OnPostAsync(string key)
+        {
+            //подолання глюку
+            MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostAsync method {key}");
 
-        public async Task<IActionResult> OnPostAsync(IFormFile? fileupload)
+            OnPostPiano(key);
+        }
+
+        public async Task<IActionResult> OnPostCreateAsync(IFormFile? fileupload)
         {
 
             MessageL(COLORS.yellow, "MELODIES/CREATE OnPostAsync");
@@ -244,6 +257,45 @@ namespace Melodies25.Pages.Melodies
         }
 
 
+        public IActionResult OnPostPiano(string key)
+        {
+            Globals.notation = Notation.eu;
+
+            Console.WriteLine($"Key pressed: {key}");
+
+            if (!string.IsNullOrEmpty(key))
+            {
+                MessageL(COLORS.yellow, $"CREATE - OnPostPiano method {key}");
+                Keys += key + " ";
+            }
+            else
+            {
+                MessageL(COLORS.yellow, $"CREATE - OnPostPiano method, no key, return");
+                return Page();
+            }
+            var note = new Note(key);
+
+            // відтворення ноти
+            try
+            {
+                string mp3Path = Path.Combine(_environment.WebRootPath, "sounds", $"{key}.mp3");
+                if (!System.IO.File.Exists(mp3Path))
+                    GenerateMp3(note, mp3Path);
+                else Console.WriteLine("using existing file");
+                var relativePath = "/sounds/" + Path.GetFileName(mp3Path);
+                TempData["AudioFile"] = relativePath;
+                Console.WriteLine($"playing mp3 {mp3Path}");
+            }
+            catch (Exception ex)
+            {
+                Msg = ex.ToString();
+            }
+
+
+            return Page();
+        }
+
+        
     }
 
 }
