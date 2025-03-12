@@ -6,7 +6,7 @@ namespace Music
 {
     public class Messages
     {
-
+        #region _A_  
         private const string above_en = " above ";
         private const string above_uk = " вищі ";
         private const string aboveroot_en = "the root \n";
@@ -17,15 +17,19 @@ namespace Music
         private const string another_uk = "\nСпробувати інший акорд? 1 - так, 0 - продовжити роботу з цим акордом\n";
         private const string anyway_en = " chord. Proceed anyway? \n";
         private const string anyway_uk = "акордом. Все одно продовжити? \n";
-
         private const string aug_int_en = "augmented ";
         private const string aug_int_uk = "збільшений ";
+        #endregion
 
 
+        #region _B_
         private const string between_en = " between melody and root";
         private const string between_uk = "и між крайніми голосами";
         private const string btw1and5_en = "Choose between 1 and 5\n";
         private const string btw1and5_uk = "Оберіть від 1 до 5\n";
+        #endregion
+
+        #region _C_
         private const string c_all_en = "\nAll ";
         private const string c_all_uk = "\nУсі ";
         private const string c_chords_en = " chords";
@@ -40,7 +44,9 @@ namespace Music
         private const string c7th_uk = "септ";
         private const string c9th_en = "9th";
         private const string c9th_uk = "нон";
+        #endregion
 
+        #region _CH_
         private const string checksounds_uk = "Перевірка Біпера. Якщо ви не почули звуковий сигнал, перевірте, чи включено звук у Мікшері гучності ('System sounds') ";
         private const string checksounds_en = "Checking Beeper. If you didn't here sound sygnal check if you System sounds are switched of in a Volume Mixer";
         private const string choose_action_en = "\nChoose action";
@@ -81,17 +87,20 @@ namespace Music
         private const string chords_achieved_uk = "\nАкорди отримано:\n";
         private const string chords_containing_en = "\nChords containing ";
         private const string chords_containing_uk = "\nАкорди із ";
+        #endregion
 
+        #region _D_
         private const string dim_int_en = "diminished ";
         private const string dim_int_uk = "зменшений ";
-
-
         private const string display_all_en = "Display all ";
         private const string display_all_uk = "Вивести усі ";
         private const string display_en = "Display ";
         private const string display_only_en = "Display only ";
         private const string display_only_uk = "Вивести лише ";
         private const string display_uk = "Вивести ";
+        #endregion
+
+        #region _E_
         private const string enter_en = "Enter ";
         private const string enter_uk = "Введіть ";
         private const string enterc_en = "choose interval\n";
@@ -109,11 +118,16 @@ namespace Music
         private const string enterspeed_en = enter_en + "notes duration in ms (1-2000)";
         private static string enternumberofnotes_uk = "Введіть кількість нот";
         private static string enternumberofnotes_en = "Enter number of notes";
+        #endregion
 
+        #region _F_
         private const string final_action_en = "\n1 - Play chords\n2 - Simplify alteration\n3 - Convert flats to sharps\n4 - Convert sharps to flats\n5 - Smart alteration\n6 - Save as text\n7 - Save as xml\n8 - Try another chord\n0 - Exit\n";
         private const string final_action_uk = "\n1 - Зіграти акорди\n2 - Спростити альтерацію\n3 - Перетворити бемолі на дієзи\n4 - Перетворити дієзи на бемолі\n5 - Розумна переальтерація \n6 - Зберегти як текст\n7 - Зберегти як xml\n8 - Cпробувати інший акорд\n0 - завершення роботи\n";
         private const string fsounds_en = " sounds";
         private const string fsounds_uk = " звуків";
+        #endregion
+
+        #region _I_
         private const string i7th_en = "7th";
         private const string i7th_uk = "септим";
         private const string ifsave_en = "\nSave as file? 1 - yes, 2 - no";
@@ -132,7 +146,6 @@ namespace Music
         private const string incorrect_value_en = "incorrect value";
         private static string integer_uk = "ціле число";
         private static string integer_en = "integer";
-
         private const string intotal_en = "\ntotal: ";
         private const string intotal_uk = "\nусього: ";
         private const string inversions_melody_en = " and inversions with a given melody tone";
@@ -141,11 +154,16 @@ namespace Music
         private const string inversions_order_uk = " в порядку обернень";
         private const string inversions_root_en = " and inversions from a given root";
         private const string inversions_root_uk = " та обернення від заданої ноти";
+        #endregion
+
+        #region _L_
         private const string less_en = "the number must be less than ";
         private const string less_uk = "число має бути менше ніж ";
+        #endregion
+
+        #region _M_
         private const string melody_en = "melody\n";
         private const string melody_uk = "мелодичний тон\n";
-
         private const string major_int_uk = "великий ";
         private const string major_int_en = "minor ";
         private const string major_ton_uk = "мажорний ";
@@ -161,14 +179,24 @@ namespace Music
 
         private const string more_en = "the number must be more than ";
         private const string more_uk = "число має бути більше ніж ";
+        #endregion
+
+        #region _N_
         private const string ndo_en = "do";
         private const string ndo_uk = "до";
-        private const string nfa_en = "fa";
-        private const string nfa_uk = "фа";
-        private const string nla_en = "la";
-        private const string nla_uk = "ля";
+        private const string nre_en = "re";
+        private const string nre_uk = "ре";
         private const string nmi_en = "mi";
         private const string nmi_uk = "мі";
+        private const string nfa_en = "fa";
+        private const string nfa_uk = "фа";        
+        private const string nsol_en = "sol";
+        private const string nsol_uk = "соль";
+        private const string nla_en = "la";
+        private const string nla_uk = "ля";
+        private const string nsi_en = "si";
+        private const string nsi_uk = "сі";
+        
         private const string noentered_en = "chord entered is not a ";
         private const string noentered_uk = "введений акорд не є ";
         private const string notationtypes_en = "\n1 - classic european\n2 - modern american\n";
@@ -190,13 +218,10 @@ namespace Music
 
         private const string notonality_en = "impossible to detect Tonality";
         private const string notonality_uk = "неможливо визначити тональність";
+        #endregion
 
-        private const string nre_en = "re";
-        private const string nre_uk = "ре";
-        private const string nsi_en = "si";
-        private const string nsi_uk = "сі";
-        private const string nsol_en = "sol";
-        private const string nsol_uk = "соль";
+
+
         private const string oneperrow_en = "one per row";
         private const string oneperrow_uk = "по одній на рядок";
         private const string range_order_en = " in ascending order of range\n";
@@ -209,6 +234,8 @@ namespace Music
         private const string sound_uk = "\nзвук ";
         private const string sp_voicings_en = "1 - Search for voicing with 9th, 11th and 13th are more than octave ";
         private const string sp_voicings_uk = "1 - Шукати лише розташування, в яких 9-, 11- і 13- тони";
+
+        #region _T_
         private const string table_header_en = "\t\t\tTones\t\t| range\n \t\t\t\t\t|degrees / halftones | consonanse rate| sharpness ";
         private const string table_header_uk = "\t\t\tЗвуки\t\t| діапазон\n \t\t\t\t\t|ступенів / півтонів | консонансність | кв.коло ";
         private const string thank_en = "\nThank you for using our program!";
@@ -223,6 +250,8 @@ namespace Music
         private const string try_or_more_uk = "1 - так, 2 - спробувати знову\n";
         private const string trymore_en = "Try once more";
         private const string trymore_uk = "Спробуйте ще раз";
+        #endregion
+
         private const string upto12_en = "number of notes (up to 12)\n";
         private const string upto12_uk = "кількість нот(до 12)\n";
         private const string use_eu_en = "\nUse european traditional notation to enter notes:";
@@ -239,7 +268,7 @@ namespace Music
 
         // CHORDS
 
-
+        #region cords
         public const string SEPT_uk = "септакорд";
         public const string TERZQ_uk = "терцквартакорд";
         public const string QUINTS_uk = "квінтсекстакорд";
@@ -305,6 +334,7 @@ namespace Music
         public const string UNDECCORD_5i_en = "eleventh chord in 5th inversion";
         public const string TERZDEC_en = "thirteenth chord";
         public const string CLUSTER_en = "cluster";
+        #endregion
 
 
 
@@ -313,6 +343,8 @@ namespace Music
         {
             ForegroundColor = (ConsoleColor)color;
         }
+
+        #region Messages
         public static void Message(int color, string msg)
         {
             ForegroundColor = (ConsoleColor)color;
@@ -374,7 +406,10 @@ namespace Music
             ResetColor();
         }
 
-            public static string above()
+        #endregion
+
+        #region Choice Functions
+        public static string above()
             {
                 if (lng == LNG.uk) return above_uk;
                 else return above_en;
@@ -996,8 +1031,10 @@ namespace Music
                 else return zeroend_en;
             }
 
+        #endregion
 
-            public static string SEPT()
+        #region ChoiceFunctions for chords
+        public static string SEPT()
             {
                 if (lng == LNG.uk) return SEPT_uk;
                 else return SEPT_en;
@@ -1157,7 +1194,7 @@ namespace Music
                 if (lng == LNG.uk) return CLUSTER_uk;
                 else return CLUSTER_en;
             }
-
+        #endregion
 
     }
 }
