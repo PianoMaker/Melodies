@@ -21,7 +21,7 @@ namespace Melodies25
 
             var connectionString = env.IsDevelopment()
                 ? builder.Configuration.GetConnectionString("SQLExpress") // Локальна БД
-                : builder.Configuration.GetConnectionString("Azure"); // Azure БД
+                : builder.Configuration.GetConnectionString("Smarter"); // Azure БД
 
             if (string.IsNullOrEmpty(connectionString))
                 throw new InvalidOperationException("Connection string not found.");

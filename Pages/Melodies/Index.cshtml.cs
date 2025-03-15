@@ -17,6 +17,7 @@ using Music;
 using Melody = Melodies25.Models.Melody;
 using Microsoft.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
+using Azure;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -116,6 +117,43 @@ namespace Melodies25.Pages.Melodies
 
             Melody = await _context.Melody.Include(m => m.Author).ToListAsync();
 
+            return Page();
+        }
+
+
+        public async Task<IActionResult> OnPostKilldupesAsync()
+        {
+            var melodies = await _context.Melody
+            .Include(m => m.Author)
+            .ToListAsync();
+
+            var duplicates = melodies
+                .GroupBy(m => new {m.Title})
+                .Where(g => g.Count() > 1) // Фільтруємо дублікати
+                .ToList();
+
+            MessageL(COLORS.yellow, $"Ready to delete {duplicates.Count} dupes");
+            foreach (var duplicateGroup in duplicates)
+            {
+                var duplicateList = duplicateGroup.ToList();
+                
+
+                // Залишаємо перший елемент і видаляємо решту
+                for (int i = 1; i < duplicateList.Count; i++)
+                {
+                    var melodyToDelete = duplicateList[i];
+                    _context.Melody.Remove(melodyToDelete);
+                }
+            }
+
+            
+
+            // Зберігаємо зміни
+            await _context.SaveChangesAsync();
+
+            Melody = await _context.Melody.Include(m => m.Author).ToListAsync();
+
+            // Після завершення операції можна редіректити назад
             return Page();
         }
 
