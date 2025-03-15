@@ -21,7 +21,7 @@ namespace Melodies25
             /*TWO DATABASES*/
 
             builder.Services.AddDbContext<Melodies25Context>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio"))); // Початкове підключення
+                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio"))); // Основна БД
 
             builder.Services.AddDbContext<Melodies25SyncContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("SQLExpress"))); // БД для синхронізації
