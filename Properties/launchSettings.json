@@ -9,23 +9,35 @@
     }
   },
   "profiles": {
-    "http": {
+    "VisualStudio": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:7272",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "selectedDatabase": "VisualStudio"
+      }      
+    },
+    "SQLExpress": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:8080",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "selectedDatabase": "SQLExpress"
+      }      
+    },
+    "Smarter": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "applicationUrl": "http://localhost:5166",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "https": {
-      "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "applicationUrl": "https://localhost:7272;http://localhost:5166",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+       "ASPNETCORE_ENVIRONMENT": "Development",
+       "selectedDatabase": "Smarter"
+      }      
     },
     "IIS Express": {
       "commandName": "IISExpress",
@@ -33,6 +45,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+
     }
   }
 }

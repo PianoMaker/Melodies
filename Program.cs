@@ -4,9 +4,8 @@ using Melodies25.Data;
 using Microsoft.AspNetCore.Identity;
 using Melodies25.Models;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging; // Для логування
 using Microsoft.Extensions.Localization;
-
 
 namespace Melodies25
 {
@@ -17,15 +16,27 @@ namespace Melodies25
             var builder = WebApplication.CreateBuilder(args);
             var env = builder.Environment;
 
-            /* Trying Azur Db*/
+            // Створюємо логер для відлагодження
+            var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
 
-            var connectionString = env.IsDevelopment()
-                ? builder.Configuration.GetConnectionString("SQLExpress") // Локальна БД
-                : builder.Configuration.GetConnectionString("Azure"); // Azure БД
+            // Читання налаштувань з конфігураційного файлу
+            builder.Configuration
+                .SetBasePath(builder.Environment.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
+            // Отримуємо вибір бази даних (з профілю запуску)
+            var selectedDatabase = builder.Configuration.GetValue<string>("SelectedDatabase");
+
+            // Логування для перевірки значення
+            logger.LogInformation($"SelectedDatabase: {selectedDatabase}");
+            string connectionString = builder.Configuration.GetConnectionString(selectedDatabase);
+            logger.LogInformation($"connectionString: {connectionString}");
+
+            // Перевірка на порожній рядок підключення
             if (string.IsNullOrEmpty(connectionString))
-                throw new InvalidOperationException("Connection string not found.");
+                throw new InvalidOperationException("Connection string is empty or invalid.");
 
+            // Реєстрація контекстів для доступу до бази даних
             builder.Services.AddDbContext<Melodies25Context>(options =>
                 options.UseSqlServer(connectionString));
 
@@ -34,18 +45,13 @@ namespace Melodies25
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-
-
             builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
                 options.SignIn.RequireConfirmedEmail = false;
             })
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
-
-
-
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
@@ -54,46 +60,28 @@ namespace Melodies25
 
             builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-            // Add services to the container.
-            builder.Services.AddRazorPages()
-                .AddDataAnnotationsLocalization(options =>
-                    options.DataAnnotationLocalizerProvider = (type, factory) =>
-                        factory.Create(typeof(SharedResource))
-                );
-
-            builder.Services.AddScoped<DataSeeder>();
-
-            builder.Services.AddSession();            
-
-
-
+            // Додавання інших сервісів
+            builder.Services.AddRazorPages();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
+            // Налаштування обробки помилок
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage(); // Для більш детальної інформації про помилки у Development
+            }
+            else
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                var seeder = services.GetRequiredService<DataSeeder>();
-                seeder.SeedRolesAndAdmin().GetAwaiter().GetResult();
-            }
-
-            app.UseSession();
-
-            app.UseHttpsRedirection();
+            
+            //щоб завантажувалось все що в css, js та інших локаціях
             app.UseStaticFiles();
 
+            // Налаштування маршрутизації
             app.UseRouting();
-
             app.UseAuthentication();
-
             app.UseAuthorization();
 
             app.MapRazorPages();
