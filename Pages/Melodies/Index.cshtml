@@ -51,7 +51,8 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)
                 </td>
-                <!--ФАЙЛ-->
+                
+                <!-- ФАЙЛ -->
                 <td>
                     @if (!string.IsNullOrEmpty(item.Filepath))
                     {
@@ -98,7 +99,8 @@
                         <span>Файл не доступний</span>
                     }
                 </td>
-                
+
+               
                 <td>
                     <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
                     <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
@@ -111,6 +113,9 @@
 </table>
 <form method="post">
     <button type="submit">Refresh</button>
+</form>
+<form asp-page-handler="killdupes" method="post">
+    <button type="submit">Kill Duplicates</button>
 </form>
 <div class="controlcontainer">
 
