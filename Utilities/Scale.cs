@@ -212,27 +212,27 @@ namespace Music
             string confirmednotes = "Notes confirmed: ";
             string affectednotes = "Notes affected: ";
             string skipednotes = $"Notes out of tonality: {note}";
-            MessageL(COLORS.cyan, $"analize {note.Name()} {note.Pitch}");
+            MessageL(COLORS.cyan, $"analize {note.Name} {note.Pitch}");
 
             foreach (Note _note in scale.Notes)
             {
-                //GrayMessageL($"compare to {_note.Name()} {_note.Pitch}");
+                //GrayMessageL($"compare to {_note.GetName()} {_note.Pitch}");
                 if (_note.EqualDegree(note))
                 {
-                    confirmednotes += $"{note.Name()} ";
+                    confirmednotes += $"{note.Name} ";
                     ifskiped = false;
                     break;
                 }
                 else if (_note.Pitch == note.Pitch)
                 {
                     ifskiped = false;
-                    GrayMessageL($"processing {note.Name()}");
+                    GrayMessageL($"processing {note.Name}");
                     while (note.Sharpness < _note.Sharpness)
                         note.EnharmonizeSharp();
                     while (note.Sharpness > _note.Sharpness)
                         note.EnharmonizeFlat();
 
-                    affectednotes += $"{note.Name()} ";
+                    affectednotes += $"{note.Name} ";
                     break;
                 }                               
             }

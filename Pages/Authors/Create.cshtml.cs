@@ -34,7 +34,7 @@ namespace Melodies25.Pages.Authors
                 SelectedMode = "composer"; // Значення за замовчуванням
             }
 
-            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
+            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "GetName");
             return Page();
         }
 
@@ -47,7 +47,7 @@ namespace Melodies25.Pages.Authors
 
         public async Task<IActionResult> OnPostAsync()
         {
-            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
+            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "GetName");
 
             if (!ModelState.IsValid)
             {

@@ -276,7 +276,7 @@ namespace Melodies25.Utilities
 
         public static void GenerateMp3(Note note, string outputPath)
         {            
-            Console.WriteLine($"Preparing to play {note.Name()}...");
+            Console.WriteLine($"Preparing to play {note.GetName()}...");
             List<(double frequency, int durationMs)> sequence = new();
             sequence.Add(new(Pitch_to_hz(note.AbsPitch()), note.AbsDuration()));
             sequence.Add(new(0, 200));
@@ -298,7 +298,7 @@ namespace Melodies25.Utilities
 
         public async static void GenerateMp3Async(Note note, string outputPath)
         {
-            Console.WriteLine($"Preparing to play {note.Name()}...");
+            Console.WriteLine($"Preparing to play {note.GetName()}...");
             List<(double frequency, int durationMs)> sequence = new();
             sequence.Add(new(Pitch_to_hz(note.AbsPitch()), note.AbsDuration()));
             sequence.Add(new(0, 200));

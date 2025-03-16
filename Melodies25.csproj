@@ -7,7 +7,7 @@
     <UserSecretsId>ff60f097-6b7c-4493-80c4-3dd323ef10c9</UserSecretsId>
     <SatelliteResourceLanguages>en;uk</SatelliteResourceLanguages>
   </PropertyGroup>	
-	
+		
 
   <ItemGroup>
     <Compile Remove="IdentityDbContext.cs" />

@@ -54,9 +54,16 @@ namespace Music
         public (string, string) DurName
         {
             get {
-                return (duration.Symbol(), Name());                  
+                return (duration.Symbol(), GetName());                  
             }
         }
+
+        public string Name
+        {
+            get { return pitch_to_notename(step, pitch).Replace("b", "♭");
+    }
+        }
+
 
 
         public Note(Note note)
@@ -327,9 +334,7 @@ namespace Music
         }
 
 
-
-        public string Key(Notation? notation) { return note_to_key(step, pitch); }
-        public string Name() { return pitch_to_notename(step, pitch).Replace("b", "♭"); }
+        public string GetName() { return pitch_to_notename(step, pitch).Replace("b", "♭"); }
 
         public int Octave() { return Oct; }
         public void OctUp(int num = 1) { oct+= num; }
@@ -407,7 +412,7 @@ namespace Music
         public void Display()
         { StringOutput.Display(this); }
         public void DisplayTable()
-        { WriteLine(Name() + "\npitch = " + ToInt32(Pitch) + "\noctave = " + ToInt32(Oct) + 
+        { WriteLine(GetName() + "\npitch = " + ToInt32(Pitch) + "\noctave = " + ToInt32(Oct) + 
             "\nduration = " + duration + "\nMidiTicks(PPQN-480) = " + duration.MidiDuration(480) +
             "\nabspitch= " + AbsPitch() + "\nMidiNote= " + MidiNote  + " \nfreq = " + Pitch_to_hz(AbsPitch())); }
 

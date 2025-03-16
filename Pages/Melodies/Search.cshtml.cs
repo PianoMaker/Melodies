@@ -317,7 +317,7 @@ namespace Melodies25.Pages.Melodies
                     GrayMessageL(melody.Title);
                 MessageL(COLORS.olive, "notes in patten:");
                 foreach (var note in MelodyPattern)
-                    GrayMessageL(note.Name());
+                    GrayMessageL(note.Name);
 
 
                 /* будуємо список виявлених збігів MathedMelodies */

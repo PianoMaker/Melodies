@@ -40,9 +40,9 @@ namespace Music
         public static string Display(Note note, bool octtrigger = true, int color = 7)
         {
             if (octtrigger)
-                return $"{note.Name()} ({ToInt32(note.Oct)})";
+                return $"{note.GetName()} ({ToInt32(note.Oct)})";
             else
-                return $"{note.Name()}";
+                return $"{note.GetName()}";
         }
 
         public static ObservableCollection<string> Display(List<Note> notes, bool octtrigger = true, int color = 14)
