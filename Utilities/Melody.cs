@@ -88,7 +88,7 @@ namespace Music
                 {
                     try
                     {
-                        var name = Notes[i].Name();
+                        var name = Notes[i].Name;
                         list.Add(name);
                         //Message(COLORS.gray, name + " ");
                     }
@@ -137,7 +137,7 @@ namespace Music
                 {
                     try
                     {
-                        list += note.Name();
+                        list += note.Name;
                         list += "  ";
                     }
                     catch
@@ -676,12 +676,12 @@ namespace Music
 
             foreach (Note note in Notes)
             {
-                if (!stats.ContainsKey(note.Name()))  // Avoid duplicate key exception
-                    stats[note.Name()] = 0;
+                if (!stats.ContainsKey(note.Name))  // Avoid duplicate key exception
+                    stats[note.Name] = 0;
             };
             foreach (Note note in Notes)
             {
-                stats[note.Name()] += increment;
+                stats[note.Name] += increment;    
             };
             // values * 100 і округлити до одного знака
 
@@ -700,13 +700,13 @@ namespace Music
 
             foreach (Note note in Notes)
             {
-                if (!stats.ContainsKey(note.Name()))  // Avoid duplicate key exception
-                    stats[note.Name()] = 0;
+                if (!stats.ContainsKey(note.Name))  // Avoid duplicate key exception
+                    stats[note.Name] = 0;
             };
             foreach (Note note in Notes)
             {
 
-                stats[note.Name()] += (float)note.AbsDuration() * 100 / AbsLength;
+                stats[note.Name] += (float)note.AbsDuration() * 100 / AbsLength;
             };
 
             stats = stats.ToDictionary(pair => pair.Key, pair => (float)Math.Round(pair.Value, 1));
