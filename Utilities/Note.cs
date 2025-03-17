@@ -60,8 +60,10 @@ namespace Music
 
         public string Name
         {
-            get { return pitch_to_notename(step, pitch).Replace("b", "♭");
-    }
+            get
+            {
+                return pitch_to_notename(step, pitch).Replace("b", "♭");
+            }
         }
 
 
@@ -265,6 +267,7 @@ namespace Music
         public int GetAlter() { return pitch_to_alter(step, pitch); }
 
         public int AbsDuration() { return duration.AbsDuration(); }
+        
         public int AbsPitch() 
         { 
         if (pitch - step > 10) return pitch + (oct - 2) * NotesInOctave; // для до-бемоля і іншої дубль-бемольної екзотики

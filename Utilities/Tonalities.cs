@@ -33,7 +33,7 @@ namespace Music
         public Tonalities(Note note, MODE mode)
         {
             this.step = (NOTES)note.Step;             
-            alter = (ALTER)note.GetAlter();
+            alter = (ALTER)note.Alter;
             this.mode = mode;
         }
 

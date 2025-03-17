@@ -153,7 +153,7 @@ namespace Music
         public bool CheckForSharps()
         {
             foreach(Note note in notes)
-                if (note.GetAlter() > 0) return true;   
+                if (note.Alter > 0) return true;   
             return false;
         }
 
@@ -185,7 +185,7 @@ namespace Music
         public bool CheckForFlats()
         {
             foreach (Note note in notes)
-                if (note.GetAlter() < 0) return true;
+                if (note.Alter < 0) return true;
             return false;
         }
 
@@ -404,7 +404,7 @@ namespace Music
             float sharpness = 0;
             foreach (Note note in notes)
             {
-                sharpness += sharpness_counter(note.Step, note.GetAlter());
+                sharpness += sharpness_counter(note.Step, note.Alter);
             }
             return sharpness / Size();
         }
