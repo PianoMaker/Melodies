@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Music;
 using NAudio.Midi;
-using Newtonsoft.Json;
 using System.Globalization;
 using System.IO;
 using static Music.MidiConverter;
