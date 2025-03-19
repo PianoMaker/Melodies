@@ -75,7 +75,7 @@ namespace Music
                         Note note = new(i);
                         AddNote(note);
                     }
-                    catch (IncorrectNote e) { Console.WriteLine("skip adding " + i); }
+                    catch (IncorrectNote) { Console.WriteLine("skip adding " + i); }
                 };
         }
 
@@ -441,27 +441,7 @@ namespace Music
         {
             StringOut.DisplaySh(this, octtriger, color);
         }
-        /*
-        public void DisplayInline()
-        {
-            foreach (Note note in notes)
-            {
-                note.DisplayInline();
-            }
-        }
-
-        public void DisplayTable()
-        {
-            foreach (Note note in notes)
-                note.DisplayTable();
-        }
-
-        public void Play()
-        {
-            foreach (Note note in notes)
-                note.Play();
-        }
-        */
+        
 
         public void SortByPitch()
         {

@@ -30,26 +30,26 @@ namespace Melodies25.Pages.Melodies
 
         private readonly IWebHostEnvironment _environment;
 
-        public int? SelectedAuthorID { get; set; }
+        public int? SelectedAuthorID { get; set; } = default!;
 
         [BindProperty]
-        public bool ShowAuthor { get; set; }
+        public bool ShowAuthor { get; set; } = default!;
 
         [BindProperty]
-        public string TempAuthor { get; set; }
+        public string TempAuthor { get; set; } = default!;
 
         [BindProperty]
         public Models.Melody Melody { get; set; } = default!;
 
-        public string Msg { get; set; }
+        public string Msg { get; set; } = default!;
 
         [BindProperty]
-        public string? SelectedMode { get; set; }
+        public string? SelectedMode { get; set; } = default!;
 
-        public string? ErrorWarning { get; set; }
+        public string? ErrorWarning { get; set; } = default!;
 
         [TempData]
-        public string Keys { get; set; }
+        public string Keys { get; set; } = default!;
 
         public CreateModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
         {
