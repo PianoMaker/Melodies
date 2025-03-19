@@ -90,3 +90,6 @@ namespace Melodies25
         }
     }
 }
+// версії AspNetCore.Mvc.Razor
+// локально - 8.0.1425.11221
+// на asp.net - 8.0.1224.60312

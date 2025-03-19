@@ -7,7 +7,7 @@
     <UserSecretsId>ff60f097-6b7c-4493-80c4-3dd323ef10c9</UserSecretsId>
     <SatelliteResourceLanguages>en;uk</SatelliteResourceLanguages>
   </PropertyGroup>	
-	
+		
 
   <ItemGroup>
     <Compile Remove="IdentityDbContext.cs" />
@@ -20,7 +20,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11">	
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -28,7 +28,7 @@
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="NAudio.Core" Version="2.2.1" />
     <PackageReference Include="NAudio.Lame" Version="2.1.0" />
-    <PackageReference Include="NAudio.Midi" Version="2.2.1" />
+    <PackageReference Include="NAudio.Midi" Version="2.2.1" />	
   </ItemGroup>
 
   <ItemGroup>
