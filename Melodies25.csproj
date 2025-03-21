@@ -35,8 +35,4 @@
     <Folder Include="wwwroot\melodies\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="NuGet.Config" />
-  </ItemGroup>
-
 </Project>

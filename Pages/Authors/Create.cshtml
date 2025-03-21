@@ -2,8 +2,7 @@
 @model Melodies25.Pages.Authors.CreateModel
 
 @{
-    ViewData["Title"] = "Додати автора";
-    var SelectedMode  = @Model.SelectedMode;
+    ViewData["Title"] = "Додати автора";    
 }
 
 <h1>Додати автора</h1>
@@ -33,7 +32,10 @@
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                @if (@SelectedMode == "composer")
+                @{
+                    var mode = Model.SelectedMode ?? "default"; // якщо SelectedMode null, присвоїти значення "default"
+                }
+                @if (@mode == "composer")
                 {
                     <label asp-for="Author.Name" class="control-label">Ім'я'</label>
                     <input asp-for="Author.Name" class="form-control" />
@@ -46,12 +48,15 @@
                 <span asp-validation-for="Author.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                @if (SelectedMode == "composer")
+                <label asp-for="Author.Surname" class="control-label">Прізвище</label> 
+                
+                @if (@mode == "composer")
                 {
                     <label asp-for="Author.Surname" class="control-label">Прізвище</label>                    
 
                 }
-                else if (@SelectedMode == "band") {
+                else if (@mode == "band")
+                {
                     <label asp-for="Author.Surname" class="control-label">Назва гурту</label>
                     
                 }
@@ -75,9 +80,9 @@
             </div>
             <div class="form-group">
                 <label asp-for="Author.CountryID" class="control-label">Країна</label>
-                <select asp-for="Author.CountryID" class="form-control" asp-items="ViewBag.CountryID">
+                 <select asp-for="Author.CountryID" class="form-control" asp-items="ViewBag.CountryID">
                     <option value="">-- Оберіть країну --</option>
-                </select>
+                </select> 
                 <span asp-validation-for="Author.CountryID" class="text-danger"></span>
             </div>
             <div class="form-group">

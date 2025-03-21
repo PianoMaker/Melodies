@@ -5,9 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Melodies25.Data;
+using static Music.Messages;
 using Melodies25.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.DotNet.Scaffolding.Shared;
+using Music;
 
 namespace Melodies25.Pages.Authors
 {
@@ -18,6 +20,7 @@ namespace Melodies25.Pages.Authors
         public CreateModel(Melodies25.Data.Melodies25Context context)
         {
             _context = context;
+            
         }
 
 
@@ -28,13 +31,22 @@ namespace Melodies25.Pages.Authors
         public Author Author { get; set; } = default!;
         public IActionResult OnGet()
         {
-
+            MessageL(COLORS.yellow, "Authors/CREATE OnGet");
             if (string.IsNullOrEmpty(SelectedMode))
             {
                 SelectedMode = "composer"; // Значення за замовчуванням
             }
+            var countries = _context.Country.ToList();
+            if (countries == null || !countries.Any())
+            {
+                countries = new List<Country> { new Country { ID = 0, Name = "-- Оберіть країну --" } };
+            }           
 
-            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "GetName");
+            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
+            if (ViewData["CountryID"] == null || !((SelectList)ViewData["CountryID"]).Any())
+            {
+                ViewData["CountryID"] = new SelectList(Enumerable.Empty<SelectListItem>());
+            }
             return Page();
         }
 
@@ -53,6 +65,7 @@ namespace Melodies25.Pages.Authors
             {
                 return Page();
             }
+
 
             _context.Author.Add(Author);
             await _context.SaveChangesAsync();
