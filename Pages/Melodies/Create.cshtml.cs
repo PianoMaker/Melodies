@@ -68,7 +68,17 @@ namespace Melodies25.Pages.Melodies
             
 
             MessageL(COLORS.yellow, "MELODIES/CREATE OnGet");
-            ViewData["AuthorID"] = new SelectList(_context.Author.OrderBy(a => a.Surname), "ID", "Surname", Melody?.AuthorID);
+            ViewData["AuthorID"] = new SelectList(_context.Author
+                                                        .OrderBy(a => a.Surname)
+                                                        .Select(a => new
+                                                        {
+                                                            a.ID,
+                                                            FullName = a.Name + " " + a.Surname  // Об'єднуємо Name і Surname
+                                                        }),
+                                                    "ID",
+                                                    "FullName",
+                                                    Melody?.AuthorID
+                                                );
             ViewData["Tonalities"] = new SelectList(new List<string>
             {
                 "C-dur", "G-dur", "D-dur", "A-dur", "E-dur", "H-dur", "Fis-dur", "Cis-dur",
