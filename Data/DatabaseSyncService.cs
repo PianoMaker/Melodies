@@ -4,26 +4,26 @@ using Microsoft.EntityFrameworkCore;
 
 public class DatabaseSyncService
 {
-    private readonly Melodies25Context _localDb;
-    private readonly Melodies25SyncContext _sqlExpressDb;
+    private readonly Melodies25Context _sourceDb;
+    private readonly Melodies25TargetContext _targetDb;
     private readonly ILogger<DatabaseSyncService> _logger;
     private List<Author> missingAuthorsInLocal;
     private List<Country> missingCountriesInLocal;
-    private List<Melody> missingMelodiesInLocal;
+    private List<Melody> missingMelodiesInSource;
 
-    public DatabaseSyncService(Melodies25Context localDb, Melodies25SyncContext sqlExpressDb, ILogger<DatabaseSyncService> logger)
+    public DatabaseSyncService(Melodies25Context sourceDb, Melodies25TargetContext sqlTargetDb, ILogger<DatabaseSyncService> logger)
     {
-        _localDb = localDb;
-        _sqlExpressDb = sqlExpressDb;
+        _sourceDb = sourceDb;
+        _targetDb = sqlTargetDb;
         _logger = logger;
     }
 
     public async Task SyncDatabasesAsync()
     {
         _logger.LogInformation("Початок синхронізації баз даних...");
-                
 
-        // Знаходимо відсутні країни у локальній базі
+
+        // Знаходимо відсутні країни у цільовій базі
         bool ifmissingcountries = await AnalyzeCountries();
 
         // Завантажуємо всіх авторів з прив'язаними країнами
@@ -60,26 +60,26 @@ public class DatabaseSyncService
     {
         bool ifmissingmelodies = false;
 
-        var localMelodies = await _localDb.Melody
+        var sourceMelodies = await _sourceDb.Melody
                     .AsNoTracking()
                     .Include(m => m.Author)
                         .ThenInclude(a => a.Country)
                     .ToListAsync();
 
-        var expressMelodies = await _sqlExpressDb.Melody
+        var targetMelodies = await _targetDb.Melody
             .AsNoTracking()
             .Include(m => m.Author)
                 .ThenInclude(a => a.Country)
             .ToListAsync();
 
-        _logger.LogInformation("\nМелодій у локальній БД: {MelodyCount}", localMelodies.Count());
-        _logger.LogInformation("Мелодій у експрес БД: {MelodyCount}", expressMelodies.Count());
+        _logger.LogInformation("\nМелодій у локальній БД: {MelodyCount}", sourceMelodies.Count());
+        _logger.LogInformation("Мелодій у експрес БД: {MelodyCount}", targetMelodies.Count());
 
         // Знаходимо відсутні мелодії у локальній базі
-        missingMelodiesInLocal = expressMelodies.Where(em => !localMelodies.Any(lm => lm.Title == em.Title && lm.Author.Surname == em.Author.Surname)).ToList();
-        if (missingMelodiesInLocal.Any())
+        missingMelodiesInSource = targetMelodies.Where(em => !sourceMelodies.Any(lm => lm.Title == em.Title && lm.Author.Surname == em.Author.Surname)).ToList();
+        if (missingMelodiesInSource.Any())
         {
-            var melodyTitles = string.Join(", ", missingMelodiesInLocal.Select(m => $"\n{m.Title} ({m.Author.Name} {m.Author.Surname})"));
+            var melodyTitles = string.Join(", ", missingMelodiesInSource.Select(m => $"\n{m.Title} ({m.Author.Name} {m.Author.Surname})"));
             _logger.LogInformation("Відсутні мелодії у локальній БД: {MelodyTitles}", melodyTitles);
             ifmissingmelodies = true;
         }
@@ -91,8 +91,8 @@ public class DatabaseSyncService
     private async Task<bool> AnalyzeAuthors()
     {
         bool ifmissingauthors = false;
-        var localAuthors = await _localDb.Author.AsNoTracking().Include(a => a.Country).ToListAsync();
-        var expressAuthors = await _sqlExpressDb.Author.AsNoTracking().Include(a => a.Country).ToListAsync();
+        var localAuthors = await _sourceDb.Author.AsNoTracking().Include(a => a.Country).ToListAsync();
+        var expressAuthors = await _targetDb.Author.AsNoTracking().Include(a => a.Country).ToListAsync();
 
         _logger.LogInformation("\nАвторів у локальній БД: {CountryCount}", localAuthors.Count());
         _logger.LogInformation("Авторів у експрес БД: {CountryCount}", expressAuthors.Count());
@@ -114,20 +114,20 @@ public class DatabaseSyncService
     private async Task<bool> AnalyzeCountries()
     {
         bool ifmissingcountries = false;
-        var localCountries = await _localDb.Country.AsNoTracking().ToListAsync();
-        var expressCountries = await _sqlExpressDb.Country.AsNoTracking().ToListAsync();
-        _logger.LogInformation("\nКраїн у локальній БД: {CountryCount}", localCountries.Count());
-        _logger.LogInformation("Країн у експрес БД: {CountryCount}", expressCountries.Count());
+        var sourceCountries = await _sourceDb.Country.AsNoTracking().ToListAsync();
+        var targetCountries = await _targetDb.Country.AsNoTracking().ToListAsync();
+        _logger.LogInformation("\nКраїн у джерельній БД: {CountryCount}", sourceCountries.Count());
+        _logger.LogInformation("Країн у цільовій БД: {CountryCount}", targetCountries.Count());
 
-        missingCountriesInLocal = expressCountries.Where(ec => !localCountries.Any(lc => lc.Name == ec.Name)).ToList();
+        missingCountriesInLocal = sourceCountries.Where(sc => !targetCountries.Any(tc => tc.Name == sc.Name)).ToList();
         if (missingCountriesInLocal.Any())
         {
-            var countryNames = string.Join("\n", missingCountriesInLocal.Select(c => c.Name));         
+            var countryNames = string.Join("\n", missingCountriesInLocal.Select(c => c.Name));
             _logger.LogInformation("\nВідсутні країни у локальній БД: {CountryNames}", countryNames);
             ifmissingcountries = true;
         }
         else
-        {         
+        {
             _logger.LogInformation("\nВідсутніх країн у локальній БД не виявлено");
         }
         return ifmissingcountries;
@@ -135,33 +135,34 @@ public class DatabaseSyncService
 
     private async Task SyncCountries()
     {
-        var localCountries = await _localDb.Country.AsNoTracking().ToListAsync();
-        var expressCountries = await _sqlExpressDb.Country.AsNoTracking().ToListAsync();
+        var sourceCountries = await _sourceDb.Country.AsNoTracking().ToListAsync();
+        var targetCountries = await _targetDb.Country.AsNoTracking().ToListAsync();
 
         var missingInLocal = missingCountriesInLocal;
-        var missingInExpress = localCountries.Where(lc => !expressCountries.Any(ec => ec.Name == lc.Name)).ToList();
+        var missingInTarget = targetCountries.Where(lc => !sourceCountries.Any(ec => ec.Name == lc.Name)).ToList();
 
         // Видаляємо явно вказані ID з нових записів
         foreach (var country in missingInLocal)
         {
             country.ID = 0; // Якщо ID - автоінкремент, скидаємо його на 0
+            _logger.LogInformation($"відстня - {country.Name}");
         }
 
-        foreach (var country in missingInExpress)
+        foreach (var country in missingInTarget)
         {
             country.ID = 0; // Скидаємо ID на 0
         }
 
         if (missingInLocal.Any())
         {
-            _localDb.Country.AddRange(missingInLocal);
-            await _localDb.SaveChangesAsync();
+            _sourceDb.Country.AddRange(missingInLocal);
+            await _sourceDb.SaveChangesAsync();
         }
 
-        if (missingInExpress.Any())
+        if (missingInTarget.Any())
         {
-            _sqlExpressDb.Country.AddRange(missingInExpress);
-            await _sqlExpressDb.SaveChangesAsync();
+            _targetDb.Country.AddRange(missingInTarget);
+            await _targetDb.SaveChangesAsync();
         }
 
         _logger.LogInformation("\nСинхронізація країн завершена.\n");
@@ -170,12 +171,12 @@ public class DatabaseSyncService
 
     private async Task SyncAuthors()
     {
-        var localAuthors = await _localDb.Author.AsNoTracking().Include(a => a.Country).ToListAsync();
-        var expressAuthors = await _sqlExpressDb.Author.AsNoTracking().Include(a => a.Country).ToListAsync();
+        var localAuthors = await _sourceDb.Author.AsNoTracking().Include(a => a.Country).ToListAsync();
+        var expressAuthors = await _targetDb.Author.AsNoTracking().Include(a => a.Country).ToListAsync();
 
         var missingInLocal = missingAuthorsInLocal;
         var missingInExpress = localAuthors.Where(la => !expressAuthors.Any(ea => ea.Name == la.Name && ea.Surname == ea.Surname)).ToList();
-               
+
 
         // Скидаємо ID для нових авторів
         foreach (var author in missingInLocal)
@@ -188,8 +189,8 @@ public class DatabaseSyncService
             author.ID = 0; // Скидаємо ID на 0
         }
 
-        await AddMissingAuthors(missingInLocal, _localDb, _sqlExpressDb);
-        //await AddMissingAuthors(missingInExpress, _sqlExpressDb, _localDb);
+        await AddMissingAuthors(missingInLocal, _sourceDb, _targetDb);
+        //await AddMissingAuthors(missingInTarget, _targetDb, _sourceDb);
 
         _logger.LogInformation("\nСинхронізація авторів завершена.\n");
     }
@@ -244,83 +245,92 @@ public class DatabaseSyncService
 
     private async Task SyncMelodies()
     {
-        var localMelodies = await _localDb.Melody.AsNoTracking()
+        _logger.LogInformation("method syncMelodies starts.");
+        var sourceMelodies = await _sourceDb.Melody.AsNoTracking()
             .Include(m => m.Author).ThenInclude(a => a.Country)
             .ToListAsync();
 
-        var expressMelodies = await _sqlExpressDb.Melody.AsNoTracking()
+        var targetMelodies = await _targetDb.Melody.AsNoTracking()
             .Include(m => m.Author).ThenInclude(a => a.Country)
             .ToListAsync();
 
-        var missingInLocal = missingMelodiesInLocal;
-        var missingInExpress = localMelodies.Where(lm => !expressMelodies.Any(em => em.Title == lm.Title && em.Author.Surname == em.Author.Surname)).ToList();
+        var missingInSource = missingMelodiesInSource;
+        var missingInTarget = sourceMelodies.Where(lm => !targetMelodies.Any(em => em.Title == lm.Title && em.Author.Surname == em.Author.Surname)).ToList();
+        _logger.LogInformation($"missing in source - {missingInSource.Count}.");
+        _logger.LogInformation($"missing in target - {missingInTarget.Count}.");
 
-        await AddMissingMelodies(missingInLocal, _localDb, _sqlExpressDb);
-        //await AddMissingMelodies(missingInExpress, _sqlExpressDb, _localDb);
+
+        _logger.LogInformation("Start copying to target db.");
+
+        await AddMissingMelodies(missingInSource, _sourceDb, _targetDb);
+        await AddMissingMelodies(missingInTarget, _targetDb, _sourceDb);
 
         _logger.LogInformation("Синхронізація мелодій завершена.");
     }
 
 
-    private async Task AddMissingMelodies(IEnumerable<Melody> missingMelodies, DbContext targetDb, DbContext sourceDb)
+    private static async Task AddMissingMelodies(IEnumerable<Melody> missingMelodies, DbContext targetDb, DbContext sourceDb)
     {
         foreach (var melody in missingMelodies)
         {
-            var author = await targetDb.Set<Author>()
-                .Include(a => a.Country)
-                .FirstOrDefaultAsync(a => a.Surname == melody.Author.Surname);
-
-            if (author == null)
+            if (melody.Author is not null)
             {
-                // Спробуємо знайти автора у вихідній БД
-                author = await sourceDb.Set<Author>()
+                var author = await targetDb.Set<Author>()
                     .Include(a => a.Country)
                     .FirstOrDefaultAsync(a => a.Surname == melody.Author.Surname);
 
+                if (author == null)
+                {
+                    // Спробуємо знайти автора у вихідній БД
+                    author = await sourceDb.Set<Author>()
+                        .Include(a => a.Country)
+                        .FirstOrDefaultAsync(a => a.Surname == melody.Author.Surname);
+
+                    if (author != null && author.Country != null)
+                    {
+                        // Переконаємося, що країна існує у цільовій БД
+                        var country = await targetDb.Set<Country>().FirstOrDefaultAsync(c => c.Name == author.Country.Name);
+                        if (country == null)
+                        {
+                            country = new Country { Name = author.Country.Name };
+                            targetDb.Set<Country>().Add(country);
+                            await targetDb.SaveChangesAsync();
+                        }
+
+                        // Додаємо автора у цільову БД
+                        var authorCopy = new Author
+                        {
+                            Name = author.Name,
+                            Surname = author.Surname,
+                            Country = country,
+                            DateOfBirth = author.DateOfBirth,
+                            DateOfDeath = author.DateOfDeath,
+                            Description = author.Description
+                        };
+
+                        targetDb.Set<Author>().Add(authorCopy);
+                        await targetDb.SaveChangesAsync();
+                        author = authorCopy;
+                    }
+                }
+
                 if (author != null)
                 {
-                    // Переконаємося, що країна існує у цільовій БД
-                    var country = await targetDb.Set<Country>().FirstOrDefaultAsync(c => c.Name == author.Country.Name);
-                    if (country == null)
+                    var melodyCopy = new Melody
                     {
-                        country = new Country { Name = author.Country.Name };
-                        targetDb.Set<Country>().Add(country);
-                        await targetDb.SaveChangesAsync();
-                    }
-
-                    // Додаємо автора у цільову БД
-                    var authorCopy = new Author
-                    {
-                        Name = author.Name,
-                        Surname = author.Surname,
-                        Country = country,
-                        DateOfBirth = author.DateOfBirth,
-                        DateOfDeath = author.DateOfDeath,
-                        Description = author.Description
+                        Title = melody.Title,
+                        Author = author, // Автор може бути вже асоційований, тому можна просто передати його
+                        Year = melody.Year,
+                        Description = melody.Description,
+                        Filepath = melody.Filepath,
+                        IsFileEligible = melody.IsFileEligible,
+                        Tonality = melody.Tonality,
+                        AuthorID = melody.AuthorID,
+                        //ID = melody.ID // Якщо ID є автоінкрементним, цей рядок можна прибрати
                     };
 
-                    targetDb.Set<Author>().Add(authorCopy);
-                    await targetDb.SaveChangesAsync();
-                    author = authorCopy;
+                    targetDb.Set<Melody>().Add(melodyCopy);
                 }
-            }
-
-            if (author != null)
-            {
-                var melodyCopy = new Melody
-                {
-                    Title = melody.Title,
-                    Author = author, // Автор може бути вже асоційований, тому можна просто передати його
-                    Year = melody.Year,
-                    Description = melody.Description,
-                    Filepath = melody.Filepath,
-                    IsFileEligible = melody.IsFileEligible,
-                    Tonality = melody.Tonality,
-                    AuthorID = melody.AuthorID,
-                    //ID = melody.ID // Якщо ID є автоінкрементним, цей рядок можна прибрати
-                };
-
-                targetDb.Set<Melody>().Add(melodyCopy);
             }
         }
 

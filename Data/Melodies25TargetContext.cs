@@ -1,11 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Melodies25.Models;
 
+//target
+
 namespace Melodies25.Data
 {
-    public class Melodies25SyncContext : DbContext
+    public class Melodies25TargetContext : DbContext
     {
-        public Melodies25SyncContext(DbContextOptions<Melodies25SyncContext> options) : base(options) { }
+        public Melodies25TargetContext(DbContextOptions<Melodies25TargetContext> options) : base(options) { }
 
         public DbSet<Country> Country { get; set; } = default!;
         public DbSet<Author> Author { get; set; } = default!;

@@ -21,10 +21,10 @@ namespace Melodies25
             /*TWO DATABASES*/
 
             builder.Services.AddDbContext<Melodies25Context>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio"))); // Основна БД
+                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio"))); // БД *з* якої копіюють
 
-            builder.Services.AddDbContext<Melodies25SyncContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter"))); // БД яку синхронізують
+            builder.Services.AddDbContext<Melodies25TargetContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter"))); // БД *до* якої копіюють
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // Вставте відповідний рядок підключення

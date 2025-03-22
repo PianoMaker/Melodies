@@ -173,7 +173,9 @@ namespace Melodies25.Pages.Melodies
                 if (!string.IsNullOrWhiteSpace(Author))
                 {
                     string authorLower = Author.ToLower();
-                    query = query.Where(m => m.Author.Surname.ToLower() == authorLower || m.Author.SurnameEn.ToLower() == authorLower);
+                    query = query.Where(m => m.Author != null &&
+                          (m.Author.Surname.Equals(authorLower, StringComparison.CurrentCultureIgnoreCase) || m.Author.SurnameEn.ToLower() == authorLower));
+
                 }
 
                 if (!string.IsNullOrWhiteSpace(Title))

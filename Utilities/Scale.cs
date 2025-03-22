@@ -75,7 +75,7 @@ namespace Music
                         Note note = new(i);
                         AddNote(note);
                     }
-                    catch (IncorrectNote e) { Console.WriteLine("skip adding " + i); }
+                    catch (IncorrectNote) { Console.WriteLine("skip adding " + i); }
                 };
         }
 
