@@ -59,7 +59,7 @@ namespace Melodies25.Pages.Authors
 
         public async Task<IActionResult> OnPostAsync()
         {
-            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "GetName");
+            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
 
             if (!ModelState.IsValid)
             {
