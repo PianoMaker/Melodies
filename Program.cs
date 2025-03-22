@@ -24,7 +24,7 @@ namespace Melodies25
                 options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio"))); // Основна БД
 
             builder.Services.AddDbContext<Melodies25SyncContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("SQLExpress"))); // БД для синхронізації
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter"))); // БД яку синхронізують
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // Вставте відповідний рядок підключення
