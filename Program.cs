@@ -68,6 +68,9 @@ namespace Melodies25
 
 
 
+            //для багатомовних ресурсів
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -95,7 +98,13 @@ namespace Melodies25
             app.UseAuthentication();
 
             app.UseAuthorization();
-
+            app.UseRequestLocalization(options =>
+            {
+                var supportedCultures = new[] { "uk", "en" };
+                options.SetDefaultCulture("uk")
+                       .AddSupportedCultures(supportedCultures)
+                       .AddSupportedUICultures(supportedCultures);
+            });
             app.MapRazorPages();
 
             app.Run();
