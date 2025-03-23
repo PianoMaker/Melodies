@@ -58,16 +58,24 @@ namespace Melodies25.Pages.Melodies
         }
 
         public IActionResult OnGet(int selectedAuthorId)
-        {           
-                        
-                if (Melody == null)
-                    Melody = new Melody();
+        {
 
-                if (selectedAuthorId > 0)
-                    Melody.AuthorID = selectedAuthorId;
-            
+            if (Melody == null)
+                Melody = new Melody();
+
+            if (selectedAuthorId > 0)
+                Melody.AuthorID = selectedAuthorId;
+
 
             MessageL(COLORS.yellow, "MELODIES/CREATE OnGet");
+            CreateViewData();
+
+            ShowAuthor = false;
+            return Page();
+        }
+
+        private void CreateViewData()
+        {
             ViewData["AuthorID"] = new SelectList(_context.Author.OrderBy(a => a.Surname), "ID", "Surname", Melody?.AuthorID);
             ViewData["Tonalities"] = new SelectList(new List<string>
             {
@@ -76,9 +84,6 @@ namespace Melodies25.Pages.Melodies
                 "a-moll", "e-moll", "h-moll", "fis-moll", "cis-moll", "gis-moll", "dis-moll", "ais-moll",
                 "d-moll", "g-moll", "c-moll", "f-moll", "b-moll", "es-moll", "as-moll"
             });
-
-            ShowAuthor = false;
-            return Page();
         }
 
         public void OnPostAsync(string key)
@@ -290,7 +295,8 @@ namespace Melodies25.Pages.Melodies
             {
                 Msg = ex.ToString();
             }
-
+            // підвантаження авторів
+            CreateViewData();
 
             return Page();
         }

@@ -55,13 +55,13 @@
                 </select>
             </div>
 
-            <div id="submitMelodyBtn" class="form-group">
+            <div id="submitMelodyBtn" class="form-group" style="display:none; margin-top: 10px">
                 <input type="submit" value="Створити" class="btn btn-primary btn-outline-dark bg-yellow">
             </div>
         </form>
 
         <form method="post">
-            <div class="form-group">
+            <div class="form-group" style="margin-top: 10px">
                 <button id="createAuthorBtn" asp-page-handler="addform" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light">Додати автора</button>
             </div>
             @if (Model.ShowAuthor)
@@ -82,8 +82,8 @@
     <!--ПРАВОРУЧ-->
     
     <div class="searchrightcontainer">
-        <div id="openpiano">
-            <button style="width:80%; margin:10px" id="openpianoBtn" onclick="openPianoHandler">Ввести з клавіатури</button>
+        <div id="openpianoDiv" style="display:none">
+            <button style="width:80%; margin:10px" id="openpianoBtn">Ввести з клавіатури</button>
         </div>
         <div id="pianoDiv" class="notesinfo">
             <div id="pianodisplay" class="d-inline-block" style="width:80%">@Model.Keys</div>
