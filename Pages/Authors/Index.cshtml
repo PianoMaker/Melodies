@@ -31,11 +31,12 @@
                     Країна  @(Model.SurnameSort == "surname_asc" ? "▲" : "▼")
                 </a>
             </th>
-            <th>
+            <th style="width:150px">
                 <a asp-page="./Index" asp-route-sortOrder="@Model.MelodiesCountSort" class="link-light">
                     Мелодій на сайті  @(Model.SurnameSort == "melody_asc" ? "▲" : "▼")
                 </a>
             </th>
+            <th style="width:150px">Редагувати/Вилучити</th>
         </tr>
     </thead>
     <tbody>
