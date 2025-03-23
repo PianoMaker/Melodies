@@ -8,12 +8,13 @@ function updateButtons() {
 
     let submitMelodyBtn = document.getElementById("submitMelodyBtn");       
 
-    console.log("Значення selectAuthor:", selectAuthor.value);
+    console.log("Значення selectOption:", selectedOption.text);
     const selectedOption = selectAuthor.options[selectAuthor.selectedIndex];
 
     if (selectedOption && selectedOption.text === '(невідомо)') {
-        submitMelodyBtn.style.display = 'none';
+        submitMelodyBtn.style.display = 'none';        
     } else {
+        createAuthorBtn.style.display = 'none';
         submitMelodyBtn.style.display = 'inline-block';
     }    
    
@@ -64,8 +65,9 @@ function hideSelectBtn() {
     if (selectAuthor) selectAuthor.style.display = 'none';
     if (createAuthorBtn) createAuthorBtn.style.display = 'none';
     if (submitMelodyBtn) submitMelodyBtn.style.display = 'none';
-    if (selectAuthorLabel) selectAuthorLabel.style.display = 'none';
+    if (selectAuthorLabel) selectAuthorLabel.style.display = 'none';    
 }
+
 
 document.addEventListener("DOMContentLoaded", function () {
     console.log("if author eligible");
@@ -74,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
     searchAuthor();
 
     let selectAuthor = document.getElementById("selectAuthor");//поле обрати автора
-    let createAuthorBtn = document.getElementById("createAuthorBtn");//кнопка додати автора
+    let createAuthorBtn = document.getElementById("createAuthorBtn");//кнопка додати автора    
 
     if (selectAuthor) selectAuthor.addEventListener("change", updateButtons);
     if (createAuthorBtn) createAuthorBtn.addEventListener("click", hideSelectBtn);

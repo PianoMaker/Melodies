@@ -18,16 +18,16 @@ namespace Melodies25.Pages.Authors
     {
         private readonly Melodies25.Data.Melodies25Context _context;
 
-       
-        public IList<Author> Author { get;set; } = default!;
-        
-        public string SurnameSort { get; set; } = default!;
-        public string CountrySort { get; set; } = default!;
-        public string MelodiesCountSort { get; set; } = default!;
         public IndexModel(Melodies25.Data.Melodies25Context context)
         {
             _context = context;
         }
+
+        public IList<Author> Author { get;set; } = default!;
+        
+        public string SurnameSort { get; set; }
+        public string CountrySort { get; set; }
+        public string MelodiesCountSort { get; set; }
 
         public async Task OnGetAsync(string sortOrder)
         {
@@ -58,14 +58,12 @@ namespace Melodies25.Pages.Authors
             {
                 "surname_asc" => authorQuery.OrderBy(a => a.Surname == "Українська народна пісня" ? "!" + a.Surname : a.Surname),
                 "surname_desc" => authorQuery.OrderByDescending(a => a.Surname == "Українська народна пісня" ? "!" + a.Surname : a.Surname),
-                "country_asc" => authorQuery.OrderBy(a => a.Country != null ? a.Country.Name : ""), // Якщо Country == null, сортуємо як порожній рядок
-                "country_desc" => authorQuery.OrderByDescending(a => a.Country != null ? a.Country.Name : ""),
+                "country_asc" => authorQuery.OrderBy(a => a.Country.Name),
+                "country_desc" => authorQuery.OrderByDescending(a => a.Country.Name),
                 "melody_asc" => authorQuery.OrderBy(a => a.MelodiesCount),
                 "melody_desc" => authorQuery.OrderByDescending(a => a.MelodiesCount),
-                _ => authorQuery
+                _ => authorQuery // Якщо немає сортування, залишаємо список без змін
             };
-
-
 
             Author = await authorQuery.ToListAsync();
         }
