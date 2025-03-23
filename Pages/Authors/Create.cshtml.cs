@@ -43,7 +43,7 @@ namespace Melodies25.Pages.Authors
             }           
 
             ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
-            if (ViewData["CountryID"] == null || !((SelectList)ViewData["CountryID"]).Any())
+            if (ViewData["CountryID"] == null)
             {
                 ViewData["CountryID"] = new SelectList(Enumerable.Empty<SelectListItem>());
             }
@@ -60,11 +60,27 @@ namespace Melodies25.Pages.Authors
         public async Task<IActionResult> OnPostAsync()
         {
             ViewData["CountryID"] = new SelectList(_context.Country, "ID", "GetName");
+            MessageL(COLORS.yellow, "Authors/CREATE OnGet");
+            if (string.IsNullOrEmpty(SelectedMode))
+            {
+                SelectedMode = "composer"; // Значення за замовчуванням
+            }
+            var countries = _context.Country.ToList();
+            if (countries == null || !countries.Any())
+            {
+                countries = new List<Country> { new Country { ID = 0, Name = "-- Оберіть країну --" } };
+            }
 
             if (!ModelState.IsValid)
             {
+                ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
+                if (ViewData["CountryID"] == null)
+                {
+                    ViewData["CountryID"] = new SelectList(Enumerable.Empty<SelectListItem>());
+                }
                 return Page();
             }
+            
 
 
             _context.Author.Add(Author);
