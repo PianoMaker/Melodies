@@ -12,6 +12,11 @@
   <ItemGroup>
     <Compile Remove="IdentityDbContext.cs" />
     <Compile Remove="Utilities\SoundToWaveProvider.cs" />
+  </ItemGroup>	
+	
+
+  <ItemGroup>
+    <Content Include="!lifehack.txt" />
   </ItemGroup>
 
   <ItemGroup>

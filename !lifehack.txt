@@ -1,0 +1,9 @@
+для синхронізації файлів 
+
+git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\Pages\Melodies\Index.cshtml.cs
+git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\Pages\Authors\Index.cshtml.cs
+git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\wwwroot\css
+git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\wwwroot\js
+git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\lifehack.txt
+
+git restore --source=possible-production-config E:\G_docs\ASP.NET\Melodies\wwwroot\js
