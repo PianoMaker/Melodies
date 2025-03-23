@@ -43,7 +43,7 @@ namespace Melodies25.Pages.Authors
             }           
 
             ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
-            if (ViewData["CountryID"] == null || !((SelectList)ViewData["CountryID"]).Any())
+            if (ViewData["CountryID"] == null)
             {
                 ViewData["CountryID"] = new SelectList(Enumerable.Empty<SelectListItem>());
             }

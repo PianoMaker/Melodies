@@ -49,7 +49,10 @@
                 </td>
                 <!--АВТОР-->
                 <td>
-                    @Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)
+                    @if(item.Author is not null)
+                    {
+                        @Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)
+                    }
                 </td>
                 
                 <!-- ФАЙЛ -->

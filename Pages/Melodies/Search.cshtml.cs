@@ -75,14 +75,16 @@ namespace Melodies25.Pages.Melodies
 
                 var query = _context.Melody.AsQueryable().Include(m => m.Author);
 
-                var results = query.Where(m => EF.Functions.Like(m.Author.Surname, $"%{searchQuery}%"))
-                                   .Concat(query.Where(m => EF.Functions.Like(m.Title, $"%{searchQuery}%")))
-                                   .Concat(query.Where(m => EF.Functions.Like(m.Author.SurnameEn, $"%{searchQuery}%")))
-                                   .Concat(query.Where(m => EF.Functions.Like(m.Author.NameEn, $"%{searchQuery}%")))
-                                   .Concat(query.Where(m => EF.Functions.Like(m.Author.Name, $"%{searchQuery}%")))
-                                   .Distinct();
+
+                var results = query.Where(m => m.Author != null && EF.Functions.Like(m.Author.Surname ?? "", $"%{searchQuery}%"))
+                   .Concat(query.Where(m => EF.Functions.Like(m.Title ?? "", $"%{searchQuery}%")))
+                   .Concat(query.Where(m => m.Author != null && EF.Functions.Like(m.Author.SurnameEn ?? "", $"%{searchQuery}%")))
+                   .Concat(query.Where(m => m.Author != null && EF.Functions.Like(m.Author.NameEn ?? "", $"%{searchQuery}%")))
+                   .Concat(query.Where(m => m.Author != null && EF.Functions.Like(m.Author.Name ?? "", $"%{searchQuery}%")))
+                   .Distinct();
 
                 Melody = results.ToList();
+
 
                 if (Melody.Count == 0) Description = ($"За результатами пошуку \"{search}\" Нічого не знайдено");
                 else Description = ($"За результатами пошуку \"{search}\" знайдено");
