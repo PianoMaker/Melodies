@@ -6,13 +6,16 @@ function updateButtons() {
 
     if (!selectAuthor) return;
 
-    let submitMelodyBtn = document.getElementById("submitMelodyBtn");       
-
-    console.log("Значення selectOption:", selectedOption.text);
+    let submitMelodyBtn = document.getElementById("submitMelodyBtn");   
+    let createAuthorBtn = document.getElementById("createAuthorBtn");//кнопка додати автора  
+        
     const selectedOption = selectAuthor.options[selectAuthor.selectedIndex];
+    console.log("Значення selectOption:", selectedOption.text);
 
     if (selectedOption && selectedOption.text === '(невідомо)') {
-        submitMelodyBtn.style.display = 'none';        
+        submitMelodyBtn.style.display = 'none';
+        createAuthorBtn.style.display = 'inline-block';
+        
     } else {
         createAuthorBtn.style.display = 'none';
         submitMelodyBtn.style.display = 'inline-block';
