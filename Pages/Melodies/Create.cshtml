@@ -80,19 +80,22 @@
         <a asp-page="Index" class="btn btn-primary btn-outline-dark bg-light mt-3">Назад до списку</a>
     </div>
     <!--ПРАВОРУЧ-->
-
+    
     <div class="searchrightcontainer">
-        <div class="notesinfo d-inline-flex">
-            <div class="d-inline-block" style="width:80%">@Model.Keys</div>
+        <div id="openpiano">
+            <button style="width:80%; margin:10px" id="openpianoBtn" onclick="openPianoHandler">Ввести з клавіатури</button>
+        </div>
+        <div id="pianoDiv" class="notesinfo">
+            <div id="pianodisplay" class="d-inline-block" style="width:80%">@Model.Keys</div>
             <form method="post" asp-page-handler="reset" class="d-inline-block m-1">
                 <button type="submit" class="btn btn-outline-dark">Reset</button>
             </form>
             <form method="post" asp-page-handler="notesearch" class="d-inline-block m-1">
-                <button type="submit" class="btn btn-outline-dark">Search</button>
+                <button id="createMIDI" type="submit" class="btn btn-outline-dark">Create</button>
             </form>
         </div>
         <!--МІЙ СТЕЙНВЕЙ-->
-        <div class="controlcontainer">
+        <div id="stainway" class="controlcontainer">
             <form method="post" asp-page-handler="piano" id="pianoroll">
                 <button type="submit" asp-route-key="c" class="whitepianobutton">C1</button>
                 <button type="submit" asp-route-key="cis" class="blackpianobutton cis1">Cis1</button>
@@ -154,5 +157,6 @@
     }
 </div>
 
+<script src="~/js/openpiano.js"></script>
 
 
