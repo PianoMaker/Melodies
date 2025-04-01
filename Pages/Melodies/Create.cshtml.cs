@@ -1,20 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Melodies25.Data;
 using Melodies25.Models;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Routing.Constraints;
-using System.Text;
 using Melodies25.Utilities;
-using static Melodies25.Utilities.Algorythm;
-using static Melodies25.Utilities.SynthWaveProvider;
-using NAudio.Midi;
-using System.IO;
 using Music;
 using static Music.Messages;
 using static Music.MidiConverter;
@@ -22,7 +10,6 @@ using static Melodies25.Utilities.PrepareFiles;
 using static Melodies25.Utilities.WaveConverter;
 using Microsoft.EntityFrameworkCore;
 using Melody = Melodies25.Models.Melody;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -53,7 +40,7 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public string Keys { get; set; } = default!;
 
-        
+        public Music.Melody NewPattern { get; set; }
         internal string TempFilePath { get; set; }
 
         private static readonly char[] separator = new char[] { ' ', '_' };
@@ -120,6 +107,7 @@ namespace Melodies25.Pages.Melodies
                 Music.Melody MelodyPattern = new();
                 Globals.notation = Notation.eu;
                 BuildPattern(MelodyPattern);
+                NewPattern = (Music.Melody)MelodyPattern.Clone();
                 try
                 {                    
                     string filename = "userFile" + DateTime.Now.ToShortDateString() + DateTime.Now.Hour + DateTime.Now.Minute + DateTime.Now.Second;

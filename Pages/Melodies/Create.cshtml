@@ -4,7 +4,9 @@
 @{
     ViewData["Title"] = "Додати мелодію";
     var melody = @Model.Melody;
+    var newMelody = @Model.NewPattern;
     bool fileCreated = string.IsNullOrEmpty(Model.TempFilePath);
+
 }
 
 <h1>Додати пісню</h1>
@@ -142,9 +144,9 @@
         </div>
         <!--ТАБЛО НОТ ВНИЗУ -->
         <div id="innerNotesContainer">
-            @if (@melody.MidiMelody is not null)
-            {
-                @foreach (var note in @melody.MidiMelody.Notes)
+            @if (newMelody is not null)            {
+
+                @foreach (var note in newMelody.Notes)
                 {
                     string width = $"{note.DisplayWidth(45, 20)}px";
                     string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
