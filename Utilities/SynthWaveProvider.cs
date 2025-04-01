@@ -15,7 +15,8 @@ namespace Melodies25.Utilities
 {
     public class SynthWaveProvider : WaveProvider32
     {
-        private readonly List<(double Frequency, int DurationMs)> _sequence;        
+        private readonly List<(double Frequency, int DurationMs)> _sequence;
+        private int _currentIndex = 0;
         private int _samplesRemaining;
         private double _phase;
         private double _phaseIncrement;

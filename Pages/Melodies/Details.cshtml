@@ -14,7 +14,7 @@
         <h4>автор - <a asp-page="/Authors/Details" asp-route-id="@item.AuthorID">@item.Author.Name @item.Author.Surname</a></h4>
         <p>(@item.Author.DateOfBirth - @item.Author.DateOfDeath)</p>
     }
-    else
+    else if(@item.Author is not null)
     {
         <p>@item.Author.Surname</p>
 

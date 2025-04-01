@@ -531,7 +531,7 @@ namespace Music
         {//Визначає латинську назву за ступенем і висотою
             string key;
             string postfix;
-            int alter, standartpitch;
+            int alter;
 
             while (step >= StepsInOctave)
                 step -= StepsInOctave;

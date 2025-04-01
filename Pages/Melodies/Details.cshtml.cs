@@ -23,12 +23,14 @@ namespace Melodies25.Pages.Melodies
     {
         private readonly Melodies25.Data.Melodies25Context _context;
         private readonly IWebHostEnvironment _environment;
-        public string Labels { get; set; }
-        public string Values { get; set; }
+        public string Labels { get; set; } = default!;
+        public string Values { get; set; } = default!;
 
-        public string WeightValues { get; set; }
+        public string WeightValues { get; set; } = default!;
 
-        public string ErrorMsg { get; set; }
+        public string ErrorMsg { get; set; } = default!;
+
+        public Dictionary<string, float> Degrees = default!;
 
         public DetailsModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
         {
@@ -38,7 +40,7 @@ namespace Melodies25.Pages.Melodies
 
         public Models.Melody Melody { get; set; } = default!;
 
-        public Dictionary<string, float> Degrees;
+        
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             MessageL(Music.COLORS.yellow, "MELODY/DETAILS OnGet method");

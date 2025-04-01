@@ -75,14 +75,16 @@ namespace Melodies25.Pages.Melodies
 
                 var query = _context.Melody.AsQueryable().Include(m => m.Author);
 
-                var results = query.Where(m => EF.Functions.Like(m.Author.Surname, $"%{searchQuery}%"))
-                                   .Concat(query.Where(m => EF.Functions.Like(m.Title, $"%{searchQuery}%")))
-                                   .Concat(query.Where(m => EF.Functions.Like(m.Author.SurnameEn, $"%{searchQuery}%")))
-                                   .Concat(query.Where(m => EF.Functions.Like(m.Author.NameEn, $"%{searchQuery}%")))
-                                   .Concat(query.Where(m => EF.Functions.Like(m.Author.Name, $"%{searchQuery}%")))
-                                   .Distinct();
+
+                var results = query.Where(m => m.Author != null && EF.Functions.Like(m.Author.Surname ?? "", $"%{searchQuery}%"))
+                   .Concat(query.Where(m => EF.Functions.Like(m.Title ?? "", $"%{searchQuery}%")))
+                   .Concat(query.Where(m => m.Author != null && EF.Functions.Like(m.Author.SurnameEn ?? "", $"%{searchQuery}%")))
+                   .Concat(query.Where(m => m.Author != null && EF.Functions.Like(m.Author.NameEn ?? "", $"%{searchQuery}%")))
+                   .Concat(query.Where(m => m.Author != null && EF.Functions.Like(m.Author.Name ?? "", $"%{searchQuery}%")))
+                   .Distinct();
 
                 Melody = results.ToList();
+
 
                 if (Melody.Count == 0) Description = ($"За результатами пошуку \"{search}\" Нічого не знайдено");
                 else Description = ($"За результатами пошуку \"{search}\" знайдено");
@@ -173,9 +175,7 @@ namespace Melodies25.Pages.Melodies
                 if (!string.IsNullOrWhiteSpace(Author))
                 {
                     string authorLower = Author.ToLower();
-                    query = query.Where(m => m.Author != null &&
-                          (m.Author.Surname.Equals(authorLower, StringComparison.CurrentCultureIgnoreCase) || m.Author.SurnameEn.ToLower() == authorLower));
-
+                    query = query.Where(m => m.Author.Surname.ToLower() == authorLower || m.Author.SurnameEn.ToLower() == authorLower);
                 }
 
                 if (!string.IsNullOrWhiteSpace(Title))
@@ -244,6 +244,8 @@ namespace Melodies25.Pages.Melodies
             MessageL(COLORS.yellow, $"SEARCH - OnPostAsync method {key}");
 
             OnPostPiano(key);
+
+
         }
 
         public IActionResult OnPostPiano(string key)
@@ -317,7 +319,7 @@ namespace Melodies25.Pages.Melodies
                     GrayMessageL(melody.Title);
                 MessageL(COLORS.olive, "notes in patten:");
                 foreach (var note in MelodyPattern)
-                    GrayMessageL(note.GetName());
+                    GrayMessageL(note.Name);
 
 
                 /* будуємо список виявлених збігів MathedMelodies */

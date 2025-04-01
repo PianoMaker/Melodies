@@ -1,4 +1,5 @@
 ﻿using Melodies25.Migrations;
+using NAudio.Midi;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Numerics;
@@ -826,5 +827,45 @@ namespace Music
             return cloned;
         }
 
+        internal MidiEventCollection ConvertToMIDI()
+        {
+
+            var collection = new MidiEventCollection(0, PPQN);
+            int currenttime = 0;
+            var tempoEvent = new TempoEvent(Tempo, 0);
+            collection.AddEvent(tempoEvent, 0);
+
+            foreach (var note in Notes)
+            {
+                var neOn = new NoteEvent(currenttime, 1, MidiCommandCode.NoteOn, note.MidiNote, 100);
+                var neOff = new NoteEvent(currenttime + note.MidiDur, 1, MidiCommandCode.NoteOff, note.MidiNote, 100);                
+                collection.AddEvent(neOn, 1);
+                collection.AddEvent(neOff, 1);
+                currenttime += note.MidiDur;
+            }
+
+            return collection;
+        }
+
+        public static Melody CreateRandom(int length, int octaves)
+        {
+            Melody melody = new Melody();            
+
+            while (melody.Notes.Count < length)
+            {
+                try
+                {
+                    var newnote = Note.GenerateRandomNote(octaves);
+                    melody.AddNote(newnote);
+                }
+                catch (Exception e) { ErrorMessage(e.Message); }
+            }
+            melody.EnharmonizeSmart();
+            return melody;
+        }
+ public void SaveMidi(string filepath="output.mid")
+        {
+            MidiConverter.SaveMidi(this, filepath);
+        }
     }
 }

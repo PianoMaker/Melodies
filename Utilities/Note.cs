@@ -254,7 +254,7 @@ namespace Music
             {
                 this.duration = new Duration(duration, durmodifier);
             }
-            catch (Exception ex)
+            catch 
             {
                 this.duration = new Duration(DURATION.quater);
                 ErrorMessage("Possible incorrect duration");

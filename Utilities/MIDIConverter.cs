@@ -29,9 +29,9 @@ namespace Music
         public static Melody GetMelodyFromMidi(MidiFile midiFile)
         {
             MessageL(COLORS.olive, "GetMelodyFromMidi method");
-            
-            notation = Notation.eu;             
-            
+
+            notation = Notation.eu;
+
             var ticksperquater = midiFile.DeltaTicksPerQuarterNote;
 
             Melody melody = new Melody();
@@ -69,8 +69,8 @@ namespace Music
                             try
                             {
                                 var time = ne.AbsoluteTime - starttime;
-                                
-                                
+
+
                                 var dur = 4 * (float)ticksperquater / time;
                                 GrayMessageL($"input: [{ne.NoteNumber}]  {ticksperquater * 4} / {time} =  {dur}");
                                 melody.Notes[melody.Notes.Count - 1].SetDuration((int)time, ticksperquater);
@@ -84,7 +84,7 @@ namespace Music
                     }
                 }
             }
-           
+
             return melody;
         }
         //те саме асинхронно
@@ -213,7 +213,7 @@ namespace Music
         {
             try
             {
-                if(!File.Exists(midifilePath))
+                if (!File.Exists(midifilePath))
                 {
                     ErrorMessage($"Невірна адреса файлу {midifilePath}");
                     return false;
@@ -313,7 +313,7 @@ namespace Music
                 StraightMidiFile(path, ref currentchanges);
                 if (attempt > 100) break;
             };
-            return  allchanges; 
+            return allchanges;
         }
 
         public static void StraightMidiFile(string path, string newpath)
@@ -386,19 +386,19 @@ namespace Music
         private static MidiEventCollection MonoEventCollection(ref int ifchanged, MidiFile midiFile, MidiEventCollection eventCollection)
         {
             var monoEventCollection = new MidiEventCollection(midiFile.FileFormat, midiFile.DeltaTicksPerQuarterNote);
-            long currentstarttime = 0;            
+            long currentstarttime = 0;
 
             foreach (var track in eventCollection)
             {
-                var newTrack = new List<MidiEvent>();                
-                Dictionary<int,long> activenotes = [];
+                var newTrack = new List<MidiEvent>();
+                Dictionary<int, long> activenotes = [];
 
                 foreach (var me in track)
                 {
                     if (me is TempoEvent tempo)
                     {
-                         Message(COLORS.gray, $"{tempo}");
-                         newTrack.Add(tempo); // Копіюємо інші події
+                        Message(COLORS.gray, $"{tempo}");
+                        newTrack.Add(tempo); // Копіюємо інші події
                     }
                     else if (me is NoteEvent ne)
                     {
@@ -415,7 +415,7 @@ namespace Music
 
                         }
                         else if (IfNoteOff(ne))
-                        {                            
+                        {
                             if (activenotes.ContainsKey(ne.NoteNumber))
                                 newTrack.Add(ne);
                             activenotes.Remove(ne.NoteNumber);
@@ -498,7 +498,7 @@ namespace Music
                     }
                     else
                     {
-                      // Message(COLORS.gray, ".");
+                        // Message(COLORS.gray, ".");
                         newTrack.Add(me); // Копіюємо інші події
                     }
 
@@ -536,6 +536,68 @@ namespace Music
         }
 
 
+        private static void Initialize(out int channel, out MidiEventCollection events)
+        {
+            long absoluteTime = 0;
+            channel = 1;
+            int beatsPerMinute = 120;
+            int patchNumber = 0;
+            events = new MidiEventCollection(Globals.MidiFileType, Globals.PPQN);
+            events.AddEvent(new TextEvent("C# generated stream", MetaEventType.TextEvent, absoluteTime), Globals.TrackNumber);
+            ++absoluteTime;
+            events.AddEvent(new TempoEvent(CalculateMicrosecondsPerQuaterNote(beatsPerMinute), absoluteTime), Globals.TrackNumber);
+            events.AddEvent(new PatchChangeEvent(0, Globals.ChannelNumber, patchNumber), Globals.TrackNumber);
+        }
+
+        private static int CalculateMicrosecondsPerQuaterNote(int bpm)
+        {
+            return 60 * 1000 * 1000 / bpm;
+        }
+
+        private static void MelodyToTrack(Melody melody, int channel, MidiEventCollection events)
+        {
+            // Записуємо NoteOn події
+            int noteOnTime = 0;
+            foreach (var note in melody)
+            {
+                var noteOnEvent = new NoteOnEvent(noteOnTime, channel, note.MidiNote, 127, note.MidiDur);
+                events.AddEvent(noteOnEvent, 1);
+                noteOnTime += note.MidiDur;
+            }
+
+            // Записуємо NoteOff події
+            int noteOffTime = 0;
+            foreach (var note in melody)
+            {
+                noteOffTime += note.MidiDur;
+                var noteOffEvent = new NoteEvent(noteOffTime, channel, MidiCommandCode.NoteOff, note.MidiNote, 0);
+                events.AddEvent(noteOffEvent, 1);
+            }
+        }
+        internal static void SaveMidi(Melody melody, string fileName = "output.mid")
+        {
+
+            int channel;
+            MidiEventCollection collection;
+            Initialize(out channel, out collection);
+            MelodyToTrack(melody, channel, collection);
+            try
+            {
+                collection.PrepareForExport();
+                MidiFile.Export(fileName, collection);
+                Console.WriteLine($"file is being saved as {Path.GetFullPath(fileName)}");
+                
+            }
+            catch (Exception e)
+            {
+                Messages.ErrorMessage("Failed to save file");
+                GrayMessageL(e.Message);
+                
+            }
+
+
+
+        }
     }
 }
 
