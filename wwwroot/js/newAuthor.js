@@ -1,24 +1,31 @@
 ﻿
 function updateButtons() {
-    console.log("try to update buttons");
-
+    
     let selectAuthor = document.getElementById("selectAuthor");        
 
-    if (!selectAuthor) return;
+    if (!selectAuthor) {
+        console.log("selectAuthor error");
+        return;
+    }
 
     let submitMelodyBtn = document.getElementById("submitMelodyBtn");   
     let createAuthorBtn = document.getElementById("createAuthorBtn");//кнопка додати автора  
         
     const selectedOption = selectAuthor.options[selectAuthor.selectedIndex];
-    console.log("Значення selectOption:", selectedOption.text);
-
+    
     if (selectedOption && selectedOption.text === '(невідомо)') {
+        console.log("Значення selectOption:", selectedOption.text);
         submitMelodyBtn.style.display = 'none';
         createAuthorBtn.style.display = 'inline-block';
         
-    } else {
+    } else if (selectedOption === undefined) {
+        console.log("Значення selectOption is undefined");
+        submitMelodyBtn.style.display = 'none';
+    }
+    else {
+        console.log("Значення selectOption:", selectedOption);
         createAuthorBtn.style.display = 'none';
-        submitMelodyBtn.style.display = 'inline-block';
+        showSubmitBtn();    
     }    
    
 }
@@ -54,7 +61,16 @@ function searchAuthor() {
                 warningField.style.color = "";
             }
         });
+        showSubmitBtn();
+
     }
+}
+
+function showSubmitBtn() {
+
+    console.log("show submit Btn");
+    let submitMelodyBtn = document.getElementById("submitMelodyBtn");  
+    submitMelodyBtn.style.display = 'inline-block';
 }
 
 function hideSelectBtn() {
@@ -73,7 +89,7 @@ function hideSelectBtn() {
 
 
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("if author eligible");
+    console.log("Author ");
 
     updateButtons();
     searchAuthor();

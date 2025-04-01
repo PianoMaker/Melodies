@@ -5,7 +5,7 @@
 namespace Melodies25.Migrations
 {
     /// <inheritdoc />
-    public partial class lng : Migration
+    public partial class LngMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

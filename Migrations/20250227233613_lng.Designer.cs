@@ -13,7 +13,7 @@ namespace Melodies25.Migrations
 {
     [DbContext(typeof(Melodies25Context))]
     [Migration("20250227233613_lng")]
-    partial class lng
+    partial class LngMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
