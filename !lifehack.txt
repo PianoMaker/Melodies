@@ -8,7 +8,7 @@ git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\!lifehack.txt
 git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\Pages\Melodies\Create.cshtml.cs
 
 git restore --source=master E:\G_docs\ASP.NET\Melodies\wwwroot\css
-git restore --source=possible-production-config E:\G_docs\ASP.NET\Melodies\wwwroot\js
-git restore --source=possible-production-config E:\G_docs\ASP.NET\Melodies\Pages\Melodies\Create.cshtml
+git restore --source=master E:\G_docs\ASP.NET\Melodies\wwwroot\js
+git restore --source=master E:\G_docs\ASP.NET\Melodies\Pages\Melodies\Create.cshtml
 
 git restore --source=possible-production-config E:\G_docs\ASP.NET\Melodies\wwwroot\js
