@@ -1,4 +1,6 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+﻿//відкриває зображення з пінаніно і зберіга мелодію
+
+document.addEventListener("DOMContentLoaded", function () {
     console.log("openpiano js is running");
     let openpianoDiv = document.getElementById("openpianoDiv");
     let stainway = document.getElementById("stainway");

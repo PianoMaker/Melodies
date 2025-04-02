@@ -99,8 +99,7 @@
         <div id="openpianoDiv" style="display:none">
             <button style="width:80%; margin:10px" id="openpianoBtn">Ввести з клавіатури</button>
         </div>
-        <div id="pianoDiv" class="notesinfo">
-            <!--<div id="pianodisplay" class="d-inline-block" style="width:80%">@Model.Keys</div>-->
+        <div id="pianoDiv" class="notesinfo">            
             <div id="saver" style="display:none">@Model.TempData["Keys"]</div>
             <textarea id="pianodisplay" class="d-inline-block" style="width:80%" rows="2" placeholder="для вводу нот натискайте клавіші клавіатури або введіть код вручну">@Model.Keys</textarea>
             <form method="post" asp-page-handler="reset" class="d-inline-block m-1">

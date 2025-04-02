@@ -1,4 +1,5 @@
-﻿const notesElements = document.querySelectorAll('.notebox');  // Змінили ім'я змінної
+﻿//поведінка таблиці нот внизу 
+const notesElements = document.querySelectorAll('.notebox');  // Змінили ім'я змінної
 
 notesElements.forEach(note =>
     note.addEventListener('click', function () {
