@@ -95,9 +95,10 @@ namespace Melodies25.Pages.Melodies
                                                 );
         }
 
+        // СТВОРЕННЯ МЕЛОДІЇ ВРУЧНУ //
         public void OnPostMelody()
         {
-            MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostMelody method, keys = {Keys}");
+            MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostMelody method, keys = {Keys}");            
             GetAuthorsData();
             GetTonalitiesData();            
 
@@ -106,6 +107,7 @@ namespace Melodies25.Pages.Melodies
                 /* Будуємо послідовність введених нот */
                 Music.Melody MelodyPattern = new();
                 Globals.notation = Notation.eu;
+                Globals.lng = LNG.uk;
                 BuildPattern(MelodyPattern);
                 NewPattern = (Music.Melody)MelodyPattern.Clone();
                 try
@@ -120,6 +122,8 @@ namespace Melodies25.Pages.Melodies
                     MessageL(COLORS.green, "file is ready");
                     Msg = $"file is ready, path = {TempFilePath}";
                     TempData["TempFilePath"] = TempFilePath;
+                    TempData["Keys"] = Keys;
+                    MessageL(COLORS.gray, $"Keys = {TempData["Keys"]}");
                 }
                 catch (IOException ex)
                 {
@@ -136,8 +140,8 @@ namespace Melodies25.Pages.Melodies
             {
                 ErrorMessageL("keys are null");
             }
-                
-
+            MessageL(COLORS.gray, "OnPostMelody is finished");
+            RedirectToPage();
         }
 
 
@@ -184,6 +188,7 @@ namespace Melodies25.Pages.Melodies
             }
 
             TempFilePath = TempData["TempFilePath"] as string??"";
+            
 
             Melody.Author = await _context.Author
     .FirstOrDefaultAsync(a => a.ID == Melody.AuthorID);

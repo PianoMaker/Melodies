@@ -100,7 +100,9 @@
             <button style="width:80%; margin:10px" id="openpianoBtn">Ввести з клавіатури</button>
         </div>
         <div id="pianoDiv" class="notesinfo">
-            <div id="pianodisplay" class="d-inline-block" style="width:80%">@Model.Keys</div>
+            <!--<div id="pianodisplay" class="d-inline-block" style="width:80%">@Model.Keys</div>-->
+            <div id="saver" style="display:none">@Model.TempData["Keys"]</div>
+            <textarea id="pianodisplay" class="d-inline-block" style="width:80%" rows="2" placeholder="для вводу нот натискайте клавіші клавіатури або введіть код вручну">@Model.Keys</textarea>
             <form method="post" asp-page-handler="reset" class="d-inline-block m-1">
                 <button type="submit" class="btn btn-outline-dark">Скинути</button>
             </form>
@@ -142,6 +144,29 @@
             </form>
 
         </div>
+        <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
+        <div id="durationspanel" class="pianodisplay notesinfo">
+            <button class="durationbutton">
+                <img src="~/images/whole_note.png" alt="Whole Note" />
+            </button>
+            <button class="durationbutton">
+                <img src="~/images/half_note.png" alt="Half Note" />
+            </button>
+            <button class="durationbutton">
+                <img src="~/images/quarter_note.png" alt="Quarter Note" />
+            </button>
+            <button class="durationbutton">
+                <img src="~/images/eighth_note.png" alt="Eighth Note" />
+            </button>
+            <button class="durationbutton">
+                <img src="~/images/sixteenth_note.png" alt="Sixteenth Note" />
+            </button>
+            <button class="durationbutton">
+                <img src="~/images/32nd_note.png" alt="Thirty-Second Note" />
+            </button>
+            <script src="~/js/switchDurations.js"></script>
+        </div>
+
         <!--ТАБЛО НОТ ВНИЗУ -->
         <div id="innerNotesContainer">
             @if (newMelody is not null)            {
@@ -156,6 +181,7 @@
                         </div>
                         <span class="notaname">@note.Name</span>
                     </div>
+                   
                 }
             }
             else
@@ -163,6 +189,7 @@
                 <p>no notes have been entered</p>
             }
         </div>
+        <script src="~/js/noteTable.js"></script>
         <!--АУДІО-->
         
         <audio id="audioPlayer" controls autoplay style="display: none">
