@@ -1,4 +1,4 @@
-function shiftNoteUp(index, inputString) {
+export function shiftNoteUp(index, inputString) {
 
     console.log(`moveUp function is working, index = ${index}, keys = ${inputString}`);
     // Визначаємо мапу для підвищення нот на півтону (з урахуванням диезів і бемолів)

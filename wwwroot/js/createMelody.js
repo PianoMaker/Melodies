@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const audioSource = document.getElementById('audioSource'); // Отримуємо джерело для аудіофайлу     
     let pianodisplay = document.getElementById("pianodisplay");
     const keysInput = document.getElementById("keysInput")
-    const createMIDIButton = document.getElementById('createMIDI');
+    const createMIDIButton = document.getElementById('createMIDI');//кнопка "зберегти"
     const inputfield = document.getElementById('melodyFileInput');
     const saver = document.getElementById("saver");
     pianodisplay.value = saver.innerText;

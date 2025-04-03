@@ -180,15 +180,22 @@
                         </div>
                         <span class="notaname">@note.Name</span>
                     </div>
-                   
+                    <div id="contextMenu" class="context-menu">
+                        <ul>
+                            <li id="option1">Option 1</li>
+                            <li id="option2">Option 2</li>
+                            <li id="option3">Option 3</li>
+                        </ul>
+                    </div>                   
                 }
+                <script type="module" src="~/js/contextMenu.js"></script>
             }
             else
             {
                 <p>no notes have been entered</p>
             }
         </div>
-        <script src="~/js/noteTable.js"></script>
+        <script type="module" src="~/js/noteTable.js"></script>
         <!--АУДІО-->
         
         <audio id="audioPlayer" controls autoplay style="display: none">
