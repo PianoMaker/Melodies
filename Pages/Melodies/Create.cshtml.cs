@@ -144,7 +144,7 @@ namespace Melodies25.Pages.Melodies
             RedirectToPage();
         }
 
-
+        //читання нотного рядку відбувається по одній ноті у конструкторі Note(string input) 
         private void BuildPattern(Music.Melody MelodyPattern)
         {
             var pattern = Keys.Split(separator, StringSplitOptions.RemoveEmptyEntries);
