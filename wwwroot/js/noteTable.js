@@ -27,7 +27,7 @@ function highlightNote(index) {
 notesElements.forEach((note, index) => {
     note.addEventListener('click', function () {
         highlightNote(index);
-        console.log("note Element highlighted");
+        console.log(`note ${index} Element highlighted`);
     });
 });
 

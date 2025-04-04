@@ -18,7 +18,7 @@
     <div class="alert alert-info">
         @ViewData["Message"]
     </div>
-    
+
 }
 
 <div class="searchcontainer h-100">
@@ -30,9 +30,9 @@
             {
                 <div class="form-group">
                     <div class="input-group">
-                    <input type="file" id="melodyFileInput" name="fileupload" class="form-control" accept=".mid" />
+                        <input type="file" id="melodyFileInput" name="fileupload" class="form-control" accept=".mid" />
+                    </div>
                 </div>
-            </div>
             }
             else{
                 <div class="form-group">
@@ -168,10 +168,13 @@
 
         <!--ТАБЛО НОТ ВНИЗУ -->
         <div id="innerNotesContainer">
-            @if (newMelody is not null)            {
 
-                @foreach (var note in newMelody.Notes)
+           
+            @if (newMelody is not null)            
+            {
+                @for (int index = 0; index < newMelody.Count(); index++)
                 {
+                    var note = newMelody[index];
                     string width = $"{note.DisplayWidth(45, 20)}px";
                     string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
                     <div class="outerNoteBox" style="width:@width; height:10px;">
@@ -180,13 +183,16 @@
                         </div>
                         <span class="notaname">@note.Name</span>
                     </div>
-                    <div id="contextMenu" class="context-menu">
+                    <div class="context-menu" data-index="@index">
                         <ul>
-                            <li id="option1">Option 1</li>
-                            <li id="option2">Option 2</li>
-                            <li id="option3">Option 3</li>
+                            <li id="option1">1/2 тона вгору     ↑</li>
+                            <li id="option2">1/2 тона вниз      ↓</li>
+                            <li id="option3">вилучити          del</li>
+                            <li id="option4">довша тривалість   +</li>
+                            <li id="option5">коротша тривалість -</li>
+                            <li id="option6">@index</li>
                         </ul>
-                    </div>                   
+                    </div>                    
                 }
                 <script type="module" src="~/js/contextMenu.js"></script>
             }
