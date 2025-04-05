@@ -35,6 +35,7 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public string? SelectedMode { get; set; } = default!;
 
+        
         public string? ErrorWarning { get; set; } = default!;
 
         [BindProperty]
@@ -56,6 +57,11 @@ namespace Melodies25.Pages.Melodies
 
         public IActionResult OnGet(int selectedAuthorId)
         {
+
+            if (TempData["ErrorWarning"] is not null)
+            {
+                ErrorWarning = TempData["ErrorWarning"] as string;
+            }
 
             if (Melody == null)
                 Melody = new Melody();
@@ -102,12 +108,23 @@ namespace Melodies25.Pages.Melodies
         public async Task<IActionResult> OnPostMelody()
         {
             MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostMelody method, keys = {Keys}");
+            if (TempData["ErrorWarning"] is not null)
+            {
+                ErrorWarning = TempData["ErrorWarning"] as string; GrayMessageL("generating errormessage");
+            }
+            else GrayMessageL("errormessage is null");
             GetAuthorsData();
             GetTonalitiesData();
             SaveKeys();
-            await PrepareMp3Async(_environment, TempMidiFilePath, false);
-            TempMp3FilePath = GetTemporaryPath(ConvertToMp3Path(TempMidiFilePath));
-            TempData["HighlightPlayButton"] = true;
+            try
+            {
+                await PrepareMp3Async(_environment, TempMidiFilePath, false);
+                TempMp3FilePath = GetTemporaryPath(ConvertToMp3Path(TempMidiFilePath));
+                TempData["HighlightPlayButton"] = true;
+            }
+            catch (Exception) { 
+                TempData["ErrorWarning"] = "Не вдалося згенерувати файл"; 
+            }
             MessageL(COLORS.gray, "OnPostMelody is finished");
             return Page();
         }
@@ -142,11 +159,12 @@ namespace Melodies25.Pages.Melodies
                 catch (IOException ex)
                 {
                     Console.WriteLine($"Проблема з доступом до файлу: {ex.Message}");
+                    TempData["ErrorWarning"] = $"Проблема з доступом до файлу";
                 }
                 catch (Exception e)
                 {
                     ErrorMessageL(e.ToString());
-                    Msg = "error occured";
+                    TempData["ErrorWarning"] = $"Невідома помилка";
                     Console.WriteLine($"Проблема: {e.Message}");
                 }
             }
@@ -329,7 +347,7 @@ namespace Melodies25.Pages.Melodies
             {
                 if (TempAuthor.Contains(",.;?!"))
                 {
-                    ErrorWarning = "Некоректно введено автора";
+                    TempData["ErrorWarning"] = "Некоректно введено автора";
                     return Page();
                 }
 
@@ -350,7 +368,7 @@ namespace Melodies25.Pages.Melodies
                 }
                 else
                 {
-                    ErrorWarning = "Некоректне введено автора";
+                    TempData["ErrorWarning"] = "Некоректне введено автора";
                     return Page(); 
                 }
 
@@ -372,7 +390,7 @@ namespace Melodies25.Pages.Melodies
                 }
                 else
                 {
-                    ErrorWarning = $"Не вдалося додати автора {TempAuthor}";
+                    TempData["ErrorWarning"] = $"Не вдалося додати автора {TempAuthor}";
                     return Page(); 
                 }             
 
@@ -401,6 +419,11 @@ namespace Melodies25.Pages.Melodies
 
         public IActionResult OnPostPiano(string key)
         {
+            if (TempData["ErrorWarning"] is not null)
+            {
+                ErrorWarning = TempData["ErrorWarning"] as string;
+            }
+
             Globals.notation = Notation.eu;
 
             Console.WriteLine($"Key pressed: {key}");
@@ -413,6 +436,7 @@ namespace Melodies25.Pages.Melodies
             else
             {
                 MessageL(COLORS.yellow, $"CREATE - OnPostPiano method, no key, return");
+                TempData["ErrorWarning"] = "Жодної ноти не введено";
                 return Page();
             }
             var note = new Note(key);
@@ -431,6 +455,7 @@ namespace Melodies25.Pages.Melodies
             catch (Exception ex)
             {
                 Msg = ex.ToString();
+                TempData["ErrorWarning"] = ex.ToString();
             }
            
 

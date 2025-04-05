@@ -143,9 +143,15 @@ namespace Melodies25.Pages.Melodies
                     if (ifeligible)
                     {
                         MessageL(COLORS.standart, $"перезаписуємо файл {path}");
-                        await PrepareMp3Async(_environment, path, false);
-                        ViewData["Message"] = "Файл успішно завантажено!";
-                        Melody.IsFileEligible = true;
+                        try
+                        {
+                            await PrepareMp3Async(_environment, path, false);
+                            ViewData["Message"] = "Файл успішно завантажено!";
+                            Melody.IsFileEligible = true;
+                        }
+                        catch { 
+                        
+                        }
                     }
                     else
                     {

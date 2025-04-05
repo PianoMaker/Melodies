@@ -565,7 +565,9 @@ namespace Music
                 	var noteOnEvent = new NoteOnEvent(noteOnTime, channel, note.MidiNote, 127, note.MidiDur);
                 	events.AddEvent(noteOnEvent, 1);
             	}
+                GrayMessageL($"noteOnTime = {noteOnTime}");
                 noteOnTime += note.MidiDur;
+                
             }
 
             // Записуємо NoteOff події
@@ -573,8 +575,12 @@ namespace Music
             foreach (var note in melody)
             {
                 noteOffTime += note.MidiDur;
-                var noteOffEvent = new NoteEvent(noteOffTime, channel, MidiCommandCode.NoteOff, note.MidiNote, 0);
-                events.AddEvent(noteOffEvent, 1);
+                if (!note.Rest)//якщо не пауза
+                {                    
+                    GrayMessageL($"noteOffTime = {noteOffTime} (+{note.MidiDur})");
+                    var noteOffEvent = new NoteEvent(noteOffTime, channel, MidiCommandCode.NoteOff, note.MidiNote, 0);
+                    events.AddEvent(noteOffEvent, 1);
+                }
             }
         }
         internal static void SaveMidi(Melody melody, string fileName = "output.mid")

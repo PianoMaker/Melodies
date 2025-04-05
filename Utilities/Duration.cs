@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices.Marshalling;
 using System.Text;
 using static Music.Globals;
+using static Music.Messages;
 
 namespace Music
 {
@@ -163,7 +164,7 @@ namespace Music
         public double RelDuration()
         {
             double relduration = 4;
-            relduration /= (int)duration;
+            relduration /= (double)duration;
             if (modifier == DURMODIFIER.none) relduration *= 1;
             else if (modifier == DURMODIFIER.dotted) relduration *= 1.5;
             else if (modifier == DURMODIFIER.doubledotted) relduration *= 1.75;
@@ -173,12 +174,13 @@ namespace Music
                 relduration /= tuplet;
                 relduration = Math.Round(relduration, 2);
             }
+            //GrayMessageL($"relduration = {relduration}");
             return relduration;
         }
 
         public int MidiDuration(int PPQN)
         {
-            return PPQN * (int)RelDuration();
+            return (int)(PPQN * RelDuration());
             //Pulses Per Quarter Note - міряє тіки на чвертку
         }
 
