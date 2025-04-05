@@ -10,6 +10,7 @@ const notesLabels = document.querySelectorAll('.notaname')
 let saver = document.getElementById('saver');
 let keyline = pianodisplay.value;
 const createMIDIButton = document.getElementById('createMIDI');//кнопка "зберегти"
+const playButton = document.getElementById('melodyPlayBtn');
 console.log(`noteTable.js started. Current keyline is ${keyline}`)
 
 // Функція для оновлення виділення
@@ -76,7 +77,9 @@ document.addEventListener('keydown', function (event) {
 function processValue(newValue) {
     console.log("Старе значення:", pianodisplay.value);
     console.log("Нове значення:", newValue);
-    createMIDIButton.style.background = "pink";
+    createMIDIButton.style.background = "lightgreen";
+    playButton.style.background = "lightgray";
+    document.querySelector('.fas.fa-play').style.color = "gray";
     pianodisplay.value = newValue;
     saver.innerText = newValue;    
     

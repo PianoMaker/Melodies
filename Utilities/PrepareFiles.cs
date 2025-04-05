@@ -23,15 +23,22 @@ namespace Melodies25.Utilities
             return Path.Combine(directory, filenameWithoutExt + ".mp3");
         }
 
-        // створення mp3 файлу на основі MIDI. 
+
+        public static string GetTemporaryPath(string mp3Path)
+        {
+            string fileName = Path.GetFileNameWithoutExtension(mp3Path) + ".mp3";
+            return "/temporary/" + fileName;
+        }
+
+        // створення mp3 файлу на основі MIDI . 
         /*
         public static void PrepareMp3(IWebHostEnvironment _environment, string midifilePath, bool ifcheck)
         {
             try
             {
-                var path = Path.Combine(_environment.WebRootPath, "melodies", midifilePath);
+                var midiPath = Path.Combine(_environment.WebRootPath, "melodies", midifilePath);
                 
-                string mp3Path = ConvertToMp3Path(path);
+                string mp3Path = ConvertToMp3Path(midiPath);
 
                 // якщо файл існує і якщо опція перевірити
                 if (File.Exists(mp3Path) && ifcheck)
@@ -41,7 +48,7 @@ namespace Melodies25.Utilities
                 else
                 {
                     // якщо не перевірити - існуючий файл перезаписується
-                    var midiFile = new MidiFile(path);
+                    var midiFile = new MidiFile(midiPath);
                     var hzmslist = GetHzMsListFromMidi(midiFile);
                     MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
                     Stopwatch sw = new();
@@ -64,48 +71,33 @@ namespace Melodies25.Utilities
             MessageL(COLORS.olive, "PrepateMp3Async method");
             try
             {
-                var path = Path.Combine(_environment.WebRootPath, "melodies", midifilePath);
-                if (!File.Exists(path))
+                //адреса мідіфайлу
+                var midiPath = Path.Combine(_environment.WebRootPath, "melodies", midifilePath);
+                if (!File.Exists(midiPath))
                 {
-                    ErrorMessage($"Неможливо знайти MIDI-файл за адресою {path}");
+                    ErrorMessage($"Неможливо знайти MIDI-файл за адресою {midiPath}");
                     return;
                 }
 
-
-                string mp3Path = ConvertToMp3Path(path);
-
-
+                //створюється назва файлу для завантаження mp3 файлу і перевірка на існування
+                string mp3Path = ConvertToMp3Path(midiPath);
                 if (ifcheck && File.Exists(mp3Path))
                 {
-
                     MessageL(COLORS.blue, $"File {mp3Path} already exists, skip creating");
                     return;
                 }
-
-                var midiFile = new MidiFile(path);
-                var ifeligible = CheckForPolyphony(midiFile);
-
-                if (!ifeligible)
-                {
-                    StraightMidiFile(path);
-                    StraightMidiFile(path);
-                    StraightMidiFile(path);
-                    var newFile = new MidiFile(path);
-                    var hzmslist = GetHzMsListFromMidi(newFile);
-
-                    MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
-                    Stopwatch sw = new();
-                    sw.Start();
-
-                    await GenerateMp3Async(hzmslist, mp3Path);
-
-                    sw.Stop();
-                    MessageL(COLORS.green, $"File {mp3Path} was generated in {sw.ElapsedMilliseconds} ms");
-                }
-                else
+                
+                //преревірка на поліфонію
+                var midiFile = new MidiFile(midiPath);
+                if (CheckForPolyphony(midiFile)) 
                 {
                     MessageL(COLORS.red, "refused to generate mp3");
+                    return;
                 }
+                
+                // і нарешті створення!
+                await PrepareMP3fromMIDIAsync(midiPath, mp3Path);
+                
             }
             catch (Exception ex)
             {
@@ -113,5 +105,22 @@ namespace Melodies25.Utilities
             }
         }
 
+        private static async Task PrepareMP3fromMIDIAsync(string path, string mp3Path)
+        {
+            StraightMidiFile(path);
+            StraightMidiFile(path);
+            StraightMidiFile(path);
+            var newFile = new MidiFile(path);
+            var hzmslist = GetHzMsListFromMidi(newFile);
+
+            MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
+            Stopwatch sw = new();
+            sw.Start();
+
+            await GenerateMp3Async(hzmslist, mp3Path);
+
+            sw.Stop();
+            MessageL(COLORS.green, $"File {mp3Path} was generated in {sw.ElapsedMilliseconds} ms");
+        }
     }
 }

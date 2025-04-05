@@ -9,6 +9,7 @@ const notesElements = document.querySelectorAll('.notebox');
 const notesLabels = document.querySelectorAll('.notaname')
 const saver = document.getElementById('saver');
 const createMIDIButton = document.getElementById('createMIDI');
+const playButton = document.getElementById('melodyPlayBtn');
 let pianodisplay = document.getElementById('pianodisplay');
 let keyline = pianodisplay.value;
 
@@ -40,7 +41,8 @@ function hideContextMenu() {
 function processValue(newValue, index) {
     console.log("Старе значення:", pianodisplay.value);
     console.log("Нове значення:", newValue);
-    createMIDIButton.style.background = "pink";
+    createMIDIButton.style.background = "lightgreen";
+    playButton.style.background = "lightgray";
     pianodisplay.value = newValue;
     saver.innerText = newValue;
     

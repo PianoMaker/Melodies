@@ -5,7 +5,7 @@
     ViewData["Title"] = "Додати мелодію";
     var melody = @Model.Melody;
     var newMelody = @Model.NewPattern;
-    bool fileCreated = string.IsNullOrEmpty(Model.TempFilePath);
+    bool fileCreated = string.IsNullOrEmpty(Model.TempMidiFilePath);
 
 }
 
@@ -112,10 +112,15 @@
                     <input type="hidden" name="Keys" id="keysInput" />
                     <button id="createMIDI" type="submit" class="btn btn-outline-dark">Зберегти</button>
                 </form>
-                <form id="melodyForm" method="post" asp-page-handler="play" class="d-inline-block m-1">
-                    <input type="hidden" name="Keys" id="keysInput" />
-                    <button id="createMIDI" type="submit" class="btn btn-outline-dark"><i class="fas fa-play" style="color: green;"></i></button>
-                </form>
+                <div id="previewMp3path" style="display:none"> @Model.TempMp3FilePath</div>
+                @if (TempData["HighlightPlayButton"] is not null)
+                {
+                    <button id="melodyPlayBtn" type="submit" class="btn btn-outline-dark" style="background-color: lightgreen"><i class="fas fa-play" style="color: green;"></i></button>
+                }
+                else
+                {
+                    <button id="melodyPlayBtn" type="submit" class="btn btn-outline-dark" ><i class="fas fa-play" style="color: gray;"></i></button>
+                }
             </div>
         </div>
 

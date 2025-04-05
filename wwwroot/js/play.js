@@ -7,7 +7,7 @@
             e.preventDefault(); // Запобігаємо відправці форми
             console.log("Play.js play button works");
             
-            var filepath = playButton.getAttribute('data-filepath');
+            var filepath = playButton.getAttribute('data-filepath'); previewMp3path
             var audioPlayer = document.getElementById('audioPlayer_' + filepath);
             var stopButton = document.getElementById('stopButton_' + filepath);
             
@@ -28,4 +28,7 @@
             });
         });
     });
+
+
+
 });

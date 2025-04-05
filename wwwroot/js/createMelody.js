@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let pianodisplay = document.getElementById("pianodisplay");
     const keysInput = document.getElementById("keysInput")
     const createMIDIButton = document.getElementById('createMIDI');//кнопка "зберегти"
+    const playButton = document.getElementById('melodyPlayBtn');
     const inputfield = document.getElementById('melodyFileInput');
     const saver = document.getElementById("saver");
     pianodisplay.value = saver.innerText;
@@ -47,12 +48,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 audioPlayer.play();
             });
             pianodisplay.value += `${key}${duration}_`;
-
+            createMIDIButton.style.background = "lightgreen";
+            playButton.style.background = "lightgray";
+            document.querySelector('.fas.fa-play').style.color = "gray";
         });
 
     });
 
-  
+    //кнопка "Відтворення"
+    playButton.addEventListener('click', function (e) {
+
+
+        const previewMp3path = document.getElementById('previewMp3path')
+        var filepath = previewMp3path.textContent.trim();      
+        var audioPlayer = document.getElementById('audioPlayer');  
+        const audioSource = document.getElementById('audioSource'); 
+        audioSource.src = filepath;
+        console.log(`Play.js play preview from ${audioSource.src}`);
+        audioPlayer.load();
+        audioPlayer.play().catch(err => {
+            console.error("Помилка при програванні:", err);
+        });
+    });
+    
 
 
     //кнопка "Зберегти"
@@ -61,7 +79,8 @@ document.addEventListener("DOMContentLoaded", function () {
         keysInput.value = pianodisplay.value
         console.log("Відправка форми з Keys:", keysInput.value); 
         // Тепер відправимо форму вручну
-        document.getElementById('melodyForm').submit();        
+        document.getElementById('melodyForm').submit();
+        
 
     });
 

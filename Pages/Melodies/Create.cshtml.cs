@@ -41,7 +41,10 @@ namespace Melodies25.Pages.Melodies
         public string Keys { get; set; } = default!;
 
         public Music.Melody NewPattern { get; set; }
-        internal string TempFilePath { get; set; }
+        internal string TempMidiFilePath { get; set; }
+
+        [BindProperty]
+        internal string TempMp3FilePath { get; set; }
 
         private static readonly char[] separator = new char[] { ' ', '_' };
 
@@ -96,68 +99,64 @@ namespace Melodies25.Pages.Melodies
         }
 
         // СТВОРЕННЯ МЕЛОДІЇ ВРУЧНУ //
-        public void OnPostMelody()
+        public async Task<IActionResult> OnPostMelody()
         {
-            MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostMelody method, keys = {Keys}");            
+            MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostMelody method, keys = {Keys}");
             GetAuthorsData();
-            GetTonalitiesData();            
+            GetTonalitiesData();
+            SaveKeys();
+            await PrepareMp3Async(_environment, TempMidiFilePath, false);
+            TempMp3FilePath = GetTemporaryPath(ConvertToMp3Path(TempMidiFilePath));
+            TempData["HighlightPlayButton"] = true;
+            MessageL(COLORS.gray, "OnPostMelody is finished");
+            return Page();
+        }
 
+        private void SaveKeys()
+        {
             if (Keys is not null)
             {
-                SaveKeys();
+                /* Будуємо послідовність введених нот */
+                Music.Melody MelodyPattern = new();
+                Globals.notation = Notation.eu;
+                Globals.lng = LNG.uk;
+                BuildPattern(MelodyPattern);
+                NewPattern = (Music.Melody)MelodyPattern.Clone();
+
+                /* Створює MIDI в диеркторію TempMidiFilePath на основі введеної послідовності */
+                try
+                {
+                    string filename = "userFile" + DateTime.Now.ToShortDateString() + DateTime.Now.Hour + DateTime.Now.Minute + DateTime.Now.Second;
+                    var tempUploads = Path.Combine(_environment.WebRootPath, "temporary");
+
+                    if (!Directory.Exists(tempUploads))
+                        Directory.CreateDirectory(tempUploads);
+                    TempMidiFilePath = Path.Combine(tempUploads, filename) + ".mid";
+                    MelodyPattern.SaveMidi(TempMidiFilePath);
+                    MessageL(COLORS.green, "file is ready");
+                    Msg = $"file is ready, path = {TempMidiFilePath}";
+                    TempData["TempMidiFilePath"] = TempMidiFilePath;
+                    TempData["Keys"] = Keys;
+                    MessageL(COLORS.gray, $"Keys = {TempData["Keys"]}");
+                }
+                catch (IOException ex)
+                {
+                    Console.WriteLine($"Проблема з доступом до файлу: {ex.Message}");
+                }
+                catch (Exception e)
+                {
+                    ErrorMessageL(e.ToString());
+                    Msg = "error occured";
+                    Console.WriteLine($"Проблема: {e.Message}");
+                }
             }
             else
             {
                 ErrorMessageL("keys are null");
             }
-            MessageL(COLORS.gray, "OnPostMelody is finished");
-            RedirectToPage();
         }
 
-        private void SaveKeys()
-        {
-            if (Keys is not null) return;
-            /* Будуємо послідовність введених нот */
-            Music.Melody MelodyPattern = new();
-            Globals.notation = Notation.eu;
-            Globals.lng = LNG.uk;
-            BuildPattern(MelodyPattern);
-            NewPattern = (Music.Melody)MelodyPattern.Clone();
-            try
-            {
-                string filename = "userFile" + DateTime.Now.ToShortDateString() + DateTime.Now.Hour + DateTime.Now.Minute + DateTime.Now.Second;
-                var tempUploads = Path.Combine(_environment.WebRootPath, "temporary");
-
-                if (!Directory.Exists(tempUploads))
-                    Directory.CreateDirectory(tempUploads);
-                TempFilePath = Path.Combine(tempUploads, filename) + ".mid";
-                MelodyPattern.SaveMidi(TempFilePath);
-                MessageL(COLORS.green, "file is ready");
-                Msg = $"file is ready, path = {TempFilePath}";
-                TempData["TempFilePath"] = TempFilePath;
-                TempData["Keys"] = Keys;
-                MessageL(COLORS.gray, $"Keys = {TempData["Keys"]}");
-            }
-            catch (IOException ex)
-            {
-                Console.WriteLine($"Проблема з доступом до файлу: {ex.Message}");
-            }
-            catch (Exception e)
-            {
-                ErrorMessageL(e.ToString());
-                Msg = "error occured";
-                Console.WriteLine($"Проблема: {e.Message}");
-            }
-        }
-
-        public void OnPostPlay()
-        {
-            MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostPlay method, keys = {Keys}");
-            SaveKeys();
-            GetAuthorsData();
-            GetTonalitiesData();
-            RedirectToPage();
-        }
+ 
 
 
         //читання нотного рядку відбувається по одній ноті у конструкторі Note(string input) 
@@ -178,13 +177,15 @@ namespace Melodies25.Pages.Melodies
             }
         }
 
-        public void OnPostAsync(string key)
+        public async void OnPostAsync(string key)
         {
             //подолання глюку
             MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostAsync method {key}");
             GetAuthorsData();
             GetTonalitiesData();
             OnPostPiano(key);
+            await PrepareMp3Async(_environment, TempMidiFilePath, false);
+            TempMp3FilePath = ConvertToMp3Path(TempMidiFilePath);
         }
 
         /* ЗАПИС НОВОЇ МЕЛОДІЇ НА СЕРВЕР */
@@ -203,7 +204,7 @@ namespace Melodies25.Pages.Melodies
                 //return Page();
             }
 
-            TempFilePath = TempData["TempFilePath"] as string??"";
+            TempMidiFilePath = TempData["TempMidiFilePath"] as string??"";
             
 
             Melody.Author = await _context.Author
@@ -216,8 +217,7 @@ namespace Melodies25.Pages.Melodies
             }
 
 
-            var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies");
-            
+            var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies");           
 
 
             // Створюємо папку, якщо її немає
@@ -235,11 +235,15 @@ namespace Melodies25.Pages.Melodies
             //завантаження файлу якщо є
             if (fileupload is not null)
             {
+                //складаємо ім'я файлу
                 string newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
-                var midifilePath = Path.Combine(uploadsPath, newfilename);
-
+                Melody.Filepath = newfilename; //назву MIDI файлу фіксуємо
+                
                 MessageL(COLORS.green, $"try to process uploaded file {newfilename}");
+
+
                 // Записуємо файл на сервер
+                var midifilePath = Path.Combine(uploadsPath, newfilename);
                 using (var stream = new FileStream(midifilePath, FileMode.Create))
                 {
                     await fileupload.CopyToAsync(stream);
@@ -248,7 +252,7 @@ namespace Melodies25.Pages.Melodies
                 // перевірка на поліфоню 
                 var ifeligible = IfMonody(midifilePath);
 
-                // завантажує mp3 на сервер якщо не поліфонічний (існуючий перезаписує)
+                // створює mp3 на основі MIDI та завантажує на сервер якщо не поліфонічний (існуючий перезаписує)
                 if (ifeligible)
                 {
                     await PrepareMp3Async(_environment, midifilePath, false);
@@ -261,8 +265,6 @@ namespace Melodies25.Pages.Melodies
                     Melody.IsFileEligible = false;
                 }
 
-                Melody.Filepath = newfilename; //назву файлу фіксуємо
-
                 // СПОІВЩЕННЯ НА ТЕЛЕГРАМ 
 
                 await NotifyTelegram(newfilename);
@@ -270,7 +272,7 @@ namespace Melodies25.Pages.Melodies
             }
             
             // запис новоствореного файлу
-            else if (!string.IsNullOrEmpty(TempFilePath))
+            else if (!string.IsNullOrEmpty(TempMidiFilePath))
             {
                 
                 string newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
@@ -278,7 +280,7 @@ namespace Melodies25.Pages.Melodies
                 MessageL(COLORS.green, $"try to move file starts to {newfilename}");
                 try
                 {
-                    System.IO.File.Move(TempFilePath, midifilePath);
+                    System.IO.File.Move(TempMidiFilePath, midifilePath);
                     await PrepareMp3Async(_environment, midifilePath, false);
                     Melody.IsFileEligible = true;
                     ViewData["Message"] = "Файл успішно завантажено!";
