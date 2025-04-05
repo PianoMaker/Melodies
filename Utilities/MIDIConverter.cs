@@ -560,8 +560,11 @@ namespace Music
             int noteOnTime = 0;
             foreach (var note in melody)
             {
-                var noteOnEvent = new NoteOnEvent(noteOnTime, channel, note.MidiNote, 127, note.MidiDur);
-                events.AddEvent(noteOnEvent, 1);
+                if (!note.Rest)//якщо не пауза
+				{
+                	var noteOnEvent = new NoteOnEvent(noteOnTime, channel, note.MidiNote, 127, note.MidiDur);
+                	events.AddEvent(noteOnEvent, 1);
+            	}
                 noteOnTime += note.MidiDur;
             }
 

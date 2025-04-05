@@ -1,5 +1,4 @@
-﻿import { shiftNoteUp } from './shiftNoteUp.js';
-import { shiftNoteDown } from './shiftNoteDown.js';
+﻿import { shiftNoteUp, shiftNoteDown } from './shiftNote.js';
 import { deleteNote } from './deleteNote.js';
 import { doubleNote, halfNote } from './changeDuration.js';
 
@@ -7,9 +6,9 @@ import { doubleNote, halfNote } from './changeDuration.js';
 const notesElements = document.querySelectorAll('.notebox');
 let currentIndex = -1; // Індекс активного елемента
 let pianodisplay = document.getElementById('pianodisplay');
+const notesLabels = document.querySelectorAll('.notaname')
 let saver = document.getElementById('saver');
 let keyline = pianodisplay.value;
-let savebtn = document.getElementById('saver');
 const createMIDIButton = document.getElementById('createMIDI');//кнопка "зберегти"
 console.log(`noteTable.js started. Current keyline is ${keyline}`)
 
@@ -46,16 +45,19 @@ document.addEventListener('keydown', function (event) {
         let newValue = shiftNoteUp(currentIndex, keyline);
         processValue(newValue);
         
+        
     }
     else if (event.key === "ArrowDown") {
         keyline = pianodisplay.value;
         let newValue = shiftNoteDown(currentIndex, keyline);
         processValue(newValue);
+        
     }
     else if (event.key === "Delete") {
         keyline = pianodisplay.value;
         let newValue = deleteNote(currentIndex, keyline);
         processValue(newValue);
+        
     }
     else if (event.key === "+") {
         keyline = pianodisplay.value;
@@ -76,7 +78,8 @@ function processValue(newValue) {
     console.log("Нове значення:", newValue);
     createMIDIButton.style.background = "pink";
     pianodisplay.value = newValue;
-    saver.innerText = newValue;
+    saver.innerText = newValue;    
+    
 }
 
 

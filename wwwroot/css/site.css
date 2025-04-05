@@ -4,7 +4,7 @@
     }
 }
 
-a.link-light:hover{
+a.link-light:hover {
     color: yellow !important;
 }
 
@@ -22,9 +22,9 @@ a.link-light:hover{
         vertical-align: top;
     }
 
-    .highlight {
-        background-color: yellow;
-    }
+.highlight {
+    background-color: yellow;
+}
 
 li.active {
     background-color: rgba(255, 255, 0, 0.4) !important;
@@ -94,7 +94,6 @@ table {
     font-family: 'Times New Roman';
     font-style: normal;
     border: 1px solid black;
-    
 }
 
     table a {
@@ -102,9 +101,9 @@ table {
         text-decoration: none;
     }
 
-    table a:hover{
-        color:blueviolet !important; 
-    }
+        table a:hover {
+            color: blueviolet !important;
+        }
 
 th, td {
     border: 1px solid #ddd;
@@ -129,22 +128,19 @@ table, th, td {
 
 .mainpage {
     height: 100%;
-    background: 
-        linear-gradient(217deg, rgba(255,100,100,.8), rgba(255,100,0,0) 70.71%), 
-        linear-gradient(127deg, rgba(255,255,100,.8), rgba(255,255,0,0) 70.71%), 
-        linear-gradient(336deg, rgba(100,100,255,.8), rgba(255,255,255,0) 70.71%);
+    background: linear-gradient(217deg, rgba(255,100,100,.8), rgba(255,100,0,0) 70.71%), linear-gradient(127deg, rgba(255,255,100,.8), rgba(255,255,0,0) 70.71%), linear-gradient(336deg, rgba(100,100,255,.8), rgba(255,255,255,0) 70.71%);
     margin: 0;
 }
 
 .footer {
     position: fixed;
     bottom: 0;
-    width:100%;
+    width: 100%;
     background: #fef7e2;
     height: 30px;
 }
 
-.h-85{
+.h-85 {
     height: 85%;
 }
 /* слід ще поексперементувати...
@@ -153,7 +149,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
 
 .imgcontainer {
-    min-width:90px; 
+    min-width: 90px;
     max-width: 100px;
 }
 
@@ -176,11 +172,10 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     font-family: "Montserrat", serif;
 }
 
-.navmelody:hover {    
-    color: lemonchiffon !important;
-    transform: scale(1.08) translateY(-2px);
-    
-}
+    .navmelody:hover {
+        color: lemonchiffon !important;
+        transform: scale(1.08) translateY(-2px);
+    }
 
 .notestaff {
     margin: 3px;
@@ -192,24 +187,24 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     z-index: 2;
 }
 
-.notescontainer{
+.notescontainer {
     font-size: 0.8em;
     border: 1px solid gray;
-    background-color:lightgoldenrodyellow;
+    background-color: lightgoldenrodyellow;
     padding: 8px;
 }
 
     .notescontainer h3 {
-        font-size: 1em ;
+        font-size: 1em;
     }
 
 .notebox {
     display: inline-block;
-    font-size: 0.9em; 
+    font-size: 0.9em;
     text-align: center;
     padding: 2px;
     height: 30px;
-    margin: 5px 1px 1px 1px;    
+    margin: 5px 1px 1px 1px;
     min-width: 35px;
     border: 1px solid gray;
     background-color: antiquewhite;
@@ -225,10 +220,9 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 .outerNoteBox {
     display: inline-block;
     text-align: center;
-    
 }
 
-.innerNotesContainer{
+.innerNotesContainer {
     padding: 5px;
     border: 1px solid darkred;
     background-color: rgba(255,255,200,0.9);
@@ -251,7 +245,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 
-.commoncontainer{
+.commoncontainer {
     height: 100%;
     margin: 0;
     padding: 0;
@@ -259,7 +253,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
 
 .rightcontainer {
-    
     width: 80vh;
     height: 115%;
     padding: 5px;
@@ -271,8 +264,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     background-color: lightgray;
 }
 
-.light-background
-{
+.light-background {
     background-color: lightgray;
 }
 
@@ -300,62 +292,15 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     background-color: rgba(100,100,255,.8);
 }
 
-.btn-index:hover {
-    background-color: rgba(120,150,255,.8);
-}
+    .btn-index:hover {
+        background-color: rgba(120,150,255,.8);
+    }
 
 .smallfont {
     font-size: 0.8em !important;
     color: darkslategrey;
 }
 
-@media (max-width: 768px) {
-
-    .d-flex {
-        flex-direction: column;
-        align-items: center; /* Вирівнюємо по центру */
-    }
-
-
-    .w-25, .w-75 {
-        width: 100% !important; /* Робимо елементи повної ширини */
-    }
-
-    .navmelody {
-        margin: 20px 10px 0px 10px;
-        padding-right: 0px !important;
-    }
-
-    .smallfont {
-        font-size: 0.7em !important;
-        color: darkslategrey;
-    }
-}
-
-
-@media (max-width: 512px) {
-    .haslo {
-        min-width: 200px;
-    }
-
-    .searchfield {
-        width: 200px;
-    }
-
-    .homepagetitle {
-        font-size: 2em;
-    }
-
-    .title {
-        font-size: 1.5em;
-    }
-
-    .navmelody   {
-        margin: 20px 0px 0px 0px;
-        padding-right: 0px;
-
-    }
-}
 
 .notka, .notka-blue {
     position: absolute;
@@ -377,7 +322,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 @keyframes float {
     0% {
         transform: translateX(0) translateY(0) scale(1.1) rotate(0deg);
-        
     }
 
     100% {
@@ -395,13 +339,14 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     width: 750px;
     padding: 10px;
     margin: 10px;
+    display: block;
 }
 
 .searchrightcontainer {
-    display: inline-block;
+    /*display: inline-block;*/
     width: 70%;
     height: 100%;
-    margin:10px
+    margin: 10px
 }
 
 .searchleftcontainer {
@@ -508,4 +453,171 @@ h1 {
 
 p {
     font-size: 0.9em;
+}
+
+@media (max-width: 1024px) {
+
+    .searchcontainer {
+        display: block;
+    }
+
+    .searchleftcontainer {
+        width: 100%;
+    }
+
+    .notesinfo{
+        width:65vh;
+    }
+
+    .whitepianobutton {
+        width: 45px;
+    }
+
+    .blackpianobutton {
+        width: 40px;
+    }
+
+
+    .cis1 {
+        top: 0px; /* Відступ зверху */
+        left: 35px; /* Відступ зліва */
+    }
+
+    .dis1 {
+        top: 0px;
+        left: 90px;
+    }
+
+    .fis1 {
+        top: 0px;
+        left: 180px;
+    }
+
+    .gis1 {
+        top: 0px;
+        left: 235px;
+    }
+
+    .b1 {
+        top: 0px;
+        left: 290px;
+    }
+
+    .cis2 {
+        top: 0px; /* Відступ зверху */
+        left: 385px; /* Відступ зліва */
+    }
+
+    .dis2 {
+        top: 0px;
+        left: 440px;
+    }
+
+    .fis2 {
+        top: 0px;
+        left: 530px;
+    }
+
+    .gis2 {
+        top: 0px;
+        left: 585px;
+    }
+
+    .b2 {
+        top: 0px;
+        left: 640px;
+    }
+
+    .cis1 {
+        left: 30px; /* Відступ зліва */
+    }
+
+    .dis1 {
+        left: 80px;
+    }
+
+    .fis1 {
+        left: 165px;
+    }
+
+    .gis1 {
+        left: 215px;
+    }
+
+    .b1 {
+        top: 0px;
+        left: 265px;
+    }
+
+    .cis2 {
+        top: 0px; /* Відступ зверху */
+        left: 345px; /* Відступ зліва */
+    }
+
+    .dis2 {
+        top: 0px;
+        left: 395px;
+    }
+
+    .fis2 {
+        top: 0px;
+        left: 480px;
+    }
+
+    .gis2 {
+        top: 0px;
+        left: 530px;
+    }
+
+    .b2 {
+        top: 0px;
+        left: 580px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .d-flex {
+        flex-direction: column;
+        align-items: center; /* Вирівнюємо по центру */
+    }
+
+
+    .w-25, .w-75 {
+        width: 100% !important; /* Робимо елементи повної ширини */
+    }
+
+    .navmelody {
+        margin: 20px 10px 0px 10px;
+        padding-right: 0px !important;
+    }
+
+    .smallfont {
+        font-size: 0.7em !important;
+        color: darkslategrey;
+    }
+}
+
+
+@media (max-width: 512px) {
+    .haslo {
+        min-width: 200px;
+    }
+
+    .searchfield {
+        width: 200px;
+    }
+
+    .homepagetitle {
+        font-size: 2em;
+    }
+
+    .title {
+        font-size: 1.5em;
+    }
+
+    .navmelody {
+        margin: 20px 0px 0px 0px;
+        padding-right: 0px;
+    }
 }

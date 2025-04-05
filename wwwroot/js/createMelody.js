@@ -61,9 +61,8 @@ document.addEventListener("DOMContentLoaded", function () {
         keysInput.value = pianodisplay.value
         console.log("Відправка форми з Keys:", keysInput.value); 
         // Тепер відправимо форму вручну
-        document.getElementById('melodyForm').submit();
-        inputfield.style.backgroundColor = "yellow";
-        pianodisplay.value = "data sent";
+        document.getElementById('melodyForm').submit();        
+
     });
 
     

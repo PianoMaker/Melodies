@@ -99,16 +99,24 @@
         <div id="openpianoDiv" style="display:none">
             <button style="width:80%; margin:10px" id="openpianoBtn">Ввести з клавіатури</button>
         </div>
-        <div id="pianoDiv" class="notesinfo">            
-            <div id="saver" style="display:none">@Model.TempData["Keys"]</div>
-            <textarea id="pianodisplay" class="d-inline-block" style="width:80%" rows="2" placeholder="для вводу нот натискайте клавіші клавіатури або введіть код вручну">@Model.Keys</textarea>
-            <form method="post" asp-page-handler="reset" class="d-inline-block m-1">
-                <button type="submit" class="btn btn-outline-dark">Скинути</button>
-            </form>
-            <form id="melodyForm" method="post" asp-page-handler="melody" class="d-inline-block m-1">
-                <input type="hidden" name="Keys" id="keysInput" />
-                <button id="createMIDI" type="submit" class="btn btn-outline-dark">Зберегти</button>
-            </form>
+        <div id="pianoDiv" class="notesinfo" style="display:block">
+            <div style="display:block; width:100%">
+                <div id="saver" style="display:none">@Model.TempData["Keys"]</div>
+                <textarea id="pianodisplay" class="d-inline-block" style="width:90%" rows="2" placeholder="для вводу нот натискайте клавіші клавіатури або введіть код вручну">@Model.Keys</textarea>
+            </div>
+            <div id="buttonarea" style="display:block; width:60%">
+                <form method="post" asp-page-handler="reset" class="d-inline-block m-1">
+                    <button type="submit" class="btn btn-outline-dark">Скинути</button>
+                </form>
+                <form id="melodyForm" method="post" asp-page-handler="melody" class="d-inline-block m-1">
+                    <input type="hidden" name="Keys" id="keysInput" />
+                    <button id="createMIDI" type="submit" class="btn btn-outline-dark">Зберегти</button>
+                </form>
+                <form id="melodyForm" method="post" asp-page-handler="play" class="d-inline-block m-1">
+                    <input type="hidden" name="Keys" id="keysInput" />
+                    <button id="createMIDI" type="submit" class="btn btn-outline-dark"><i class="fas fa-play" style="color: green;"></i></button>
+                </form>
+            </div>
         </div>
 
 
@@ -163,6 +171,12 @@
             <button class="durationbutton">
                 <img src="~/images/32nd_note.png" alt="Thirty-Second Note" />
             </button>
+            <button class="durationbutton">
+                <p>.</p>
+            </button>
+            <button class="durationbutton" style="width:80px">
+                <p>/pause/</p>
+            </button>
             <script src="~/js/switchDurations.js"></script>
         </div>
 
@@ -181,7 +195,7 @@
                         <div class="notebox" style="margin-bottom:@marginbottom; width:@width;">
                             <span>@note.DurSymbol</span><br>
                         </div>
-                        <span class="notaname">@note.Name</span>
+                        <span data-index="@index" class="notaname">@note.Name</span>
                     </div>
                     <div class="context-menu" data-index="@index">
                         <ul>

@@ -104,37 +104,7 @@ namespace Melodies25.Pages.Melodies
 
             if (Keys is not null)
             {
-                /* Будуємо послідовність введених нот */
-                Music.Melody MelodyPattern = new();
-                Globals.notation = Notation.eu;
-                Globals.lng = LNG.uk;
-                BuildPattern(MelodyPattern);
-                NewPattern = (Music.Melody)MelodyPattern.Clone();
-                try
-                {                    
-                    string filename = "userFile" + DateTime.Now.ToShortDateString() + DateTime.Now.Hour + DateTime.Now.Minute + DateTime.Now.Second;
-                    var tempUploads = Path.Combine(_environment.WebRootPath, "temporary");
-                    
-                    if (!Directory.Exists(tempUploads))
-                        Directory.CreateDirectory(tempUploads);
-                    TempFilePath = Path.Combine(tempUploads, filename) + ".mid";
-                    MelodyPattern.SaveMidi(TempFilePath);
-                    MessageL(COLORS.green, "file is ready");
-                    Msg = $"file is ready, path = {TempFilePath}";
-                    TempData["TempFilePath"] = TempFilePath;
-                    TempData["Keys"] = Keys;
-                    MessageL(COLORS.gray, $"Keys = {TempData["Keys"]}");
-                }
-                catch (IOException ex)
-                {
-                    Console.WriteLine($"Проблема з доступом до файлу: {ex.Message}");
-                }
-                catch (Exception e)
-                {
-                    ErrorMessageL(e.ToString());
-                    Msg = "error occured";
-                    Console.WriteLine($"Проблема: {e.Message}");
-                }
+                SaveKeys();
             }
             else
             {
@@ -143,6 +113,52 @@ namespace Melodies25.Pages.Melodies
             MessageL(COLORS.gray, "OnPostMelody is finished");
             RedirectToPage();
         }
+
+        private void SaveKeys()
+        {
+            if (Keys is not null) return;
+            /* Будуємо послідовність введених нот */
+            Music.Melody MelodyPattern = new();
+            Globals.notation = Notation.eu;
+            Globals.lng = LNG.uk;
+            BuildPattern(MelodyPattern);
+            NewPattern = (Music.Melody)MelodyPattern.Clone();
+            try
+            {
+                string filename = "userFile" + DateTime.Now.ToShortDateString() + DateTime.Now.Hour + DateTime.Now.Minute + DateTime.Now.Second;
+                var tempUploads = Path.Combine(_environment.WebRootPath, "temporary");
+
+                if (!Directory.Exists(tempUploads))
+                    Directory.CreateDirectory(tempUploads);
+                TempFilePath = Path.Combine(tempUploads, filename) + ".mid";
+                MelodyPattern.SaveMidi(TempFilePath);
+                MessageL(COLORS.green, "file is ready");
+                Msg = $"file is ready, path = {TempFilePath}";
+                TempData["TempFilePath"] = TempFilePath;
+                TempData["Keys"] = Keys;
+                MessageL(COLORS.gray, $"Keys = {TempData["Keys"]}");
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine($"Проблема з доступом до файлу: {ex.Message}");
+            }
+            catch (Exception e)
+            {
+                ErrorMessageL(e.ToString());
+                Msg = "error occured";
+                Console.WriteLine($"Проблема: {e.Message}");
+            }
+        }
+
+        public void OnPostPlay()
+        {
+            MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostPlay method, keys = {Keys}");
+            SaveKeys();
+            GetAuthorsData();
+            GetTonalitiesData();
+            RedirectToPage();
+        }
+
 
         //читання нотного рядку відбувається по одній ноті у конструкторі Note(string input) 
         private void BuildPattern(Music.Melody MelodyPattern)
@@ -157,7 +173,7 @@ namespace Melodies25.Pages.Melodies
                 }
                 catch
                 {
-                    ErrorMessage($"impossible to read note {key}\n");
+                    ErrorMessageL($"impossible to read note {key}\n");
                 }
             }
         }

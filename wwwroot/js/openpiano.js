@@ -5,20 +5,21 @@ document.addEventListener("DOMContentLoaded", function () {
     let openpianoDiv = document.getElementById("openpianoDiv");
     let stainway = document.getElementById("stainway");
     let durationspanel = document.getElementById("durationspanel");
+    if (durationspanel) {
+        console.log("durationspanel знайдено!");
+    } else {
+        console.warn("durationspanel НЕ знайдено!");
+    }
     let pianodisplay = document.getElementById("pianodisplay");
     let onpianodisplay = pianodisplay.value;    
     let createMIDI = document.getElementById("createMIDI");
-    
+
     if (onpianodisplay) {
-        openpianoDiv.style.display = 'none';
-        durationspanel.style.display = 'none';
-        console.log(`onpianodisplay = ${onpianodisplay}`);
-        console.log(`durationspanel = ${durationspanel}`);
+        openpianoDiv.style.display = 'none';               
     }
     else 
     {
-        console.log(`display is empty`);
-        console.log(`durationspanel = ${durationspanel}`);
+        console.log(`display is empty`);        
         stainway.style.display = 'none';
         durationspanel.style.display = 'none';
         pianoDiv.style.display = 'none';

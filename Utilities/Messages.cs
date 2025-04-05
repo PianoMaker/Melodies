@@ -226,8 +226,13 @@ namespace Music
         private const string oneperrow_uk = "по одній на рядок";
         private const string range_order_en = " in ascending order of range\n";
         private const string range_order_uk = " в порядку зростання діапазону\n";
+
+        #region _R_
+        private const string rest_uk = "пауза";
+        private const string rest_en = "rest";
         private const string root_en = "root\n";
         private const string root_uk = "основний тон\n";
+        #endregion
         private const string save_as_en = " Saved as ";
         private const string save_as_uk = " Збережено у файлі ";
         private const string sound_en = "\nsound ";
@@ -929,7 +934,13 @@ namespace Music
                 return "\n1 - beeper; 2 - naudio; 3 - midiPlayer\n";
             }
 
-            public static string save_as()
+        public static string rest()
+        {
+            if (lng == LNG.uk) return rest_uk;
+            else return rest_en;
+        }
+
+        public static string save_as()
             {
                 if (lng == LNG.uk) return save_as_uk;
                 else return save_as_en;

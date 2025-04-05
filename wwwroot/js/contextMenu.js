@@ -1,5 +1,4 @@
-﻿import { shiftNoteUp } from './shiftNoteUp.js';
-import { shiftNoteDown } from './shiftNoteDown.js';
+﻿import { shiftNoteUp, shiftNoteDown } from './shiftNote.js';
 import { deleteNote } from './deleteNote.js';
 import { doubleNote, halfNote } from './changeDuration.js';
 
@@ -7,12 +6,13 @@ import { doubleNote, halfNote } from './changeDuration.js';
 // Отримуємо всі елементи контекстного меню та нот
 const contextMenus = document.querySelectorAll('.context-menu');
 const notesElements = document.querySelectorAll('.notebox');
+const notesLabels = document.querySelectorAll('.notaname')
 const saver = document.getElementById('saver');
 const createMIDIButton = document.getElementById('createMIDI');
 let pianodisplay = document.getElementById('pianodisplay');
 let keyline = pianodisplay.value;
 
-console.log(`ContextMenu.js started`);
+console.log(`ContextMenu.js started, first note = ${notesLabels[0].innerText}`);
 
 // Функція для показу контекстного меню
 function showContextMenu(event, index) {
@@ -37,12 +37,14 @@ function hideContextMenu() {
 }
 
 // Функція для обробки нових значень
-function processValue(newValue) {
+function processValue(newValue, index) {
     console.log("Старе значення:", pianodisplay.value);
     console.log("Нове значення:", newValue);
     createMIDIButton.style.background = "pink";
     pianodisplay.value = newValue;
     saver.innerText = newValue;
+    
+
 }
 
 // Додаємо обробник для кожного нотного блоку
@@ -65,12 +67,13 @@ contextMenus.forEach((menu, index) => {
                 case 'option1':
                     keyline = pianodisplay.value;
                     let newValueUp = shiftNoteUp(index, keyline);
-                    processValue(newValueUp);
+                    processValue(newValueUp, index);                   
+                    
                     break;
                 case 'option2':
                     keyline = pianodisplay.value;
                     let newValueDown = shiftNoteDown(index, keyline);
-                    processValue(newValueDown);
+                    processValue(newValueDown, index);                    
                     break;
                 case 'option3':
                     alert('Option 3 selected');

@@ -16,6 +16,7 @@ namespace Music
         private int step;// висота у ступенях від "до" = 0
         private int oct; // октава (1 - перша октава)
         private Duration duration;
+        private bool rest;
 
         public int Pitch
         {
@@ -51,12 +52,30 @@ namespace Music
             get { return duration.Symbol(); }
         }
 
+        public (string, string) DurName
+        {
+            get {
+                return (duration.Symbol(), GetName());                  
+            }
+        }
+
+        public string Name
+        {
+            get
+            {
+                return pitch_to_notename(step, pitch).Replace("b", "♭");
+            }
+        }
+
+
+
         public Note(Note note)
         {
-            this.pitch = note.pitch;
-            this.step = note.step;
-            this.oct = note.oct;
-            this.duration = note.duration;
+            pitch = note.pitch;
+            step = note.step;
+            oct = note.oct;
+            duration = note.duration;
+            rest = note.rest;
         }
 
         public Note(int pitch, int step)
@@ -204,6 +223,7 @@ namespace Music
         public bool EqualDegree(Note obj)
         {
             Note note = (Note)obj;
+            //GrayMessageL($"{Step} vs {obj.Step} and {Pitch} vs {obj.Pitch}");
             return Pitch == note.Pitch && Step == note.Step;
         }
 
@@ -238,7 +258,7 @@ namespace Music
             {
                 this.duration = new Duration(duration, durmodifier);
             }
-            catch (Exception ex)
+            catch 
             {
                 this.duration = new Duration(DURATION.quater);
                 ErrorMessage("Possible incorrect duration");
@@ -318,9 +338,7 @@ namespace Music
         }
 
 
-
-        public string Key(Notation? notation) { return note_to_key(step, pitch); }
-        public string Name() { return pitch_to_notename(step, pitch).Replace("b", "♭"); }
+        public string GetName() { return pitch_to_notename(step, pitch).Replace("b", "♭"); }
 
         public int Octave() { return Oct; }
         public void OctUp(int num = 1) { oct+= num; }
@@ -344,6 +362,15 @@ namespace Music
             step = addstep(step, ref oct, (int)interval);
             pitch = addpitch(pitch, /*ref oct,*/ int_to_pitch(interval, quality));
             oct += octave;
+        }
+
+        public Note TransposeToNote(INTERVALS interval, QUALITY quality, int octave = 0)
+        {
+            var note = (Note)Clone();
+            note.step = addstep(step, ref oct, (int)interval);
+            note.pitch = addpitch(pitch, /*ref oct,*/ int_to_pitch(interval, quality));
+            note.oct += octave;
+            return note;
         }
 
         public void Transpose(int interval, int quality, int octave = 0)
@@ -373,6 +400,10 @@ namespace Music
         { Transpose(i.Interval_, i.Quality, i.Octaves); }
 
 
+        public int DisplayWidth(int minWidth, int displayRange)
+        {            
+            return minWidth + (int)(duration.RelDuration() * displayRange); 
+        }
 
         public void Transpose(Interval i, DIR dir)
         { Transpose(i.Interval_, i.Quality, dir, i.Octaves); }
@@ -385,7 +416,7 @@ namespace Music
         public void Display()
         { StringOutput.Display(this); }
         public void DisplayTable()
-        { WriteLine(Name() + "\npitch = " + ToInt32(Pitch) + "\noctave = " + ToInt32(Oct) + 
+        { WriteLine(GetName() + "\npitch = " + ToInt32(Pitch) + "\noctave = " + ToInt32(Oct) + 
             "\nduration = " + duration + "\nMidiTicks(PPQN-480) = " + duration.MidiDuration(480) +
             "\nabspitch= " + AbsPitch() + "\nMidiNote= " + MidiNote  + " \nfreq = " + Pitch_to_hz(AbsPitch())); }
 
@@ -434,6 +465,20 @@ namespace Music
             }
             else throw new ArgumentException("Object is not of type Note");
         }
+
+        internal void SetDuration(int mididur, int tickperquater)
+        {
+            try
+            {
+                var duration = new Duration(mididur, tickperquater);
+                Duration = duration;
+            }
+            catch (Exception e)
+            {
+                ErrorMessage(e.Message);
+            }
+        }
+
 
         internal void SetDuration(int dur)
         {

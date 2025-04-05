@@ -205,18 +205,32 @@ namespace Music
             return str.ToString();
         }
 
-        public string Symbol()
+        public string Symbol(bool rest=false)
         {
             string symbol = "";
-            switch (duration)
+            if (!rest)
             {
-                case DURATION.whole: symbol += "𝅝"; break;    // Ціла нота (U+1D15D)
-                case DURATION.half: symbol += "𝅗𝅥"; break;     // Половинна нота (U+1D15E)
-                case DURATION.quater: symbol += "♩"; break;  // Чверть нота (U+2669)
-                case DURATION.eigth: symbol += "♪"; break;    // Восьма нота (U+266A)
-                case DURATION.sixteenth: symbol += "𝅘𝅥𝅯"; break; // Шістнадцята нота (U+266B)                
-                default: return "??"; // Невідомий символ
+                switch (duration)
+                {
+                    case DURATION.whole: symbol += "𝅝"; break;    // Ціла нота (U+1D15D)
+                    case DURATION.half: symbol += "𝅗𝅥"; break;     // Половинна нота (U+1D15E)
+                    case DURATION.quater: symbol += "♩"; break;  // Чверть нота (U+2669)
+                    case DURATION.eigth: symbol += "♪"; break;    // Восьма нота (U+266A)
+                    case DURATION.sixteenth: symbol += "𝅘𝅥𝅯"; break; // Шістнадцята нота (U+266B)                
+                    default: return "??"; // Невідомий символ
+                }
             }
+            else
+                switch (duration)
+                {
+                    case DURATION.whole: symbol += "𝄻"; break;     // Ціла пауза (U+1D13B)
+                    case DURATION.half: symbol += "𝄼"; break;      // Половинна пауза (U+1D13C)
+                    case DURATION.quater: symbol += "𝄽"; break;    // Чвертна пауза (U+1D13D)
+                    case DURATION.eigth: symbol += "𝄾"; break;     // Восьма пауза (U+1D13E)
+                    case DURATION.sixteenth: symbol += "𝄿"; break; // Шістнадцята пауза (U+1D13F)
+                    default: return "??"; // Невідомий символ
+                }
+
             switch (modifier)
             {
                 default: break;
