@@ -219,6 +219,7 @@ namespace Music
                     case DURATION.quater: symbol += "♩"; break;  // Чверть нота (U+2669)
                     case DURATION.eigth: symbol += "♪"; break;    // Восьма нота (U+266A)
                     case DURATION.sixteenth: symbol += "𝅘𝅥𝅯"; break; // Шістнадцята нота (U+266B)                
+                    case DURATION.thirtysecond: symbol += "𝅘𝅥𝅰"; break; // Шістнадцята нота (U+266B)   
                     default: return "??"; // Невідомий символ
                 }
             }
@@ -230,6 +231,7 @@ namespace Music
                     case DURATION.quater: symbol += "𝄽"; break;    // Чвертна пауза (U+1D13D)
                     case DURATION.eigth: symbol += "𝄾"; break;     // Восьма пауза (U+1D13E)
                     case DURATION.sixteenth: symbol += "𝄿"; break; // Шістнадцята пауза (U+1D13F)
+                    case DURATION.thirtysecond: symbol += "𝅀"; break;
                     default: return "??"; // Невідомий символ
                 }
 

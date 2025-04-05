@@ -202,8 +202,15 @@ namespace Melodies25.Pages.Melodies
             GetAuthorsData();
             GetTonalitiesData();
             OnPostPiano(key);
-            await PrepareMp3Async(_environment, TempMidiFilePath, false);
-            TempMp3FilePath = ConvertToMp3Path(TempMidiFilePath);
+            try
+            {
+                await PrepareMp3Async(_environment, TempMidiFilePath, false);
+                TempMp3FilePath = ConvertToMp3Path(TempMidiFilePath);
+            }
+            catch
+            {
+                TempData["ErrorMessage"] = "Не вдалося згенерувати файл";
+            }
         }
 
         /* ЗАПИС НОВОЇ МЕЛОДІЇ НА СЕРВЕР */
@@ -273,9 +280,16 @@ namespace Melodies25.Pages.Melodies
                 // створює mp3 на основі MIDI та завантажує на сервер якщо не поліфонічний (існуючий перезаписує)
                 if (ifeligible)
                 {
-                    await PrepareMp3Async(_environment, midifilePath, false);
-                    Melody.IsFileEligible = true;
-                    ViewData["Message"] = "Файл успішно завантажено!";
+                    try
+                    {
+                        await PrepareMp3Async(_environment, midifilePath, false);
+                        Melody.IsFileEligible = true;
+                        ViewData["Message"] = "Файл успішно завантажено!";
+                    }
+                    catch
+                    {
+                        ViewData["Message"] = "Не вдалося завантажити файл";
+                    }
                 }
                 else
                 {
@@ -308,10 +322,10 @@ namespace Melodies25.Pages.Melodies
 
                 }
                 catch (IOException ex)
-                {
-                    
+                {                    
                     ErrorMessage($"Помилка переміщення файлу: ");
                     GrayMessageL($"{ex.Message}");
+                    TempData["ErrorMessage"] = "Помилка переміщення файлу";
                 }
 
             }

@@ -149,8 +149,8 @@ namespace Melodies25.Pages.Melodies
                             ViewData["Message"] = "Файл успішно завантажено!";
                             Melody.IsFileEligible = true;
                         }
-                        catch { 
-                        
+                        catch {
+                            ViewData["Message"] = "Не вдалося згенерувати файл";
                         }
                     }
                     else

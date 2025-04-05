@@ -66,7 +66,7 @@ namespace Music
                 if (!rest)
                     return pitch_to_notename(step, pitch).Replace("b", "♭");
                 else
-                    return rest();
+                    return "-";
             }
         }
 

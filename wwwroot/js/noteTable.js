@@ -4,6 +4,8 @@ import { doubleNote, halfNote } from './changeDuration.js';
 
 
 const notesElements = document.querySelectorAll('.notebox');
+const pauseElements = document.querySelectorAll('.pausebox');
+
 let currentIndex = -1; // Індекс активного елемента
 let pianodisplay = document.getElementById('pianodisplay');
 const notesLabels = document.querySelectorAll('.notaname')
@@ -11,11 +13,13 @@ let saver = document.getElementById('saver');
 let keyline = pianodisplay.value;
 const createMIDIButton = document.getElementById('createMIDI');//кнопка "зберегти"
 const playButton = document.getElementById('melodyPlayBtn');
-console.log(`noteTable.js started. Current keyline is ${keyline}`)
+console.log(`noteTable.js started. Current keyline is ${keyline}, rests detected: ${pauseElements.length}`)
+
 
 // Функція для оновлення виділення
 function highlightNote(index) {
     notesElements.forEach(note => note.style.backgroundColor = "antiquewhite"); // Скидаємо всі виділення
+    pauseElements.forEach(note => note.style.backgroundColor = "white"); // Скидаємо всі виділення
     if (index >= 0 && index < notesElements.length) {
         notesElements[index].style.backgroundColor = "yellow"; // Виділяємо новий елемент
         currentIndex = index; // Оновлюємо поточний індекс

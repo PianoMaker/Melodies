@@ -8,7 +8,7 @@ a.link-light:hover {
     color: yellow !important;
 }
 
-.durationbutton {
+.durbtn {
     width: 40px;
     height: 40px;
     border: 1px solid black;
@@ -17,7 +17,7 @@ a.link-light:hover {
     transition: background-color 0.3s ease;
 }
 
-    .durationbutton img {
+    .durbtn img {
         height: 30px;
         vertical-align: top;
     }
@@ -210,6 +210,13 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     background-color: antiquewhite;
     border-radius: 5px;
     box-shadow: rgba(55,55,0,0.3) 2px 2px;
+}
+
+.pausebox {
+    font-size: 1.1em;
+    background-color: white;
+    border: none;
+    background-color: white;
 }
 
 #degreesChart, #weightChart {

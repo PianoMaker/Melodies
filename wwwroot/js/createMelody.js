@@ -22,6 +22,8 @@ document.addEventListener("DOMContentLoaded", function () {
     //обробник кнопок з тривалістю
     let duration = '4';
     const durationbuttons = document.querySelectorAll('.durationbutton');
+    const restBtn = document.getElementById('pausebutton');
+    console.log('restBtn:', restBtn); 
 
     durationbuttons.forEach((button, index) => {
         button.addEventListener('click', () => {
@@ -54,6 +56,15 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
     });
+
+    //обробник паузи
+    restBtn.addEventListener('click', function () {
+        console.log(`Натиснута клавіша: пауза`);
+        pianodisplay.value += `r${duration}_`;
+        createMIDIButton.style.background = "lightgreen";
+        playButton.style.background = "lightgray";
+        document.querySelector('.fas.fa-play').style.color = "gray";
+    })
 
     //кнопка "Відтворення"
     playButton.addEventListener('click', function (e) {
