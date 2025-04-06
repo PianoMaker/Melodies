@@ -126,36 +126,8 @@
 
 
         <!--МІЙ СТЕЙНВЕЙ-->
-        <div id="stainway" class="controlcontainer">
-            <form id="pianoroll">
-                <button type="button" data-key="c" class="whitepianobutton">C1</button>
-                <button type="button" data-key="cis" class="blackpianobutton cis1">Cis1</button>
-                <button type="button" data-key="d" class="whitepianobutton">D1</button>
-                <button type="button" data-key="dis" class="blackpianobutton dis1">Dis1</button>
-                <button type="button" data-key="e" class="whitepianobutton">E1</button>
-                <button type="button" data-key="f" class="whitepianobutton">F1</button>
-                <button type="button" data-key="fis" class="blackpianobutton fis1">Fis1</button>
-                <button type="button" data-key="g" class="whitepianobutton">G1</button>
-                <button type="button" data-key="gis" class="blackpianobutton gis1">Gis1</button>
-                <button type="button" data-key="a" class="whitepianobutton">A1</button>
-                <button type="button" data-key="b" class="blackpianobutton b1">B1</button>
-                <button type="button" data-key="h" class="whitepianobutton">H1</button>
-                <button type="button" data-key="c'" class="whitepianobutton">C2</button>
-                <button type="button" data-key="cis'" class="blackpianobutton cis2">Cis2</button>
-                <button type="button" data-key="d'" class="whitepianobutton">D2</button>
-                <button type="button" data-key="dis'" class="blackpianobutton dis2">Dis2</button>
-                <button type="button" data-key="e'" class="whitepianobutton">E2</button>
-                <button type="button" data-key="f'" class="whitepianobutton">F2</button>
-                <button type="button" data-key="fis'" class="blackpianobutton fis2">Fis2</button>
-                <button type="button" data-key="g'" class="whitepianobutton">G2</button>
-                <button type="button" data-key="gis'" class="blackpianobutton gis2">Gis2</button>
-                <button type="button" data-key="a'" class="whitepianobutton">A2</button>
-                <button type="button" data-key="b'" class="blackpianobutton b2">B2</button>
-                <button type="button" data-key="h'" class="whitepianobutton">H2</button>
-                <button type="button" data-key="c''" class="whitepianobutton">C3</button>
-            </form>
+        @await Html.PartialAsync("_PianoKeys")
 
-        </div>
         <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
         <div id="durationspanel" class="pianodisplay notesinfo">
             <button class="durationbutton durbtn">
