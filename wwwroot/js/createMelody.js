@@ -3,27 +3,28 @@
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    console.log("create melody is working.");
+    console.log("createMelody.js starts.");
 
     const buttons = document.querySelectorAll('#pianoroll button');
-    const audioPlayer = document.getElementById('audioPlayer'); // Отримуємо аудіоплеєр
-    const audioSource = document.getElementById('audioSource'); // Отримуємо джерело для аудіофайлу     
+    const audioPlayer = document.getElementById('audioPlayer'); // аудіоплеєр
+    const audioSource = document.getElementById('audioSource'); // джерело для аудіофайлу     
     let pianodisplay = document.getElementById("pianodisplay");
-    const keysInput = document.getElementById("keysInput")
+    const keysInput_save = document.getElementById("keysInput-save")
+    const keysInput_search = document.getElementById("keysInput-search")
     const createMIDIButton = document.getElementById('createMIDI');//кнопка "зберегти"
+    const searchButton = document.getElementById('searchBtn');//кнопка "зберегти"
     const playButton = document.getElementById('melodyPlayBtn');
-    const inputfield = document.getElementById('melodyFileInput');
-    const saver = document.getElementById("saver");
+    const saver = document.getElementById("saver");//поле для тимчасового збереження
     pianodisplay.value = saver.innerText;
     saver.style.display = 'none';
-    console.log(`display value = ${pianodisplay.value}`)    
+    console.log(`display value = ${pianodisplay.value}`)
 
 
     //обробник кнопок з тривалістю
     let duration = '4';
     const durationbuttons = document.querySelectorAll('.durationbutton');
     const restBtn = document.getElementById('pausebutton');
-    console.log('restBtn:', restBtn); 
+    //console.log('restBtn:', restBtn); 
 
     durationbuttons.forEach((button, index) => {
         button.addEventListener('click', () => {
@@ -69,11 +70,10 @@ document.addEventListener("DOMContentLoaded", function () {
     //кнопка "Відтворення"
     playButton.addEventListener('click', function (e) {
 
-
         const previewMp3path = document.getElementById('previewMp3path')
-        var filepath = previewMp3path.textContent.trim();      
-        var audioPlayer = document.getElementById('audioPlayer');  
-        const audioSource = document.getElementById('audioSource'); 
+        var filepath = previewMp3path.textContent.trim();
+        var audioPlayer = document.getElementById('audioPlayer');
+        const audioSource = document.getElementById('audioSource');
         audioSource.src = filepath;
         console.log(`Play.js play preview from ${audioSource.src}`);
         audioPlayer.load();
@@ -81,22 +81,24 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("Помилка при програванні:", err);
         });
     });
-    
-
 
     //кнопка "Зберегти"
     createMIDIButton.addEventListener('click', function (event) {
         event.preventDefault();
-        keysInput.value = pianodisplay.value
-        console.log("Відправка форми з Keys:", keysInput.value); 
-        // Тепер відправимо форму вручну
+        keysInput_save.value = pianodisplay.value
+        console.log("Відправка форми з Keys:", keysInput_save.value);
+        // Відправка форми
         document.getElementById('melodyForm').submit();
-        
 
     });
 
-    
+    //кнопка "Пошук"
+    searchButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        keysInput_search.value = pianodisplay.value
+        console.log("Відправка форми з Keys:", keysInput_search.value);
+        // Відправка форми
+        document.getElementById('notesearchForm').submit();
 
-
-
+    });
 });

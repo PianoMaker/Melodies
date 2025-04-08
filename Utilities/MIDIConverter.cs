@@ -29,6 +29,7 @@ namespace Music
         public static Melody GetMelodyFromMidi(MidiFile midiFile)
         {
             MessageL(COLORS.olive, "GetMelodyFromMidi method");
+            //GrayMessageL($"midiFile = {midiFile}");
 
             notation = Notation.eu;
 
@@ -41,7 +42,7 @@ namespace Music
             foreach (var track in midiFile.Events)
             {
                 int trackcounter = 0;
-                Console.WriteLine($"track {trackcounter}, ticksperquater = {ticksperquater}");
+                //Console.WriteLine($"track {trackcounter}, ticksperquater = {ticksperquater}");
                 trackcounter++;
                 long starttime = 0;
 
@@ -69,12 +70,10 @@ namespace Music
                             try
                             {
                                 var time = ne.AbsoluteTime - starttime;
-
-
                                 var dur = 4 * (float)ticksperquater / time;
-                                GrayMessageL($"input: [{ne.NoteNumber}]  {ticksperquater * 4} / {time} =  {dur}");
+                                //GrayMessageL($"input: [{ne.NoteNumber}]  {ticksperquater * 4} / {time} =  {dur}");
                                 melody.Notes[melody.Notes.Count - 1].SetDuration((int)time, ticksperquater);
-                                Console.WriteLine(melody.Notes[melody.Notes.Count - 1].Duration.RelDuration());
+                                //Console.WriteLine(melody.Notes[melody.Notes.Count - 1].Duration.RelDuration());
                             }
                             catch
                             {
@@ -103,7 +102,7 @@ namespace Music
         public static double GetBpmFromTempoEvent(TempoEvent tempoEvent)
         {
             double tempo = tempoEvent.Tempo;
-            Console.WriteLine($"tempo from event = {tempo}");
+            //Console.WriteLine($"tempo from event = {tempo}");
             return tempo;
         }
 
@@ -111,7 +110,7 @@ namespace Music
         {
 
             playspeed = (int)Math.Round(48000 / bpm);
-            Console.WriteLine($"tempo = {bpm}bpm, playspeed = {playspeed} ms / quater");
+            //Console.WriteLine($"tempo = {bpm}bpm, playspeed = {playspeed} ms / quater");
 
         }
 
@@ -181,10 +180,10 @@ namespace Music
             notes.Add((0, 500));//для уникнення різкого обриву звучання в кінці додаємо тишу
 
 
-            Console.WriteLine("result:");
+            //Console.WriteLine("result:");
             foreach (var note in notes)
             {
-                Console.WriteLine($"{note.frequency} Hz - {note.durationMs} мс.");
+               // Console.WriteLine($"{note.frequency} Hz - {note.durationMs} мс.");
             }
 
 
@@ -257,7 +256,7 @@ namespace Music
             int currenttrack = 0;
             long currenttime = 0;
             Console.WriteLine("start reading file");
-            GrayMessageL("eventType - note number - AbsTime - DeltaTime");
+            //GrayMessageL("eventType - note number - AbsTime - DeltaTime");
 
             foreach (var track in mifidile.Events)
             {
@@ -268,19 +267,21 @@ namespace Music
                 {
 
                     if (me is TempoEvent te)
-                        Console.WriteLine(te.Tempo);
+                    {
+                        //Console.WriteLine(te.Tempo);
+                    }
                     else if (me is NoteEvent note)
                     {
                         if (IfNoteOn(note))
                         {
                             // GrayMessageL($"\t\tafternote = {note.AbsoluteTime - currenttime}");
-                            Console.WriteLine($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                            //Console.WriteLine($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
                             currentNoteNumber = note.NoteNumber;
                             currenttime = note.AbsoluteTime;
                         }
                         else if (IfNoteOff(note))
                         {
-                            GrayMessageL($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                            //GrayMessageL($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
                             // GrayMessageL($"\tduration = {note.AbsoluteTime - currenttime}");
                         }
                     }
@@ -488,7 +489,7 @@ namespace Music
                             else if (note.NoteNumber == previousNote)
                                 isOpen = false;
 
-                            GrayMessageL($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                            //GrayMessageL($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
 
                             //GrayMessageL($"\tduration = {note.AbsoluteTime - currentTime}");
 
@@ -518,7 +519,7 @@ namespace Music
         {
             foreach (var track in midiFile.Events)
             {
-                GrayMessageL("explore track");
+                //GrayMessageL("explore track");
                 var noteOnGroups = track
                     .OfType<NoteOnEvent>()
                     .GroupBy(e => e.AbsoluteTime)
@@ -565,7 +566,7 @@ namespace Music
                 	var noteOnEvent = new NoteOnEvent(noteOnTime, channel, note.MidiNote, 127, note.MidiDur);
                 	events.AddEvent(noteOnEvent, 1);
             	}
-                GrayMessageL($"noteOnTime = {noteOnTime}");
+                //GrayMessageL($"noteOnTime = {noteOnTime}");
                 noteOnTime += note.MidiDur;
                 
             }
@@ -577,7 +578,7 @@ namespace Music
                 noteOffTime += note.MidiDur;
                 if (!note.Rest)//якщо не пауза
                 {                    
-                    GrayMessageL($"noteOffTime = {noteOffTime} (+{note.MidiDur})");
+                    //GrayMessageL($"noteOffTime = {noteOffTime} (+{note.MidiDur})");
                     var noteOffEvent = new NoteEvent(noteOffTime, channel, MidiCommandCode.NoteOff, note.MidiNote, 0);
                     events.AddEvent(noteOffEvent, 1);
                 }

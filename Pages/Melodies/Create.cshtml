@@ -99,31 +99,9 @@
         <div id="openpianoDiv" style="display:none">
             <button style="width:80%; margin:10px" id="openpianoBtn">Ввести з клавіатури</button>
         </div>
-        <div id="pianoDiv" class="notesinfo" style="display:block">
-            <div style="display:block; width:100%">
-                <div id="saver" style="display:none">@Model.TempData["Keys"]</div>
-                <textarea id="pianodisplay" class="d-inline-block" style="width:90%" rows="2" placeholder="для вводу нот натискайте клавіші клавіатури або введіть код вручну">@Model.Keys</textarea>
-            </div>
-            <div id="buttonarea" style="display:block; width:60%">
-                <form method="post" asp-page-handler="reset" class="d-inline-block m-1">
-                    <button type="submit" class="btn btn-outline-dark">Скинути</button>
-                </form>
-                <form id="melodyForm" method="post" asp-page-handler="melody" class="d-inline-block m-1">
-                    <input type="hidden" name="Keys" id="keysInput" />
-                    <button id="createMIDI" type="submit" class="btn btn-outline-dark">Зберегти</button>
-                </form>
-                <div id="previewMp3path" style="display:none"> @Model.TempMp3FilePath</div>
-                @if (TempData["HighlightPlayButton"] is not null)
-                {
-                    <button id="melodyPlayBtn" type="submit" class="btn btn-outline-dark" style="background-color: lightgreen"><i class="fas fa-play" style="color: green;"></i></button>
-                }
-                else
-                {
-                    <button id="melodyPlayBtn" type="submit" class="btn btn-outline-dark" ><i class="fas fa-play" style="color: gray;"></i></button>
-                }
-            </div>
-        </div>
-
+        
+        <!--КНОПКИ УПРАВЛІННЯ І Нотний рядок-->
+        @await Html.PartialAsync("_pianoDisplay")
 
         <!--МІЙ СТЕЙНВЕЙ-->
         @await Html.PartialAsync("_PianoKeys")
@@ -160,16 +138,7 @@
                             <span data-index="@index" class="notaname">@note.Name</span>
                         </div>
                     }
-                    <div class="context-menu" data-index="@index">
-                        <ul>
-                            <li id="option1">1/2 тона вгору     ↑</li>
-                            <li id="option2">1/2 тона вниз      ↓</li>
-                            <li id="option3">вилучити          del</li>
-                            <li id="option4">довша тривалість   +</li>
-                            <li id="option5">коротша тривалість -</li>
-                            <li id="option6">@index</li>
-                        </ul>
-                    </div>                    
+                   @await Html.PartialAsync("_options")                   
                 }
                 <script type="module" src="~/js/contextMenu.js"></script>
             }
@@ -180,7 +149,10 @@
         </div>
         <script type="module" src="~/js/noteTable.js"></script>
 
-
+        <script>
+            console.log("hiding NoteSearch");
+            document.getElementById("searchBtn").style.display = "none";
+        </script>
         <div>@Model.ErrorWarning</div>
         <!--АУДІО-->
         

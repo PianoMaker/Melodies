@@ -78,6 +78,7 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
+        //Формування спадного списку тональностей
         private void GetTonalitiesData()
         {
             ViewData["Tonalities"] = new SelectList(new List<string>
@@ -89,6 +90,7 @@ namespace Melodies25.Pages.Melodies
             });
         }
 
+        //Формування спадного списку авторів
         private void GetAuthorsData()
         {
             ViewData["AuthorID"] = new SelectList(_context.Author
@@ -105,6 +107,7 @@ namespace Melodies25.Pages.Melodies
         }
 
         // СТВОРЕННЯ МЕЛОДІЇ ВРУЧНУ //
+        //зберігає в тимчасовий midi та mp3//
         public async Task<IActionResult> OnPostMelody()
         {
             MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostMelody method, keys = {Keys}");
@@ -115,7 +118,9 @@ namespace Melodies25.Pages.Melodies
             else GrayMessageL("errormessage is null");
             GetAuthorsData();
             GetTonalitiesData();
-            SaveKeys();
+            SaveKeys(); 
+            TempData["TempMidiFilePath"] = TempMidiFilePath;
+            TempData["Keys"] = Keys;
             try
             {
                 await PrepareMp3Async(_environment, TempMidiFilePath, false);
@@ -129,6 +134,7 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
+        //створює нове MIDI на основі введених нот 
         private void SaveKeys()
         {
             if (Keys is not null)
@@ -151,9 +157,7 @@ namespace Melodies25.Pages.Melodies
                     TempMidiFilePath = Path.Combine(tempUploads, filename) + ".mid";
                     MelodyPattern.SaveMidi(TempMidiFilePath);
                     MessageL(COLORS.green, "file is ready");
-                    Msg = $"file is ready, path = {TempMidiFilePath}";
-                    TempData["TempMidiFilePath"] = TempMidiFilePath;
-                    TempData["Keys"] = Keys;
+                    Msg = $"file is ready, path = {TempMidiFilePath}";                    
                     MessageL(COLORS.gray, $"Keys = {TempData["Keys"]}");
                 }
                 catch (IOException ex)

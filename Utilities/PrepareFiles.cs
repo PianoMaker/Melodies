@@ -75,15 +75,15 @@ namespace Melodies25.Utilities
                 var midiPath = Path.Combine(_environment.WebRootPath, "melodies", midifilePath);
                 if (!File.Exists(midiPath))
                 {
-                    ErrorMessage($"Неможливо знайти MIDI-файл за адресою {midiPath}");
-                    throw new Exception($"Неможливо згенерувати MP3");
+                    
+                    throw new Exception($"MIDI-файл відсутній");
                 }
 
                 //створюється назва файлу для завантаження mp3 файлу і перевірка на існування
                 string mp3Path = ConvertToMp3Path(midiPath);
                 if (ifcheck && File.Exists(mp3Path))
                 {
-                    MessageL(COLORS.blue, $"File {mp3Path} already exists, skip creating");
+                    
                     throw new Exception($"Файл вже існує");
                 }
                 
@@ -91,8 +91,8 @@ namespace Melodies25.Utilities
                 var midiFile = new MidiFile(midiPath);
                 if (CheckForPolyphony(midiFile)) 
                 {
-                    MessageL(COLORS.red, "refused to generate mp3");
-                    throw new Exception($"Неможливо згенерувати MP3");
+                    
+                    throw new Exception($"Виявлено поліфонію");
                 }
                 
                 // і нарешті створення!
@@ -101,8 +101,8 @@ namespace Melodies25.Utilities
             }
             catch (Exception ex)
             {
-                ErrorMessage($"Неможливо згенерувати MP3:\n {ex.Message}\n");
-                throw new Exception($"Неможливо згенерувати MP3");
+                ErrorMessageL($"{ex.Message}\n");
+                throw new Exception($"генерацію MP3 скасовано");
             }
             
         }

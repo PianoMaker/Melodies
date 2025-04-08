@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
         stainway.style.display = 'inline-flex';
         durationspanel.style.display = 'inline-flex';
         pianoDiv.style.display = 'inline-flex';
-        openpianoDiv.style.display = 'none';
+        openpianoDiv.style.display = 'none';        
     });
 
     createMIDI.addEventListener("click", createMIDIHandler);

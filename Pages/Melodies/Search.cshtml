@@ -8,7 +8,7 @@
 }
 
 <h1>Пошук</h1>
-<div class="searchcontainer">
+<div class="searchcontainer h-100">
 
     <!--ЛІВОРУЧ-->
 
@@ -48,22 +48,23 @@
     </div>
 
     <!--ПРАВОРУЧ-->
-
     <div class="searchrightcontainer">
-        <div class="notesinfo d-inline-flex">
-            <div class="d-inline-block" style="width:80%">@Model.Keys</div>
-            <form method="post" asp-page-handler="reset" class="d-inline-block m-1">
-                <button type="submit" class="btn btn-outline-dark">Reset</button>
-            </form>
-            <form method="post" asp-page-handler="notesearch" class="d-inline-block m-1">
-                <button type="submit" class="btn btn-outline-dark">Search</button>
-            </form>
-        </div>
+        <!--КНОПКИ УПРАВЛІННЯ І Нотний рядок-->
+        @await Html.PartialAsync("_pianoDisplay")
+
         <!--МІЙ СТЕЙНВЕЙ-->
         @await Html.PartialAsync("_PianoKeys")
         
         <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
-        @await Html.PartialAsync("_durationsTable") 
+        @await Html.PartialAsync("_durationsTable")
+
+        <div>@Model.ErrorWarning</div>
+        <!--АУДІО-->
+
+        <audio id="audioPlayer" controls autoplay style="display: none">
+            <source id="audioSource" src="" type="audio/mpeg" />
+            Your browser does not support the audio element.
+        </audio>
 
     </div>
 </div>
@@ -276,7 +277,7 @@
 <div class="controlcontainer infocontainer">
 
     <p class="smallfont">@Model.Msg</p>
-    <p>@Model.Errormsg</p>
+    <p>@Model.ErrorWarning</p>
     @if (TempData["AudioFile"] != null)
     {
         <p class="smallfont">@TempData["AudioFile"]</p>
@@ -293,3 +294,4 @@
 
 <script src="~/js/play.js"></script>
 <script src="~/js/searchResults.js"></script>
+<script src="~/js/createMelody.js"></script>
