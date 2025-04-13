@@ -89,7 +89,7 @@ function hideSelectBtn() {
 
 
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("Author ");
+    console.log("newAuthor.js is running");
 
     updateButtons();
     searchAuthor();

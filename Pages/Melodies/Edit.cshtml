@@ -16,7 +16,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Melody.ID" />
 
-            @if (Model.Melody.Filepath is null)
+            @if (Model.Melody.FilePath is null)
             {
                 <div class="form-group">
                     <div class="input-group">
@@ -26,7 +26,7 @@
             }
             else
             {
-                <p>Поточний файл - @Model.Melody.Filepath</p>
+                <p>Поточний файл - @Model.Melody.FilePath</p>
 
                 <button type="submit" class="btn btn-danger" asp-page-handler="DeleteFile">
                     Видалити файл

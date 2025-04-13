@@ -4,6 +4,7 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     console.log("createMelody.js starts.");
+    
 
     const buttons = document.querySelectorAll('#pianoroll button');
     const audioPlayer = document.getElementById('audioPlayer'); // аудіоплеєр
@@ -14,18 +15,28 @@ document.addEventListener("DOMContentLoaded", function () {
     const createMIDIButton = document.getElementById('createMIDI');//кнопка "зберегти"
     const searchButton = document.getElementById('searchBtn');//кнопка "зберегти"
     const playButton = document.getElementById('melodyPlayBtn');
-    const saver = document.getElementById("saver");//поле для тимчасового збереження
+    const saver = document.getElementById("saver");//тимчасове збереження мелодії
+    const authorSaver = document.getElementById("authorSaver");//тимчасове збереження автора    
+    const titleInput = document.getElementById("titleInput");
+    const selectAuthor = document.getElementById("selectAuthor");
     pianodisplay.value = saver.innerText;
+    const saved = localStorage.getItem("savedTitle");
+    if (saved) {
+        console.log(`restoring saved: ${saved}`)
+        document.getElementById("savedTitle").textContent = `savedtitle = ${saved}`;
+        titleInput.value = saved;
+    }
+    else console.log(`saved is null`);
+    
+    selectAuthor.value = String(authorSaver.innerText);
     saver.style.display = 'none';
-    console.log(`display value = ${pianodisplay.value}`)
-
+    console.log(`display value = ${pianodisplay.value}; title = ${titleInput.value}; authorID = ${selectAuthor.value}`, )
 
     //обробник кнопок з тривалістю
     let duration = '4';
     const durationbuttons = document.querySelectorAll('.durationbutton');
     const restBtn = document.getElementById('pausebutton');
-    //console.log('restBtn:', restBtn); 
-
+    //console.log('restBtn:', restBtn);
     durationbuttons.forEach((button, index) => {
         button.addEventListener('click', () => {
             duration = String(2 ** index); // 2^index дає потрібне значення
@@ -85,10 +96,17 @@ document.addEventListener("DOMContentLoaded", function () {
     //кнопка "Зберегти"
     createMIDIButton.addEventListener('click', function (event) {
         event.preventDefault();
-        keysInput_save.value = pianodisplay.value
-        console.log("Відправка форми з Keys:", keysInput_save.value);
-        // Відправка форми
-        document.getElementById('melodyForm').submit();
+        var unique = checkIfunique();
+        if (unique) {
+            keysInput_save.value = pianodisplay.value
+            console.log("Відправка форми з Keys:", keysInput_save.value);
+            localStorage.setItem("savedTitle", titleInput.value);
+            console.log("Збереження Title:", titleInput.value);
+            // Викликає OnPostMelody()
+            document.getElementById('melodyForm').submit();
+            
+        }
+        else alert("Мелодія даного автора з такою назвою вже існує");
 
     });
 
@@ -101,4 +119,23 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('notesearchForm').submit();
 
     });
+
+    async function checkIfunique() {
+        var title = document.getElementById("titleInput").value;
+        var authorId = document.getElementById("selectAuthor").value;
+
+        try {
+            const response = await fetch(`/Melodies/Create?handler=CheckFileExists&title=${encodeURIComponent(title)}&authorId=${authorId}`);
+            if (!response.ok) {
+                console.error("Помилка сервера:", response.statusText);
+                return false;
+            }
+            const exist = await response.json();
+            return !exist;
+        } catch (error) {
+            console.error("Помилка при виконанні запиту:", error);
+            return false;
+        }
+    }
+
 });

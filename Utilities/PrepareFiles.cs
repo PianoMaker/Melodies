@@ -5,6 +5,7 @@ using static Melodies25.Utilities.WaveConverter;
 
 using NAudio.Midi;
 using System.Diagnostics;
+using System.IO;
 
 namespace Melodies25.Utilities
 {
@@ -29,6 +30,17 @@ namespace Melodies25.Utilities
             string fileName = Path.GetFileNameWithoutExtension(mp3Path) + ".mp3";
             return "/temporary/" + fileName;
         }
+
+
+        public static string PrepareTempName(IWebHostEnvironment _environment, string extension)
+        {
+            string filename = "userFile" + DateTime.Now.ToShortDateString() + DateTime.Now.Hour + DateTime.Now.Minute + DateTime.Now.Second;
+            var tempUploads = Path.Combine(_environment.WebRootPath, "temporary");
+            if (!Directory.Exists(tempUploads))
+                Directory.CreateDirectory(tempUploads);
+            return Path.Combine(tempUploads, filename) + extension;
+        }
+
 
         // створення mp3 файлу на основі MIDI . 
         /*
@@ -71,6 +83,8 @@ namespace Melodies25.Utilities
             MessageL(COLORS.olive, "PrepateMp3Async method");
             try
             {
+
+                
                 //адреса мідіфайлу
                 var midiPath = Path.Combine(_environment.WebRootPath, "melodies", midifilePath);
                 if (!File.Exists(midiPath))
@@ -79,6 +93,7 @@ namespace Melodies25.Utilities
                     throw new Exception($"MIDI-файл відсутній");
                 }
 
+                
                 //створюється назва файлу для завантаження mp3 файлу і перевірка на існування
                 string mp3Path = ConvertToMp3Path(midiPath);
                 if (ifcheck && File.Exists(mp3Path))
@@ -86,9 +101,16 @@ namespace Melodies25.Utilities
                     
                     throw new Exception($"Файл вже існує");
                 }
-                
-                //преревірка на поліфонію
+
+                // вирівнювання файлу
+
+                StraightMidiFile(midiPath);
+                StraightMidiFile(midiPath);
+                StraightMidiFile(midiPath);
+
                 var midiFile = new MidiFile(midiPath);
+
+                //преревірка на поліфонію
                 if (CheckForPolyphony(midiFile)) 
                 {
                     
@@ -104,7 +126,8 @@ namespace Melodies25.Utilities
                 ErrorMessageL($"{ex.Message}\n");
                 throw new Exception($"генерацію MP3 скасовано");
             }
-            
+            MessageL(COLORS.cyan, "PrepateMp3Async method passed");
+
         }
 
         private static async Task PrepareMP3fromMIDIAsync(string path, string mp3Path)

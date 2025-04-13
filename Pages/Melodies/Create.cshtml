@@ -26,6 +26,8 @@
     <!--ЛІВОРУЧ-->
     <div class="searchleftcontainer">        
         <form method="post" asp-page-handler="create" enctype="multipart/form-data">
+            <div id="authorSaver" style="display:none">@Model.TempData["AuthorID"]</div>
+            <div id="titleSaver" style="display:none">@Model.TempData["Title"]</div>
             @if (fileCreated)
             {
                 <div class="form-group">
@@ -40,16 +42,18 @@
                 </div>
 
             }
-
+            
             <select asp-for="Melody.Tonality" class="form-control mt-2" asp-items="ViewBag.Tonalities">
                 <option value="">-- Тональність, в якій завантажено MIDI --</option>
             </select>
             <span asp-validation-for="Melody.Tonality" class="text-danger"></span>
 
+            
+            <div id="savedTitle" style="display:none"> savedtitle = @TempData["Title"]</div>
             <div class="form-group">
-                <label asp-for="Melody.Title" class="control-label" id="title">Назва</label>
-                <input asp-for="Melody.Title" class="form-control" />
-                <span asp-validation-for="Melody.Title" class="text-danger"></span>
+                <label asp-for="Melody.Title" class="control-label" id="titleLabel">Назва</label>
+                <input id="titleInput" asp-for="Melody.Title" class="form-control" placeholder="enter title here" />                
+                <span asp-validation-for="Melody.Title" class="text-danger"></span>                
             </div>
             <p id="warning"></p>
             <div class="form-group">
@@ -111,8 +115,6 @@
 
         <!--ТАБЛО НОТ ВНИЗУ -->
         <div id="innerNotesContainer">
-
-
             @if (newMelody is not null)            
             {
                 @for (int index = 0; index < newMelody.Count(); index++)
@@ -151,8 +153,10 @@
 
         <script>
             console.log("hiding NoteSearch");
+            document.getElementById("notesearchForm").style.display = "none";
             document.getElementById("searchBtn").style.display = "none";
         </script>
+
         <div>@Model.ErrorWarning</div>
         <!--АУДІО-->
         

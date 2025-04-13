@@ -112,15 +112,16 @@ namespace Melodies25.Pages.Melodies
             var sw = new Stopwatch();
             sw.Start();
 
+            //Підготовка файлів
             foreach (var melody in Melody)
             {
                 try
                 {
                     var wwwRootPath = Path.Combine(_environment.WebRootPath, "melodies");
 
-                    if (melody.Filepath is not null && melody.MidiMelody is null)
+                    if (melody.FilePath is not null && melody.MidiMelody is null)
                     {
-                        var path = Path.Combine(wwwRootPath, melody.Filepath);
+                        var path = Path.Combine(wwwRootPath, melody.FilePath);
 
                         MessageL(COLORS.green, $"{melody.Title} exploring file {path}");
 
@@ -136,16 +137,13 @@ namespace Melodies25.Pages.Melodies
                         melody.MidiMelody = await GetMelodyFromMidiAsync(midifile);
 
                         melody.MidiMelody.Enharmonize();
-
-                        /*
-                        await PrepareMp3Async(_environment, path, true);
-                        */
+                                               
 
                         numberoffileschecked++;
                         
 
                     }
-                    else if (melody.Filepath is null)
+                    else if (melody.FilePath is null)
                     {
                         MessageL(COLORS.yellow, $"{melody.Title} has no file path");
                     }
@@ -303,7 +301,7 @@ namespace Melodies25.Pages.Melodies
             Page();
         }
 
-        // ПОЩУК
+        // ПОШУК
         public async Task OnPostNotesearch()
         {
             MessageL(COLORS.yellow, $"SEARCH - OnPostNotesearch method, Keys = {Keys}");
@@ -343,6 +341,17 @@ namespace Melodies25.Pages.Melodies
                 foreach (var note in MelodyPattern)
                     GrayMessageL(note.Name);
 
+                /*аудіо*/
+                try
+                {
+                    TempMp3FilePath = PrepareTempName(_environment, ".mp3");
+                    await GenerateMp3Async(MelodyPattern, TempMp3FilePath);
+                    TempMp3FilePath = GetTemporaryPath(TempMp3FilePath);
+                }
+                catch (Exception e)
+                {
+                    ErrorMessageL($"impossible to create mp3: {e.Message}");
+                }
 
                 /* будуємо список виявлених збігів MathedMelodies */
                 CompareMelodies(MelodyPattern);
@@ -458,52 +467,49 @@ namespace Melodies25.Pages.Melodies
 
         // СТВОРЕННЯ МЕЛОДІЇ ВРУЧНУ //
         //зберігає в тимчасовий midi та mp3//
-        public IActionResult OnPostMelody()
-        {
-            MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostMelody method, keys = {Keys}");
-            if (TempData["ErrorWarning"] is not null)
-            {
-                ErrorWarning = TempData["ErrorWarning"] as string??""; 
-                GrayMessageL("generating errormessage");
-            }
-            else GrayMessageL("errormessage is null");
+        //public IActionResult OnPostMelody()
+        //{
+        //    MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostMelody method, keys = {Keys}");
+        //    if (TempData["ErrorWarning"] is not null)
+        //    {
+        //        ErrorWarning = TempData["ErrorWarning"] as string??""; 
+        //        GrayMessageL("generating errormessage");
+        //    }
+        //    else GrayMessageL("errormessage is null");
 
-            /*ІНІЦІАЛІЗАЦІЯ ВВЕДЕНОГО МАЛЮНКУ*/
-            Music.Melody MelodyPattern = new();
-            Globals.notation = Notation.eu;
-            Globals.lng = LNG.uk;
+        //    /*ІНІЦІАЛІЗАЦІЯ ВВЕДЕНОГО МАЛЮНКУ*/
+        //    Music.Melody MelodyPattern = new();
+        //    Globals.notation = Notation.eu;
+        //    Globals.lng = LNG.uk;
 
-            if (Keys is null)
-            {
-                ErrorMessageL("No keys entered!");
-                TempData["ErrorWarning"] = "Не введено жодної ноти";
-            }
-            else
-            {
-                /* Будуємо послідовність введених нот */
-                BuildPattern(MelodyPattern);
-                MelodyPattern.Enharmonize();
-                string filename = "userFile" + DateTime.Now.ToShortDateString() + DateTime.Now.Hour + DateTime.Now.Minute + DateTime.Now.Second;
-                var tempUploads = Path.Combine(_environment.WebRootPath, "temporary");
-                if (!Directory.Exists(tempUploads))
-                    Directory.CreateDirectory(tempUploads);
-                TempMp3FilePath = Path.Combine(tempUploads, filename) + ".mp3";
-                try
-                {
+        //    if (Keys is null)
+        //    {
+        //        ErrorMessageL("No keys entered!");
+        //        TempData["ErrorWarning"] = "Не введено жодної ноти";
+        //    }
+        //    else
+        //    {
+        //        /* Будуємо послідовність введених нот */
+        //        BuildPattern(MelodyPattern);
+        //        MelodyPattern.Enharmonize();
+        //        PrepareTempName(TempMp3FilePath, _environment);
+        //        try
+        //        {
 
-                    GenerateMp3(MelodyPattern, TempMp3FilePath);
+        //            GenerateMp3(MelodyPattern, TempMp3FilePath);
 
 
-                    TempData["HighlightPlayButton"] = true;
-                }
-                catch (Exception)
-                {
-                    TempData["ErrorWarning"] = "Не вдалося згенерувати файл";
-                }
-            }
-            MessageL(COLORS.gray, "OnPostMelody is finished");
-            return Page();
-        }
+        //            TempData["HighlightPlayButton"] = true;
+        //        }
+        //        catch (Exception)
+        //        {
+        //            TempData["ErrorWarning"] = "Не вдалося згенерувати файл";
+        //        }
+        //    }
+        //    MessageL(COLORS.gray, "OnPostMelody is finished");
+        //    return Page();
+        //}
 
+       
     }
 }
