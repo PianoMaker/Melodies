@@ -25,6 +25,8 @@ namespace Melodies25.Pages.Account
         public IList<string> Roles { get; set; }
         public Dictionary<string, List<string>> UserRoles { get; set; }
 
+
+
         // Метод OnGetAsync для завантаження користувачів та їх ролей
         public async Task<IActionResult> OnGetAsync()
         {

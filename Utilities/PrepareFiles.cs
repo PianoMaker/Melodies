@@ -101,20 +101,20 @@ namespace Melodies25.Utilities
                     
                     throw new Exception($"Файл вже існує");
                 }
-
-                // вирівнювання файлу
-
-                StraightMidiFile(midiPath);
-                StraightMidiFile(midiPath);
-                StraightMidiFile(midiPath);
+                             
 
                 var midiFile = new MidiFile(midiPath);
 
+                var check = 0;
                 //преревірка на поліфонію
-                if (CheckForPolyphony(midiFile)) 
+                while (CheckForPolyphony(midiFile)) 
                 {
-                    
-                    throw new Exception($"Виявлено поліфонію");
+
+                    StraightMidiFile(midiPath);
+                    check++;
+
+                    if (check > 4)
+                    { throw new Exception($"Неможливо усунути поліфонію"); }
                 }
                 
                 // і нарешті створення!

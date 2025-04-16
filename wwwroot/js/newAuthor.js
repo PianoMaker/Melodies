@@ -24,6 +24,7 @@ function updateButtons() {
     }
     else {
         console.log("Значення selectOption:", selectedOption);
+        submitMelodyBtn.style.display = 'inline-block';
         createAuthorBtn.style.display = 'none';
         showSubmitBtn();    
     }    

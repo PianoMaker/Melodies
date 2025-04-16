@@ -344,7 +344,7 @@ namespace Music
 
             int ifchanged = 0;
 
-            Console.WriteLine("Start straighting file");
+            Console.WriteLine("StraightMidiFile is running");
 
             //GrayMessageL("eventType - note number - AbsTime - DeltaTime");
 
@@ -363,7 +363,7 @@ namespace Music
         {
             var midiFile = new MidiFile(path);
 
-            Console.WriteLine("Start straighting file");
+            Console.WriteLine("StraightMidiFile is running");
 
             //GrayMessageL("eventType - note number - AbsTime - DeltaTime");
 
@@ -389,7 +389,9 @@ namespace Music
             var monoEventCollection = new MidiEventCollection(midiFile.FileFormat, midiFile.DeltaTicksPerQuarterNote);
             long currentstarttime = 0;
 
-            foreach (var track in eventCollection)
+            MessageL(COLORS.purple, "MonoEventCollection is running");
+
+            foreach (var track in eventCollection)  
             {
                 var newTrack = new List<MidiEvent>();
                 Dictionary<int, long> activenotes = [];
@@ -398,7 +400,7 @@ namespace Music
                 {
                     if (me is TempoEvent tempo)
                     {
-                        Message(COLORS.gray, $"{tempo}");
+                        MessageL(COLORS.gray, $"tempo = {tempo} bpm");
                         newTrack.Add(tempo); // Копіюємо інші події
                     }
                     else if (me is NoteEvent ne)
@@ -443,9 +445,11 @@ namespace Music
             int currentchanges = 0;
             var newEventCollection = new MidiEventCollection(midiFile.FileFormat, midiFile.DeltaTicksPerQuarterNote);
 
+            MessageL(COLORS.purple, "StraightEventCollection is running");
+
             foreach (var track in EventCollection)
             {
-                Console.WriteLine($"Track {currentTrack}");
+                GrayMessageL($"Track {currentTrack}");
                 currentTrack++;
                 bool isOpen = false;
                 var newTrack = new List<MidiEvent>();
@@ -454,7 +458,7 @@ namespace Music
                 {
                     if (me is TempoEvent te)
                     {
-                        Console.WriteLine(te.Tempo);
+                        GrayMessageL($"tempo = {te.Tempo}");
                         newTrack.Add(te); // Копіюємо подію у новий трек
                     }
                     else if (me is NoteEvent note)
@@ -468,7 +472,7 @@ namespace Music
                                 MessageL(COLORS.darkred, $"got opennote {note.NoteNumber}");
                             }
 
-                            Console.WriteLine($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                            GrayMessageL($"note: {note.NoteNumber} - time: {note.AbsoluteTime}");
                             long currentTime = note.AbsoluteTime;
 
                             newTrack.Add(note); // Копіюємо подію у новий трек
@@ -522,7 +526,8 @@ namespace Music
                 //GrayMessageL("explore track");
                 var noteOnGroups = track
                     .OfType<NoteOnEvent>()
-                    .GroupBy(e => e.AbsoluteTime)
+                    .Where(e => e.Velocity > 0)
+                    .GroupBy(e => e.AbsoluteTime)                    
                     .Where(g => g.Count() > 1);
 
                 if (noteOnGroups.Any())

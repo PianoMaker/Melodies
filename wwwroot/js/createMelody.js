@@ -20,17 +20,24 @@ document.addEventListener("DOMContentLoaded", function () {
     const titleInput = document.getElementById("titleInput");
     const selectAuthor = document.getElementById("selectAuthor");
     pianodisplay.value = saver.innerText;
-    const saved = localStorage.getItem("savedTitle");
-    if (saved) {
-        console.log(`restoring saved: ${saved}`)
-        document.getElementById("savedTitle").textContent = `savedtitle = ${saved}`;
-        titleInput.value = saved;
+    const savedTitle = sessionStorage.getItem("savedTitle");
+    const savedAuthorId = sessionStorage.getItem("selectedAuthorId");
+    if (savedTitle) {
+        console.log(`restoring saved title: ${savedTitle}`)
+        document.getElementById("savedTitle").textContent = `savedtitle = ${savedTitle}`;
+        titleInput.value = savedTitle;
     }
-    else console.log(`saved is null`);
+    else console.log(`saved title is null`);
+    if (savedAuthorId) {
+        console.log(`restoring saved authorId: ${savedAuthorId}`)
+        selectAuthor.value = savedAuthorId;
+    }
+    else console.log(`saved authorId is null`);
     
-    selectAuthor.value = String(authorSaver.innerText);
+    
+    
     saver.style.display = 'none';
-    console.log(`display value = ${pianodisplay.value}; title = ${titleInput.value}; authorID = ${selectAuthor.value}`, )
+    
 
     //обробник кнопок з тривалістю
     let duration = '4';
@@ -99,9 +106,10 @@ document.addEventListener("DOMContentLoaded", function () {
         var unique = checkIfunique();
         if (unique) {
             keysInput_save.value = pianodisplay.value
+            sessionStorage.setItem("savedTitle", titleInput.value);
+            sessionStorage.setItem("selectedAuthorId", selectAuthor.value);
             console.log("Відправка форми з Keys:", keysInput_save.value);
-            localStorage.setItem("savedTitle", titleInput.value);
-            console.log("Збереження Title:", titleInput.value);
+            console.log(`Збереження Title: ${titleInput.value}, selectedAuthorId: ${selectAuthor.value}`);
             // Викликає OnPostMelody()
             document.getElementById('melodyForm').submit();
             
@@ -120,6 +128,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
+    //перевіряє унікальність назви+композитора
     async function checkIfunique() {
         var title = document.getElementById("titleInput").value;
         var authorId = document.getElementById("selectAuthor").value;

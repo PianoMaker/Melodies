@@ -132,6 +132,15 @@ table, th, td {
     margin: 0;
 }
 
+.filesbox{
+
+    border: 1px solid gray;
+    background: #fefee7;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
+    margin-top:20px;
+    margin-bottom:40px;
+}
+
 .footer {
     position: fixed;
     bottom: 0;

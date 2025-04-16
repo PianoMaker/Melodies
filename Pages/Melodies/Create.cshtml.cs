@@ -344,7 +344,7 @@ namespace Melodies25.Pages.Melodies
                     MessageL(COLORS.yellow, "file exists, filename modified");
                 }
 
-                MessageL(COLORS.green, $"try to move file starts to {newfilename}");
+                MessageL(COLORS.green, $"try to move file {TempMidiFilePath} to {midifilePath}");
                 try
                 {
                     System.IO.File.Move(TempMidiFilePath, midifilePath);
@@ -352,7 +352,7 @@ namespace Melodies25.Pages.Melodies
                     Melody.IsFileEligible = true;
                     ViewData["Message"] = "Файл успішно завантажено!";
                     Melody.FilePath = newfilename;
-
+                    GrayMessageL($"файл завантажено!");
                     await NotifyTelegram(newfilename);
 
                 }
@@ -362,9 +362,7 @@ namespace Melodies25.Pages.Melodies
                     GrayMessageL($"{ex.Message}");
                     TempData["ErrorMessage"] = "Помилка переміщення файлу";
                 }
-
             }
-
             else
             {
                 ErrorMessageL("fileupload is null");
@@ -374,6 +372,8 @@ namespace Melodies25.Pages.Melodies
             _context.Melody.Add(Melody);
             await _context.SaveChangesAsync();
             var recentmelody = await _context.Melody.FirstOrDefaultAsync(m => m.Title == Melody.Title && m.Author == Melody.Author);
+
+            MessageL(COLORS.cyan, "OnPostAsync finished");
 
             return RedirectToPage("./Details", new { id = recentmelody?.ID });
         }
