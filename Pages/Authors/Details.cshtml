@@ -61,9 +61,9 @@
                 </td>
                 <!--ФАЙЛ-->
                 <td>
-                    @if (!string.IsNullOrEmpty(item.Filepath))
+                    @if (!string.IsNullOrEmpty(item.FilePath))
                     {
-                        var midifilepath = Url.Content($"~/melodies/{item.Filepath}");
+                        var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
                         var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
                         <div style="display:inline-flex">
                             <a href="@midifilepath" download class="btn btn-outline-dark light-background">
@@ -72,10 +72,10 @@
                             @if (@item.IsFileEligible is null)
                             {
                                 <button class="btn btn-outline-dark light-background playbutton"
-                                        data-filepath="@item.Filepath" id="playButton_@item.Filepath">
+                                        data-filepath="@item.FilePath" id="playButton_@item.FilePath">
                                     <i class="fas fa-play">?</i>
                                 </button>
-                                <button id="stopButton_@item.Filepath" disabled="disabled"
+                                <button id="stopButton_@item.FilePath" disabled="disabled"
                                         class="stopButton btn btn-outline-dark light-background">
                                     <i class="fas fa-stop">?</i>
                                 </button>
@@ -83,10 +83,10 @@
                             else if (@item.IsFileEligible is true)
                             {
                                 <button class="btn btn-outline-dark light-background playbutton"
-                                        data-filepath="@item.Filepath" id="playButton_@item.Filepath">
+                                        data-filepath="@item.FilePath" id="playButton_@item.FilePath">
                                     <i class="fas fa-play"></i>
                                 </button>
-                                <button id="stopButton_@item.Filepath" disabled="disabled"
+                                <button id="stopButton_@item.FilePath" disabled="disabled"
                                         class="stopButton btn btn-outline-dark light-background">
                                     <i class="fas fa-stop"></i>
                                 </button>
@@ -95,7 +95,7 @@
                             {
                                 <p>Midi File is not correct</p>
                             }
-                            <audio id="audioPlayer_@item.Filepath" class="audioPlayer" controls style="display: none">
+                            <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: none">
                                 <source src="@mp3filepath" type="audio/mpeg" />
                                 Your browser does not support the audio element.
                             </audio>

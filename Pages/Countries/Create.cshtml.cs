@@ -15,7 +15,7 @@ namespace Melodies25.Pages.Countries
     {
         private readonly Melodies25.Data.Melodies25Context _context;
 
-        public string Msg { get; set; }
+        public string Msg { get; set; } = default!;
 
         public CreateModel(Melodies25.Data.Melodies25Context context)
         {

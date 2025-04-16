@@ -88,15 +88,15 @@ namespace Melodies25.Pages.Melodies
 
             foreach (var melody in melodiesQuery)
             {
-                if (!string.IsNullOrEmpty(melody.Filepath))
+                if (!string.IsNullOrEmpty(melody.FilePath))
                 {
                     try
                     {
-                        var path = Path.Combine(_environment.WebRootPath, "melodies", melody.Filepath);
+                        var path = Path.Combine(_environment.WebRootPath, "melodies", melody.FilePath);
                         var ifeligible = IfMonody(path);
                         if (ifeligible)
                         {
-                            await PrepareMp3Async(_environment, melody.Filepath, true);
+                            await PrepareMp3Async(_environment, melody.FilePath, true);
                             melody.IsFileEligible = true;
                         }
                         else

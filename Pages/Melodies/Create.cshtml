@@ -4,7 +4,9 @@
 @{
     ViewData["Title"] = "Додати мелодію";
     var melody = @Model.Melody;
-    bool fileCreated = string.IsNullOrEmpty(Model.TempFilePath);
+    var newMelody = @Model.NewPattern;
+    bool fileCreated = string.IsNullOrEmpty(Model.TempMidiFilePath);
+
 }
 
 <h1>Додати пісню</h1>
@@ -16,7 +18,7 @@
     <div class="alert alert-info">
         @ViewData["Message"]
     </div>
-    
+
 }
 
 <div class="searchcontainer h-100">
@@ -24,13 +26,15 @@
     <!--ЛІВОРУЧ-->
     <div class="searchleftcontainer">        
         <form method="post" asp-page-handler="create" enctype="multipart/form-data">
+            <div id="authorSaver" style="display:none">@Model.TempData["AuthorID"]</div>
+            <div id="titleSaver" style="display:none">@Model.TempData["Title"]</div>
             @if (fileCreated)
             {
                 <div class="form-group">
                     <div class="input-group">
-                    <input type="file" id="melodyFileInput" name="fileupload" class="form-control" accept=".mid" />
+                        <input type="file" id="melodyFileInput" name="fileupload" class="form-control" accept=".mid" />
+                    </div>
                 </div>
-            </div>
             }
             else{
                 <div class="form-group">
@@ -38,16 +42,18 @@
                 </div>
 
             }
-
+            
             <select asp-for="Melody.Tonality" class="form-control mt-2" asp-items="ViewBag.Tonalities">
                 <option value="">-- Тональність, в якій завантажено MIDI --</option>
             </select>
             <span asp-validation-for="Melody.Tonality" class="text-danger"></span>
 
+            
+            <div id="savedTitle" style="display:none"> savedtitle = @TempData["Title"]</div>
             <div class="form-group">
-                <label asp-for="Melody.Title" class="control-label" id="title">Назва</label>
-                <input asp-for="Melody.Title" class="form-control" />
-                <span asp-validation-for="Melody.Title" class="text-danger"></span>
+                <label asp-for="Melody.Title" class="control-label" id="titleLabel">Назва</label>
+                <input id="titleInput" asp-for="Melody.Title" class="form-control" placeholder="enter title here" />                
+                <span asp-validation-for="Melody.Title" class="text-danger"></span>                
             </div>
             <p id="warning"></p>
             <div class="form-group">
@@ -66,7 +72,7 @@
                 <select id="selectAuthor" asp-for="Melody.AuthorID" class="form-control" asp-items="ViewBag.AuthorID">
                 </select>
             </div>
-
+        <!-- СТВОРИТИ -->
             <div id="submitMelodyBtn" class="form-group" style="display:none; margin-top: 10px">
                 <input type="submit" value="Створити" class="btn btn-primary btn-outline-dark bg-yellow">
             </div>
@@ -97,70 +103,61 @@
         <div id="openpianoDiv" style="display:none">
             <button style="width:80%; margin:10px" id="openpianoBtn">Ввести з клавіатури</button>
         </div>
-        <div id="pianoDiv" class="notesinfo">
-            <div id="pianodisplay" class="d-inline-block" style="width:80%">@Model.Keys</div>
-            <form method="post" asp-page-handler="reset" class="d-inline-block m-1">
-                <button type="submit" class="btn btn-outline-dark">Скинути</button>
-            </form>
-            <form id="melodyForm" method="post" asp-page-handler="melody" class="d-inline-block m-1">
-                <input type="hidden" name="Keys" id="keysInput" />
-                <button id="createMIDI" type="submit" class="btn btn-outline-dark">Зберегти</button>
-            </form>
-        </div>
-
+        
+        <!--КНОПКИ УПРАВЛІННЯ І Нотний рядок-->
+        @await Html.PartialAsync("_pianoDisplay")
 
         <!--МІЙ СТЕЙНВЕЙ-->
-        <div id="stainway" class="controlcontainer">
-            <form id="pianoroll">
-                <button type="button" data-key="c" class="whitepianobutton">C1</button>
-                <button type="button" data-key="cis" class="blackpianobutton cis1">Cis1</button>
-                <button type="button" data-key="d" class="whitepianobutton">D1</button>
-                <button type="button" data-key="dis" class="blackpianobutton dis1">Dis1</button>
-                <button type="button" data-key="e" class="whitepianobutton">E1</button>
-                <button type="button" data-key="f" class="whitepianobutton">F1</button>
-                <button type="button" data-key="fis" class="blackpianobutton fis1">Fis1</button>
-                <button type="button" data-key="g" class="whitepianobutton">G1</button>
-                <button type="button" data-key="gis" class="blackpianobutton gis1">Gis1</button>
-                <button type="button" data-key="a" class="whitepianobutton">A1</button>
-                <button type="button" data-key="b" class="blackpianobutton b1">B1</button>
-                <button type="button" data-key="h" class="whitepianobutton">H1</button>
-                <button type="button" data-key="c'" class="whitepianobutton">C2</button>
-                <button type="button" data-key="cis'" class="blackpianobutton cis2">Cis2</button>
-                <button type="button" data-key="d'" class="whitepianobutton">D2</button>
-                <button type="button" data-key="dis'" class="blackpianobutton dis2">Dis2</button>
-                <button type="button" data-key="e'" class="whitepianobutton">E2</button>
-                <button type="button" data-key="f'" class="whitepianobutton">F2</button>
-                <button type="button" data-key="fis'" class="blackpianobutton fis2">Fis2</button>
-                <button type="button" data-key="g'" class="whitepianobutton">G2</button>
-                <button type="button" data-key="gis'" class="blackpianobutton gis2">Gis2</button>
-                <button type="button" data-key="a'" class="whitepianobutton">A2</button>
-                <button type="button" data-key="b'" class="blackpianobutton b2">B2</button>
-                <button type="button" data-key="h'" class="whitepianobutton">H2</button>
-                <button type="button" data-key="c''" class="whitepianobutton">C3</button>
-            </form>
+        @await Html.PartialAsync("_PianoKeys")
 
-        </div>
+        <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
+        @await Html.PartialAsync("_durationsTable")
+
         <!--ТАБЛО НОТ ВНИЗУ -->
         <div id="innerNotesContainer">
-            @if (@melody.MidiMelody is not null)
+            @if (newMelody is not null)            
             {
-                @foreach (var note in @melody.MidiMelody.Notes)
+                @for (int index = 0; index < newMelody.Count(); index++)
                 {
+                    var note = newMelody[index];
                     string width = $"{note.DisplayWidth(45, 20)}px";
                     string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
-                    <div class="outerNoteBox" style="width:@width; height:10px;">
-                        <div class="notebox" style="margin-bottom:@marginbottom; width:@width;">
-                            <span>@note.DurSymbol</span><br>
+                    if (!@note.Rest)
+                    {
+                        <div class="outerNoteBox" style="width:@width; height:10px;">
+                            <div class="notebox" style="margin-bottom:@marginbottom; width:@width;">
+                                <span>@note.DurSymbol</span><br>
+                            </div>
+                            <span data-index="@index" class="notaname">@note.Name</span>
                         </div>
-                        <span class="notaname">@note.Name</span>
-                    </div>
+                    }
+                    else
+                    {
+                        <div class="outerNoteBox" style="width:@width; height:10px;">
+                            <div class="notebox pausebox" style="margin-bottom:@marginbottom; width:@width;">
+                                <span>@note.DurSymbol</span><br>
+                            </div>
+                            <span data-index="@index" class="notaname">@note.Name</span>
+                        </div>
+                    }
+                   @await Html.PartialAsync("_options")                   
                 }
+                <script type="module" src="~/js/contextMenu.js"></script>
             }
             else
             {
                 <p>no notes have been entered</p>
             }
         </div>
+        <script type="module" src="~/js/noteTable.js"></script>
+
+        <script>
+            console.log("hiding NoteSearch");
+            document.getElementById("notesearchForm").style.display = "none";
+            document.getElementById("searchBtn").style.display = "none";
+        </script>
+
+        <div>@Model.ErrorWarning</div>
         <!--АУДІО-->
         
         <audio id="audioPlayer" controls autoplay style="display: none">

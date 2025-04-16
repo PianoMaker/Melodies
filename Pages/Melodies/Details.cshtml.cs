@@ -83,13 +83,13 @@ namespace Melodies25.Pages.Melodies
                 return NotFound();
             }
 
-            if (string.IsNullOrEmpty(melody.Filepath))
+            if (string.IsNullOrEmpty(melody.FilePath))
             {
                 return Page();
             }
 
             var wwwRootPath = Path.Combine(_environment.WebRootPath, "melodies");
-            var path = Path.Combine(wwwRootPath, melody.Filepath);
+            var path = Path.Combine(wwwRootPath, melody.FilePath);
 
             var midifile = MidiConverter.GetMidiFile(path);
             Globals.lng = Music.LNG.uk;

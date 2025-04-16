@@ -75,9 +75,9 @@ namespace Melodies25.Pages.Melodies
             if (melody != null)
             {
                 Melody = melody;
-                if(Melody.Filepath is not null)
+                if(Melody.FilePath is not null)
                 {
-                    var filename = Melody.Filepath;
+                    var filename = Melody.FilePath;
                     var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies");
                     var filePath = Path.Combine(uploadsPath, filename);
                     try
