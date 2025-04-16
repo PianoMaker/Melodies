@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     titleInput.addEventListener("input", async function () {
         let title = titleInput.value.trim();
-        console.log("search for duplicates");
+        console.log("duplicate.js is running");
         if (title.length > 4) {
             try {
                 //надсилає запит і отримує відповідь

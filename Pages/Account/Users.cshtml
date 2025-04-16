@@ -1,10 +1,11 @@
 ﻿@page
 @model Melodies25.Pages.Account.UsersModel
 @{
-    ViewData["Title"] = "Управління користувачами";
+    ViewData["Title"] = "Сторінка адміністратора";
 }
 
-<h2>@ViewData["Title"]</h2>
+
+<h2>Управління користувачами - <a href="/Account/Files">Управління файлами</a></h2>
 
 @if (TempData["SuccessMessage"] != null)
 {
@@ -90,4 +91,3 @@ else
 {
     <p>Немає користувачів для відображення.</p>
 }
-

@@ -66,6 +66,7 @@ namespace Melodies25.Pages.Melodies
         public async Task<IActionResult> OnPostAsync(IFormFile? fileupload)
         {
             MessageL(COLORS.yellow, "MELODIES/EDIT OnPost");
+
             if (!ModelState.IsValid)
             {
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
@@ -75,77 +76,61 @@ namespace Melodies25.Pages.Melodies
             }
 
             var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies");
+            Directory.CreateDirectory(uploadsPath); 
 
-            //завантаження файлу якщо є
+            // завантаження файлу
             if (fileupload is not null)
             {
-                // Створюємо папку, якщо її немає
-                if (!Directory.Exists(uploadsPath))
-                {
-                    Directory.CreateDirectory(uploadsPath);
-                    Console.WriteLine($"{uploadsPath} created");
-                }
-                else
-                {
-                    Console.WriteLine($"{uploadsPath} exists");
-                }
-                //підвантажуємо імена авторів
-                Melody.Author = await _context.Author
-    .FirstOrDefaultAsync(a => a.ID == Melody.AuthorID);
+                Melody.Author = await _context.Author.FirstOrDefaultAsync(a => a.ID == Melody.AuthorID);
 
-                string newfilename;
+                string authorPart = Melody.Author is not null
+                    ? $"{Translit.Transliterate(Melody.Author.Surname)}_"
+                    : "";
 
-                if (Melody.Author is not null)
-                {
-                    newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
+                string newfilename = $"{authorPart}{Translit.Transliterate(Melody.Title)}.mid";
+                string midiFilePath = Path.Combine(uploadsPath, newfilename);
 
-                }
-                else
-                {
-                    newfilename = $"{Translit.Transliterate(Melody.Title)}.mid";
-                }
-                var filePath = Path.Combine(uploadsPath, newfilename);
-
-
-                // Записуємо файл на сервер
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                using (var stream = new FileStream(midiFilePath, FileMode.Create))
                 {
                     await fileupload.CopyToAsync(stream);
                 }
 
                 ViewData["Message"] = "Файл успішно завантажено!";
-                Melody.Filepath = newfilename; //назву файлу фіксуємо
+                Melody.FilePath = newfilename;
             }
             else
             {
-                Console.WriteLine("fileupload is null or author is null");
+                Console.WriteLine("fileupload is null");
             }
 
             _context.Attach(Melody).State = EntityState.Modified;
 
-            //перевірка на поліфоню
-            if (Melody.Filepath is not null)
+            //створення аудіо
+            if (Melody.FilePath is not null)
             {
-
                 try
                 {
-                    var path = Path.Combine(_environment.WebRootPath, "melodies", Melody.Filepath);
-
-                    var midiFile = new MidiFile(path);
+                    string midiFilePath = Path.Combine(uploadsPath, Melody.FilePath);
+                    var midiFile = new MidiFile(midiFilePath);
 
                     int changed = 0;
+                    StraightMidiFile(midiFilePath, ref changed);
 
-                    StraightMidiFile(path, ref changed);
-                    
-                    var ifeligible = IfMonody(path);
+                    var ifeligible = IfMonody(midiFilePath);
 
-                    // завантажує mp3 на сервер (існуючий перезаписує)
                     if (ifeligible)
                     {
-                        MessageL(COLORS.standart, $"перезаписуємо файл {path}");
-                        await PrepareMp3Async(_environment, path, false);
-                        ViewData["Message"] = "Файл успішно завантажено!";
-                        Melody.IsFileEligible = true;
+                        MessageL(COLORS.standart, $"перезаписуємо файл {midiFilePath}");
+                        try
+                        {
+                            await PrepareMp3Async(_environment, midiFilePath, false);
+                            ViewData["Message"] = "Файл успішно завантажено!";
+                            Melody.IsFileEligible = true;
+                        }
+                        catch
+                        {
+                            ViewData["Message"] = "Не вдалося згенерувати файл";
+                        }
                     }
                     else
                     {
@@ -159,20 +144,12 @@ namespace Melodies25.Pages.Melodies
                 }
             }
 
-
-            _context.Entry(Melody).Property(m => m.Title).IsModified = true;
-            _context.Entry(Melody).Property(m => m.Year).IsModified = true;
-            _context.Entry(Melody).Property(m => m.AuthorID).IsModified = true;
-            _context.Entry(Melody).Property(m => m.Description).IsModified = true;
-            _context.Entry(Melody).Property(m => m.IsFileEligible).IsModified = true;   
-
-            if (fileupload is not null)
+            foreach (var prop in new[] { "Title", "Year", "AuthorID", "Description", "IsFileEligible" })
             {
-                _context.Entry(Melody).Property(m => m.Filepath).IsModified = true;
+                _context.Entry(Melody).Property(prop).IsModified = true;
             }
-            else //якщо не перезавантажено файл, зміни в це поле БД не вносяться
-                _context.Entry(Melody).Property(m => m.Filepath).IsModified = false;
 
+            _context.Entry(Melody).Property(m => m.FilePath).IsModified = fileupload is not null;
 
             try
             {
@@ -199,8 +176,8 @@ namespace Melodies25.Pages.Melodies
             }
 
             return RedirectToPage("./Edit", new { id = Melody.ID });
-
         }
+
 
 
         public async Task<IActionResult> OnPostDeleteFileAsync()
@@ -230,15 +207,15 @@ namespace Melodies25.Pages.Melodies
             /**/
 
 
-            if (!string.IsNullOrEmpty(melody.Filepath))
+            if (!string.IsNullOrEmpty(melody.FilePath))
             {
-                string filePath = Path.Combine(_environment.WebRootPath, "uploads", melody.Filepath);
+                string filePath = Path.Combine(_environment.WebRootPath, "uploads", melody.FilePath);
                 if (System.IO.File.Exists(filePath))
                 {
                     System.IO.File.Delete(filePath);
                 }
 
-                melody.Filepath = null; // Очистити шлях у БД
+                melody.FilePath = null; // Очистити шлях у БД
                 await _context.SaveChangesAsync();
             }
 
@@ -270,9 +247,17 @@ namespace Melodies25.Pages.Melodies
                 return NotFound();
             }
 
-            if (melody.Filepath is not null)
+            if (melody.FilePath is not null)
             {
-                await PrepareMp3Async(_environment, melody.Filepath, false);
+                try
+                {
+                    await PrepareMp3Async(_environment, melody.FilePath, false);
+                }
+                catch (Exception e)
+                {
+                    ErrorMessageL(e.Message);
+
+                }
             }
 
             return RedirectToPage("Details", new { id = melody.ID });

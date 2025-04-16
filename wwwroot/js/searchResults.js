@@ -1,7 +1,8 @@
 ﻿// працює для сторінки розширеного пошуку (search)
+// відображає детальний аналіз мелодії, яку обираємо по кліку миші
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Отримуємо всі рядки таблиці та всі контейнери мелодій
+    // Отримуємо всі рядки таблиці та всі контейнери аналізу мелодій
     let rows = document.querySelectorAll("table tbody tr");
     let melodies = document.querySelectorAll("div[id^='melody']");
 

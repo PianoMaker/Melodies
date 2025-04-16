@@ -25,13 +25,13 @@ namespace Melodies25.Pages.Melodies
     {
         private readonly Melodies25.Data.Melodies25Context _context;
         private readonly IWebHostEnvironment _environment;
-        public string Msg { get; set; }
+        public string Msg { get; set; } = default!;
 
-        public string Errormsg { get; set; }
+        public string Errormsg { get; set; } = default!;
 
-        public string TitleSort { get; set; }
-        public string AuthorSort { get; set; }
-        public string CurrentSort { get; set; }
+        public string TitleSort { get; set; } = default!;
+        public string AuthorSort { get; set; } = default!;
+        public string CurrentSort { get; set; } = default!;
 
 
 
@@ -88,15 +88,15 @@ namespace Melodies25.Pages.Melodies
 
             foreach (var melody in melodiesQuery)
             {
-                if (!string.IsNullOrEmpty(melody.Filepath))
+                if (!string.IsNullOrEmpty(melody.FilePath))
                 {
                     try
                     {
-                        var path = Path.Combine(_environment.WebRootPath, "melodies", melody.Filepath);
+                        var path = Path.Combine(_environment.WebRootPath, "melodies", melody.FilePath);
                         var ifeligible = IfMonody(path);
                         if (ifeligible)
                         {
-                            await PrepareMp3Async(_environment, melody.Filepath, true);
+                            await PrepareMp3Async(_environment, melody.FilePath, true);
                             melody.IsFileEligible = true;
                         }
                         else

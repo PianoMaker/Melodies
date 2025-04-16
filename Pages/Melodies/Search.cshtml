@@ -5,10 +5,11 @@
     ViewData["Title"] = "Мелодія - пошук";
     var melodyPattern = ViewData["melodypattern"] as List<string>;    
     var matchedMelodiesCount = ViewData["matchedMelodiesCount"] as int? ?? 0;    
+    
 }
 
 <h1>Пошук</h1>
-<div class="searchcontainer">
+<div class="searchcontainer h-100">
 
     <!--ЛІВОРУЧ-->
 
@@ -48,48 +49,68 @@
     </div>
 
     <!--ПРАВОРУЧ-->
-
     <div class="searchrightcontainer">
-        <div class="notesinfo d-inline-flex">
-            <div class="d-inline-block" style="width:80%">@Model.Keys</div>
-            <form method="post" asp-page-handler="reset" class="d-inline-block m-1">
-                <button type="submit" class="btn btn-outline-dark">Reset</button>
-            </form>
-            <form method="post" asp-page-handler="notesearch" class="d-inline-block m-1">
-                <button type="submit" class="btn btn-outline-dark">Search</button>
-            </form>
-        </div>
-        <!--МІЙ СТЕЙНВЕЙ-->
-        <div class="controlcontainer">
-            <form method="post" asp-page-handler="piano" id="pianoroll">
-                <button type="submit" asp-route-key="c" class="whitepianobutton">C1</button>
-                <button type="submit" asp-route-key="cis" class="blackpianobutton cis1">Cis1</button>
-                <button type="submit" asp-route-key="d" class="whitepianobutton">D1</button>
-                <button type="submit" asp-route-key="dis" class="blackpianobutton dis1">Dis1</button>
-                <button type="submit" asp-route-key="e" class="whitepianobutton">E1</button>
-                <button type="submit" asp-route-key="f" class="whitepianobutton">F1</button>
-                <button type="submit" asp-route-key="fis" class="blackpianobutton fis1">Fis1</button>
-                <button type="submit" asp-route-key="g" class="whitepianobutton">G1</button>
-                <button type="submit" asp-route-key="gis" class="blackpianobutton gis1">Gis1</button>
-                <button type="submit" asp-route-key="a" class="whitepianobutton">A1</button>
-                <button type="submit" asp-route-key="b" class="blackpianobutton b1">B1</button>
-                <button type="submit" asp-route-key="h" class="whitepianobutton">H1</button>
-                <button type="submit" asp-route-key="c'" class="whitepianobutton">C2</button>
-                <button type="submit" asp-route-key="cis'" class="blackpianobutton cis2">Cis2</button>
-                <button type="submit" asp-route-key="d'" class="whitepianobutton">D2</button>
-                <button type="submit" asp-route-key="dis'" class="blackpianobutton dis2">Dis2</button>
-                <button type="submit" asp-route-key="e'" class="whitepianobutton">E2</button>
-                <button type="submit" asp-route-key="f'" class="whitepianobutton">F2</button>
-                <button type="submit" asp-route-key="fis'" class="blackpianobutton fis2">Fis2</button>
-                <button type="submit" asp-route-key="g'" class="whitepianobutton">G2</button>
-                <button type="submit" asp-route-key="gis'" class="blackpianobutton gis2">Gis2</button>
-                <button type="submit" asp-route-key="a'" class="whitepianobutton">A2</button>
-                <button type="submit" asp-route-key="b'" class="blackpianobutton b2">B2</button>
-                <button type="submit" asp-route-key="h'" class="whitepianobutton">H2</button>
-                <button type="submit" asp-route-key="c''" class="whitepianobutton">C3</button>
-            </form>
+        <!--КНОПКИ УПРАВЛІННЯ І Нотний рядок-->
+        @await Html.PartialAsync("_pianoDisplay")
 
+        <!--МІЙ СТЕЙНВЕЙ-->
+        @await Html.PartialAsync("_PianoKeys")
+        
+        <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
+        @await Html.PartialAsync("_durationsTable")
+
+        <!--ТАБЛО НОТ ВНИЗУ -->
+        <div id="innerNotesContainer">
+            @if (@Model.NewPattern is not null)
+            {
+                @for (int index = 0; index < @Model.NewPattern.Count(); index++)
+                {
+                    var note = @Model.NewPattern[index];
+                    string width = $"{note.DisplayWidth(45, 20)}px";
+                    string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
+                    if (!@note.Rest)
+                    {
+                        <div class="outerNoteBox" style="width:@width; height:10px;">
+                            <div class="notebox" style="margin-bottom:@marginbottom; width:@width;">
+                                <span>@note.DurSymbol</span><br>
+                            </div>
+                            <span data-index="@index" class="notaname">@note.Name</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="outerNoteBox" style="width:@width; height:10px;">
+                            <div class="notebox pausebox" style="margin-bottom:@marginbottom; width:@width;">
+                                <span>@note.DurSymbol</span><br>
+                            </div>
+                            <span data-index="@index" class="notaname">@note.Name</span>
+                        </div>
+                    }
+                    @await Html.PartialAsync("_options")
+                }
+                <script type="module" src="~/js/contextMenu.js"></script>
+            }
+            else
+            {
+                <p>no notes have been entered</p>
+            }
         </div>
+        <script type="module" src="~/js/noteTable.js"></script>
+
+        <div>@Model.ErrorWarning</div>
+
+        <script>
+            console.log("hiding NoteSearch");
+            document.getElementById("melodyForm").style.display = "none";
+            document.getElementById("createMIDI").style.display = "none";
+        </script>
+        <!--АУДІО-->
+
+        <audio id="audioPlayer" controls autoplay style="display: none">
+            <source id="audioSource" src="" type="audio/mpeg" />
+            Your browser does not support the audio element.
+        </audio>
+
     </div>
 </div>
 
@@ -192,26 +213,26 @@
                     <td>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</td>
                     <!--файл-->
                     <td>
-                        @if (!string.IsNullOrEmpty(item.Filepath))
+                        @if (!string.IsNullOrEmpty(item.FilePath))
                         {
-                            var midifilepath = Url.Content($"~/melodies/{item.Filepath}");
+                            var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
                             var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
                             <div style="display:inline-flex">
                                 <a href="@midifilepath" download class="btn btn-outline-dark light-background">
                                     <i class="fas fa-download"></i>
                                 </a>
                                 <form method="post">
-                                    <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.Filepath"
+                                    <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.FilePath"
                                             class="btn btn-outline-dark light-background playbutton"
-                                            data-filepath="@item.Filepath" id="playButton_@item.Filepath">
+                                            data-filepath="@item.FilePath" id="playButton_@item.FilePath">
                                         <i class="fas fa-play"></i>
                                     </button>
                                 </form>
-                                <button id="stopButton_@item.Filepath" disabled="disabled"
+                                <button id="stopButton_@item.FilePath" disabled="disabled"
                                         class="stopButton btn btn-outline-dark light-background">
                                     <i class="fas fa-stop"></i>
                                 </button>
-                                <audio id="audioPlayer_@item.Filepath" class="audioPlayer" controls style="display: none">
+                                <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: none">
                                     <source src="@mp3filepath" type="audio/mpeg" />
                                     Your browser does not support the audio element.
                                 </audio>
@@ -245,26 +266,26 @@
                     <td>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</td>
                     <!--Файл-->
                     <td>
-                        @if (!string.IsNullOrEmpty(item.Filepath))
+                        @if (!string.IsNullOrEmpty(item.FilePath))
                         {
-                            var midifilepath = Url.Content($"~/melodies/{item.Filepath}");
+                            var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
                             var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
                             <div style="display:inline-flex">
                                 <a href="@midifilepath" download class="btn btn-outline-dark light-background">
                                     <i class="fas fa-download"></i>
                                 </a>
                                 <form method="post">
-                                    <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.Filepath"
+                                    <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.FilePath"
                                             class="btn btn-outline-dark light-background playbutton"
-                                            data-filepath="@item.Filepath" id="playButton_@item.Filepath">
+                                            data-filepath="@item.FilePath" id="playButton_@item.FilePath">
                                         <i class="fas fa-play"></i>
                                     </button>
                                 </form>
-                                <button id="stopButton_@item.Filepath" disabled="disabled"
+                                <button id="stopButton_@item.FilePath" disabled="disabled"
                                         class="stopButton btn btn-outline-dark light-background">
                                     <i class="fas fa-stop"></i>
                                 </button>
-                                <audio id="audioPlayer_@item.Filepath" class="audioPlayer" controls style="display: none">
+                                <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: none">
                                     <source src="@mp3filepath" type="audio/mpeg" />
                                     Your browser does not support the audio element.
                                 </audio>
@@ -301,7 +322,7 @@
 <div class="controlcontainer infocontainer">
 
     <p class="smallfont">@Model.Msg</p>
-    <p>@Model.Errormsg</p>
+    <p>@Model.ErrorWarning</p>
     @if (TempData["AudioFile"] != null)
     {
         <p class="smallfont">@TempData["AudioFile"]</p>
@@ -318,3 +339,4 @@
 
 <script src="~/js/play.js"></script>
 <script src="~/js/searchResults.js"></script>
+<script src="~/js/createMelody.js"></script>
