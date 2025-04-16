@@ -102,7 +102,9 @@
                         -->                           
                         @if (User.IsInRole("Admin"))
                         {
-                            <a class="nav-link navmelody" asp-area="" asp-page="Account/Users">Адміністративна панель</a>
+                            <a class="nav-link navmelody" style="width:100px" asp-page="Account/Users">
+                               <i class="fa fa-cogs"></i>
+                            </a>
                         }
                         </ul>
                     

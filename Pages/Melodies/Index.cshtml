@@ -4,7 +4,7 @@
 @{
     ViewData["Title"] = "Мелодії в Базі даних";
     var message = TempData["Message"]?.ToString(); 
-    if (message != null)
+    if (message is not null)
     {
         <script>
             alert('@message');
