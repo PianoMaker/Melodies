@@ -50,6 +50,13 @@
                 <span asp-validation-for="Melody.Tonality" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="Melody.MidiMelody.Tempo" class="control-label">Темп</label>
+                <input id="tempoChange" asp-for="@Model.Tempo" class="form-control" />
+                <input type="hidden" asp-for="@Model.Tempocorrected" id="tempoChangeHidden" />                
+                <span asp-validation-for="@Model.Tempo" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
                 <label asp-for="Melody.Title" class="control-label">Назва</label>
                 <input asp-for="Melody.Title" class="form-control" />
                 <span asp-validation-for="Melody.Title" class="text-danger"></span>
@@ -74,8 +81,10 @@
             </div>
             <div class="form-group">
                 <input type="hidden" asp-for="Melody.ID" />
+                <input type="hidden" asp-for="Melody.FilePath" />
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
+           
         </form>
     </div>
 </div>
@@ -89,3 +98,5 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
+<script src="~/js/editMelody.js">
+</script>
