@@ -35,6 +35,9 @@ namespace Music
     
     public static class Globals
     {
+        public const string flatsymbol = "♭";
+        public const string sharpsymbol = "♯";
+
         public const string errornote = "Помилка введення ноти";
         public const string warning = "Попередження";
         public const int A4 = 440; // камертон (стандарт = 440)        

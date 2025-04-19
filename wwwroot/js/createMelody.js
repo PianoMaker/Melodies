@@ -19,9 +19,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const authorSaver = document.getElementById("authorSaver");//тимчасове збереження автора    
     const titleInput = document.getElementById("titleInput");
     const selectAuthor = document.getElementById("selectAuthor");
+    const submitMelodyBtn = document.getElementById("submitMelodyBtn")
+
     pianodisplay.value = saver.innerText;
     const savedTitle = sessionStorage.getItem("savedTitle");
     const savedAuthorId = sessionStorage.getItem("selectedAuthorId");
+    
+
     if (savedTitle) {
         console.log(`restoring saved title: ${savedTitle}`)
         document.getElementById("savedTitle").textContent = `savedtitle = ${savedTitle}`;
@@ -37,6 +41,10 @@ document.addEventListener("DOMContentLoaded", function () {
     
     
     saver.style.display = 'none';
+
+    if (savedTitle && savedAuthorId)
+    submitMelodyBtn.style.display = 'block';
+
     
 
     //обробник кнопок з тривалістю
@@ -113,6 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Викликає OnPostMelody()
             document.getElementById('melodyForm').submit();
             
+            
         }
         else alert("Мелодія даного автора з такою назвою вже існує");
 
@@ -146,5 +155,15 @@ document.addEventListener("DOMContentLoaded", function () {
             return false;
         }
     }
+
+
+    titleInput.addEventListener("input", function () {
+        
+        if (titleInput.value.length > 2 && selectAuthor.value) {
+            submitMelodyBtn.style.display = 'block';
+            console.log("displaying submit btn");
+        }
+        else submitMelodyBtn.style.display = 'none';
+    });
 
 });

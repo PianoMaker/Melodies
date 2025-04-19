@@ -125,6 +125,7 @@ namespace Music
         private const string final_action_uk = "\n1 - Зіграти акорди\n2 - Спростити альтерацію\n3 - Перетворити бемолі на дієзи\n4 - Перетворити дієзи на бемолі\n5 - Розумна переальтерація \n6 - Зберегти як текст\n7 - Зберегти як xml\n8 - Cпробувати інший акорд\n0 - завершення роботи\n";
         private const string fsounds_en = " sounds";
         private const string fsounds_uk = " звуків";
+        
         #endregion
 
         #region _I_

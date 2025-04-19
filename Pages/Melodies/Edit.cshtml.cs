@@ -61,7 +61,6 @@ namespace Melodies25.Pages.Melodies
             }
             Melody = melody;
 
-            if (Melody is null) ErrorMessageL("Melody is null - 1"); // 1-а перевірка
             MessageL(COLORS.purple, $"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}");
             ViewData["AuthorID"] = new SelectList(_context.Author.OrderBy(a => a.Surname), "ID", "Surname");
             ViewData["Tonalities"] = new SelectList(new List<string>
@@ -72,8 +71,19 @@ namespace Melodies25.Pages.Melodies
                 "d-moll", "g-moll", "c-moll", "f-moll", "b-moll", "es-moll", "as-moll"
             });
 
-            await GetMidiMelody(melody);
-            Tempo = melody.MidiMelody?.Tempo ?? 120;
+            if (Melody.MidiMelody is not null)
+            {
+                try
+                {
+                    await GetMidiMelody(melody);
+                    Tempo = melody.MidiMelody?.Tempo ?? 120;
+                }
+                catch (Exception e)
+                {
+                    ErrorMessageL(e.Message);
+                }
+            }
+            
 
             return Page();
         }
