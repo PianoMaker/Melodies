@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Xml.Linq;
 using static Music.Engine;
 using static Music.Messages;
+using static Music.Globals;
 using static System.Console;
 
 namespace Music
@@ -325,18 +326,18 @@ namespace Music
             if (degree == "unknown") return degree;
             switch(interval.Quality)
             {
-                case QUALITY.AUG: degree += "#"; break;
-                case QUALITY.DIM: degree += "b"; break;
+                case QUALITY.AUG: degree += sharpsymbol; break;
+                case QUALITY.DIM: degree += flatsymbol; break;
                 case QUALITY.MIN:
                     {
-                        if (degree == "II") degree += "b"; 
-                        else if (degree == "VI" && tonality.mode == MODE.dur)  degree += "b"; 
-                        else if (degree == "VII" && tonality.mode == MODE.dur) degree += "b";
+                        if (degree == "II") degree += flatsymbol; 
+                        else if (degree == "VI" && tonality.mode == MODE.dur)  degree += flatsymbol; 
+                        else if (degree == "VII" && tonality.mode == MODE.dur) degree += flatsymbol;
                     }; break;
                 case QUALITY.MAJ:
                     {
-                        if (degree == "VI" && tonality.mode == MODE.moll) degree += "#";
-                        else if (degree == "VII" && tonality.mode == MODE.moll) degree += "#";
+                        if (degree == "VI" && tonality.mode == MODE.moll) degree += sharpsymbol;
+                        else if (degree == "VII" && tonality.mode == MODE.moll) degree += sharpsymbol;
                     }; break;
                 default: return degree;
             }; 

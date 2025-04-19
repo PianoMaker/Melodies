@@ -326,6 +326,7 @@ namespace Melodies25.Pages.Melodies
 
                 // СПОІВЩЕННЯ НА ТЕЛЕГРАМ 
 
+
                 await NotifyTelegram(newfilename);
 
             }
@@ -382,9 +383,18 @@ namespace Melodies25.Pages.Melodies
         {
 
             // СПОІВЩЕННЯ НА ТЕЛЕГРАМ 
+            try
+            {
 
-            var telegramService = new TelegramService();
-            await telegramService.SendNotificationAsync($"{DateTime.Now} - на нашому сайті оновлення: завантажено файл {newfilename}");
+                var telegramService = new TelegramService();
+                await telegramService.SendNotificationAsync($"{DateTime.Now} - на нашому сайті оновлення: завантажено файл {newfilename}");
+
+            }
+            catch (Exception e)
+            {
+                ErrorMessageL("Неможливо сповістити телеграм");
+                GrayMessageL(e.Message);
+            }
         }
 
         public async Task<IActionResult> OnPostAddform()

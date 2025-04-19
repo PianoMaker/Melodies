@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Melodies25.Models
@@ -7,6 +8,8 @@ namespace Melodies25.Models
     public class Country
     {
         public int ID { get; set; }  // Унікальний ідентифікатор для автора
+        
+        [Required]
         public string Name { get; set; }  // Прізвище автора
 
         [NotMapped]

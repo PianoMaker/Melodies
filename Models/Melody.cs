@@ -8,12 +8,13 @@ namespace Melodies25.Models
     public class Melody
     {
         public int ID { get; set; }  // Унікальний ідентифікатор для мелодії
-        public string? Filepath { get; set; }  // Назва файлу, що зберігається у wwwroot (включно з розширенням)
+        public string? FilePath { get; set; }  // Назва файлу, що зберігається у wwwroot (включно з розширенням)
 
         public bool? IsFileEligible { get; set; } // Чи коректний файл
 
         public string? Tonality { get; set; } // Тональність. працювати через модель Tonality 
 
+        
         [Required(ErrorMessage = "Назва є обов'язковою.")]
         public string Title { get; set; }  
         public int? Year { get; set; }  
@@ -37,10 +38,10 @@ namespace Melodies25.Models
         {
             get
             {
-                if (string.IsNullOrEmpty(Filepath)) return null;
+                if (string.IsNullOrEmpty(FilePath)) return null;
 
                 // Змінюємо розширення на .mp3
-                return Path.ChangeExtension(Filepath, ".mp3");
+                return Path.ChangeExtension(FilePath, ".mp3");
             }
         }
     }

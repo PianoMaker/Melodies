@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace Melodies25.Pages.Account
@@ -9,11 +11,13 @@ namespace Melodies25.Pages.Account
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IEmailSender _emailSender;
 
-        public LoginModel(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager)
+        public LoginModel(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager,IEmailSender emailSender)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _emailSender = emailSender;
         }
 
         [BindProperty]
@@ -21,7 +25,12 @@ namespace Melodies25.Pages.Account
 
         public class InputModel
         {
+            [Required]
+            [EmailAddress]
             public string Email { get; set; }
+
+            [Required]
+            [DataType(DataType.Password)]
             public string Password { get; set; }
         }
 
@@ -66,6 +75,38 @@ namespace Melodies25.Pages.Account
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             }
 
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostRecoverPassword()
+        {
+            Console.WriteLine("Recovering password");
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(Input.Email);
+                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                {
+                    // Не показуємо, чи існує користувач, щоб уникнути зловживань
+                    return RedirectToPage("/Account/RecoverPasswordConfirmation");
+                }
+
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var callbackUrl = Url.Page(
+                    "/Account/ResetPassword",
+                    pageHandler: null,
+                    values: new { area = "Identity", code = token, email = Input.Email },
+                protocol: Request.Scheme);
+
+                await _emailSender.SendEmailAsync(
+                    Input.Email,
+                    "Reset Password",
+                    $"Please reset your password by <a href='{callbackUrl}'>clicking here</a>.");
+
+
+
+
+                return RedirectToPage("/Account/RecoverPasswordConfirmation");
+            }
             return Page();
         }
     }

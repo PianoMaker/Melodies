@@ -16,6 +16,7 @@ namespace Music
         private int step;// висота у ступенях від "до" = 0
         private int oct; // октава (1 - перша октава)
         private Duration duration;
+        private bool rest;
 
         public int Pitch
         {
@@ -48,42 +49,51 @@ namespace Music
 
         public string DurSymbol
         {
-            get { return duration.Symbol(); }
+            get { return duration.Symbol(rest); }
         }
 
         public (string, string) DurName
         {
             get {
-                return (duration.Symbol(), GetName());                  
+                return (duration.Symbol(rest), GetName());                  
             }
         }
 
         public string Name
         {
-            get { return pitch_to_notename(step, pitch).Replace("b", "♭");
-    }
+            get
+            {
+                if (!rest)
+                    return pitch_to_notename(step, pitch).Replace("b", "♭");
+                else
+                    return "-";
+            }
         }
 
 
 
         public Note(Note note)
         {
-            this.pitch = note.pitch;
-            this.step = note.step;
-            this.oct = note.oct;
-            this.duration = note.duration;
+            pitch = note.pitch;
+            step = note.step;
+            oct = note.oct;
+            duration = note.duration;
+            rest = note.rest;
         }
 
         public Note(int pitch, int step)
-        { this.pitch = pitch; this.step = step; oct = 1; duration = new Duration();
+        {
+            this.pitch = pitch; this.step = step; oct = 1; duration = new Duration(); rest = false;
 
         }
         public Note(int pitch, int step, int oct)
-        { this.pitch = pitch; this.step = step; this.oct = oct; duration = new Duration();
+        {
+            this.pitch = pitch; this.step = step; this.oct = oct; duration = new Duration(); rest = false;
 
         }
         public Note(int pitch, int step, int oct, int duration)
-        { this.pitch = pitch; this.step = step; this.oct = oct; this.duration = new Duration(duration);
+        {
+            this.pitch = pitch; this.step = step; this.oct = oct; this.duration = new Duration(duration); rest = false;
         }
 
         public Note(int pitch, int step, int oct, Duration duration)
@@ -92,20 +102,33 @@ namespace Music
             this.step = step;
             this.oct = oct;
             this.duration = duration;
+            rest = false;
+        }
+
+        public Note(int pitch, int step, int oct, Duration duration, bool rest)
+        {
+            this.pitch = pitch;
+            this.step = step;
+            this.oct = oct;
+            this.duration = duration;
+            this.rest = rest;
+            rest = false;
         }
 
         public Note(NOTES note, ALTER alter)
         {
-            this.step = (int)note;
-            this.pitch = standartpitch_from_step(step) + (int)alter;
-            this.oct = 1; duration = new Duration();
+            step = (int)note;
+            pitch = standartpitch_from_step(step) + (int)alter;
+            oct = 1; duration = new Duration();
+            rest = false;
         }
 
         public Note(NOTES note, ALTER alter, int oct)
         {
-            this.step = (int)note;
-            this.pitch = standartpitch_from_step(step) + (int)alter;
+            step = (int)note;
+            pitch = standartpitch_from_step(step) + (int)alter;
             this.oct = oct; duration = new Duration();
+            rest = false;
         }
 
         public Note(NoteOnEvent noteEvent)
@@ -113,6 +136,7 @@ namespace Music
             pitch = noteEvent.NoteNumber % NotesInOctave;
             step = pitch_to_step_alter(pitch).Item1;
             oct = noteEvent.NoteNumber / NotesInOctave - GMOctaveCorrection;
+            rest = false;
         }
 
         public void EnterNote(string input)
@@ -151,13 +175,14 @@ namespace Music
         public static Note GenerateRandomDistinctNote(Note note)
         {
             var rnd = new Random();
-            while (true) {
+            while (true)
+            {
                 int step = rnd.Next(6);
                 int alter = rnd.Next(2) - 1;
                 var newnote = new Note((NOTES)step, (ALTER)alter);
                 if (!newnote.Equals(note))
-                   return newnote;                
-            }            
+                    return newnote;
+            }
         }
 
         
@@ -246,30 +271,44 @@ namespace Music
 
             if (input is null) throw new IncorrectNote("Impossible to initialize note");
             input = CutSlash(input); // при пошуку типу cis/des
-            stringdivider(input, out string key, out int octave, out int duration, out string? durmodifier);                        
-            pitch = key_to_pitch(key, true);                        
-            step = key_to_step(key);
-            oct = octave;
+            stringdivider(input, out string key, out int octave, out int duration, out string? durmodifier);
+            if (key == "r") MakeRest();
+            else
+            {
+
+                pitch = key_to_pitch(key, true);
+                step = key_to_step(key);
+                oct = octave;
+            }
             try
             {
                 this.duration = new Duration(duration, durmodifier);
             }
-            catch 
+            catch (Exception ex)
             {
                 this.duration = new Duration(DURATION.quater);
                 ErrorMessage("Possible incorrect duration");
             }
-           
+        }
+        
+
+        private void MakeRest()
+        {
+            rest = true;
+            pitch = 0;
+            step = 0;
+            GrayMessageL("a rest found");
         }
 
         public int GetAlter() { return pitch_to_alter(step, pitch); }
 
         public int AbsDuration() { return duration.AbsDuration(); }
-        public int AbsPitch() 
-        { 
-        if (pitch - step > 10) return pitch + (oct - 2) * NotesInOctave; // для до-бемоля і іншої дубль-бемольної екзотики
-        if (step - pitch > 5) return pitch + oct*NotesInOctave;
-            else return pitch + (oct - 1) * NotesInOctave; 
+        public int AbsPitch()
+        {
+            if (rest == true) return -1; 
+            if (pitch - step > 10) return pitch + (oct - 2) * NotesInOctave; // для до-бемоля і іншої дубль-бемольної екзотики
+            if (step - pitch > 5) return pitch + oct * NotesInOctave;
+            else return pitch + (oct - 1) * NotesInOctave;
         }
 
 
@@ -279,21 +318,22 @@ namespace Music
         }
         public bool CheckIfSharpable()
         {
-                return Sharpness <= -2;  
+            return Sharpness <= -2;
         }
 
-        public double PrintDuration 
-        { 
-            get { return duration.RelDuration(); } 
-            set { duration.Dur = (DURATION)value; } 
+        public double PrintDuration
+        {
+            get { return duration.RelDuration(); }
+            set { duration.Dur = (DURATION)value; }
         }
 
         public Duration Duration { get => duration; set => duration = value; }
+        public bool Rest { get => rest; set => rest = value; }
 
         public void EnharmonizeSharp()
-        { 
-            step = addstep(step, ref oct, -1);       
-        
+        {
+            step = addstep(step, ref oct, -1);
+
         }
 
         public void EnharmonizeFlat()
@@ -334,12 +374,17 @@ namespace Music
         }
 
 
-        public string GetName() { return pitch_to_notename(step, pitch).Replace("b", "♭"); }
+        public string GetName() {
+            if (!rest)
+                return pitch_to_notename(step, pitch).Replace("b", "♭");
+            else
+                return rest();
+        }
 
         public int Octave() { return Oct; }
-        public void OctUp(int num = 1) { oct+= num; }
+        public void OctUp(int num = 1) { oct += num; }
 
-        public void OctDown(int num = 1) { oct -= num; }        
+        public void OctDown(int num = 1) { oct -= num; }
 
         public static int PitchSort(Note a, Note b)
         {
@@ -443,7 +488,7 @@ namespace Music
         }
         public object Clone()
         {
-            Note clone = new(this.pitch, this.step, this.oct, (Duration)this.duration.Clone());
+            Note clone = new(pitch, step, oct, (Duration)duration.Clone(), rest);
             return clone;
         }
 
@@ -456,7 +501,7 @@ namespace Music
                 else if (Step == 6 && other.Step == 0) return -1;
                 else if (Step == 0 && other.Step == 6) return 1;
                 else if (Step < other.Step) return -1;
-                else if (Step > other.Step) return 1;                
+                else if (Step > other.Step) return 1;
                 else return 0;
             }
             else throw new ArgumentException("Object is not of type Note");
@@ -520,7 +565,12 @@ namespace Music
 
         }
 
-        
+        //public string GetJSON()
+        //{
+        //    return JsonConvert.SerializeObject(this);
+        //}
+
+
 
 
 

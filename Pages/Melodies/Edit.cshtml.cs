@@ -15,6 +15,7 @@ using static Music.Messages;
 using static Music.MidiConverter;
 using static Melodies25.Utilities.PrepareFiles;
 using Melody = Melodies25.Models.Melody;
+using System.IO;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -35,22 +36,32 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public Melody Melody { get; set; } = default!;
 
+        [BindProperty]
+        public int Tempo { get; set; }
+
+        [BindProperty]
+        public bool Tempocorrected { get; set; } = false;
+
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             MessageL(COLORS.yellow, "MELODIES/EDIT OnGet");
+
 
             if (id == null)
             {
                 return NotFound();
             }
 
-            var melody = await _context.Melody.Include(m => m.Author).
+            var melody = await _context.Melody
+                .Include(m => m.Author).
                 FirstOrDefaultAsync(m => m.ID == id);
             if (melody == null)
             {
                 return NotFound();
             }
             Melody = melody;
+
+            MessageL(COLORS.purple, $"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}");
             ViewData["AuthorID"] = new SelectList(_context.Author.OrderBy(a => a.Surname), "ID", "Surname");
             ViewData["Tonalities"] = new SelectList(new List<string>
             {
@@ -60,12 +71,44 @@ namespace Melodies25.Pages.Melodies
                 "d-moll", "g-moll", "c-moll", "f-moll", "b-moll", "es-moll", "as-moll"
             });
 
+            if (Melody.MidiMelody is not null)
+            {
+                try
+                {
+                    await GetMidiMelody(melody);
+                    Tempo = melody.MidiMelody?.Tempo ?? 120;
+                }
+                catch (Exception e)
+                {
+                    ErrorMessageL(e.Message);
+                }
+            }
+            
+
             return Page();
+        }
+
+        private async Task GetMidiMelody(Melody melody)
+        {
+            MidiFile midifile = GetMidiFile(melody);
+            Globals.lng = Music.LNG.uk;
+            Globals.notation = Music.Notation.eu;
+            melody.MidiMelody = await MidiConverter.GetMelodyFromMidiAsync(midifile);
+        }
+
+        private MidiFile GetMidiFile(Melody melody)
+        {
+            var wwwRootPath = Path.Combine(_environment.WebRootPath, "melodies");
+            var path = Path.Combine(wwwRootPath, melody.FilePath);
+            var midifile = MidiConverter.GetMidiFile(path);
+            return midifile;
         }
 
         public async Task<IActionResult> OnPostAsync(IFormFile? fileupload)
         {
             MessageL(COLORS.yellow, "MELODIES/EDIT OnPost");
+            if (Melody is null) ErrorMessageL("Melody is null");
+            else GrayMessageL($"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}, Tempo = {Tempo}"); // Чому FilePath null
 
             if (!ModelState.IsValid)
             {
@@ -75,8 +118,9 @@ namespace Melodies25.Pages.Melodies
                 }
             }
 
+
             var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies");
-            Directory.CreateDirectory(uploadsPath); 
+            Directory.CreateDirectory(uploadsPath);
 
             // завантаження файлу
             if (fileupload is not null)
@@ -105,43 +149,11 @@ namespace Melodies25.Pages.Melodies
 
             _context.Attach(Melody).State = EntityState.Modified;
 
+
             //створення аудіо
-            if (Melody.FilePath is not null)
+            if (Melody.FilePath is not null && Tempocorrected == false)
             {
-                try
-                {
-                    string midiFilePath = Path.Combine(uploadsPath, Melody.FilePath);
-                    var midiFile = new MidiFile(midiFilePath);
-
-                    int changed = 0;
-                    StraightMidiFile(midiFilePath, ref changed);
-
-                    var ifeligible = IfMonody(midiFilePath);
-
-                    if (ifeligible)
-                    {
-                        MessageL(COLORS.standart, $"перезаписуємо файл {midiFilePath}");
-                        try
-                        {
-                            await PrepareMp3Async(_environment, midiFilePath, false);
-                            ViewData["Message"] = "Файл успішно завантажено!";
-                            Melody.IsFileEligible = true;
-                        }
-                        catch
-                        {
-                            ViewData["Message"] = "Не вдалося згенерувати файл";
-                        }
-                    }
-                    else
-                    {
-                        ViewData["Message"] = "Файл не є мелодією";
-                        Melody.IsFileEligible = false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ErrorMessage($"failed to check file: {ex}");
-                }
+                await PrepareAudio(uploadsPath);
             }
 
             foreach (var prop in new[] { "Title", "Year", "AuthorID", "Description", "IsFileEligible" })
@@ -175,10 +187,78 @@ namespace Melodies25.Pages.Melodies
                 }
             }
 
-            return RedirectToPage("./Edit", new { id = Melody.ID });
+            //корекція темпу
+            if (Melody.FilePath is not null && Tempocorrected == true)
+            {
+
+                string fullPath = Path.Combine(_environment.WebRootPath, "melodies", Melody.FilePath);
+                MessageL(COLORS.purple, $"Перезапис файлу, темп = {Tempo}");
+
+                if (System.IO.File.Exists(fullPath))
+                {
+                    try
+                    {
+                        var newmidifile = new MidiFile(fullPath);
+                        UpdateTempoInMidiFile(newmidifile, Tempo);
+                        MidiFile.Export(fullPath, newmidifile.Events);
+                        MessageL(COLORS.purple, $"Midi-файл перезаписано, темп - {GetTempofromMidi(fullPath)}");
+                        await PrepareAudio(uploadsPath);
+
+                    }
+                    catch (Exception e)
+                    {
+                        ErrorMessage("Не вдалося перезаписати файл: ");
+                        GrayMessageL(e.Message);
+                    }
+
+                }
+            }
+            else
+            {
+                GrayMessageL($"Темп незмінний: {Tempo}");
+            }
+
+            return RedirectToPage("./Details", new { id = Melody.ID });
         }
 
+        private async Task PrepareAudio(string uploadsPath)
+        {
+            MessageL(COLORS.olive, $"PrepareAudio method, path = {uploadsPath}");
+            try
+            {
+                string midiFilePath = Path.Combine(uploadsPath, Melody.FilePath);
+                var midiFile = new MidiFile(midiFilePath);
 
+                int changed = 0;
+                StraightMidiFile(midiFilePath, ref changed);
+
+                var ifeligible = IfMonody(midiFilePath);
+
+                if (ifeligible)
+                {
+                    MessageL(COLORS.standart, $"перезаписуємо міді-файл {midiFilePath} в mp3");
+                    try
+                    {
+                        await PrepareMp3Async(_environment, midiFilePath, false);
+                        ViewData["Message"] = "Файл успішно завантажено!";                        
+                        Melody.IsFileEligible = true;
+                    }
+                    catch
+                    {
+                        ViewData["Message"] = "Не вдалося згенерувати файл";
+                    }
+                }
+                else
+                {
+                    ViewData["Message"] = "Файл не є мелодією";
+                    Melody.IsFileEligible = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage($"failed to check file: {ex}");
+            }
+        }
 
         public async Task<IActionResult> OnPostDeleteFileAsync()
         {
@@ -226,9 +306,9 @@ namespace Melodies25.Pages.Melodies
         {
             return _context.Melody.Any(e => e.ID == id);
         }
-    
 
-    
+
+
         public async Task<IActionResult> OnPostUpdate(int? id)
         {
             MessageL(Music.COLORS.yellow, "MELODY/EDIT OnPostUpdate method");

@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices.Marshalling;
 using System.Text;
 using static Music.Globals;
+using static Music.Messages;
 
 namespace Music
 {
@@ -30,7 +31,7 @@ namespace Music
 
         private void Digit_to_duration(int digit)
         {
-            Messages.GrayMessage($"standart method ({digit}): ");
+            //Messages.GrayMessage($"standart method ({digit}): ");
             int value = 1;
             if (digit == 0) throw new IncorrectNote("Incorrect duration: 0");
             CountValue(ref digit, ref value);
@@ -70,7 +71,7 @@ namespace Music
             {
                 
                 double dur64th = mididuration / base64th;
-                Messages.GrayMessage($"determine method ({mididuration} / {base64th}) = {dur64th} ");
+                // Messages.GrayMessage($"determine method ({mididuration} / {base64th}) = {dur64th} ");
                 DetermineDuration(dur64th);
             }
         }
@@ -85,7 +86,7 @@ namespace Music
             {
                 if (dur64th > baseDur*0.9 && dur64th < baseDur * 1.2)
                 {
-                    Messages.GrayMessageL($"dur = {baseDur}");
+                    //Messages.GrayMessageL($"dur = {baseDur}");
                     duration = ConvertValue(baseDur);
                     return;
                 }
@@ -93,7 +94,7 @@ namespace Music
                 {
                     
                     duration = ConvertValue(baseDur);
-                    Messages.GrayMessageL($"dur = {duration}_");
+                    //Messages.GrayMessageL($"dur = {duration}_");
                     modifier = DURMODIFIER.tied;                    
                     return;
                 }
@@ -101,34 +102,34 @@ namespace Music
                 {
                     
                     duration = ConvertValue(baseDur);
-                    Messages.GrayMessageL($"dur = {duration}/3");
+                    //Messages.GrayMessageL($"dur = {duration}/3");
                     modifier = DURMODIFIER.tuplet;
                     tuplet = 3;
                     return;
                 }
                 else if (dur64th >= (int)(baseDur * 1.4) && dur64th <= (int)(baseDur * 1.6))
                 {
-                    Messages.GrayMessageL($"dur = {baseDur}.");
+                    //Messages.GrayMessageL($"dur = {baseDur}.");
                     duration = ConvertValue(baseDur);
                     modifier = DURMODIFIER.dotted;
                     return;
                 }
                 else if (dur64th > (int)(baseDur * 1.6) && dur64th <= (int)(baseDur * 1.8))
                 {
-                    Messages.GrayMessageL($"dur = {baseDur}..");
+                    //GrayMessageL($"dur = {baseDur}..");
                     duration = ConvertValue(baseDur);
                     modifier = DURMODIFIER.doubledotted;
                     return;
                 }
                 else if (dur64th > (int)(baseDur * 1.8) && dur64th <= (int)(baseDur * 1.9))
                 {
-                    Messages.GrayMessageL($"dur = {baseDur}...");
+                    //GrayMessageL($"dur = {baseDur}...");
                     duration = ConvertValue(baseDur);
                     modifier = DURMODIFIER.tripledotted;
                     return;
                 }
             }
-            Messages.GrayMessageL($"dur = indef");
+            //GrayMessageL($"dur = indef");
             modifier = DURMODIFIER.tuplet; // Якщо тривалість не відповідає стандартним значенням
             duration = DURATION.quater; // за замовченням
         }
@@ -163,7 +164,7 @@ namespace Music
         public double RelDuration()
         {
             double relduration = 4;
-            relduration /= (int)duration;
+            relduration /= (double)duration;
             if (modifier == DURMODIFIER.none) relduration *= 1;
             else if (modifier == DURMODIFIER.dotted) relduration *= 1.5;
             else if (modifier == DURMODIFIER.doubledotted) relduration *= 1.75;
@@ -173,12 +174,13 @@ namespace Music
                 relduration /= tuplet;
                 relduration = Math.Round(relduration, 2);
             }
+            //GrayMessageL($"relduration = {relduration}");
             return relduration;
         }
 
         public int MidiDuration(int PPQN)
         {
-            return PPQN * (int)RelDuration();
+            return (int)(PPQN * RelDuration());
             //Pulses Per Quarter Note - міряє тіки на чвертку
         }
 
@@ -205,18 +207,34 @@ namespace Music
             return str.ToString();
         }
 
-        public string Symbol()
+        public string Symbol(bool rest=false)
         {
             string symbol = "";
-            switch (duration)
+            if (!rest)
             {
-                case DURATION.whole: symbol += "𝅝"; break;    // Ціла нота (U+1D15D)
-                case DURATION.half: symbol += "𝅗𝅥"; break;     // Половинна нота (U+1D15E)
-                case DURATION.quater: symbol += "♩"; break;  // Чверть нота (U+2669)
-                case DURATION.eigth: symbol += "♪"; break;    // Восьма нота (U+266A)
-                case DURATION.sixteenth: symbol += "𝅘𝅥𝅯"; break; // Шістнадцята нота (U+266B)                
-                default: return "??"; // Невідомий символ
+                switch (duration)
+                {
+                    case DURATION.whole: symbol += "𝅝"; break;    // Ціла нота (U+1D15D)
+                    case DURATION.half: symbol += "𝅗𝅥"; break;     // Половинна нота (U+1D15E)
+                    case DURATION.quater: symbol += "♩"; break;  // Чверть нота (U+2669)
+                    case DURATION.eigth: symbol += "♪"; break;    // Восьма нота (U+266A)
+                    case DURATION.sixteenth: symbol += "𝅘𝅥𝅯"; break; // Шістнадцята нота (U+266B)                
+                    case DURATION.thirtysecond: symbol += "𝅘𝅥𝅰"; break; // Шістнадцята нота (U+266B)   
+                    default: return "??"; // Невідомий символ
+                }
             }
+            else
+                switch (duration)
+                {
+                    case DURATION.whole: symbol += "𝄻"; break;     // Ціла пауза (U+1D13B)
+                    case DURATION.half: symbol += "𝄼"; break;      // Половинна пауза (U+1D13C)
+                    case DURATION.quater: symbol += "𝄽"; break;    // Чвертна пауза (U+1D13D)
+                    case DURATION.eigth: symbol += "𝄾"; break;     // Восьма пауза (U+1D13E)
+                    case DURATION.sixteenth: symbol += "𝄿"; break; // Шістнадцята пауза (U+1D13F)
+                    case DURATION.thirtysecond: symbol += "𝅀"; break;
+                    default: return "??"; // Невідомий символ
+                }
+
             switch (modifier)
             {
                 default: break;
