@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const authorSaver = document.getElementById("authorSaver");//тимчасове збереження автора    
     const titleInput = document.getElementById("titleInput");
     const selectAuthor = document.getElementById("selectAuthor");
+    const copyBtn = document.getElementById("copyBtn");
     const submitMelodyBtn = document.getElementById("submitMelodyBtn")
 
     pianodisplay.value = saver.innerText;
@@ -36,15 +37,20 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(`restoring saved authorId: ${savedAuthorId}`)
         selectAuthor.value = savedAuthorId;
     }
-    else console.log(`saved authorId is null`);
-    
-    
-    
-    saver.style.display = 'none';
+    else console.log(`saved authorId is null`);  
+        
+    saver.style.display = 'none';    
 
     if (savedTitle && savedAuthorId)
     submitMelodyBtn.style.display = 'block';
 
+    //обробник завантажувача файлів
+    document.getElementById('melodyFileInput').addEventListener('change', function () {
+        const fileInput = this;
+        if (fileInput.files.length > 0) {
+            document.getElementById('copyBtn').style.display = 'inline-block';
+        }
+    });
     
 
     //обробник кнопок з тривалістю
@@ -156,7 +162,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
+    // відображення кнопки ДОДАТИ МЕЛОДІЮ
     titleInput.addEventListener("input", function () {
         
         if (titleInput.value.length > 2 && selectAuthor.value) {
@@ -167,3 +173,21 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+//копіювальник назви
+function copytitle(event) {
+    event.preventDefault();
+    console.log("copytitle function is running");
+    const fileInput = document.getElementById("melodyFileInput");
+    const titleInput = document.getElementById("titleInput"); // стандартний id для asp-for="Melody.Title"
+
+    if (fileInput && fileInput.files.length > 0) {
+        const filename = fileInput.files[0].name;        
+        let nameWithoutExtension = filename.replace(/\.[^/.]+$/, "");        
+        let nameCapitalized = nameWithoutExtension.charAt(0).toUpperCase() + nameWithoutExtension.slice(1);
+        titleInput.value = nameCapitalized;
+        titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+    } else {
+        alert("Файл не вибрано");
+    }
+}
