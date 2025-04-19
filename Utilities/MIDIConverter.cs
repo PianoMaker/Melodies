@@ -37,7 +37,7 @@ namespace Music
 
             Melody melody = new Melody();
             List<string> noteDurations = new List<string>(); // Для збереження тривалості нот
-
+            double tempo = 100;
 
             foreach (var track in midiFile.Events)
             {
@@ -51,8 +51,7 @@ namespace Music
                     //темп
                     if (me is TempoEvent tempoEvent)
 
-                        SetTempo(GetBpmFromTempoEvent(tempoEvent));
-                    //власне ноти
+                        tempo = GetBpmFromTempoEvent(tempoEvent);//темп
                     if (me is NoteEvent ne)
                     {
                         if (IfNoteOn(ne))
@@ -84,6 +83,7 @@ namespace Music
                 }
             }
 
+            melody.Tempo = (int)tempo;
             return melody;
         }
         //те саме асинхронно
@@ -609,10 +609,48 @@ namespace Music
                 GrayMessageL(e.Message);
                 
             }
+        }
 
-
+        public static double GetTempofromMidi(string filepath)
+        {
+            var midiFile = new MidiFile(filepath);
+            foreach (var track in midiFile.Events)
+            {
+                for (int i = 0; i < track.Count; i++)
+                {
+                    if (track[i] is TempoEvent)                    
+                    {
+                        return GetBpmFromTempoEvent(track[i] as TempoEvent);
+                    }
+                }
+            }
+            return -1;
 
         }
+
+        public static void UpdateTempoInMidiFile(MidiFile midiFile, int bpm)
+        {
+
+            int newTempo = 60000000 / bpm;
+
+            foreach (var track in midiFile.Events)
+            {
+                for (int i = 0; i < track.Count; i++)
+                {
+                    if (track[i] is TempoEvent)
+                    {
+                        GrayMessageL($"put new tempo {bpm} / {newTempo} ticks");
+                        track[i] = new TempoEvent(newTempo, track[i].AbsoluteTime);
+                        return;
+                    }
+                }
+            }
+
+            // Якщо темпо ще не існує — додаємо його в початок першого треку
+            var newTempoEvent = new TempoEvent(newTempo, 0);
+            midiFile.Events[0].Insert(0, newTempoEvent);
+        }
+
     }
 }
 

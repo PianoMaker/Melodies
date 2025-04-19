@@ -6,6 +6,7 @@ using Melodies25.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging; // Для логування
 using Microsoft.Extensions.Localization;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace Melodies25
 {
@@ -62,6 +63,8 @@ namespace Melodies25
 
             // Додавання інших сервісів
             builder.Services.AddRazorPages();
+
+            builder.Services.AddSingleton<IEmailSender, DummyEmailSender>();
 
             var app = builder.Build();
 

@@ -14,6 +14,7 @@ namespace Melodies25.Models
 
         public string? Tonality { get; set; } // Тональність. працювати через модель Tonality 
 
+        
         [Required(ErrorMessage = "Назва є обов'язковою.")]
         public string Title { get; set; }  
         public int? Year { get; set; }  

@@ -80,11 +80,10 @@ namespace Melodies25.Utilities
 
         public static async Task PrepareMp3Async(IWebHostEnvironment _environment, string midifilePath, bool ifcheck)
         {
-            MessageL(COLORS.olive, "PrepateMp3Async method");
+            Message(COLORS.olive, "PrepateMp3Async method: ");
+            GrayMessageL(midifilePath);
             try
-            {
-
-                
+            {                
                 //адреса мідіфайлу
                 var midiPath = Path.Combine(_environment.WebRootPath, "melodies", midifilePath);
                 if (!File.Exists(midiPath))
@@ -119,6 +118,7 @@ namespace Melodies25.Utilities
                 
                 // і нарешті створення!
                 await PrepareMP3fromMIDIAsync(midiPath, mp3Path);
+
                 
             }
             catch (Exception ex)

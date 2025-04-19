@@ -7,11 +7,18 @@
     <div class="form-group">
         <label for="Input_Email">Email</label>
         <input asp-for="Input.Email" class="form-control" />
+        <span asp-validation-for="Input.Email" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label for="Input_Password">Password</label>
         <input asp-for="Input.Password" class="form-control" type="password" />
+        <span asp-validation-for="Input.Password" class="text-danger"></span>
     </div>
     <button type="submit" class="btn btn-primary">Login</button>
 </form>
-<button type="button" class="btn btn-link" onclick="window.location.href='@Url.Page("/RecoverPassword")'">Нагадати пароль</button>
+
+<form method="post" asp-page-handler="RecoverPassword">
+    <button type="submit" class="btn btn-link">Нагадати пароль</button>
+</form>
+
+<partial name="_ValidationScriptsPartial" />
