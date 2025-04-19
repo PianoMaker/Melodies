@@ -1,4 +1,5 @@
 ﻿using Melodies25.Migrations;
+using NAudio.Midi;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Numerics;
@@ -179,7 +180,6 @@ namespace Music
             }
         }
 
-      
         public int AbsLength
         {
             get
@@ -218,31 +218,6 @@ namespace Music
             var notesOther = other.IntervalList.ToArray();
             return LongestCommonSubstring(notesThis, notesOther).Count;
         }
-       
-
-        public Tonalities DetectTonality()
-        {
-            float maxsharpness = notes[^1].Sharpness;
-            float minsharpness = notes[^1].Sharpness;
-            
-            MODE mode;
-
-            foreach (Note note in notes)
-            {
-                if (note.Sharpness > maxsharpness) maxsharpness = note.Sharpness;
-                else if (note.Sharpness < minsharpness) minsharpness = note.Sharpness;
-            }
-
-            if (maxsharpness - minsharpness > 9) return null;
-            if (notes[^1].Sharpness - minsharpness <= 1 && maxsharpness - notes[^1].Sharpness <= 5) mode = MODE.dur;
-            else if (notes[^1].Sharpness - minsharpness <= 4 && maxsharpness - notes[^1].Sharpness <= 5) mode = MODE.moll;
-            else return null;
-
-
-            Tonalities tonality = new Tonalities(Notes[^1], mode);
-            return tonality;
-        }
-        
 
         // Найдовше співпадіння мелодій в заданій тональності,
         // повертає кількість нот у послідовності
@@ -546,11 +521,55 @@ namespace Music
         public new int Octaves()
         { return Range() / 12; }
 
-        
+        /*
+                public List<Melody> Permute() // генерування усіх можливих розташувань
+                {
+                    PermutationsGenerator<Note> generator = new();
+
+                    var permutations = generator.GeneratePermutations(notes);
+
+                    List<Melody> list = new();
+                    foreach (List<Note> chord in permutations)
+                    {
+                        Melody newchord = new(chord);
+                        //newchord.Adjust(0);
+                        list.Add(newchord);
+                    }
+                    return list;
+                }
+
+                public new Melody[] PermuteList() // генерування усіх можливих розташувань
+                {
+                    PermutationsGenerator<Note> generator = new();
+
+                    List<List<Note>> permutations = generator.GeneratePermutations(notes);
+
+                    Melody[] list = new Melody[permutations.Count];
+                    for (int i = 0; i < permutations.Count; i++)
+                    {
+                        Melody newchord = new(permutations[i]);
+                        //newchord.Adjust(0);
+                        list[i] = newchord;
+                    }
+                    return list;
+                }
+
+
+                public new void Play()
+                {
+                    if (player == PLAYER.beeper)
+                        Beeper.Play(this);
+                    if (player == PLAYER.naudio)
+                        NAPlayer.Play(this);
+                    if (player == PLAYER.midiplayer)
+                        MidiFile0.Play(this);
+                }
+        */
         public new void RemoveNote(Note note) { notes.Remove(note); }
 
         public new void Reverse()
         { notes.Reverse(); }
+
 
         public new int Range()
         { return pitchdiff(notes[0].AbsPitch(), notes[^1].AbsPitch()); }
@@ -722,7 +741,46 @@ namespace Music
         /// </summary>
 
 
-        
+        /*
+        public static void DisplayTable(List<Melody> list)
+        {
+            //foreach (Melody ch in list)
+            //    ch.Display();
+            StringOutput.Display(list);
+        }
+
+        public new void DisplayInline()
+        {
+            foreach (Note note in notes)
+            {
+                note.DisplayInline();
+            }
+        }
+
+        public static void DisplayInline(List<Melody> list)
+        {
+            foreach (Melody ch in list)
+            {
+                ch.DisplayInline();
+                Console.WriteLine();
+            }
+
+        }
+
+        public new void Test()
+        {
+            DisplayInline();
+            Play();
+        }
+
+        public static void Test(List<Melody> list)
+        {
+            foreach (Melody ch in list)
+            {
+                ch.Test();
+            }
+        }
+        */
 
 
 
@@ -769,5 +827,45 @@ namespace Music
             return cloned;
         }
 
+        internal MidiEventCollection ConvertToMIDI()
+        {
+
+            var collection = new MidiEventCollection(0, PPQN);
+            int currenttime = 0;
+            var tempoEvent = new TempoEvent(Tempo, 0);
+            collection.AddEvent(tempoEvent, 0);
+
+            foreach (var note in Notes)
+            {
+                var neOn = new NoteEvent(currenttime, 1, MidiCommandCode.NoteOn, note.MidiNote, 100);
+                var neOff = new NoteEvent(currenttime + note.MidiDur, 1, MidiCommandCode.NoteOff, note.MidiNote, 100);                
+                collection.AddEvent(neOn, 1);
+                collection.AddEvent(neOff, 1);
+                currenttime += note.MidiDur;
+            }
+
+            return collection;
+        }
+
+        public static Melody CreateRandom(int length, int octaves)
+        {
+            Melody melody = new Melody();            
+
+            while (melody.Notes.Count < length)
+            {
+                try
+                {
+                    var newnote = Note.GenerateRandomNote(octaves);
+                    melody.AddNote(newnote);
+                }
+                catch (Exception e) { ErrorMessage(e.Message); }
+            }
+            melody.EnharmonizeSmart();
+            return melody;
+        }
+ public void SaveMidi(string filepath="output.mid")
+        {
+            MidiConverter.SaveMidi(this, filepath);
+        }
     }
 }

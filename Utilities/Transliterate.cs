@@ -6,6 +6,9 @@ namespace Melodies25.Utilities
     {
         public static string Transliterate(string input)
         {
+            if (String.IsNullOrEmpty(input))
+                return "unknown";
+
             Dictionary<char, string> map = new Dictionary<char, string>
             {
                 {'А', "A"}, {'Б', "B"}, {'В', "quatersPerWholeNote"}, {'Г', "H"}, {'Ґ', "G"}, {'Д', "D"},

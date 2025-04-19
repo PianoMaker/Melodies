@@ -2,6 +2,8 @@
 {
     public static class Algorythm
     {
+
+
         public static (int length, int startIndex) LongestCommonSubstring(int[] arr1, int[] arr2)
         {
             if (arr1.Length == 0 || arr2.Length == 0)

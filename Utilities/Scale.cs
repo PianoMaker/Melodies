@@ -75,7 +75,7 @@ namespace Music
                         Note note = new(i);
                         AddNote(note);
                     }
-                    catch (IncorrectNote e) { Console.WriteLine("skip adding " + i); }
+                    catch (IncorrectNote) { Console.WriteLine("skip adding " + i); }
                 };
         }
 
@@ -153,7 +153,7 @@ namespace Music
         public bool CheckForSharps()
         {
             foreach(Note note in notes)
-                if (note.Alter > 0) return true;   
+                if (note.GetAlter() > 0) return true;   
             return false;
         }
 
@@ -185,7 +185,7 @@ namespace Music
         public bool CheckForFlats()
         {
             foreach (Note note in notes)
-                if (note.Alter < 0) return true;
+                if (note.GetAlter() < 0) return true;
             return false;
         }
 
@@ -404,7 +404,7 @@ namespace Music
             float sharpness = 0;
             foreach (Note note in notes)
             {
-                sharpness += sharpness_counter(note.Step, note.Alter);
+                sharpness += sharpness_counter(note.Step, note.GetAlter());
             }
             return sharpness / Size();
         }
@@ -441,27 +441,7 @@ namespace Music
         {
             StringOut.DisplaySh(this, octtriger, color);
         }
-        /*
-        public void DisplayInline()
-        {
-            foreach (Note note in notes)
-            {
-                note.DisplayInline();
-            }
-        }
-
-        public void DisplayTable()
-        {
-            foreach (Note note in notes)
-                note.DisplayTable();
-        }
-
-        public void Play()
-        {
-            foreach (Note note in notes)
-                note.Play();
-        }
-        */
+        
 
         public void SortByPitch()
         {

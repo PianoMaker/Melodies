@@ -2,7 +2,8 @@
 using System.Text.RegularExpressions;
 using static Music.Engine;
 using static Music.Globals;
-using static System.Formats.Asn1.AsnWriter;
+using static Music.Messages;
+
 
 namespace Music
 {
@@ -47,7 +48,9 @@ namespace Music
                     if ((interval == INTERVALS.OCTAVA || interval == INTERVALS.QUARTA || interval == INTERVALS.QUINTA) && quality == QUALITY.MIN) quality = QUALITY.DIM;
                 }
             }
-            catch { IncorrectNote e; }
+            catch (IncorrectNote e) { ;
+            ErrorMessage(e.Message);
+            }
         }
 
         public Interval(INTERVALS interval, QUALITY quality)
@@ -272,8 +275,11 @@ namespace Music
             foreach (var interval in allintervals)
             {
                 var newItem = item.Clone() as T;
-                newItem.Transpose(interval.interval, interval.quality, DIR.UP);
-                result.Add(newItem);
+                if (newItem is not null)
+                {
+                    newItem.Transpose(interval.interval, interval.quality, DIR.UP);
+                    result.Add(newItem);
+                }
             }
             return result;
         }
