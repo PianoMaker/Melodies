@@ -86,14 +86,34 @@ li.active {
 }
 
 
-
-table {
-    background-color: white;
-    opacity: 0.9;
-    font-family: 'Times New Roman';
-    font-style: normal;
-    border: 1px solid black;
+.exp-top {
+    background-color: lemonchiffon;
+    color: black;
+    border: solid 1px black;
 }
+
+    .exp-top a {
+        font-size: 0.9em;
+        color: black;
+        text-align: center;
+        padding: 10px 15px; 
+        text-decoration: none;
+        transition: transform 0.2s ease;
+        display: inline-block;
+    }
+        .exp-top a:hover {
+            transform: scale(1.1);
+            color: darkred;
+        }
+
+
+    table {
+        background-color: white;
+        opacity: 0.9;
+        font-family: 'Times New Roman';
+        font-style: normal;
+        border: 1px solid black;
+    }
 
     table a {
         font-style: normal;
@@ -435,6 +455,22 @@ p {
     font-size: 0.9em;
 }
 
+#transpose-controls {
+    display: flex; /* важливо для justify-content */
+    justify-content: start;
+    align-items: center;
+    width: 800px;
+    margin-bottom: 20px;
+    padding: 5px;
+    border: 1px solid black;
+    gap: 10px; /* відступ між кнопками */
+    background-color: #f9f9cc; /* необов’язково, для кращої видимості */
+    border-radius: 8px; /* необов’язково, для естетики */
+    font-size: 0.8em !important;
+}
+
+
+
 @media (max-width: 1024px) {
 
     .searchcontainer {
@@ -553,6 +589,8 @@ p {
         top: 0px;
         left: 580px;
     }
+
+
 }
 
 @media (max-width: 768px) {
