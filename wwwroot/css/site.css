@@ -85,27 +85,11 @@ li.active {
     background: rgba(2255,255,225,0.8)
 }
 
-<<<<<<< HEAD
-.logoimage {
-    position: absolute;
-    top: 10px;
-    left: 20px;
-    height: 100px;
-}
-
-table {
-    background-color: white;
-    opacity: 0.9;
-    font-family: 'Times New Roman';
-    font-style: normal;
-    border: 1px solid black;
-=======
 
 .exp-top {
     background-color: lemonchiffon;
     color: black;
     border: solid 1px black;
->>>>>>> a262fa0 (+experimental pages)
 }
 
     .exp-top a {
@@ -176,13 +160,6 @@ table, th, td {
     margin-bottom:40px;
 }
 
-.footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: #fef7e2;
-    height: 30px;
-}
 
 .h-85 {
     height: 85%;
@@ -192,34 +169,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     */
 
 
-.imgcontainer {
-    min-width: 90px;
-    max-width: 100px;
-}
-
-
-/* Надписи на горі */
-.navbar-nav {
-    display: flex;
-    width: 100%;
-}
-
-.nav-item {
-    flex-grow: 1; /* Розтягує кожен елемент рівномірно */
-    text-align: center; /* Вирівнює текст по центру */
-}
-
-.navmelody {
-    font-size: 1.4em;
-    margin: 20px 0px 0px 15px;
-    transition: linear 0.5s;
-    font-family: "Montserrat", serif;
-}
-
-    .navmelody:hover {
-        color: lemonchiffon !important;
-        transform: scale(1.08) translateY(-2px);
-    }
 
 .notestaff {
     margin: 3px;

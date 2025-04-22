@@ -9,6 +9,7 @@ git restore --source=master E:\G_docs\ASP.NET\Melodies\wwwroot\mp3
 git restore --source=master E:\G_docs\ASP.NET\Melodies\Pages\
 git restore --source=master E:\G_docs\ASP.NET\Melodies\Utilities\
 git restore --source=master E:\G_docs\ASP.NET\Melodies\Models\
+git restore --source=master E:\G_docs\ASP.NET\Melodies\Services\
 git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\lifehack.txt
 
 git restore --source=possible-production-config E:\G_docs\ASP.NET\Melodies\wwwroot\js

@@ -5,7 +5,7 @@
 }
 
 
-<h2>Управління користувачами - <a href="/Account/Files">Управління файлами</a></h2>
+@await Html.PartialAsync("_adminMenu")
 
 @if (TempData["SuccessMessage"] != null)
 {

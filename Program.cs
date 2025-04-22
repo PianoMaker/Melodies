@@ -6,6 +6,7 @@ using Melodies25.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 
 namespace Melodies25
@@ -63,6 +64,7 @@ namespace Melodies25
 
             builder.Services.AddScoped<DataSeeder>();
 
+            builder.Services.AddSingleton<IEmailSender, DummyEmailSender>();
             builder.Services.AddSession();            
 
 
