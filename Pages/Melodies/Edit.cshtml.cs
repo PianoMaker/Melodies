@@ -60,8 +60,13 @@ namespace Melodies25.Pages.Melodies
                 return NotFound();
             }
             Melody = melody;
+            if (Melody.FilePath is not null)
+            {
+                var midiFilepath = Path.Combine(_environment.WebRootPath, "melodies", Melody.FilePath);
+                Tempo = (int)GetTempofromMidi(midiFilepath);
+            }
 
-            MessageL(COLORS.purple, $"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}");
+            GrayMessageL($"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}, Tempo = {Tempo}");
             ViewData["AuthorID"] = new SelectList(_context.Author.OrderBy(a => a.Surname), "ID", "Surname");
             ViewData["Tonalities"] = new SelectList(new List<string>
             {
@@ -69,21 +74,7 @@ namespace Melodies25.Pages.Melodies
                 "F-dur", "B-dur", "Es-dur", "As-dur", "Des-dur", "Ges-dur", "Ces-dur",
                 "a-moll", "e-moll", "h-moll", "fis-moll", "cis-moll", "gis-moll", "dis-moll", "ais-moll",
                 "d-moll", "g-moll", "c-moll", "f-moll", "b-moll", "es-moll", "as-moll"
-            });
-
-            if (Melody.MidiMelody is not null)
-            {
-                try
-                {
-                    await GetMidiMelody(melody);
-                    Tempo = melody.MidiMelody?.Tempo ?? 120;
-                }
-                catch (Exception e)
-                {
-                    ErrorMessageL(e.Message);
-                }
-            }
-            
+            });            
 
             return Page();
         }
