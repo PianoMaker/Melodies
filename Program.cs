@@ -42,11 +42,10 @@ namespace Melodies25
                 options.SignIn.RequireConfirmedAccount = false;
                 options.SignIn.RequireConfirmedEmail = false;
             })
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
-
-
-
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+            
+            builder.Services.AddControllersWithViews();
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
