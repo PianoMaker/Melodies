@@ -2,10 +2,14 @@
 @model Melodies25.Pages.Account.NotationModel
 @{
 }
-@await Html.PartialAsync("_adminMenu")
-
 
 <div id="notation"></div>
+
+<form method="post">
+
+    <select id="midifiles"></select>
+</form>
+
 <script src="~/js/notation.js">   
 </script>
 

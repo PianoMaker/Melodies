@@ -1,6 +1,12 @@
-﻿
-@{
+﻿@{
+    var currentPage = ViewContext.RouteData.Values["Page"]?.ToString();
 }
 <div class="exp-top">
-    <p><a href="/Account/Users">Управління користувачами</a> - <a href="/Experimental/Files">Управління файлами</a> - <a href="/Experimental/Notation">Нотація</a> - <a href="/Experimental/Widi">Widi</a> - <a href="/Experimental/Tone">Tone</a></p>
+    <p>
+        <a class="@(currentPage == "/Account/Users" ? "active" : "")" href="/Account/Users">Управління користувачами</a> -
+        <a class="@(currentPage == "/Experimental/Files" ? "active" : "")" href="/Experimental/Files">Управління файлами</a> -
+        <a class="@(currentPage == "/Experimental/Notation" ? "active" : "")" href="/Experimental/Notation">Нотація</a> -
+        <a class="@(currentPage == "/Experimental/Widi" ? "active" : "")" href="/Experimental/Widi">Widi</a> -
+        <a class="@(currentPage == "/Experimental/Tone" ? "active" : "")" href="/Experimental/Tone">Tone</a>
+    </p>
 </div>
