@@ -53,6 +53,8 @@ namespace Melodies25
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
+            
+            builder.Services.AddControllersWithViews();
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
