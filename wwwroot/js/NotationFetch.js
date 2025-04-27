@@ -34,7 +34,8 @@ document.addEventListener('DOMContentLoaded', function () {
             drawNotation(midiFile);
             const formattedData = formatMidiNotesForDisplay(midiFile);
             codeDiv.textContent = formattedData;
-            timesignDiv.innerText = timeSignatures;
+            const timeSignaturesText = timeSignatures.map(signature => `${signature.numerator} / ${signature.denominator}`).join(", ");
+            timesignDiv.innerText = timeSignaturesText;
         } catch (error) {
             console.error('Помилка завантаження або розбору:', error);
             codeDiv.textContent = `Помилка: ${error.message}`;
@@ -77,13 +78,11 @@ function drawNotation(midiFile) {
 
     // 3. Створюємо VexFlow елементи
     const vexflowElements = allElements.map(element => {
-        if (element.isRest) {
-            const duration = getDurationSymbol(element.durationTicks, ticksPerBeat);
+        if (element.isRest) {            
             return new StaveNote({
-                keys: ["B/4"], // Нота поза межами видимості
-                duration: duration,
-                auto_stem: true
-            }).setStyle({ fillStyle: "transparent", strokeStyle: "transparent" });        
+                keys: ["b/4"], // Нота поза межами видимості
+                duration: "16r",
+            });       
         } else {
             const noteName = getVexFlowNoteName(element.noteNumber);
             const duration = getDurationSymbol(element.durationTicks, ticksPerBeat);
@@ -165,12 +164,12 @@ function getTimeSignatures(midiFile) {
 // Музичні ноти без вказівки октави
 const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-// Функція для визначення октави по номеру ноти
-function getOctave(noteNumber) {
-    const octave = Math.floor(noteNumber / 12) - 1; // Октавний діапазон для MIDI (0-127)
-    console.log(`Note number: ${noteNumber} -> Octave: ${octave}`);
-    return octave;
-}
+//// Функція для визначення октави по номеру ноти
+//function getOctave(noteNumber) {
+//    const octave = Math.floor(noteNumber / 12) - 1; // Октавний діапазон для MIDI (0-127)
+//    console.log(`Note number: ${noteNumber} -> Octave: ${octave}`);
+//    return octave;
+//}
 
 // Функція для перетворення MIDI номера на ноту з урахуванням октави
 function getNoteName(noteNumber) {
