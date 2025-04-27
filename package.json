@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "midifile": "^2.0.0"
+  },
+  "name": "melodies",
+  "version": "1.0.0",
+  "description": "Мета проєкту - створення інструменту виявлення схожих, подібних або ідентичних мелодій для виявлення плагіату, запозичень і впливів або фактів випадкових збігів у мелодіях музичних творів.",
+  "main": "index.js",
+  "devDependencies": {
+    "browserify": "^17.0.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

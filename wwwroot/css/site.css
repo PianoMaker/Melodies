@@ -86,6 +86,13 @@ li.active {
 }
 
 
+#code {
+    white-space: pre;
+    font-family: "Arial Unicode MS", "Segoe UI Symbol", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
 .exp-top {
     background-color: lemonchiffon;
     color: black;
@@ -209,6 +216,15 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     background-color: antiquewhite;
     border-radius: 5px;
     box-shadow: rgba(55,55,0,0.3) 2px 2px;
+}
+
+.NotesList {
+    display: inline-block;
+    width: 20%;
+    border: 1px solid black;
+    border-radius: 5px;
+    vertical-align: top;
+    background-color: rgb(255,255,200)
 }
 
 .pausebox {
