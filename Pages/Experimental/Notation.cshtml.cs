@@ -1,10 +1,13 @@
-using Melanchall.DryWetMidi.Core;
+Ôªøusing Melanchall.DryWetMidi.Core;
 using Melanchall.DryWetMidi.Interaction;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Music;
+using NAudio.Midi;
 using System.Text.Json;
 using static Music.Messages;
+using MetaEvent = NAudio.Midi.MetaEvent;
+using MidiFile = NAudio.Midi.MidiFile;
 
 namespace Melodies25.Pages.Account
 {
@@ -14,6 +17,8 @@ namespace Melodies25.Pages.Account
         public List<string> MidiFiles { get; set; } = default!;
         public string MidiNotesJson { get; set; } = default!;
 
+        public string CheckMessage { get; set; }
+
         public NotationModel(IWebHostEnvironment env)
         {
             _env = env;
@@ -21,48 +26,65 @@ namespace Melodies25.Pages.Account
 
         [BindProperty]
         public string SelectedMidiFile { get; set; } = default!;
-       
+
 
         public void OnGet()
         {
             MessageL(COLORS.yellow, "Notation / OnGet");
+            InitializeFiles();
+        }
+
+        private void InitializeFiles()
+        {
             var midiDirectory = Path.Combine(_env.WebRootPath, "melodies");
             MidiFiles = Directory.GetFiles(midiDirectory, "*.mid")
                                  .Select(Path.GetFileName)
                                  .ToList();
         }
 
-
         public void OnPost()
         {
             MessageL(COLORS.yellow, $"Notation / OnPost, {SelectedMidiFile}");
-            var midiDirectory = Path.Combine(_env.WebRootPath, "melodies");
-            MidiFiles = Directory.GetFiles(midiDirectory, "*.mid")
-                     .Select(Path.GetFileName)
-                     .ToList();
-            
-            var filePath = Path.Combine(midiDirectory, SelectedMidiFile);
-            if (!System.IO.File.Exists(filePath))
+            InitializeFiles();
+            try
             {
-                ModelState.AddModelError(string.Empty, "Œ·‡ÌËÈ MIDI-Ù‡ÈÎ ÌÂ ÁÌ‡È‰ÂÌÓ.");
-                ErrorMessageL("MIDI ‘‡ÈÎ ÌÂ ÁÌ‡È‰ÂÌÓ");
-                
-                return;
+                var midiDirectory = Path.Combine(_env.WebRootPath, "melodies");
+                var midiFilePath = Path.Combine(midiDirectory, SelectedMidiFile);
+                var midiFile = new MidiFile(midiFilePath, false);
+
+                for (int track = 0; track < midiFile.Tracks; track++)
+                {
+                    bool hasEndOfTrack = false;
+
+                    foreach (var midiEvent in midiFile.Events[track])
+                    {
+                        if (midiEvent is MetaEvent metaEvent && metaEvent.MetaEventType == MetaEventType.EndTrack)
+                        {
+                            hasEndOfTrack = true;
+                            break;
+                        }
+                    }
+
+                    if (hasEndOfTrack)
+                    {
+                        var msg = $"Track {SelectedMidiFile}: –º–∞—î End of Track –ø–æ–¥—ñ—é.";
+                        CheckMessage = msg;
+                        Console.WriteLine(msg);
+                    }
+                    else
+                    {
+                        var msg = $"Track {SelectedMidiFile}: ‚ùó –ù–ï–ú–ê–Ñ End of Track –ø–æ–¥—ñ—ó!";
+                        CheckMessage = msg;
+                        Console.WriteLine(msg);
+                    }
+                }
             }
-
-            var midiFile = MidiFile.Read(filePath);
-            var tempoMap = midiFile.GetTempoMap();
-            var notes = midiFile.GetNotes();
-            GrayMessageL("try to get file");
-            var noteData = notes.Select(note => new
+            catch (Exception e)
             {
-                NoteNumber = note.NoteNumber,
-                StartTime = note.TimeAs<MetricTimeSpan>(tempoMap),
-                Duration = note.LengthAs<MetricTimeSpan>(tempoMap)
-            });
-
-            MidiNotesJson = JsonSerializer.Serialize(noteData);
+                var msg = $"–ø–æ–º–∏–ª–∫–∞: {e.Message}";
+                CheckMessage = msg;
+                Console.WriteLine(msg);
+            }
         }
-
     }
 }

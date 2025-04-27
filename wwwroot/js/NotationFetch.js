@@ -8,6 +8,60 @@ document.addEventListener('DOMContentLoaded', function () {
     const timesignDiv = document.getElementById('timesignature');
     console.log("notationFetch.js starts ##");
 
+    async function loadSelectedMidiFile() {
+        const selectedFile = select.value;
+        console.log(`selectedFile = ${selectedFile}`);
+
+        // Очищаємо попередній нотний запис
+        notationDiv.innerHTML = '';
+        codeDiv.innerHTML = '';
+        timesignDiv.innerText = '';
+
+        if (!selectedFile) {
+            console.log('No file selected.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/melodies/${selectedFile}`);
+            if (!response.ok) {
+                throw new Error('Не вдалося завантажити MIDI-файл');
+            }
+            console.log('Response status:', response.status);
+
+            const arrayBuffer = await response.arrayBuffer();
+            const midiData = new Uint8Array(arrayBuffer);
+            const midiFile = new MIDIFile(midiData);
+            const timeSignatures = getTimeSignatures(midiFile);
+
+            console.log('MIDI data length:', midiData.length);
+            console.log('MIDI file tracks:', midiFile.tracks);
+
+            drawNotation(midiFile);
+            const formattedData = formatMidiNotesForDisplay(midiFile);
+            codeDiv.textContent = formattedData;
+
+            const timeSignaturesText = timeSignatures.map(signature => `${signature.numerator} / ${signature.denominator}`).join(", ");
+            timesignDiv.innerText = timeSignaturesText;
+        } catch (error) {
+            console.error('Помилка завантаження або розбору:', error);
+            codeDiv.textContent = `Помилка: ${error.message}`;
+        }
+    }
+
+    // Викликаємо завантаження одразу при завантаженні сторінки
+    loadSelectedMidiFile();
+
+    // Викликаємо завантаження при зміні вибору
+    select.addEventListener('change', loadSelectedMidiFile);
+});
+('DOMContentLoaded', function () {
+    const select = document.getElementById('midifiles');
+    const notationDiv = document.getElementById('notation');
+    const codeDiv = document.getElementById('code');
+    const timesignDiv = document.getElementById('timesignature');
+    console.log("notationFetch.js starts ##");
+
     select.addEventListener('change', async function () {
         const selectedFile = select.value;
         console.log(`selectedFile = ${selectedFile}`);
@@ -44,9 +98,8 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function drawNotation(midiFile) {
-    console.log(`starting drawNotation`);
-    // Додаємо Rest до списку імпортованих класів
-    const { Renderer, Stave, StaveNote, Rest, Formatter } = Vex.Flow;
+    console.log(`starting drawNotation`);    
+    const { Renderer, Stave, StaveNote, Formatter } = Vex.Flow;
     const div = document.getElementById('notation');
     const renderer = new Renderer(div, Renderer.Backends.SVG);
 
@@ -121,25 +174,44 @@ function drawNotation(midiFile) {
     stave.addClef('treble');
     stave.setContext(context).draw();
 
-    const formatter = new Formatter();
     let elementsPerStave = [];
     let widthUsed = 0;
     const elementSpacing = 40;
 
+
+    let timeSignatureIndex = 0;
     vexflowElements.forEach((element, idx) => {
+        console.log(`Processing element ${idx}:`, element);
+
         elementsPerStave.push(element);
         widthUsed += elementSpacing;
 
+        console.log(`Width used after adding element ${idx}:`, widthUsed);
+
+        // Додаємо тактову риску, якщо час зміни тактового підпису
+        const currentTick = element.startTick || 0;
+        if (timeSignatureIndex < timeSignatures.length && currentTick >= timeSignatures[timeSignatureIndex].startTick) {
+            console.log(`Adding time signature at tick ${currentTick}`);
+            stave.addTimeSignature(`${timeSignatures[timeSignatureIndex].numerator}/${timeSignatures[timeSignatureIndex].denominator}`);
+            timeSignatureIndex++;
+        }
+
+        // Якщо відстань до кінця стану або це останній елемент, перехід на новий рядок
         if (widthUsed >= staveWidth - 50 || idx === vexflowElements.length - 1) {
+            console.log(`Drawing elements for stave (index: ${idx})`);
             Formatter.FormatAndDraw(context, stave, elementsPerStave);
+
+            // Перехід на новий рядок, додавання ключа
             x = 10;
             y += staveHeight;
             stave = new Stave(x, y, staveWidth);
+            stave.addClef('treble'); // Додаємо ключ на новому рядку
             stave.setContext(context).draw();
             widthUsed = 0;
             elementsPerStave = [];
         }
     });
+
 }
 function getTimeSignatures(midiFile) {
     const signatures = [];
