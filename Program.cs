@@ -15,7 +15,6 @@ namespace Melodies25
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            var env = builder.Environment;
 
             // Створюємо логер для відлагодження
             var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
@@ -53,7 +52,7 @@ namespace Melodies25
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
-            
+
             builder.Services.AddControllersWithViews();
 
             builder.Services.ConfigureApplicationCookie(options =>
@@ -80,7 +79,7 @@ namespace Melodies25
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-            
+
             //щоб завантажувалось все що в css, js та інших локаціях
             app.UseStaticFiles();
 
