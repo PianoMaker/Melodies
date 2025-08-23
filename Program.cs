@@ -6,6 +6,7 @@ using Melodies25.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Microsoft.AspNetCore.Identity.UI.Services; // added
 
 
 namespace Melodies25
@@ -21,13 +22,13 @@ namespace Melodies25
             /*TWO DATABASES*/
 
             builder.Services.AddDbContext<Melodies25Context>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter"))); // БД *з* якої копіюють
+                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio"))); // БД *з* якої копіюють
 
             builder.Services.AddDbContext<Melodies25TargetContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio"))); // БД *до* якої копіюють
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter"))); // БД *до* якої копіюють
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // Вставте відповідний рядок підключення
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter"))); // Вставте відповідний рядок підключення
 
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -42,8 +43,8 @@ namespace Melodies25
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-
-
+            // Dummy email sender registration
+            builder.Services.AddSingleton<IEmailSender, Services.DummyEmailSender>();
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
@@ -59,7 +60,7 @@ namespace Melodies25
                         factory.Create(typeof(SharedResource))
                 );
 
-           
+
 
             builder.Services.AddScoped<DatabaseSyncService>();
 
@@ -91,14 +92,14 @@ namespace Melodies25
 
             app.MapRazorPages();
 
-            
+
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 var syncService = services.GetRequiredService<DatabaseSyncService>();
                 syncService.SyncDatabasesAsync().GetAwaiter().GetResult(); // Викликаємо синхронізацію
             }
-            
+
             app.Run();
         }
     }
