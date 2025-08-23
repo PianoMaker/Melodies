@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Melodies25.Pages.Account
 {
@@ -215,6 +216,27 @@ namespace Melodies25.Pages.Account
                 }
             }
             return BadRequest("Не вдалося видалити користувача.");
+        }
+
+        // NEW: Unlock user (clear lockout)
+        public async Task<IActionResult> OnPostUnlockUserAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Clear lockout
+            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow);
+            await _userManager.ResetAccessFailedCountAsync(user);
+            TempData["SuccessMessage"] = $"Розблоковано {user.Email}.";
+            return RedirectToPage();
         }
     }
 }

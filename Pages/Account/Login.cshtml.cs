@@ -35,68 +35,70 @@ namespace Melodies25.Pages.Account
             public string Password { get; set; }
         }
 
-
         public void OnGet()
         {
             MessageL(Music.COLORS.yellow, "Login / OnGet method");
         }
 
-        // Обробка входу
         public async Task<IActionResult> OnPostAsync()
         {
             MessageL(Music.COLORS.yellow, "Login / OnPostAsync method");
 
             if (!ModelState.IsValid)
+                return Page();
+
+            var user = await _userManager.FindByEmailAsync(Input.Email);
+            if (user == null)
             {
+                ModelState.AddModelError(string.Empty, "Користувача з таким email не існує.");
                 return Page();
             }
 
-            var user = await _userManager.FindByEmailAsync(Input.Email);
-            if (user != null && !await _userManager.IsEmailConfirmedAsync(user))
+            if (!await _userManager.IsEmailConfirmedAsync(user))
             {
-                ModelState.AddModelError(string.Empty, "You must confirm your email before logging in.");
-                Console.WriteLine("User is not confirmed");
+                ModelState.AddModelError(string.Empty, "Email не підтверджений. Перевірте пошту.");
                 return Page();
             }
-            var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, false, false);
+
+            var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, false, lockoutOnFailure: true);
 
             if (result.Succeeded)
             {
-                return RedirectToPage("/Index"); // Перехід після входу
+                return RedirectToPage("/Index");
             }
-            else if (result.RequiresTwoFactor)
+            if (result.RequiresTwoFactor)
             {
-                Console.WriteLine("Two-factor authentication is required.");
+                ModelState.AddModelError(string.Empty, "Потрібна двофакторна автентифікація.");
+                return Page();
             }
-            else
+            if (result.IsLockedOut)
             {
-                Console.WriteLine("Invalid login attempt. Here are some possible reasons:");
-                Console.WriteLine($"IsLockedOut: {result.IsLockedOut}");
-                Console.WriteLine($"RequiresTwoFactor: {result.RequiresTwoFactor}");
-                Console.WriteLine($"IsNotAllowed: {result.IsNotAllowed}");
+                ModelState.AddModelError(string.Empty, "Обліковий запис заблоковано через багато невдалих спроб. Спробуйте пізніше.");
+                return Page();
+            }
+            if (result.IsNotAllowed)
+            {
+                ModelState.AddModelError(string.Empty, "Вхід заборонено для цього облікового запису.");
+                return Page();
             }
 
-
-            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            // Generic wrong password case
+            ModelState.AddModelError(string.Empty, "Невірний пароль.");
             return Page();
         }
 
-        
-        // Обробка відновлення паролю
         public async Task<IActionResult> OnPostRecoverPasswordAsync()
         {
-
             MessageL(Music.COLORS.yellow, "OnPostRecoverPasswordAsync");
-            if (string.IsNullOrEmpty(Input.Email))
+            if (Input == null || string.IsNullOrEmpty(Input.Email))
             {
-                ModelState.AddModelError(string.Empty, "Будь ласка, введіть Email");
+                ModelState.AddModelError(string.Empty, "Вкажіть Email.");
                 return Page();
             }
 
             var user = await _userManager.FindByEmailAsync(Input.Email);
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
             {
-                // Не повідомляємо, чи існує користувач, щоб уникнути зловживань
                 return RedirectToPage("/Account/RecoverPasswordConfirmation");
             }
 
@@ -110,7 +112,7 @@ namespace Melodies25.Pages.Account
             await _emailSender.SendEmailAsync(
                 Input.Email,
                 "Скидання пароля",
-                $"Для скидання пароля перейдіть за <a href='{callbackUrl}'>цим посиланням</a>.");
+                $"Для скидання пароля перейдіть за посиланням: <a href='{callbackUrl}'>Скинути пароль</a>.");
 
             return RedirectToPage("/Account/RecoverPasswordConfirmation");
         }

@@ -4,23 +4,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Text;
 using static Music.Messages;
 using Music;
+using System.ComponentModel.DataAnnotations;
 
 namespace Melodies25.Pages
 {
     public class RecoverPasswordModel : PageModel
     {
         [BindProperty]
-        public string Email { get; set; }
+        [Required(ErrorMessage = "Вкажіть email.")]
+        [EmailAddress(ErrorMessage = "Невірний формат email.")]
+        public string Email { get; set; } = string.Empty;
+
+        [TempData]
+        public string? PwdResetMsg { get; set; }
 
         private readonly UserManager<IdentityUser> _userManager;
 
         public RecoverPasswordModel(UserManager<IdentityUser> userManager)
         {
             _userManager = userManager;
+        }
+
+        public void OnGet()
+        {
+            // just render page; TempData message (PwdResetMsg) shown in cshtml
         }
 
         public async Task<IActionResult> OnPost()
@@ -35,46 +45,38 @@ namespace Melodies25.Pages
             var user = await _userManager.FindByEmailAsync(Email);
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Користувача з таким email не знайдено.");
-                ErrorMessageL("Користувача з таким email не знайдено.");
-                return Page();
+                // Do not reveal that user does not exist (to prevent enumeration)
+                PwdResetMsg = "Якщо обліковий запис існує, новий пароль надіслано на пошту.";
+                return RedirectToPage();
             }
 
-            // Генерація нового пароля
+            // Generate new strong password
             var newPassword = GenerateRandomPassword();
-
-            // Створення токена і скидання пароля
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            Console.WriteLine($"Generated token: {token}");
-
             var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
             if (!result.Succeeded)
             {
-                ModelState.AddModelError(string.Empty, "Не вдалося оновити пароль.");
-                Console.WriteLine("Password reset failed.");
                 foreach (var error in result.Errors)
                 {
-                    Console.WriteLine($"Error: {error.Code} - {error.Description}");
+                    ModelState.AddModelError(string.Empty, error.Description);
                 }
                 return Page();
             }
 
-            // Відправка листа
             var emailSent = await SendPasswordEmailAsync(Email, newPassword);
             if (emailSent)
             {
-                Console.WriteLine("Password reset email sent successfully.");
-                return RedirectToPage("/Account/RecoverPasswordConfirmation");
+                PwdResetMsg = "Новий пароль надіслано на вашу електронну адресу.";
+                return RedirectToPage();
             }
 
-            ModelState.AddModelError(string.Empty, "Помилка відправки листа.");
-            Console.WriteLine("Error sending email.");
+            ModelState.AddModelError(string.Empty, "Сталася помилка під час надсилання листа. Спробуйте пізніше.");
             return Page();
         }
 
         private string GenerateRandomPassword()
         {
-            var length = 12; // Мінімальна довжина пароля
+            var length = 12;
             var random = new Random();
             var password = new StringBuilder();
 
@@ -85,7 +87,7 @@ namespace Melodies25.Pages
 
             while (password.Length < length)
             {
-                var character = (char)random.Next(33, 126); // Генерація випадкового символу
+                var character = (char)random.Next(33, 126);
                 password.Append(character);
 
                 if (char.IsUpper(character)) containsUppercase = true;
@@ -94,15 +96,13 @@ namespace Melodies25.Pages
                 if (!char.IsLetterOrDigit(character)) containsSpecialChar = true;
             }
 
-            // Додаємо символи, якщо вони відсутні
-            if (!containsUppercase) password.Append('A'); // Додаємо велику літеру
-            if (!containsLowercase) password.Append('a'); // Додаємо малу літеру
-            if (!containsDigit) password.Append('1'); // Додаємо цифру
-            if (!containsSpecialChar) password.Append('!'); // Додаємо спеціальний символ
+            if (!containsUppercase) password.Append('A');
+            if (!containsLowercase) password.Append('a');
+            if (!containsDigit) password.Append('1');
+            if (!containsSpecialChar) password.Append('!');
 
             return password.ToString();
         }
-
 
         private async Task<bool> SendPasswordEmailAsync(string email, string newPassword)
         {
@@ -110,10 +110,10 @@ namespace Melodies25.Pages
             {
                 var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
-                    Port = 587, // або 465 для SSL 587 для 
-                    Credentials = new NetworkCredential("melody.pianomaker@gmail.com", "gfel ktvy ribw katy"),
+                    Port = 587,
+                    Credentials = new NetworkCredential("melody.pianomaker@gmail.com", "gfel ktvy ribw katy"), // TODO: move to secrets
                     EnableSsl = true,
-                }; 
+                };
 
                 var mailMessage = new MailMessage
                 {
@@ -124,14 +124,12 @@ namespace Melodies25.Pages
                 };
                 mailMessage.To.Add(email);
 
-                // Відправка листа
                 await smtpClient.SendMailAsync(mailMessage);
                 return true;
             }
             catch (Exception ex)
             {
-                // Логування помилки або інші дії
-                Console.WriteLine($"Помилка відправки листа: {ex.Message}");
+                Console.WriteLine($"Помилка при надсиланні листа: {ex.Message}");
                 return false;
             }
         }
