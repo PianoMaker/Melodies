@@ -7,6 +7,7 @@ using NAudio.Midi;
 using System.Text.Json;
 using static Music.Messages;
 using MetaEvent = NAudio.Midi.MetaEvent;
+using MidiEvent = NAudio.Midi.MidiEvent;
 using MidiFile = NAudio.Midi.MidiFile;
 
 namespace Melodies25.Pages.Account
@@ -42,9 +43,9 @@ namespace Melodies25.Pages.Account
                                  .ToList();
         }
 
-        public void OnPost()
+        public void OnPostCheck()
         {
-            MessageL(COLORS.yellow, $"Notation / OnPost, {SelectedMidiFile}");
+            MessageL(COLORS.yellow, $"Notation / OnPostCheck, {SelectedMidiFile}");
             InitializeFiles();
             try
             {
@@ -85,6 +86,64 @@ namespace Melodies25.Pages.Account
                 CheckMessage = msg;
                 Console.WriteLine(msg);
             }
+        }
+
+        public IActionResult OnPostAddEOF()
+        {
+            MessageL(COLORS.yellow, $"Notation / OnPostEOF, {SelectedMidiFile}");
+            InitializeFiles();
+
+            if (string.IsNullOrEmpty(SelectedMidiFile))
+            {
+                ModelState.AddModelError("", "No file selected.");
+                return Page();
+            }
+
+            var path = Path.Combine("wwwroot", "melodies", SelectedMidiFile);
+
+            if (!System.IO.File.Exists(path))
+            {
+                ModelState.AddModelError("", "Selected file not found.");
+                return Page();
+            }
+
+            try
+            {
+                var midiFile = new MidiFile(path, false);
+
+                foreach (var track in midiFile.Events)
+                {
+                    // Створюємо новий список подій без існуючих EndTrack
+                    var filteredEvents = new List<MidiEvent>();
+
+                    foreach (var midiEvent in track)
+                    {
+                        if (midiEvent is MetaEvent metaEvent && metaEvent.MetaEventType == MetaEventType.EndTrack)
+                            continue; // пропускаємо EndTrack
+                        filteredEvents.Add(midiEvent);
+                    }
+
+                    // Додаємо новий EndTrack після останньої події
+                    long lastTime = filteredEvents.Any() ? filteredEvents.Max(ev => ev.AbsoluteTime) : 0;
+                    filteredEvents.Add(new MetaEvent(MetaEventType.EndTrack, 0, lastTime + 1));
+
+                    // Очищаємо трек і додаємо нові події, відсортовані за часом
+                    track.Clear();
+                    foreach (var midiEvent in filteredEvents.OrderBy(ev => ev.AbsoluteTime))
+                    {
+                        track.Add(midiEvent);
+                    }
+                }
+
+                // Перезаписати файл через MidiFile.Export
+                MidiFile.Export(path, midiFile.Events);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Error: {ex.Message}");
+            }
+
+            return RedirectToPage();
         }
     }
 }

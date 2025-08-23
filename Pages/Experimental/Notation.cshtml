@@ -11,7 +11,8 @@
             <option value="@file">@file</option>
         }
     </select>
-    <button type="submit">check</button>
+    <button asp-page-handler="Check" type="submit">Check</button>
+    <button asp-page-handler="AddEOF" type="submit">Add EOF</button>
 </form>
 <p> @Model.CheckMessage</p>
 
