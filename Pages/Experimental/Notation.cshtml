@@ -4,6 +4,18 @@
 }
 @await Html.PartialAsync("_adminMenu")
 
+<h2>Оберіть Midi-файл для відображення</h2>
+<form method="post">
+    <select id="midifiles" asp-for="SelectedMidiFile">
+        @foreach (var file in Model.MidiFiles)
+        {
+            <option value="@file">@file</option>
+        }
+    </select>
+    <button asp-page-handler="Check" type="submit">Check</button>
+    <button asp-page-handler="AddEOF" type="submit">Add EOF</button>
+</form>
+<p> @Model.CheckMessage</p>
 
 <div id="notation"></div>
 <script src="~/js/notation.js">   
