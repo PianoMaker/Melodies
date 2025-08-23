@@ -1,15 +1,15 @@
-для синхронізації файлів 
+для синхронізації файлів
 
-git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\Pages\Melodies\Index.cshtml.cs
-git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\Pages\Authors\Index.cshtml.cs
-git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\wwwroot\css
-git restore --source=master E:\G_docs\ASP.NET\Melodies\wwwroot\js
-git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\wwwroot\melodies
-git restore --source=master E:\G_docs\ASP.NET\Melodies\wwwroot\mp3
-git restore --source=master E:\G_docs\ASP.NET\Melodies\Pages\
-git restore --source=master E:\G_docs\ASP.NET\Melodies\Utilities\
-git restore --source=master E:\G_docs\ASP.NET\Melodies\Models\
-git restore --source=master E:\G_docs\ASP.NET\Melodies\Services\
-git restore --source=twoDatabases E:\G_docs\ASP.NET\Melodies\lifehack.txt
+git restore --source=twoDatabases E:\Programming\Melodies\Pages\Melodies\Index.cshtml.cs
+git restore --source=twoDatabases E:\Programming\Melodies\Pages\Authors\Index.cshtml.cs
+git restore --source=twoDatabases E:\Programming\Melodies\wwwroot\css
+git restore --source=master E:\Programming\Melodies\wwwroot\js
+git restore --source=twoDatabases E:\Programming\Melodies\wwwroot\melodies
+git restore --source=master E:\Programming\Melodies\wwwroot\mp3
+git restore --source=master E:\Programming\Melodies\Pages\
+git restore --source=master E:\Programming\Melodies\Utilities\
+git restore --source=master E:\Programming\Melodies\Models\
+git restore --source=master E:\Programming\Melodies\Services\
+git restore --source=twoDatabases E:\Programming\Melodies\lifehack.txt
 
-git restore --source=possible-production-config E:\G_docs\ASP.NET\Melodies\wwwroot\js
+git restore --source=possible-production-config E:\Programming\Melodies\wwwroot\js
