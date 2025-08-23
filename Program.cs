@@ -151,6 +151,7 @@ namespace Melodies25
             app.UseRouting();
 
             // Security headers (basic set; CSP omitted until inline scripts reviewed)
+            /*
             app.Use(async (context, next) =>
             {
                 var headers = context.Response.Headers;
@@ -160,6 +161,7 @@ namespace Melodies25
                 if (!headers.ContainsKey("X-XSS-Protection")) headers.Add("X-XSS-Protection", "0");
                 await next();
             });
+            */
 
             // Localization (before auth if UI culture affects auth flows)
             var supportedCultures = new[] { "uk", "en" };
