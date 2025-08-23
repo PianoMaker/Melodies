@@ -59,12 +59,15 @@ namespace Melodies25
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
+            bool allowHttp = builder.Configuration.GetValue("AllowHttp", true); // default true per request
+
             builder.Services.ConfigureApplicationCookie(options =>
             {
                 options.AccessDeniedPath = "/Account/AccessDenied";
                 options.SlidingExpiration = true;
                 options.Cookie.HttpOnly = true;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                // Allow HTTP if flag enabled
+                options.Cookie.SecurePolicy = allowHttp ? CookieSecurePolicy.None : CookieSecurePolicy.Always;
                 options.Cookie.SameSite = SameSiteMode.Lax;
             });
 
@@ -80,7 +83,16 @@ namespace Melodies25
 
             builder.Services.AddScoped<DataSeeder>();
 
-            builder.Services.AddSingleton<IEmailSender, DummyEmailSender>(); // TODO: replace with real implementation
+            // Email sender: try SMTP, fallback to dummy
+            if (!string.IsNullOrWhiteSpace(builder.Configuration["Smtp:Host"]) && !string.IsNullOrWhiteSpace(builder.Configuration["Smtp:User"]) && !string.IsNullOrWhiteSpace(builder.Configuration["Smtp:Password"]))
+            {
+                builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+            }
+            else
+            {
+                builder.Services.AddSingleton<IEmailSender, DummyEmailSender>();
+            }
+
             builder.Services.AddSession();
 
             builder.Services.AddResponseCompression();
@@ -112,14 +124,16 @@ namespace Melodies25
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error");
-                app.UseHsts();
+                // HSTS intentionally disabled to allow plain HTTP
+                // app.UseHsts();
             }
             else
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            // Keep HTTPS redirection disabled to allow HTTP access
+            // app.UseHttpsRedirection();
 
             // Static files with basic caching headers
             app.UseStaticFiles(new StaticFileOptions

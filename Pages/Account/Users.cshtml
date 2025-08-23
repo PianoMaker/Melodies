@@ -82,6 +82,9 @@
                                 <button type="submit" class="btn btn-warning btn-sm">Розблок</button>
                             </form>
                         }
+                        <form method="post" asp-page-handler="ResetPassword" asp-route-userId="@user.Id" class="d-inline">
+                            <button type="submit" class="btn btn-outline-primary btn-sm">ResetPwd</button>
+                        </form>
                         @if (!Model.UserRoles[user.Id].Contains("Admin") && Model.UserRoles[user.Id].Count > 1)
                         {
                             <form method="post" asp-page-handler="DeleteUser" asp-route-userId="@user.Id" class="d-inline">
