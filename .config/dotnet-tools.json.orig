@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "dotnet-ef": {
+<<<<<<< HEAD
+      "version": "9.0.3",
+=======
+      "version": "9.0.8",
+>>>>>>> 1b7206b (23-08 version)
+      "commands": [
+        "dotnet-ef"
+      ],
+      "rollForward": false
+    }
+  }
+}

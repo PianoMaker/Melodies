@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+<<<<<<< HEAD
+=======
 using Music;
 using NAudio.Midi;
 using System.Text.Json;
@@ -7,28 +9,16 @@ using static Music.Messages;
 using MetaEvent = NAudio.Midi.MetaEvent;
 using MidiEvent = NAudio.Midi.MidiEvent;
 using MidiFile = NAudio.Midi.MidiFile;
+>>>>>>> 1b7206b (23-08 version)
 
 namespace Melodies25.Pages.Account
 {
     public class NotationModel : PageModel
     {
-        private readonly IWebHostEnvironment _env;
-        public List<string> MidiFiles { get; set; } = default!;
-        public string MidiNotesJson { get; set; } = default!;
-
-        public string CheckMessage { get; set; }
-
-        public NotationModel(IWebHostEnvironment env)
-        {
-            _env = env;
-        }
-
-        [BindProperty]
-        public string SelectedMidiFile { get; set; } = default!;
-
-
         public void OnGet()
         {
+<<<<<<< HEAD
+=======
             MessageL(COLORS.yellow, "Notation / OnGet");
             InitializeFiles();
         }
@@ -84,6 +74,7 @@ namespace Melodies25.Pages.Account
                 CheckMessage = msg;
                 Console.WriteLine(msg);
             }
+>>>>>>> 1b7206b (23-08 version)
         }
 
         public IActionResult OnPostAddEOF()

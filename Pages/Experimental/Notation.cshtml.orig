@@ -1,0 +1,44 @@
+﻿@page
+@model Melodies25.Pages.Account.NotationModel
+@{
+}
+<<<<<<< HEAD
+@await Html.PartialAsync("_adminMenu")
+=======
+
+<h2>Оберіть Midi-файл для відображення</h2>
+<form method="post">
+    <select id="midifiles" asp-for="SelectedMidiFile">
+        @foreach (var file in Model.MidiFiles)
+        {
+            <option value="@file">@file</option>
+        }
+    </select>
+    <button asp-page-handler="Check" type="submit">Check</button>
+    <button asp-page-handler="AddEOF" type="submit">Add EOF</button>
+</form>
+<p> @Model.CheckMessage</p>
+
+
+<div style="display:inline-block; width:100%; margin-top: 20px">
+    <div id="SheetMusic" style="display:inline-block; width:80%; background-color: rgb(255,255,230)">
+        <p style="text-align: center">Ноти</p>
+        <div id="notation"></div>
+    </div><!--
+    --><div class="NotesList">
+        <p style="text-align: center">Музичний розмір:</br> <span id="timesignature"></span></p>        
+        <p style="text-align: center">Список нот</p>        
+        <div id="code" style="padding-left: 15px; "></div>
+    </div>
+</div>
+<script src="~/lib/midifile/midifile.bundle.js"></script> <!-- MIDI -->
+<script type="module" src="~/js/formatMidiNotesForDisplay.js"></script> <!-- MIDI -->
+<script type="module" src="~/js/NotationFetch.js"></script>
+>>>>>>> 1b7206b (23-08 version)
+
+
+<div id="notation"></div>
+<script src="~/js/notation.js">   
+</script>
+
+
