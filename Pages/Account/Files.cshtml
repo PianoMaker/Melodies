@@ -4,6 +4,10 @@
 }
 <h2>Управління файлами</h2>
 
+<form method="post" asp-page-handler="Export" class="mb-3">
+    <button type="submit" class="btn btn-success">Експорт БД</button>
+</form>
+
 <p>Усього файлів - @Model.NumberOfFiles</p>
 <p>Загальний обсяг - @Model.TotalSize кБ</p>
 

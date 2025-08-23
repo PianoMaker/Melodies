@@ -1,0 +1,1974 @@
+{
+  "ExportVersion": 1,
+  "GeneratedAtUtc": "2025-08-23T17:02:54.532565Z",
+  "Countries": [
+    {
+      "ID": 1,
+      "Name": "\u0423\u043A\u0440\u0430\u0457\u043D\u0430"
+    },
+    {
+      "ID": 3,
+      "Name": "\u041F\u043E\u043B\u044C\u0449\u0430"
+    },
+    {
+      "ID": 4,
+      "Name": "\u041D\u0456\u043C\u0435\u0447\u0447\u0438\u043D\u0430"
+    },
+    {
+      "ID": 5,
+      "Name": "\u0410\u0432\u0441\u0442\u0440\u0456\u044F"
+    },
+    {
+      "ID": 8,
+      "Name": "\u0424\u0440\u0430\u043D\u0446\u0456\u044F"
+    },
+    {
+      "ID": 15,
+      "Name": "\u041B\u0430\u0442\u0432\u0456\u044F"
+    },
+    {
+      "ID": 16,
+      "Name": "\u0412\u0435\u043B\u0438\u043A\u0430 \u0411\u0440\u0438\u0442\u0430\u043D\u0456\u044F"
+    },
+    {
+      "ID": 17,
+      "Name": "\u0421\u0428\u0410"
+    },
+    {
+      "ID": 18,
+      "Name": "\u0428\u0432\u0435\u0446\u0456\u044F"
+    },
+    {
+      "ID": 19,
+      "Name": "\u0406\u0441\u043F\u0430\u043D\u0456\u044F"
+    },
+    {
+      "ID": 20,
+      "Name": "\u0406\u0442\u0430\u043B\u0456\u044F"
+    },
+    {
+      "ID": 21,
+      "Name": "\u0411\u0440\u0430\u0437\u0438\u043B\u0456\u044F"
+    },
+    {
+      "ID": 22,
+      "Name": "\u043D\u0435\u0432\u0456\u0434\u043E\u043C\u0430 \u043A\u0440\u0430\u0457\u043D\u0430"
+    }
+  ],
+  "Authors": [
+    {
+      "ID": 2,
+      "Surname": "\u0423\u043A\u0440\u0430\u0457\u043D\u0441\u044C\u043A\u0430 \u043D\u0430\u0440\u043E\u0434\u043D\u0430 \u043F\u0456\u0441\u043D\u044F",
+      "Name": null,
+      "SurnameEn": "Ukrainska_narodna_pisnia",
+      "NameEn": null,
+      "CountryID": 1,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 3,
+      "Surname": "\u0406\u0432\u0430\u0441\u044E\u043A",
+      "Name": "\u0412\u043E\u043B\u043E\u0434\u0438\u043C\u0438\u0440",
+      "SurnameEn": "Ivasyuk",
+      "NameEn": "Volodymyr",
+      "CountryID": 1,
+      "DateOfBirth": 1949,
+      "DateOfDeath": 1979,
+      "Description": null
+    },
+    {
+      "ID": 4,
+      "Surname": "\u0411\u0430\u0445",
+      "Name": "\u0419\u043E\u0433\u0430\u043D\u043D \u0421\u0435\u0431\u0430\u0441\u0442\u044C\u044F\u043D",
+      "SurnameEn": "Bach",
+      "NameEn": "Johann_Sebastian",
+      "CountryID": 4,
+      "DateOfBirth": 1685,
+      "DateOfDeath": 1750,
+      "Description": null
+    },
+    {
+      "ID": 5,
+      "Surname": "\u041C\u043E\u0446\u0430\u0440\u0442",
+      "Name": "\u0412\u043E\u043B\u044C\u0444\u0433\u0430\u043D\u0433 \u0410\u043C\u0430\u0434\u0435\u0439 ",
+      "SurnameEn": "Mozart",
+      "NameEn": "Wolfgang Amadeus",
+      "CountryID": 5,
+      "DateOfBirth": 1756,
+      "DateOfDeath": 1791,
+      "Description": null
+    },
+    {
+      "ID": 6,
+      "Surname": "\u041A\u0430\u0440\u0430\u0431\u0438\u0446\u044C",
+      "Name": "\u0406\u0432\u0430\u043D",
+      "SurnameEn": "Karabyts",
+      "NameEn": "Ivan",
+      "CountryID": 1,
+      "DateOfBirth": 1945,
+      "DateOfDeath": 2002,
+      "Description": null
+    },
+    {
+      "ID": 7,
+      "Surname": "(\u043D\u0435\u0432\u0456\u0434\u043E\u043C\u043E)",
+      "Name": null,
+      "SurnameEn": "nevidomo",
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 8,
+      "Surname": "\u0412\u0435\u0440\u043C\u0435\u043D\u0438\u0447",
+      "Name": "\u0412\u043E\u043B\u043E\u0434\u0438\u043C\u0438\u0440 ",
+      "SurnameEn": "Vermenych",
+      "NameEn": "Volodymyr_",
+      "CountryID": 1,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 9,
+      "Surname": "\u0412\u043B\u0430\u0441\u043E\u0432",
+      "Name": "\u0412\u0456\u043A\u0442\u043E\u0440",
+      "SurnameEn": "Vlasov",
+      "NameEn": "Viktor",
+      "CountryID": 1,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 10,
+      "Surname": "\u0417\u0456\u0431\u0440\u043E\u0432",
+      "Name": "\u041F\u0430\u0432\u043B\u043E",
+      "SurnameEn": "Zibrov",
+      "NameEn": "Pavlo",
+      "CountryID": 1,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 11,
+      "Surname": "\u0411\u0435\u0442\u0445\u043E\u0432\u0435\u043D",
+      "Name": "\u041B\u044E\u0434\u0432\u0456\u0433 \u0432\u0430\u043D",
+      "SurnameEn": "Beethoven",
+      "NameEn": " Ludwig van",
+      "CountryID": 4,
+      "DateOfBirth": 1770,
+      "DateOfDeath": 1827,
+      "Description": null
+    },
+    {
+      "ID": 12,
+      "Surname": "\u041A\u0430\u0440\u043E\u043B\u044C ",
+      "Name": "\u0422\u0456\u043D\u0430",
+      "SurnameEn": "Karol_",
+      "NameEn": "Tina",
+      "CountryID": 1,
+      "DateOfBirth": 1985,
+      "DateOfDeath": null,
+      "Description": "\u0422\u0430\u043D\u044F \u041B\u0456\u0431\u0435\u0440\u043C\u0430\u043D"
+    },
+    {
+      "ID": 13,
+      "Surname": "The Beatles",
+      "Name": null,
+      "SurnameEn": "The_Beatles",
+      "NameEn": null,
+      "CountryID": 16,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 14,
+      "Surname": "\u0428\u0430\u043C\u043E",
+      "Name": "\u0406\u0433\u043E\u0440",
+      "SurnameEn": "Shamo",
+      "NameEn": "Ihor",
+      "CountryID": 1,
+      "DateOfBirth": 1925,
+      "DateOfDeath": 1982,
+      "Description": null
+    },
+    {
+      "ID": 15,
+      "Surname": "Adams",
+      "Name": "Yolanda",
+      "SurnameEn": "Adams",
+      "NameEn": "Yolanda",
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 16,
+      "Surname": "Ruskin",
+      "Name": "David ",
+      "SurnameEn": "Ruskin",
+      "NameEn": "David_",
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 17,
+      "Surname": "Youmans",
+      "Name": "Vincent ",
+      "SurnameEn": "Youmans",
+      "NameEn": "Vincent_",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 18,
+      "Surname": "Duke",
+      "Name": "Vernon",
+      "SurnameEn": "Duke",
+      "NameEn": "Vernon",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 19,
+      "Surname": "\u041C\u043E\u043D\u043A",
+      "Name": "\u0422\u0435\u043B\u043E\u043D\u0456\u0443\u0441",
+      "SurnameEn": "Monk",
+      "NameEn": "Thelonious",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 20,
+      "Surname": "\u0415\u043B\u043B\u0456\u043D\u0433\u0442\u043E\u043D",
+      "Name": "\u0414\u044E\u043A",
+      "SurnameEn": "Ellington",
+      "NameEn": "Duke",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 37,
+      "Surname": "\u0414\u0436\u0430\u0437\u043E\u0442\u0442\u043E",
+      "Name": "\u0420\u0435\u043C\u043E",
+      "SurnameEn": "Dzhazotto",
+      "NameEn": "Remo",
+      "CountryID": 20,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 38,
+      "Surname": "ABBA",
+      "Name": null,
+      "SurnameEn": "ABBA",
+      "NameEn": null,
+      "CountryID": 18,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 39,
+      "Surname": "testauthor",
+      "Name": "",
+      "SurnameEn": "testauthor",
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 40,
+      "Surname": "Queen",
+      "Name": null,
+      "SurnameEn": "Queen",
+      "NameEn": null,
+      "CountryID": 16,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 41,
+      "Surname": "Zimmer",
+      "Name": "Hans",
+      "SurnameEn": "Zimmer",
+      "NameEn": "Hans",
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 42,
+      "Surname": "\u041F\u0443\u0447\u0447\u0456\u043D\u0456",
+      "Name": "\u0414\u0436\u0430\u043A\u043A\u043E\u043C\u043E",
+      "SurnameEn": "Puchchini",
+      "NameEn": "Dzhakkomo",
+      "CountryID": 20,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 43,
+      "Surname": "Dennis",
+      "Name": "Matt",
+      "SurnameEn": "Dennis",
+      "NameEn": "Matt",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 44,
+      "Surname": "Rose",
+      "Name": "Vincent",
+      "SurnameEn": "Rose",
+      "NameEn": "Vincent",
+      "CountryID": 20,
+      "DateOfBirth": 1880,
+      "DateOfDeath": 1944,
+      "Description": null
+    },
+    {
+      "ID": 45,
+      "Surname": "Velazquez",
+      "Name": "Consuelo",
+      "SurnameEn": "Velazquez",
+      "NameEn": "Consuelo",
+      "CountryID": 19,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 46,
+      "Surname": "\u0490\u0456\u043B\u0435\u0441\u043F\u0456",
+      "Name": "\u0414\u0456\u0437\u0437\u0456",
+      "SurnameEn": "Gillespie",
+      "NameEn": "Dizzy",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 47,
+      "Surname": "\u0406\u0442\u0430\u043B\u0456\u0439\u0441\u044C\u043A\u0430 \u043D\u0430\u0440\u043E\u0434\u043D\u0430 \u043F\u0456\u0441\u043D\u044F",
+      "Name": null,
+      "SurnameEn": "Italijska_narodna_pisnia",
+      "NameEn": null,
+      "CountryID": 20,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 48,
+      "Surname": "Dorham",
+      "Name": "Kenny",
+      "SurnameEn": "Dorham",
+      "NameEn": "Kenny",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 49,
+      "Surname": "\u041F\u0435\u0442\u0442\u0456\u0444\u043E\u0440\u0434",
+      "Name": "\u041E\u0441\u043A\u0430\u0440",
+      "SurnameEn": "Pettiford",
+      "NameEn": "Oscar",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 50,
+      "Surname": "Rollins",
+      "Name": "Sonny ",
+      "SurnameEn": "Rollins",
+      "NameEn": "Sonny_",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 51,
+      "Surname": "\u041F\u043E\u0440\u0442\u0435\u0440",
+      "Name": "\u041A\u043E\u043B",
+      "SurnameEn": "Porter",
+      "NameEn": "Cole",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 52,
+      "Surname": "\u041A\u0430\u0440\u043C\u0430\u0439\u043A\u043B",
+      "Name": "\u0413\u043E\u0491\u0456",
+      "SurnameEn": "Carmichael",
+      "NameEn": "Hoagy ",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 53,
+      "Surname": "\u041A\u043E\u043B\u0442\u0440\u0435\u0439\u043D",
+      "Name": "\u0414\u0436\u043E\u043D",
+      "SurnameEn": "Coltrane",
+      "NameEn": "John",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 54,
+      "Surname": "Jobim",
+      "Name": "Ant\u00F4nio Carlos ",
+      "SurnameEn": "Jobim",
+      "NameEn": "Ant\u00F4nio_Carlos_",
+      "CountryID": 21,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 55,
+      "Surname": "\u0413\u0435\u0440\u0448\u0432\u0456\u043D",
+      "Name": "\u0414\u0436\u043E\u0440\u0434\u0436",
+      "SurnameEn": "Hershvin",
+      "NameEn": "Dzhordzh",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 56,
+      "Surname": "\u0427\u0430\u043F\u043B\u0456\u043D",
+      "Name": "\u0427\u0430\u0440\u043B\u0456",
+      "SurnameEn": "Chaplin",
+      "NameEn": "Charli",
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 57,
+      "Surname": "\u0421\u0430\u0439\u043C\u0435\u043D\u0441",
+      "Name": "\u0421\u0435\u0439\u043C\u0443\u0440",
+      "SurnameEn": "Simens",
+      "NameEn": "Seymour",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 58,
+      "Surname": "\u041F\u0430\u0440\u043A\u0435\u0440",
+      "Name": "\u0427\u0430\u0440\u043B\u0456",
+      "SurnameEn": "Parker",
+      "NameEn": "Charlie ",
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 59,
+      "Surname": "\u041A\u043E\u0441\u043C\u0430",
+      "Name": "\u0416\u043E\u0441\u0435\u0444 ",
+      "SurnameEn": "Kosma",
+      "NameEn": "Joseph ",
+      "CountryID": 8,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 60,
+      "Surname": "\u0415\u0432\u0430\u043D\u0441",
+      "Name": "\u0411\u0456\u043B",
+      "SurnameEn": "Evans",
+      "NameEn": "Bill",
+      "CountryID": 17,
+      "DateOfBirth": 1929,
+      "DateOfDeath": 1980,
+      "Description": null
+    },
+    {
+      "ID": 61,
+      "Surname": "\u0421\u0442\u0435\u0446\u0435\u043D\u043A\u043E",
+      "Name": "\u041A\u0438\u0440\u0438\u043B\u043E",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 62,
+      "Surname": "\u041C\u0430\u043A\u043A\u0430\u0440\u0442\u043D\u0456",
+      "Name": "\u041F\u043E\u043B",
+      "SurnameEn": "McCartney",
+      "NameEn": "Paul",
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 63,
+      "Surname": "author",
+      "Name": "test",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 64,
+      "Surname": "test",
+      "Name": "",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 65,
+      "Surname": "test",
+      "Name": "",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 66,
+      "Surname": "test",
+      "Name": "",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 67,
+      "Surname": "\u0435\u0443\u0456\u0435",
+      "Name": "",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 68,
+      "Surname": "\u041B\u0438\u0441\u0435\u043D\u043A\u043E",
+      "Name": "\u041C\u0438\u043A\u043E\u043B\u0430",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": 1,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 69,
+      "Surname": "test",
+      "Name": "",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 70,
+      "Surname": "test",
+      "Name": "",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 71,
+      "Surname": "test",
+      "Name": "",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 72,
+      "Surname": "test45",
+      "Name": "",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 73,
+      "Surname": "test878",
+      "Name": "",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 74,
+      "Surname": "Monk",
+      "Name": "Thelonious ",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 75,
+      "Surname": "Ellington",
+      "Name": "Duke",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": 17,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 76,
+      "Surname": "\u041F\u043E\u043B\u044C\u0441\u044C\u043A\u0430 \u043D\u0430\u0440\u043E\u0434\u043D\u0430 \u043F\u0456\u0441\u043D\u044F",
+      "Name": null,
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": 3,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 77,
+      "Surname": "\u0421\u0442\u0430\u043D\u0434\u0430\u0440\u0442\u043D\u0456 \u043F\u043E\u0441\u043B\u0456\u0434\u043E\u0432\u043D\u043E\u0441\u0442\u0456",
+      "Name": null,
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": "\u0441\u0442\u0430\u043D\u0434\u0430\u0440\u0442\u043D\u0456 \u043F\u043E\u0441\u043B\u0456\u0434\u043E\u0432\u043D\u043E\u0441\u0442\u0456 \u0437\u0432\u0443\u043A\u0456\u0432"
+    },
+    {
+      "ID": 78,
+      "Surname": "\u041B\u044F\u0442\u043E\u0448\u0438\u043D\u0441\u044C\u043A\u0438\u0439",
+      "Name": "\u0411\u043E\u0440\u0438\u0441",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    },
+    {
+      "ID": 79,
+      "Surname": "\u041B\u044E\u0434\u043A\u0435\u0432\u0438\u0447",
+      "Name": "\u0421\u0442\u0430\u043D\u0456\u0441\u043B\u0430\u0432",
+      "SurnameEn": null,
+      "NameEn": null,
+      "CountryID": null,
+      "DateOfBirth": null,
+      "DateOfDeath": null,
+      "Description": null
+    }
+  ],
+  "Melodies": [
+    {
+      "ID": 2,
+      "Title": "\u0427\u0435\u0440\u0432\u043E\u043D\u0430 \u0420\u0443\u0442\u0430",
+      "Year": 1970,
+      "Description": null,
+      "FilePath": "Ivasyuk_Chervona_Ruta.mid",
+      "IsFileEligible": true,
+      "Tonality": "fis-moll",
+      "AuthorID": 3
+    },
+    {
+      "ID": 3,
+      "Title": "\u041E\u0439 \u043D\u0430 \u0433\u043E\u0440\u0456 \u0434\u0432\u0430 \u0434\u0443\u0431\u043A\u0438",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_na_hori_dva_dubky.mid",
+      "IsFileEligible": true,
+      "Tonality": "a-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 4,
+      "Title": "\u041E\u0439 \u0447\u0438\u0439 \u0442\u043E \u043A\u0456\u043D\u044C \u0441\u0442\u043E\u0457\u0442\u044C",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_chyj_to_kin_stoit.mid",
+      "IsFileEligible": true,
+      "Tonality": "a-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 5,
+      "Title": "\u041E\u0439 \u0445\u043E\u0434\u0438\u0442\u044C \u0441\u043E\u043D",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_khodyt_son.mid",
+      "IsFileEligible": true,
+      "Tonality": "gis-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 8,
+      "Title": "\u0410\u0440\u0456\u044F \u0411\u0430\u0440\u0431\u0430\u0440\u0456\u043D\u0438",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Motsart_Ariya_Barbariny.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 5
+    },
+    {
+      "ID": 10,
+      "Title": "\u0423\u0442\u043E\u043F\u0442\u0430\u043B\u0430 \u0441\u0442\u0435\u0436\u0435\u0447\u043A\u0443",
+      "Year": null,
+      "Description": "1",
+      "FilePath": "Vlasov_Utoptala_stezhechku.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 9
+    },
+    {
+      "ID": 11,
+      "Title": "\u042F \u043F\u0456\u0434\u0443 \u0432 \u0434\u0430\u043B\u0435\u043A\u0456 \u0433\u043E\u0440\u0438",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ivasyuk_Ya_pidu_v_daleki_hory.mid",
+      "IsFileEligible": true,
+      "Tonality": "a-moll",
+      "AuthorID": 3
+    },
+    {
+      "ID": 12,
+      "Title": "\u0427\u043E\u0440\u043D\u043E\u0431\u0440\u0438\u0432\u0446\u0456",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Vermenych_Chornobryvtsi.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 8
+    },
+    {
+      "ID": 13,
+      "Title": "\u0421\u043F\u0438 \u043C\u043E\u044F \u0440\u0430\u0434\u0456\u0441\u0442\u044C",
+      "Year": null,
+      "Description": "\u041E\u0440\u0438\u0433\u0456\u043D\u0430\u043B\u044C\u043D\u0430 \u043D\u0430\u0437\u0432\u0430 - Schlafe, mein Prinzchen, schlaf\u0027 ein",
+      "FilePath": "nevidomo_Spy_moya_radist.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 7
+    },
+    {
+      "ID": 14,
+      "Title": "\u0425\u0440\u0435\u0449\u0430\u0442\u0438\u043A",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Zibrov_Khreshchatyk.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 10
+    },
+    {
+      "ID": 15,
+      "Title": "\u0425\u043B\u043E\u043F\u0446\u0456 \u0456\u0434\u0435\u043C\u043E",
+      "Year": null,
+      "Description": "\u0441\u0442\u0440\u0456\u043B\u0435\u0446\u044C\u043A\u0430 \u043F\u0456\u0441\u043D\u044F",
+      "FilePath": "Ukrainska_narodna_pisnia_Khloptsi_idemo.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 2
+    },
+    {
+      "ID": 16,
+      "Title": "\u0420\u0435\u0432\u0435 \u0442\u0430 \u0441\u0442\u043E\u0433\u043D\u0435 \u0414\u043D\u0456\u043F\u0440 \u0448\u0438\u0440\u043E\u043A\u0438\u0439",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Reve_ta_stohne_Dnipr_shyrokyj.mid",
+      "IsFileEligible": true,
+      "Tonality": "d-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 17,
+      "Title": "\u041E\u0439 \u0440\u0430\u0434\u0443\u0439\u0441\u044F \u0437\u0435\u043C\u043B\u0435",
+      "Year": null,
+      "Description": "\u041A\u043E\u043B\u044F\u0434\u043A\u0430",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_radujsia_zemle.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 2
+    },
+    {
+      "ID": 18,
+      "Title": "\u042F \u043B\u044E\u0431\u043B\u044E \u0443 \u043F\u043E\u043B\u0456 \u043A\u0432\u0456\u0442\u0438",
+      "Year": null,
+      "Description": "\u0413\u0430\u043D\u043D\u0430 \u0427\u0443\u0431\u0430\u0447, \u0434\u0438\u0442\u044F\u0447\u0430",
+      "FilePath": "nevidomo_Ya_lyublyu_u_poli_kvity.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 7
+    },
+    {
+      "ID": 19,
+      "Title": "\u041A\u0430\u0437\u0430\u043B\u0430 \u043C\u0435\u043D\u0456 \u043C\u0430\u0442\u0438",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Kazala_meni_maty.mid",
+      "IsFileEligible": true,
+      "Tonality": "G-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 20,
+      "Title": "\u0411\u0430\u0431\u0430\u043A",
+      "Year": null,
+      "Description": "Marmotte",
+      "FilePath": "Betkhoven_Babak.mid",
+      "IsFileEligible": true,
+      "Tonality": "a-moll",
+      "AuthorID": 11
+    },
+    {
+      "ID": 21,
+      "Title": "Mickey Mouse the song",
+      "Year": null,
+      "Description": null,
+      "FilePath": null,
+      "IsFileEligible": false,
+      "Tonality": null,
+      "AuthorID": 7
+    },
+    {
+      "ID": 22,
+      "Title": "\u0411\u0430\u0442\u044C\u043A\u0456\u0432\u0441\u044C\u043A\u0438\u0439 \u043F\u043E\u0440\u0456\u0433",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Karabyts_Batkivskyj_porih.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 6
+    },
+    {
+      "ID": 23,
+      "Title": "\u041D\u0435\u0441\u0435 \u0413\u0430\u043B\u044F \u0432\u043E\u0434\u0443",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Nese_Halia_vodu.mid",
+      "IsFileEligible": true,
+      "Tonality": "a-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 24,
+      "Title": "Little april shower",
+      "Year": null,
+      "Description": "Disney song",
+      "FilePath": "nevidomo_Little_april_shower.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 7
+    },
+    {
+      "ID": 25,
+      "Title": "\u041D\u043E\u0432\u0430 \u0440\u0430\u0434\u0456\u0441\u0442\u044C",
+      "Year": null,
+      "Description": "\u043A\u043E\u043B\u044F\u0434\u043A\u0430",
+      "FilePath": "Ukrainska_narodna_pisnia_Nova_radist.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 2
+    },
+    {
+      "ID": 26,
+      "Title": "\u041E\u0439, \u043D\u0435 \u0448\u0443\u043C\u0438, \u043B\u0443\u0436\u0435",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Oj__ne_shumy__luzhe.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 2
+    },
+    {
+      "ID": 27,
+      "Title": "\u041B\u0435\u043D\u0442\u0430 \u0430 \u043B\u0435\u043D\u0442\u043E\u044E",
+      "Year": null,
+      "Description": "\u043F\u043E\u0432\u0441\u0442\u0430\u043D\u0441\u044C\u043A\u0430",
+      "FilePath": "Ukrainska_narodna_pisnia_Lenta_a_lentoyu.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 2
+    },
+    {
+      "ID": 28,
+      "Title": "\u041D\u0430\u043C\u0430\u043B\u044E\u044E \u0442\u043E\u0431\u0456 \u0441\u043E\u043D\u0446\u0435.",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Namalyuyu_tobi_sontse.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 12
+    },
+    {
+      "ID": 29,
+      "Title": "\u0417\u0440\u043E\u0434\u0438\u043B\u0438\u0441\u044C \u043C\u0438 \u0432\u0435\u043B\u0438\u043A\u043E\u0457 \u0433\u043E\u0434\u0438\u043D\u0438",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Zrodylys_my_velykoi_hodyny.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 2
+    },
+    {
+      "ID": 30,
+      "Title": "\u0413\u0435\u0439 \u0441\u043E\u043A\u043E\u043B\u0438",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Hej_sokoly.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 2
+    },
+    {
+      "ID": 31,
+      "Title": "\u0413\u0435\u0439 \u0432\u0438 \u043A\u043E\u0437\u0430\u0447\u0435\u043D\u044C\u043A\u0438",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Hej_vy_kozachenky.mid",
+      "IsFileEligible": true,
+      "Tonality": "e-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 32,
+      "Title": "Yesterday",
+      "Year": null,
+      "Description": null,
+      "FilePath": "The_Beatles_Yesterday.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 13
+    },
+    {
+      "ID": 33,
+      "Title": "\u041A\u0438\u0454\u0432\u0435 \u043C\u0456\u0439",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Shamo_Kyieve_mij.mid",
+      "IsFileEligible": true,
+      "Tonality": "f-moll",
+      "AuthorID": 14
+    },
+    {
+      "ID": 37,
+      "Title": "I believe",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Adams_I_believe.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 15
+    },
+    {
+      "ID": 38,
+      "Title": "Toward the sun",
+      "Year": null,
+      "Description": null,
+      "FilePath": "nevidomo_Toward_the_sun.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 7
+    },
+    {
+      "ID": 39,
+      "Title": "Ave Maria",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Bakh_Ave_Maria.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 4
+    },
+    {
+      "ID": 40,
+      "Title": "O bella ciao",
+      "Year": null,
+      "Description": null,
+      "FilePath": "nevidomo_O_bella_ciao.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 47
+    },
+    {
+      "ID": 42,
+      "Title": "Let it be",
+      "Year": null,
+      "Description": null,
+      "FilePath": "The_Beatles_Let_.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 13
+    },
+    {
+      "ID": 43,
+      "Title": "I Saw Her Standing There",
+      "Year": null,
+      "Description": null,
+      "FilePath": "The_Beatles_I_Saw_Her_Standing_There.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 13
+    },
+    {
+      "ID": 44,
+      "Title": "Laura",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ruskin_Laura.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 16
+    },
+    {
+      "ID": 45,
+      "Title": "Tea for two",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Youmans_Tea_for_two.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 17
+    },
+    {
+      "ID": 46,
+      "Title": "April in Paris",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Duke_April_in_Paris.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 18
+    },
+    {
+      "ID": 49,
+      "Title": "Sophisticated Lady",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ellington_Sophisticated_Lady.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 20
+    },
+    {
+      "ID": 50,
+      "Title": "Blue Monk",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Monk_Blue_Monk.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 19
+    },
+    {
+      "ID": 53,
+      "Title": "\u0410\u0434\u0430\u0436\u0456\u043E \u0410\u043B\u044C\u0431\u0456\u043D\u043E\u043D\u0456",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Dzhazotto_Adazhio_Albinoni.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 37
+    },
+    {
+      "ID": 54,
+      "Title": "Money money",
+      "Year": null,
+      "Description": null,
+      "FilePath": "ABBA_Money_money.mid",
+      "IsFileEligible": true,
+      "Tonality": "a-moll",
+      "AuthorID": 38
+    },
+    {
+      "ID": 56,
+      "Title": "He\u0027s a Pirate",
+      "Year": null,
+      "Description": "Pirates of the Caribbean",
+      "FilePath": "Zimmer_Hes_a_Pirate.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 41
+    },
+    {
+      "ID": 57,
+      "Title": "Fernando",
+      "Year": null,
+      "Description": null,
+      "FilePath": "ABBA_Fernando.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 38
+    },
+    {
+      "ID": 63,
+      "Title": "Blue bossa",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Dorham_Blue_bossa.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 48
+    },
+    {
+      "ID": 65,
+      "Title": "Doxy",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Rollins_Doxy.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 50
+    },
+    {
+      "ID": 67,
+      "Title": "Georgia on my mind",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Carmichael_Georgia_on_my_mind.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 52
+    },
+    {
+      "ID": 69,
+      "Title": "The Girl from Ipanema",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Jobim_The_Girl_from_Ipanema.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 54
+    },
+    {
+      "ID": 70,
+      "Title": "\u041C\u0456\u0441\u044F\u0446\u044C \u043D\u0430 \u043D\u0435\u0431\u0456",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Misiats_na_nebi.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 2
+    },
+    {
+      "ID": 71,
+      "Title": "\u041B\u0443\u0433\u043E\u043C \u0456\u0434\u0443 \u043A\u043E\u043D\u044F \u0432\u0435\u0434\u0443",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Luhom_idu_konia_vedu.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 2
+    },
+    {
+      "ID": 73,
+      "Title": "One note samba",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Jobim_One_note_samba.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 54
+    },
+    {
+      "ID": 75,
+      "Title": "ACDC current",
+      "Year": null,
+      "Description": null,
+      "FilePath": "nevidomo_ACDC_current.mid",
+      "IsFileEligible": true,
+      "Tonality": "G-dur",
+      "AuthorID": 7
+    },
+    {
+      "ID": 77,
+      "Title": "Au privave",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Parker_Au_privave.mid",
+      "IsFileEligible": true,
+      "Tonality": "F-dur",
+      "AuthorID": 58
+    },
+    {
+      "ID": 79,
+      "Title": "Blue in green",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Evans_Blue_in_green.mid",
+      "IsFileEligible": true,
+      "Tonality": "d-moll",
+      "AuthorID": 60
+    },
+    {
+      "ID": 81,
+      "Title": "Beautiful night",
+      "Year": 1997,
+      "Description": null,
+      "FilePath": "McCartney_Beautiful_night.mid",
+      "IsFileEligible": true,
+      "Tonality": "A-dur",
+      "AuthorID": 62
+    },
+    {
+      "ID": 83,
+      "Title": "Bohemian rapsody",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Queen_Bohemian_rapsody.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 40
+    },
+    {
+      "ID": 87,
+      "Title": "Everything happens to me",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Dennis_Everything_happens_to_me.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 43
+    },
+    {
+      "ID": 89,
+      "Title": "Besame mucho",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Velazquez_Besame_mucho.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 45
+    },
+    {
+      "ID": 102,
+      "Title": "Smile",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Chaplin_Smile.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 56
+    },
+    {
+      "ID": 124,
+      "Title": "Nessun dorma",
+      "Year": null,
+      "Description": "\u0410\u0440\u0456\u044F \u0437 \u043E\u043F\u0435\u0440\u0438 \u0422\u0443\u0440\u0430\u043D\u0434\u043E\u0442",
+      "FilePath": "Puchchini_Nessun_dorma.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 42
+    },
+    {
+      "ID": 126,
+      "Title": "Avalon",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Rose_Avalon.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 44
+    },
+    {
+      "ID": 128,
+      "Title": "Brick works",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Gillespie_Brick_works.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 46
+    },
+    {
+      "ID": 130,
+      "Title": "Blues in a closet",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Pettiford_Blues_in_a_closet.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 49
+    },
+    {
+      "ID": 132,
+      "Title": "Everything I love",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Porter_Everything_I_love.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 51
+    },
+    {
+      "ID": 134,
+      "Title": "Giant Steps",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Coltrane_Giant_Steps.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 53
+    },
+    {
+      "ID": 138,
+      "Title": "I\u0027ve got rhytm",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Hershvin_Ive_got_rhytm.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 55
+    },
+    {
+      "ID": 142,
+      "Title": "All of me",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Simens_All_of_me.mid",
+      "IsFileEligible": true,
+      "Tonality": "C-dur",
+      "AuthorID": 57
+    },
+    {
+      "ID": 144,
+      "Title": "Autumn leaves",
+      "Year": null,
+      "Description": null,
+      "FilePath": "nevidomo_Autumn_leaves.mid",
+      "IsFileEligible": true,
+      "Tonality": "e-moll",
+      "AuthorID": 59
+    },
+    {
+      "ID": 146,
+      "Title": "\u042F\u043A \u0443\u043C\u0440\u0443 \u0442\u043E \u043F\u043E\u0445\u043E\u0432\u0430\u0439\u0442\u0435",
+      "Year": null,
+      "Description": "\u043D\u0430 \u0441\u043B\u043E\u0432\u0430 \u0428\u0435\u0432\u0447\u0435\u043D\u043A\u0430",
+      "FilePath": "Stetsenko_Yak_umru_to_pokhovajte.mid",
+      "IsFileEligible": true,
+      "Tonality": "d-moll",
+      "AuthorID": 61
+    },
+    {
+      "ID": 148,
+      "Title": "\u0411\u043E\u0436\u0435 \u0432\u0435\u043B\u0438\u043A\u0438\u0439 \u0454\u0434\u0438\u043D\u0438\u0439",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Lysenko_Bozhe_velykyj_iedynyj.mid",
+      "IsFileEligible": true,
+      "Tonality": "D-dur",
+      "AuthorID": 68
+    },
+    {
+      "ID": 149,
+      "Title": "test c - e",
+      "Year": null,
+      "Description": null,
+      "FilePath": "test_test_c___e.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 71
+    },
+    {
+      "ID": 189,
+      "Title": "\u041D\u0430\u043C\u0430\u043B\u044E\u044E \u0442\u043E\u0431\u0456 \u0441\u043E\u043D\u0446\u0435.",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Namalyuyu_tobi_sontse.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 2
+    },
+    {
+      "ID": 190,
+      "Title": "O bella ciao",
+      "Year": null,
+      "Description": null,
+      "FilePath": "nevidomo_O_bella_ciao.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 7
+    },
+    {
+      "ID": 191,
+      "Title": "Sophisticated Lady",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ellington_Sophisticated_Lady.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 75
+    },
+    {
+      "ID": 192,
+      "Title": "Blue Monk",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Monk_Blue_Monk.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 74
+    },
+    {
+      "ID": 193,
+      "Title": "\u0422\u0435\u0447\u0435 \u0432\u043E\u0434\u0430 \u0432 \u0441\u0438\u043D\u0454 \u043C\u043E\u0440\u0435",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Liatoshynskyj_Teche_voda_v_synie_more.mid",
+      "IsFileEligible": false,
+      "Tonality": "es-moll",
+      "AuthorID": 78
+    },
+    {
+      "ID": 194,
+      "Title": "\u0434\u043E-\u0440\u0435-\u043C\u0456-\u0434\u043E-\u0440\u0435-\u0434\u043E",
+      "Year": null,
+      "Description": null,
+      "FilePath": "author_do_re_mi_do_re_do.mid",
+      "IsFileEligible": null,
+      "Tonality": "C-dur",
+      "AuthorID": 77
+    },
+    {
+      "ID": 195,
+      "Title": "\u0416\u0443\u0440\u0431\u0430 \u0437\u0430 \u0436\u0443\u0440\u0431\u043E\u044E",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Zhurba_za_zhurboyu.mid",
+      "IsFileEligible": null,
+      "Tonality": "f-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 196,
+      "Title": "\u041A\u0430\u043B\u0438\u043D\u043E \u043C\u0430\u043B\u0438\u043D\u043E",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Kalyno_malyno.mid",
+      "IsFileEligible": null,
+      "Tonality": "G-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 197,
+      "Title": "\u041E\u0439 \u0441\u0438\u0432\u0430\u044F \u0442\u0430 \u0456 \u0437\u043E\u0437\u0443\u043B\u0435\u043D\u044C\u043A\u0430",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_syvaya_ta_i_zozulenka.mid",
+      "IsFileEligible": null,
+      "Tonality": "a-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 198,
+      "Title": "\u041E\u0439 \u0437-\u0437\u0430 \u0433\u043E\u0440\u0438 \u043A\u0430\u043C\u0027\u044F\u043D\u043E\u0457",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441,118",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_z_za_hory_kamianoi.mid",
+      "IsFileEligible": true,
+      "Tonality": "f-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 199,
+      "Title": "\u0433\u043E \u0433\u043E \u0433\u043E \u043A\u043E\u0437\u0430",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441.37",
+      "FilePath": "Ukrainska_narodna_pisnia_ho_ho_ho_koza.mid",
+      "IsFileEligible": true,
+      "Tonality": "G-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 200,
+      "Title": "\u0427\u043E\u0433\u043E \u0441\u043E\u043B\u043E\u0432\u0435\u0439 \u0441\u043C\u0443\u0442\u0435\u043D",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441.196",
+      "FilePath": "Ukrainska_narodna_pisnia_Choho_solovej_smuten.mid",
+      "IsFileEligible": true,
+      "Tonality": "a-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 201,
+      "Title": "\u0410\u043B\u0438\u043B\u0443\u044F",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Lyudkevych_Alyluya.mid",
+      "IsFileEligible": null,
+      "Tonality": "B-dur",
+      "AuthorID": 79
+    },
+    {
+      "ID": 202,
+      "Title": "Major mode",
+      "Year": null,
+      "Description": null,
+      "FilePath": "Standartni_poslidovnosti_C_dur_mode.mid",
+      "IsFileEligible": true,
+      "Tonality": "C-dur",
+      "AuthorID": 77
+    },
+    {
+      "ID": 203,
+      "Title": "Minor Ukrainian mode",
+      "Year": null,
+      "Description": "\u0433\u0443\u0446\u0443\u043B\u044C\u0441\u044C\u043A\u0438\u0439 \u043B\u0430\u0434",
+      "FilePath": "Standartni_poslidovnosti_C_moll_ukrainian_mode.mid",
+      "IsFileEligible": true,
+      "Tonality": "c-moll",
+      "AuthorID": 77
+    },
+    {
+      "ID": 204,
+      "Title": "Minor harmonic mode",
+      "Year": null,
+      "Description": "\u0433\u0430\u0440\u043C\u043E\u043D\u0456\u0447\u043D\u0438\u0439 \u043C\u0456\u043D\u043E\u0440",
+      "FilePath": "Standartni_poslidovnosti_d_moll_harmonic_mode.mid",
+      "IsFileEligible": true,
+      "Tonality": "d-moll",
+      "AuthorID": 77
+    },
+    {
+      "ID": 205,
+      "Title": "\u041D\u0430\u0440\u0432\u0430\u043B\u0430 \u043A\u0432\u0456\u0442\u043E\u0447\u043E\u043A",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441,215",
+      "FilePath": "Ukrainska_narodna_pisnia_Narvala_kvitochok.mid",
+      "IsFileEligible": true,
+      "Tonality": "G-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 206,
+      "Title": "\u041C\u0430\u043B\u0430 \u043C\u0430\u0442\u0438 \u043E\u0434\u043D\u0443 \u0434\u043E\u0447\u043A\u0443",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441,117",
+      "FilePath": "Ukrainska_narodna_pisnia_Mala_maty_odnu_dochku.mid",
+      "IsFileEligible": null,
+      "Tonality": "h-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 207,
+      "Title": "\u041F\u0440\u044F\u043B\u044F",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441,115",
+      "FilePath": "Ukrainska_narodna_pisnia_Prialia.mid",
+      "IsFileEligible": null,
+      "Tonality": "e-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 208,
+      "Title": "\u041A\u043E\u0442\u0438\u043B\u0430\u0441\u044F \u0437\u0456\u0440\u043A\u0430",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441.96",
+      "FilePath": "Ukrainska_narodna_pisnia_Kotylasia_zirka.mid",
+      "IsFileEligible": true,
+      "Tonality": "g-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 209,
+      "Title": "\u041E\u0439 \u0443 \u0441\u0430\u0434\u0443 \u0433\u043E\u043B\u0443\u0431\u0438 \u0433\u0443\u0434\u0443\u0442\u044C",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441.97",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_u_sadu_holuby_hudut.mid",
+      "IsFileEligible": true,
+      "Tonality": "F-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 210,
+      "Title": "O\u0439 \u044F\u043A \u043C\u0438\u043B\u0435\u043D\u044C\u043A\u043E\u043C\u0443 \u043F\u043E\u0441\u0442\u0456\u043B\u044C \u0441\u043B\u0430\u0442\u0438",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 101",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_iak_mylenkomu_postil_slaty.mid",
+      "IsFileEligible": true,
+      "Tonality": "a-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 211,
+      "Title": "\u0410 \u0432 \u0442\u043E\u043C\u0443 \u0441\u0430\u0434\u0443",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 102",
+      "FilePath": "Ukrainska_narodna_pisnia_A_v_tomu_sadu.mid",
+      "IsFileEligible": true,
+      "Tonality": "G-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 212,
+      "Title": "\u042F\u043A \u043D\u0435 \u0436\u0435\u043D\u0438\u0432\u0441\u044F \u0442\u043E \u0439 \u043D\u0435 \u0436\u0443\u0440\u0438\u0441\u044F",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441.104",
+      "FilePath": "Ukrainska_narodna_pisnia_Yak_ne_zhenyvsia_to_j_ne_zhurysia.mid",
+      "IsFileEligible": true,
+      "Tonality": "g-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 213,
+      "Title": "\u041E\u0439 \u043F\u0456\u0434\u0443 \u044F \u043B\u0443\u0433\u043E\u043C",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441.109",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_pidu_ia_luhom.mid",
+      "IsFileEligible": true,
+      "Tonality": "E-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 214,
+      "Title": "\u041D\u0430\u043B\u0435\u0442\u0456\u043B\u0438 \u0436\u0443\u0440\u0430\u0432\u043B\u0456",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 112",
+      "FilePath": "nevidomo_naletily_zhuravli.mid",
+      "IsFileEligible": true,
+      "Tonality": "g-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 215,
+      "Title": "\u041F\u0440\u044F\u043B\u044F",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441.115",
+      "FilePath": "nevidomo_Prialia.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 2
+    },
+    {
+      "ID": 216,
+      "Title": "\u041F\u0440\u044F\u043B\u044F",
+      "Year": null,
+      "Description": null,
+      "FilePath": "nevidomo_Prialia.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 7
+    },
+    {
+      "ID": 217,
+      "Title": "\u041E\u0439 \u0432\u0435\u0440\u0431\u043E \u0432\u0435\u0440\u0431\u043E,",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 124",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_verbo_verbo_.mid",
+      "IsFileEligible": true,
+      "Tonality": "a-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 218,
+      "Title": "\u041E\u0439 \u043F\u0456\u0434\u0443 \u044F \u0432 \u043B\u0456\u0441 \u043F\u043E \u0434\u0440\u043E\u0432\u0430",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 125",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_pidu_ia_v_lis_po_drova.mid",
+      "IsFileEligible": true,
+      "Tonality": "g-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 219,
+      "Title": "\u041E\u0439 \u043F\u043E\u0441\u043B\u0430\u043B\u0430 \u043C\u0435\u043D\u0435 \u043C\u0430\u0442\u0438",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441,126",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_poslala_mene_maty.mid",
+      "IsFileEligible": true,
+      "Tonality": "f-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 220,
+      "Title": "\u0417\u0430\u0448\u0443\u043C\u0456\u043B\u0430 \u043B\u0456\u0449\u0438\u043D\u043E\u043D\u044C\u043A\u0430",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441, 127",
+      "FilePath": "Ukrainska_narodna_pisnia_Zashumila_lishchynonka.mid",
+      "IsFileEligible": true,
+      "Tonality": "e-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 221,
+      "Title": "\u0406\u0448\u043B\u0432 \u043A\u043E\u0437\u0430\u043A \u0434\u043E\u043B\u0438\u043D\u043E\u044E",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441,128",
+      "FilePath": "Ukrainska_narodna_pisnia_Ishlv_kozak_dolynoyu.mid",
+      "IsFileEligible": true,
+      "Tonality": "e-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 222,
+      "Title": "\u041E\u0439 \u0432\u0456\u0434 \u0441\u0430\u0434\u0443",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441,130",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_vid_sadu.mid",
+      "IsFileEligible": true,
+      "Tonality": "e-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 223,
+      "Title": "\u041F\u0440\u0438 \u0434\u043E\u043B\u0438\u043D\u0456 \u043F\u0440\u0438 \u043E\u0445\u043E\u0442\u0456",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 131",
+      "FilePath": "Ukrainska_narodna_pisnia_Pry_dolyni_pry_okhoti.mid",
+      "IsFileEligible": true,
+      "Tonality": "a-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 224,
+      "Title": "\u041F\u043E\u0437\u0432\u043E\u043B\u044C \u043C\u0435\u043D\u0456 \u043C\u0430\u0442\u0438",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441.133",
+      "FilePath": "Ukrainska_narodna_pisnia_Pozvol_meni_maty.mid",
+      "IsFileEligible": true,
+      "Tonality": null,
+      "AuthorID": 2
+    },
+    {
+      "ID": 225,
+      "Title": "\u041E\u0439 \u0443 \u043F\u043E\u043B\u0456 \u0442\u0430 \u0442\u0443\u043C\u0430\u043D \u0434\u0438\u043C\u043D\u043E",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 c.135",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_u_poli_ta_tuman_dymno.mid",
+      "IsFileEligible": true,
+      "Tonality": "h-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 226,
+      "Title": "\u041F\u043E\u043F\u0456\u0434 \u0442\u0435\u0440\u043D\u043E\u043C \u0441\u0442\u0435\u0436\u0435\u0447\u043A\u0430",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441,136",
+      "FilePath": "Ukrainska_narodna_pisnia_Popid_ternom_stezhechka.mid",
+      "IsFileEligible": true,
+      "Tonality": "F-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 227,
+      "Title": "\u041E\u0439 \u043A\u043E\u043B\u0438 \u0431 \u0442\u043E\u0439 \u0432\u0435\u0447\u0456\u0440",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 141",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_koly_b_toj_vechir.mid",
+      "IsFileEligible": true,
+      "Tonality": "G-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 228,
+      "Title": "\u041E\u0439 \u043A\u043E\u0442\u0438\u0432\u0441\u044F \u043A\u0443\u0431\u0430\u0440",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 146",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_kotyvsia_kubar.mid",
+      "IsFileEligible": true,
+      "Tonality": "A-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 229,
+      "Title": "\u041E\u0439 \u0441\u0456\u0432 \u043F\u043E\u0457\u0445\u0430\u0432",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 149",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_siv_poikhav.mid",
+      "IsFileEligible": true,
+      "Tonality": "A-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 230,
+      "Title": "\u041E\u0439 \u0433\u0430\u0439 \u043C\u0430\u0442\u0438 \u0433\u0430\u0439",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 150",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_haj_maty_haj.mid",
+      "IsFileEligible": true,
+      "Tonality": "G-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 231,
+      "Title": "\u041F\u0456\u0434\u0443 \u0432 \u0441\u0430\u0434\u043E\u0447\u043E\u043A",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 151",
+      "FilePath": "Ukrainska_narodna_pisnia_Pidu_v_sadochok.mid",
+      "IsFileEligible": true,
+      "Tonality": "fis-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 232,
+      "Title": "\u0421\u0438\u0432\u0438\u0439 \u0433\u043E\u043B\u0443\u0431\u043E\u0447\u043A\u0443",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 152",
+      "FilePath": "Ukrainska_narodna_pisnia_Syvyj_holubochku.mid",
+      "IsFileEligible": true,
+      "Tonality": "b-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 233,
+      "Title": "\u0427\u043E\u0433\u043E, \u0406\u0432\u0430\u0441\u044E \u0437\u043C\u0430\u0440\u043D\u0456\u0432",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 153",
+      "FilePath": "Ukrainska_narodna_pisnia_Choho__Ivasyu_zmarniv.mid",
+      "IsFileEligible": true,
+      "Tonality": "A-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 234,
+      "Title": "\u041E\u0439 \u043F\u0456\u0434\u0443 \u044F \u0432 \u0441\u0430\u0434 \u0433\u0443\u043B\u044F\u0442\u044C",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 154",
+      "FilePath": "Ukrainska_narodna_pisnia_Oj_pidu_ia_v_sad_huliat.mid",
+      "IsFileEligible": true,
+      "Tonality": "A-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 235,
+      "Title": "\u041D\u0430\u0441\u0442\u0443\u043F\u0430\u0454 \u0447\u043E\u0440\u043D\u0430 \u0445\u043C\u0430\u0440\u0430",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 155",
+      "FilePath": "Ukrainska_narodna_pisnia_Nastupaie_chorna_khmara.mid",
+      "IsFileEligible": true,
+      "Tonality": "g-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 236,
+      "Title": "\u0417\u0430 \u0433\u043E\u0440\u043E\u0434\u043E\u043C \u043A\u0430\u0447\u043A\u0438 \u043F\u043B\u0438\u0432\u0443\u0442\u044C",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 156",
+      "FilePath": "Ukrainska_narodna_pisnia_Za_horodom_kachky_plyvut.mid",
+      "IsFileEligible": true,
+      "Tonality": "F-dur",
+      "AuthorID": 2
+    },
+    {
+      "ID": 237,
+      "Title": "\u0412\u0438\u0448\u043D\u0456-\u0447\u0435\u0440\u0435\u0448\u043D\u0456 \u0440\u043E\u0437\u0432\u0438\u0432\u0430\u044E\u0442\u044C\u0441\u044F",
+      "Year": null,
+      "Description": "\u0437 \u043E\u0431\u0440\u043E\u0431\u043E\u043A \u041B\u0435\u043E\u043D\u0442\u043E\u0432\u0438\u0447\u0430 \u0441. 157",
+      "FilePath": "Ukrainska_narodna_pisnia_quatersPerWholeNoteyshni_chereshni_rozvyvayutsia.mid",
+      "IsFileEligible": null,
+      "Tonality": "e-moll",
+      "AuthorID": 2
+    },
+    {
+      "ID": 238,
+      "Title": "testmelody from asp",
+      "Year": null,
+      "Description": null,
+      "FilePath": null,
+      "IsFileEligible": null,
+      "Tonality": null,
+      "AuthorID": 5
+    },
+    {
+      "ID": 239,
+      "Title": "test",
+      "Year": null,
+      "Description": null,
+      "FilePath": null,
+      "IsFileEligible": null,
+      "Tonality": null,
+      "AuthorID": 64
+    },
+    {
+      "ID": 240,
+      "Title": "test",
+      "Year": null,
+      "Description": null,
+      "FilePath": null,
+      "IsFileEligible": null,
+      "Tonality": null,
+      "AuthorID": 64
+    }
+  ]
+}

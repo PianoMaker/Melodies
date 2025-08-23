@@ -1,13 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Melodies25.Data;
 using Microsoft.AspNetCore.Identity;
 using Melodies25.Models;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using Microsoft.AspNetCore.Identity.UI.Services; // added
-
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace Melodies25
 {
@@ -17,87 +13,73 @@ namespace Melodies25
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            var env = builder.Environment;
+            // SOURCE context: VisualStudio (LocalDB) – only used for reading / syncing FROM
+            builder.Services.AddDbContext<Melodies25SourceContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio")));
 
-            /*TWO DATABASES*/
-
-            builder.Services.AddDbContext<Melodies25Context>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio"))); // БД *з* якої копіюють
-
+            // TARGET context: SQLExpress – destination for synchronization
             builder.Services.AddDbContext<Melodies25TargetContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter"))); // БД *до* якої копіюють
+                options.UseSqlServer(builder.Configuration.GetConnectionString("SQLExpress")));
 
+            // WORKING context (used by application pages): also SQLExpress now
+            builder.Services.AddDbContext<Melodies25Context>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("SQLExpress")));
+
+            // Identity context (can be unified later if desired)
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter"))); // Вставте відповідний рядок підключення
-
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-
 
             builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
                 options.SignIn.RequireConfirmedEmail = false;
             })
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
 
-            // Dummy email sender registration
             builder.Services.AddSingleton<IEmailSender, Services.DummyEmailSender>();
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
-                options.AccessDeniedPath = "/Account/AccessDenied"; // Перенаправлення замість 404
+                options.AccessDeniedPath = "/Account/AccessDenied";
             });
 
             builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-            // Add services to the container.
             builder.Services.AddRazorPages()
                 .AddDataAnnotationsLocalization(options =>
                     options.DataAnnotationLocalizerProvider = (type, factory) =>
                         factory.Create(typeof(SharedResource))
                 );
 
-
-
             builder.Services.AddScoped<DatabaseSyncService>();
 
             builder.Services.AddSession();
-
             builder.Services.AddLogging();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
-
             app.UseSession();
-
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.UseAuthentication();
-
             app.UseAuthorization();
-
             app.MapRazorPages();
 
-
+            // Run one-way sync (source -> target) at startup
             using (var scope = app.Services.CreateScope())
             {
-                var services = scope.ServiceProvider;
-                var syncService = services.GetRequiredService<DatabaseSyncService>();
-                syncService.SyncDatabasesAsync().GetAwaiter().GetResult(); // Викликаємо синхронізацію
+                var syncService = scope.ServiceProvider.GetRequiredService<DatabaseSyncService>();
+                syncService.SyncDatabasesAsync().GetAwaiter().GetResult();
             }
 
             app.Run();
