@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Мелодія";
     var item = Model.Melody;
+    var url = Url.Content($"~/melodies/{item.FilePath}");
 }
 
 <h1>@item.Title</h1>
@@ -65,6 +66,12 @@
     <hr />
 
     <div class="notescontainer">
+        <div id="notation">notation will be shown here</div>
+        <div id="comments"></div>
+        <div id="stepRead" style="display:none"></div>
+    </div>
+
+    <div class="notescontainer">
         @if (@item.MidiMelody is null)
         {
 
@@ -87,7 +94,7 @@
                         <div class="notebox" style="margin-bottom: @marginbottom; width:@width">
                             <text>@note.DurSymbol</text><br>
                         </div>
-                        <text class="notaname">@note.Name</text> 
+                        <text class="notaname">@note.Name</text>
                     </div>
                 }
             </div>
@@ -169,7 +176,7 @@
                     </div>
                 }
 
-                
+
 
                 @if (@item.MidiMelody.GetWeight() is not null)
                 {
@@ -225,9 +232,9 @@
                 </div>
             </div>
         }
-       
+
     </div>
-  
+
 </div>
 <div style="margin-top: 50px">
     <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
@@ -236,3 +243,29 @@
     <p>.</p>
 </div>
 <script src="~/js/play.js"></script>
+<script src="~/lib/midirender/midifile.bundle.js"></script>
+<script src="~/lib/midirender/vexflow.js"></script>
+<script src="~/lib/midirender/midiparser.js"></script>
+<script src="~/lib/midirender/midiparser_ext.js"></script>
+<script src="~/lib/midirender/midiRenderer.js"></script>
+<script>
+    const midiUrl = '@Url.Content($"~/melodies/{item.FilePath}")';
+    function calcGeneralWidth(){
+        // залишаємо трохи відступів з країв
+        const w = window.innerWidth || 1200;
+        return Math.min(1200, Math.max(420, w - 80));
+    }
+    async function renderAdaptive(){
+        const width = calcGeneralWidth();
+        // інші параметри залишаємо за замовчуванням
+        await renderMidiFromUrl(midiUrl, 'notation', 'comments', width, 150);
+    }
+    // первинний рендер
+    renderAdaptive();
+    // debounce на resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(renderAdaptive, 300);
+    });
+</script>

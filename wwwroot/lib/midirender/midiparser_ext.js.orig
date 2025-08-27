@@ -1,0 +1,464 @@
+// Глобальне визначення durationMapping
+const durationMapping = {
+    1: 'w',
+    w: 'w',
+    2: 'h',
+    h: 'h',
+    4: 'q',
+    q: 'q',
+    8: '8',
+    16: '16',
+    32: '32',
+    64: '64'
+};
+
+const reverseDurationMapping = {
+    w: 1,  // Ціла нота
+    "1": 1,  // Ціла нота
+    h: 2,  // Половинна нота
+    "2": 2,  // Половинна нота
+    q: 4,  // Чверть нота
+    "4": 4,  // Чверть нота
+    "8": 8, // Восьма нота
+    "16": 16, // Шістнадцята нота
+    "32": 32, // Тридцять друга нота
+    "64": 64  // Шістдесят четверта нота
+};
+
+function midiNoteToVexFlow(midiNote) {
+    const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const octave = Math.floor(midiNote / 12);
+    const noteName = noteNames[midiNote % 12];
+    const accidental = noteName.includes("#") ? "#" : noteName.includes("b") ? "b" : null; // Визначаємо знак альтерації
+    return { key: `${noteName.replace("#", "")}/${octave}`, accidental }; // Повертаємо ноту та знак альтерації
+}
+
+function splitEventsIntoMeasures(midiEvents, ticksPerBeat) {
+    let measures = [];
+    let currentMeasure = [];
+    let currentTicks = 0;
+    let ticksPerMeasure = ticksPerBeat * 4;
+
+<<<<<<< HEAD
+    midiEvents.forEach((event) => {
+        // Якщо зустрічається подія Time Signature, оновіть ticksPerMeasure
+=======
+    midiEvents.forEach((event, index) => {       
+>>>>>>> mastererror
+        if (event.subtype === MIDIEvents.EVENT_META_TIME_SIGNATURE) {
+            const numerator = event.param1;
+            const denominator = Math.pow(2, event.param2);
+            ticksPerMeasure = ticksPerBeat * numerator * (4 / denominator); // Використовуємо TPQN
+            console.log(`Time Signature changed: ${numerator}/${denominator}, ticksPerMeasure: ${ticksPerMeasure}`);
+        }
+
+<<<<<<< HEAD
+        currentTicks += event.deltaTime;
+        console.log(`Event absTime: ${event.absTime}  Current ticks: ${currentTicks}, ticksPerMeasure: ${ticksPerMeasure}`);
+=======
+        currentTicks += event.delta;        
+>>>>>>> mastererror
+
+        if (currentTicks >= ticksPerMeasure) {
+            console.log(`Measure completed: ${currentMeasure.length} events`);
+            measures.push(currentMeasure);
+            currentMeasure = [];
+            currentTicks = 0;
+        }
+
+        currentMeasure.push(event);
+    });
+
+    if (currentMeasure.length > 0) {
+        measures.push(currentMeasure);
+    }
+
+    return measures;
+}
+function calculateTotalDuration(notesString) {
+    const notes = notesString.split(/[,|]/);
+    let totalDuration = 0;
+
+    notes.forEach(note => {
+        const duration = getDurationValueFromNote(note.trim());
+        totalDuration += duration;
+    });
+
+    return totalDuration;
+}
+
+// приймає код тривалості і повертає тривалість в тіках
+function calculateTicksFromDuration(duration, ticksPerBeat) {
+
+    let result = getDurationFromCode(duration) * ticksPerBeat;
+    console.log(`Calculating ticks for duration: ${duration}, result: ${result}`);
+    return result;
+}
+
+// приймає кількість тіків, повертає код тривалості
+function getDurationFromTicks(ticks, ticksPerBeat) {
+    if (typeof ticks !== "number" || typeof ticksPerBeat !== "number" || ticks <= 0 || ticksPerBeat <= 0) {
+        console.warn("Invalid input to getDurationFromTicks:", { ticks, ticksPerBeat });
+        return []; // Повертаємо порожній масив у разі некоректних даних
+    }
+    console.log('Calculating duration for ticks: ' + ticks + ', ticksPerBeat: ' + ticksPerBeat);
+    var quarterTicks = ticksPerBeat; // Тривалість чверті дорівнює TPQN
+    let mingap = ticksPerBeat / 8; // Мінімальний проміжок між нотами
+
+    const durations = [];
+
+    // Розбиваємо ticks на частини
+    while (ticks > 0) {
+        if (ticks >= quarterTicks * 6 - mingap) {
+            durations.push("w."); // Ціла нота з крапкою
+            ticks -= quarterTicks * 6;
+        } else if (ticks >= quarterTicks * 4 - mingap) {
+            durations.push("w"); // Ціла нота
+            ticks -= quarterTicks * 4;
+        } else if (ticks >= quarterTicks * 3 - mingap) {
+            durations.push("h."); // Половинна нота з крапкою
+            ticks -= quarterTicks * 3;
+        } else if (ticks >= quarterTicks * 2 - mingap) {
+            durations.push("h"); // Половинна нота
+            ticks -= quarterTicks * 2;
+        } else if (ticks >= quarterTicks * 1.5 - mingap) {
+            durations.push("q."); // Чверть нота з крапкою
+            ticks -= quarterTicks * 1.5;
+        } else if (ticks >= quarterTicks * 1 - mingap) {
+            durations.push("q"); // Чверть нота
+            ticks -= quarterTicks * 1;
+        } else if (ticks >= quarterTicks * 0.75 - mingap) {
+            durations.push("8."); // Восьма нота з крапкою
+            ticks -= quarterTicks * 0.75;
+        } else if (ticks >= quarterTicks * 0.5 - mingap) {
+            durations.push("8"); // Восьма нота
+            ticks -= quarterTicks * 0.5;
+        } else if (ticks >= quarterTicks * 0.25 - mingap) {
+            durations.push("16"); // Шістнадцята нота
+            ticks -= quarterTicks * 0.25;
+        } else {
+            console.warn(`Unknown duration for remaining ticks: ${ticks}`);
+            break;
+        }
+    }
+    console.log('Calculated durations: ', durations);
+
+
+    return durations;
+}
+
+
+function calculateEndless(notesString) {
+
+    let totalDuration = calculateTotalDuration(notesString);
+    if (totalDuration % 1 === 0)
+        return `${totalDuration}/4`;
+    else if
+        (totalDuration * 2 % 1 === 0)
+        return `${totalDuration * 2}/8`;
+    else if
+        (totalDuration * 4 % 1 === 0)
+        return `${totalDuration * 4}/16`;
+    else if
+        (totalDuration * 8 % 1 === 0)
+        return `${totalDuration * 8}/32`;
+    else return "unknown";
+}
+
+//приймає розмір такту (чисельник/знаменник) і повертає тривалість такту в одиницях чвертної ноти
+function getBarDuration(timeSignature) {
+    const [numerator, denominator] = timeSignature.split('/').map(Number);
+    return numerator * (4 / denominator);
+}
+
+function getDurationFromCode(durationCode) {
+    console.log(`Getting duration value for code: ${durationCode}`);
+    try {
+        const isDotted = durationCode.endsWith('.');
+        const baseDuration = isDotted ? durationCode.slice(0, -1) : durationCode;
+
+        const baseValue = reverseDurationMapping[baseDuration];
+        console.log(`Base value for duration code ${baseDuration}: ${baseValue}`);
+        if (!baseValue) {
+            console.warn(`Unknown duration code: ${durationCode}`);
+            return 1; // Значення за замовчуванням
+        }
+        const resultDuration = 4 / baseValue;
+        return !isDotted ? resultDuration : resultDuration * 1.5;
+
+    }
+    catch {
+        console.warn(`Unknown duration code: ${durationCode}`);
+        return 1;
+    }
+}
+
+//приймає код тривалості з отриманого коду ноти
+const getDurationValueFromNote = (note) => {
+    const parts = note.split('/');
+    if (parts.length > 1) {
+        let result = getDurationFromCode(parts[1]);
+        console.log("Note parts: ", result);
+        return result;
+    }
+    else {
+        console.warn(`No duration code found in note: ${note}`);
+        return 1
+    }
+};
+
+
+function createRest(duration) {
+    console.log("Creating rest with duration: ", duration);
+    const isDotted = duration.endsWith('.');
+    const baseDuration = isDotted ? duration.slice(0, -1) : duration;
+
+    try {
+        const staveNote = new Vex.Flow.StaveNote({
+            keys: ['b/4'], // ключ для паузи неважливий
+            duration: `${baseDuration}r` // Форматуємо тривалість як паузу
+        });
+
+        if (isDotted) {
+            console.log("Is dotted:", isDotted);
+            staveNote.addDot(0); // Додаємо крапку до паузи
+        }
+
+        return staveNote;
+    } catch (error) {
+        console.error(`Failed to create rest with duration: ${duration}`, error);
+        return null; // Return null if creation fails
+    }
+}
+
+
+function createNote (noteKey, duration) {
+    console.log(`Creating note with noteKey ${noteKey} duration: ${duration}`);
+    const noteMatch = noteKey.match(/^([a-gA-G])(b|#)?(\d)?$/);
+    if (!noteMatch) {
+        console.error(`Invalid note key: ${noteKey}`);
+        return null;
+    }
+
+    const [, letter, accidental, octaveRaw] = noteMatch;
+    const octave = octaveRaw|| '4'; // Default to octave 4
+    const key = `${letter.toLowerCase()}${accidental || ''}/${octave}`;
+    const isDotted = duration.endsWith('.');
+    const baseDuration = isDotted ? duration.slice(0, -1) : duration;
+
+    try {
+        const staveNote = new Vex.Flow.StaveNote({
+            keys: [key],
+            duration: baseDuration
+        });
+
+        if (accidental) {
+            staveNote.addAccidental(0, new Vex.Flow.Accidental(accidental));
+        }
+
+        if (isDotted) {
+            staveNote.addDot(0); // Add dot if dotted
+        }
+        console.log(`Created note: ${key}, duration: ${baseDuration}`);
+        return staveNote;
+    } catch (error) {
+        console.error(`Failed to create note with key: ${noteKey} and duration: ${duration}`, error);
+        return null; // Return null if creation fails
+    }
+};
+
+// // Аналіз нот із введеного рядку (ноти через коми)
+function processNote(element) {
+    const parts = element.split('/');
+    console.log("Processing note: ", parts[0]);
+    const noteKey = parts[0].toLowerCase();
+    const durationKey = parts[1] || 'q';
+    const isRest = parts[0].toLowerCase() === 'r' || durationKey.endsWith('r');
+
+    if (isRest) {
+        console.log("Creating rest with duration: ", durationKey);
+        return createRest(durationKey);
+    } else {
+        return createNote(noteKey, durationKey);
+    }
+}
+
+// аналізує MIDIFile і визначає розмір та тікі на такт
+function getTimeSignatureAndTicksPerMeasure(midiFile) {
+    console.log("Getting time signature and ticks per measure");
+    const ticksPerBeat = midiFile.header.getTicksPerBeat(); // TPQN
+    let lastNumerator = 4; // Початкове значення за замовчуванням
+    let lastDenominator = 4;
+    let lastTicksPerMeasure = ticksPerBeat * 4;
+
+    const timeSignatureEvent = midiFile.getMidiEvents().find(event => event.subtype === MIDIEvents.EVENT_META_TIME_SIGNATURE);
+
+    if (timeSignatureEvent) {
+        const numerator = timeSignatureEvent.param1; // Чисельник
+        const denominator = Math.pow(2, timeSignatureEvent.param2); // Знаменник
+        const ticksPerMeasure = ticksPerBeat * numerator * (4 / denominator); // Обчислення тиках на такт
+
+        // Оновлюємо останній відомий розмір такту
+        lastNumerator = numerator;
+        lastDenominator = denominator;
+        lastTicksPerMeasure = ticksPerMeasure;
+
+        return { numerator, denominator, ticksPerMeasure, ticksPerBeat };
+    }
+
+    // Якщо подія Time Signature не знайдена, повертаємо останній відомий розмір такту
+    return { numerator: lastNumerator, denominator: lastDenominator, ticksPerMeasure: lastTicksPerMeasure, ticksPerBeat };
+}
+
+function getKeySignature(midiEvents) {
+    const keySignatureEvents = midiEvents.filter(event =>
+    event.type === MIDIEvents.EVENT_META &&
+    event.subtype === MIDIEvents.EVENT_META_KEY_SIGNATURE
+    );
+
+    return keySignatureEvents.map(event => {event.param1, event.param2});
+}
+
+function addAbsoluteTimes(events) {
+    console.log("Adding absolute times to events");
+    let absTime = 0;
+    return events.map(event => {
+    absTime += event.delta;
+    return { ...event, absTime };
+    });
+}
+
+
+function findEndEvent(midiEvents, element) {
+    // Шукаємо подію End of Track
+    const endEvent = midiEvents.find(event =>
+        event.type === MIDIEvents.EVENT_META &&
+        event.subtype === MIDIEvents.EVENT_META_END_OF_TRACK
+    );
+
+    if (endEvent) {
+        // Якщо подія знайдена, виводимо її параметри
+        element.innerHTML += `<br>End Event found:<br>`;
+        element.innerHTML += `Delta Time: ${endEvent.delta}<br>`;
+        element.innerHTML += `Absolute Time: ${endEvent.absTime || "N/A"}<br>`;
+        return true;
+    } else {
+        // Якщо подія не знайдена, виводимо повідомлення
+        element.innerHTML += `<br>No End Event found in the MIDI file.<br>`;
+        return false;
+    }
+}
+
+
+async function getFileFromPath(filepath) {
+    if (typeof filepath === "string" && filepath) {
+        console.log("getFileFromPath is running, filepath:", filepath);
+
+        try {
+            const response = await fetch(filepath);
+            const blob = await response.blob();
+            const filename = filepath.split('/').pop();
+            const file = new File([blob], filename);
+            console.log(`returning file ${filename}`);
+            return file;
+        } catch (error) {
+            console.error("Не вдалося завантажити файл:", error);
+            return null;
+        }
+    } else {
+        console.error("filepath не є рядком або порожній:", filepath);
+        return null;
+    }
+}
+
+<<<<<<< HEAD
+
+
+
+function playTimeToTicks(playTime, ticksPerBeat, tempo = 500000) {
+    // tempo — у мікросекундах на чверть ноти (default 500000)
+    const tickDuration = (tempo / 1_000_000) / ticksPerBeat;
+    return Math.round(playTime / tickDuration);
+}
+=======
+///
+/// рахує кількість тактів
+///
+function getMeasureCount(midiEvents, ticksPerBeat) {
+    ensureTimeSignature(midiEvents);
+
+    const timeSignatureEvents = getTimeSignatureEvents(midiEvents);
+
+    let maxAbsTime = 0;
+    midiEvents.forEach(e => {
+        if (typeof e.absTime === "number" && e.absTime > maxAbsTime) {
+            maxAbsTime = e.absTime;
+        }
+    });
+
+    let measureCount = 0;
+
+    for (let i = 0; i < timeSignatureEvents.length; i++) {
+        const current = timeSignatureEvents[i];
+        const next = timeSignatureEvents[i + 1];
+        const startTime = current.absTime;
+        const endTime = next ? next.absTime : maxAbsTime;
+
+        const numerator = current.param1;
+        const denominator = Math.pow(2, current.param2);
+        const ticksPerMeasure = ticksPerBeat * numerator * (4 / denominator);
+
+        const intervalTicks = endTime - startTime;
+        const measuresInInterval = Math.ceil(intervalTicks / ticksPerMeasure);
+
+        measureCount += measuresInInterval;
+    }
+
+    return measureCount;
+}
+
+function getTimeSignatureEvents(midiEvents) {
+    return midiEvents.filter(event =>
+        event.type === MIDIEvents.EVENT_META &&
+        event.subtype === MIDIEvents.EVENT_META_TIME_SIGNATURE
+    );
+}
+
+function ensureTimeSignature(midiEvents) {
+        // Додаємо подію 4/4 на тік 0
+        midiEvents.unshift({
+            type: MIDIEvents.EVENT_META,
+            subtype: MIDIEvents.EVENT_META_TIME_SIGNATURE,
+            delta: 0,
+            absTime: 0,
+            param1: 4, // numerator
+            param2: 2, // denominator as power of 2 (2^2 = 4)
+            // інші потрібні поля за потреби
+        });
+        console.log("Time Signature 4/4 added at tick 0");
+}
+
+
+
+function getMidiEventFromArray(arrayBuffer) {
+
+    const midiFile = new MIDIFile(arrayBuffer);
+    return midiFile.getMidiEvents();
+
+}
+
+
+function midiNoteFromVexKey(key) {
+    // Простий приклад для C4 ("c/4") -> 60
+    // Реалізуйте повну відповідність для всіх нот
+    const noteNames = { 'c': 0, 'd': 2, 'e': 4, 'f': 5, 'g': 7, 'a': 9, 'b': 11 };
+    const match = key.match(/^([a-g])(#|b)?\/(\d)$/i);
+    if (!match) return null;
+    let [, note, accidental, octave] = match;
+    note = note.toLowerCase();
+    let midi = 12 + (parseInt(octave) * 12) + noteNames[note];
+    if (accidental === '#') midi += 1;
+    if (accidental === 'b') midi -= 1;
+    return midi;
+}
+>>>>>>> mastererror
