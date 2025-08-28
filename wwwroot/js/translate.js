@@ -6,7 +6,8 @@
     let surnameUk = document.getElementById("surnameUk");
 
     let nameEn = document.getElementById("nameEn");
-    let surnameEn = document.getElementById("surnameEn");    
+    let surnameEn = document.getElementById("surnameEn"); 
+    
     
 
     if (isLatin(authorName) && isLatin(authorSurname)) {
@@ -14,20 +15,22 @@
         surnameEn.value = `${authorSurname}`;
         nameUk.value = transliterateToUk(nameEn.value);
         surnameUk.value = transliterateToUk(surnameEn.value);
-        console.log(`${authorName}` + `${authorSurname}` + "латинка");
+        console.log(`${authorName}` + `${authorSurname}` + " латинка");
     }
-    else if (!nameEn.value && !surnameEn.value && !IsLatin(authorName) && !IsLatin(authorSurname))
-    {
-        console.log(`${authorName}` + `${authorSurname}` + "кирилиця");
+    else if (!nameEn.value && !surnameEn.value && !isLatin(authorName) && !isLatin(authorSurname)) {
+        console.log(`${authorName}` + `${authorSurname}` + " кирилиця");
         nameEn.value = transliterateToEn(authorName)
         surnameEn.value = transliterateToEn(authorSurname)
+    }
+    else {
+        console.log(`${authorName}` + `${authorSurname}` + " невідомо");
     }
 
 }
 
 function isLatin(word) {
 
-    return /^[A-Za-z_ ]+$/.test(word);
+    return /^[\p{Script=Latin}_ ]+$/u.test(word);
 }
 
 function transliterateToUk(text) {
@@ -40,7 +43,7 @@ function transliterateToUk(text) {
        
 
         // Іспанська
-        'á': 'а', 'é': 'е', 'í': 'і', 'ó': 'о', 'ô': 'о', 'ú': 'у', 'ñ': 'нь', 'ü': 'у',
+        'á': 'а', 'é': 'е', 'í': 'і', 'ó': 'о', 'ô': 'о', 'ú': 'у', 'ñ': 'н', 'ü': 'у',
 
         // Польська
         'ą': 'о', 'ć': 'ч', 'ę': 'е', 'ł': 'л', 'ń': 'нь', 'ó': 'у', 'ś': 'ш', 'ź': 'ж', 'ż': 'ж',
@@ -135,5 +138,3 @@ function transliterateToEn(input) {
     return cleanedResult;
 }
 
-// Приклад використання
-console.log(transliterate("Привіт, як справи?")); // "Pryvit_yak_spravy"
