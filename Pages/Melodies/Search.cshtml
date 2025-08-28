@@ -59,43 +59,7 @@
         <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
         @await Html.PartialAsync("_durationsTable")
 
-        <!--ТАБЛО НОТ ВНИЗУ -->
-        <div id="innerNotesContainer">
-            @if (@Model.NewPattern is not null)
-            {
-                @for (int index = 0; index < @Model.NewPattern.Count(); index++)
-                {
-                    var note = @Model.NewPattern[index];
-                    string width = $"{note.DisplayWidth(45, 20)}px";
-                    string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
-                    if (!@note.Rest)
-                    {
-                        <div class="outerNoteBox" style="width:@width; height:10px;">
-                            <div class="notebox" style="margin-bottom:@marginbottom; width:@width;">
-                                <span>@note.DurSymbol</span><br>
-                            </div>
-                            <span data-index="@index" class="notaname">@note.Name</span>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="outerNoteBox" style="width:@width; height:10px;">
-                            <div class="notebox pausebox" style="margin-bottom:@marginbottom; width:@width;">
-                                <span>@note.DurSymbol</span><br>
-                            </div>
-                            <span data-index="@index" class="notaname">@note.Name</span>
-                        </div>
-                    }
-                    @await Html.PartialAsync("_options")
-                }
-                <script type="module" src="~/js/contextMenu.js"></script>
-            }
-            else
-            {
-                <p>no notes have been entered</p>
-            }
-        </div>
-        <script type="module" src="~/js/noteTable.js"></script>
+       
 
         <div>@Model.ErrorWarning</div>
 
