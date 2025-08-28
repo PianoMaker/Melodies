@@ -27,6 +27,30 @@ a.link-light:hover {
     color: yellow !important;
 }
 
+.btn-notes {
+    background: #ffd83d !important; /* soft gold */
+    color: #212529;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,.18), 0 1px 1px rgba(0,0,0,.10);
+    transition: box-shadow .2s ease, transform .2s ease;
+}
+
+    .btn-notes:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,.22), 0 2px 4px rgba(0,0,0,.12);
+        transform: translateY(-1px);
+    }
+
+    .btn-notes:active {
+        box-shadow: 0 1px 2px rgba(0,0,0,.25);
+        transform: translateY(0);
+    }
+
+    .btn-notes:focus-visible {
+        outline: 3px solid #2d6cdf;
+        outline-offset: 2px;
+    }
+
+
 .durbtn {
     width: 40px;
     height: 40px;
@@ -96,7 +120,7 @@ li.active {
         font-size: 0.9em;
         color: black;
         text-align: center;
-        padding: 10px 15px; 
+        padding: 10px 15px;
         text-decoration: none;
         transition: transform 0.2s ease;
         display: inline-block;

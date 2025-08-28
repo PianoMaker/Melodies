@@ -7,7 +7,7 @@ namespace Melodies25.Pages
 {
     public class IndexModel : PageModel
     {
-       
+
 
         [BindProperty]
         public bool Singerella { get; set; }
@@ -26,6 +26,12 @@ namespace Melodies25.Pages
         {
             Console.WriteLine("Index OnPostSearch");
 
+            return RedirectToPage("./Melodies/Search", new { search = Search });
+        }
+
+        public IActionResult OnPostAdvancedSearch()
+        {
+            Console.WriteLine("OnPostAdvancedSearch");
             return RedirectToPage("./Melodies/Search", new { search = Search });
         }
 
