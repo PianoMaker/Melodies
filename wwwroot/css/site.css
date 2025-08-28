@@ -74,7 +74,7 @@ li.active {
 }
 
 .melodyitem {
-    
+    height: 110px !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -97,8 +97,8 @@ li.active {
 
 .btn-light:hover {
     background-color: darkgray;
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
-    transform: translateY(-2px); /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* Збільшена тінь при наведенні */
+    transform: translateY(-2px); /* Невеликий підйом кнопки */
 }
 
 
@@ -108,7 +108,6 @@ li.active {
     padding: 2px;
     background: rgba(2255,255,225,0.8)
 }
-
 
 #code {
     white-space: pre;
@@ -128,21 +127,19 @@ li.active {
         font-size: 0.9em;
         color: black;
         text-align: center;
-        padding: 10px 15px; 
+        padding: 10px 15px;
         text-decoration: none;
         transition: transform 0.2s ease;
         display: inline-block;
-        height:100%;
+        height: 100%;
     }
         .exp-top a:hover {
             transform: scale(1.1);
             color: darkred;
         }
-
         .exp-top a.active {
             background-color: rgba(255, 125, 12, 0.2) !important;
         }
-
 
     table {
         background-color: white;
@@ -201,7 +198,7 @@ table, th, td {
 .h-85 {
     height: 85%;
 }
-/* пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ...
+/* слід ще поексперементувати...
 https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     */
 
@@ -241,7 +238,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     border-radius: 5px;
     box-shadow: rgba(55,55,0,0.3) 2px 2px;
 }
-
 .NotesList {
     display: inline-block;
     width: 20%;
@@ -250,7 +246,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     vertical-align: top;
     background-color: rgb(255,255,200)
 }
-
 .pausebox {
     font-size: 1.1em;
     background-color: white;
@@ -284,7 +279,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
 .indexcontainer {
     display: flex;
-    flex-direction: row; /* пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ */
+    flex-direction: row; /* За замовчуванням елементи поруч */
     justify-content: center;
     align-items: start;
     width: 25%;
@@ -316,7 +311,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
 
 
-/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ'пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ */
+/* Анімація м'якого пульсування світла */
 @keyframes glow {
     from {
         text-shadow: 4px 4px 15px rgb(230 255 15), 0px 0px 16px rgb(255 247 11)
@@ -328,7 +323,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 .homepagesubtitle {
-    color: #5a3d1c; /* пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
+    color: #5a3d1c; /* Темно-коричневий */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
     font-size: 1.2em;
 }
@@ -437,8 +432,8 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 .cis1 {
-    top: 0px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
-    left: 35px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ */
+    top: 0px; /* Відступ зверху */
+    left: 35px; /* Відступ зліва */
 }
 
 .dis1 {
@@ -462,8 +457,8 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 .cis2 {
-    top: 0px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
-    left: 385px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ */
+    top: 0px; /* Відступ зверху */
+    left: 385px; /* Відступ зліва */
 }
 
 .dis2 {
@@ -502,16 +497,16 @@ p {
 }
 
 #transpose-controls {
-    display: flex; /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ justify-content */
+    display: flex; /* важливо для justify-content */
     justify-content: start;
     align-items: center;
     width: 800px;
     margin-bottom: 20px;
     padding: 5px;
     border: 1px solid black;
-    gap: 10px; /* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
-    background-color: #f9f9cc; /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
-    border-radius: 8px; /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
+    gap: 10px; /* відступ між кнопками */
+    background-color: #f9f9cc; /* необов’язково, для кращої видимості */
+    border-radius: 8px; /* необов’язково, для естетики */
     font-size: 0.8em !important;
 }
 
@@ -541,8 +536,8 @@ p {
 
 
     .cis1 {
-        top: 0px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
-        left: 35px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ */
+        top: 0px; /* Відступ зверху */
+        left: 35px; /* Відступ зліва */
     }
 
     .dis1 {
@@ -566,8 +561,8 @@ p {
     }
 
     .cis2 {
-        top: 0px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
-        left: 385px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ */
+        top: 0px; /* Відступ зверху */
+        left: 385px; /* Відступ зліва */
     }
 
     .dis2 {
@@ -591,7 +586,7 @@ p {
     }
 
     .cis1 {
-        left: 30px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ */
+        left: 30px; /* Відступ зліва */
     }
 
     .dis1 {
@@ -612,8 +607,8 @@ p {
     }
 
     .cis2 {
-        top: 0px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
-        left: 345px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ */
+        top: 0px; /* Відступ зверху */
+        left: 345px; /* Відступ зліва */
     }
 
     .dis2 {
@@ -643,12 +638,12 @@ p {
 
     .d-flex {
         flex-direction: column;
-        align-items: center; /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
+        align-items: center; /* Вирівнюємо по центру */
     }
 
 
     .w-25, .w-75 {
-        width: 100% !important; /* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
+        width: 100% !important; /* Робимо елементи повної ширини */
     }
 
     .navmelody {

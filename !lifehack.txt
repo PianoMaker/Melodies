@@ -10,3 +10,4 @@ git restore --source=twoDatabases E:\Programming\Melodies\Pages\Melodies\Create.
 
 git restore --source=possible-production-config E:\Programming\Melodies\wwwroot\js
 git restore --source=possible-production-config E:\Programming\Melodies\Pages\Account
+git restore --source=possible-production-config E:\Programming\Melodies\wwwroot\css
