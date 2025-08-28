@@ -4,8 +4,7 @@
     ViewData["Title"] = "Сторінка адміністратора";
 }
 
-
-
+@await Html.PartialAsync("_adminMenu")
 
 @if (TempData["SuccessMessage"] != null)
 {
@@ -41,46 +40,57 @@
                         {
                             <span class="badge bg-info">@role</span>
                         }
+                        @if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow)
+                        {
+                            <span class="badge bg-danger">Заблоковано</span>
+                        }
                     </td>
                     <td>
                         @if (!Model.UserRoles[user.Id].Contains("Admin"))
                         {
                             <form method="post" asp-page-handler="AssignAdminRole" asp-route-userId="@user.Id" class="d-inline">
-                                <button type="submit" class="btn btn-primary">Призначити адміністратора</button>
+                                <button type="submit" class="btn btn-primary btn-sm">Адмін</button>
                             </form>
                         }
                         @if (Model.UserRoles[user.Id].Contains("Admin") && Model.UserRoles[user.Id].Count > 1)
                         {
                             <form method="post" asp-page-handler="RemoveAdminRole" asp-route-userId="@user.Id" class="d-inline">
-                                <button type="submit" class="btn btn-danger">Видалити адміністратора</button>
+                                <button type="submit" class="btn btn-outline-danger btn-sm">-Адмін</button>
                             </form>
                         }
-
                         @if (!Model.UserRoles[user.Id].Contains("Moderator"))
                         {
                             <form method="post" asp-page-handler="AssignModerator" asp-route-userId="@user.Id" class="d-inline">
-                                <button type="submit" class="btn btn-secondary">Призначити модератора</button>
+                                <button type="submit" class="btn btn-secondary btn-sm">Модер</button>
                             </form>
                         }
                         @if (Model.UserRoles[user.Id].Contains("Moderator"))
                         {
                             <form method="post" asp-page-handler="RemoveModerator" asp-route-userId="@user.Id" class="d-inline">
-                                <button type="submit" class="btn btn-warning">Видалити модератора</button>
+                                <button type="submit" class="btn btn-outline-warning btn-sm">-Модер</button>
                             </form>
                         }
                         @if (!user.EmailConfirmed)
                         {
                             <form method="post" asp-page-handler="ConfirmEmail" asp-route-userId="@user.Id" class="d-inline">
-                                <button type="submit" class="btn btn-success">Підтвердити email</button>
+                                <button type="submit" class="btn btn-success btn-sm">Підтв. Email</button>
                             </form>
                         }
+                        @if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow)
+                        {
+                            <form method="post" asp-page-handler="UnlockUser" asp-route-userId="@user.Id" class="d-inline">
+                                <button type="submit" class="btn btn-warning btn-sm">Розблок</button>
+                            </form>
+                        }
+                        <form method="post" asp-page-handler="ResetPassword" asp-route-userId="@user.Id" class="d-inline">
+                            <button type="submit" class="btn btn-outline-primary btn-sm">ResetPwd</button>
+                        </form>
                         @if (!Model.UserRoles[user.Id].Contains("Admin") && Model.UserRoles[user.Id].Count > 1)
                         {
                             <form method="post" asp-page-handler="DeleteUser" asp-route-userId="@user.Id" class="d-inline">
-                                <button type="submit" class="btn btn-danger">Видалити користувача</button>
+                                <button type="submit" class="btn btn-danger btn-sm">Видалити</button>
                             </form>
                         }
-
                     </td>
                 </tr>
             }

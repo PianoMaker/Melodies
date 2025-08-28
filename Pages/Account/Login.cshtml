@@ -3,6 +3,9 @@
 
 <h2>Увійти</h2>
 
+<!-- Загальні помилки (невірний пароль, не підтверджений email тощо) -->
+<div asp-validation-summary="All" class="text-danger"></div>
+
 <form method="post" id="loginForm">
     <div class="form-group">
         <label for="Input_Email">Email</label>
@@ -17,26 +20,18 @@
     <button type="submit" class="btn btn-primary">Login</button>
 </form>
 
-<form method="post" asp-page-handler="RecoverPassword" id="recoverForm">
-    <!-- Приховане поле для передавання email -->
+<form method="post" asp-page-handler="RecoverPassword" id="recoverForm" class="mt-2">
     <input type="hidden" id="recoverEmail" name="Input.Email" />
-    <button type="submit" class="btn btn-link">Нагадати пароль</button>
+    <button type="submit" class="btn btn-link p-0">Нагадати пароль</button>
 </form>
 
 <partial name="_ValidationScriptsPartial" />
 
-@* 
 @section Scripts {
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
-
     <script>
-        // Коли користувач натискає на кнопку "Нагадати пароль", копіюємо значення email з першої форми
         document.getElementById('recoverForm').addEventListener('submit', function () {
             var email = document.getElementById('Input_Email').value;
             document.getElementById('recoverEmail').value = email;
         });
     </script>
 }
- *@
