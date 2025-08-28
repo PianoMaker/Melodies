@@ -27,6 +27,30 @@ a.link-light:hover {
     color: yellow !important;
 }
 
+.btn-notes {
+    background: #ffd83d !important; /* soft gold */
+    color: #212529;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,.18), 0 1px 1px rgba(0,0,0,.10);
+    transition: box-shadow .2s ease, transform .2s ease;
+}
+
+    .btn-notes:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,.22), 0 2px 4px rgba(0,0,0,.12);
+        transform: translateY(-1px);
+    }
+
+    .btn-notes:active {
+        box-shadow: 0 1px 2px rgba(0,0,0,.25);
+        transform: translateY(0);
+    }
+
+    .btn-notes:focus-visible {
+        outline: 3px solid #2d6cdf;
+        outline-offset: 2px;
+    }
+
+
 .durbtn {
     width: 40px;
     height: 40px;
@@ -73,8 +97,8 @@ li.active {
 
 .btn-light:hover {
     background-color: darkgray;
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* Збільшена тінь при наведенні */
-    transform: translateY(-2px); /* Невеликий підйом кнопки */
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
+    transform: translateY(-2px); /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
 }
 
 
@@ -104,7 +128,7 @@ li.active {
         font-size: 0.9em;
         color: black;
         text-align: center;
-        padding: 2px 15px; 
+        padding: 10px 15px; 
         text-decoration: none;
         transition: transform 0.2s ease;
         display: inline-block;
@@ -177,7 +201,7 @@ table, th, td {
 .h-85 {
     height: 85%;
 }
-/* слід ще поексперементувати...
+/* пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ...
 https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     */
 
@@ -260,7 +284,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
 .indexcontainer {
     display: flex;
-    flex-direction: row; /* За замовчуванням елементи поруч */
+    flex-direction: row; /* пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ */
     justify-content: center;
     align-items: start;
     width: 25%;
@@ -292,7 +316,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
 
 
-/* Анімація м'якого пульсування світла */
+/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ'пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ */
 @keyframes glow {
     from {
         text-shadow: 4px 4px 15px rgb(230 255 15), 0px 0px 16px rgb(255 247 11)
@@ -304,7 +328,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 .homepagesubtitle {
-    color: #5a3d1c; /* Темно-коричневий */
+    color: #5a3d1c; /* пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
     font-size: 1.2em;
 }
@@ -413,8 +437,8 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 .cis1 {
-    top: 0px; /* Відступ зверху */
-    left: 35px; /* Відступ зліва */
+    top: 0px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
+    left: 35px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ */
 }
 
 .dis1 {
@@ -438,8 +462,8 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 .cis2 {
-    top: 0px; /* Відступ зверху */
-    left: 385px; /* Відступ зліва */
+    top: 0px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
+    left: 385px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ */
 }
 
 .dis2 {
@@ -478,16 +502,16 @@ p {
 }
 
 #transpose-controls {
-    display: flex; /* важливо для justify-content */
+    display: flex; /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ justify-content */
     justify-content: start;
     align-items: center;
     width: 800px;
     margin-bottom: 20px;
     padding: 5px;
     border: 1px solid black;
-    gap: 10px; /* відступ між кнопками */
-    background-color: #f9f9cc; /* необов’язково, для кращої видимості */
-    border-radius: 8px; /* необов’язково, для естетики */
+    gap: 10px; /* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
+    background-color: #f9f9cc; /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
+    border-radius: 8px; /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
     font-size: 0.8em !important;
 }
 
@@ -517,8 +541,8 @@ p {
 
 
     .cis1 {
-        top: 0px; /* Відступ зверху */
-        left: 35px; /* Відступ зліва */
+        top: 0px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
+        left: 35px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ */
     }
 
     .dis1 {
@@ -542,8 +566,8 @@ p {
     }
 
     .cis2 {
-        top: 0px; /* Відступ зверху */
-        left: 385px; /* Відступ зліва */
+        top: 0px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
+        left: 385px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ */
     }
 
     .dis2 {
@@ -567,7 +591,7 @@ p {
     }
 
     .cis1 {
-        left: 30px; /* Відступ зліва */
+        left: 30px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ */
     }
 
     .dis1 {
@@ -588,8 +612,8 @@ p {
     }
 
     .cis2 {
-        top: 0px; /* Відступ зверху */
-        left: 345px; /* Відступ зліва */
+        top: 0px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
+        left: 345px; /* ВіпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ */
     }
 
     .dis2 {
@@ -619,12 +643,12 @@ p {
 
     .d-flex {
         flex-direction: column;
-        align-items: center; /* Вирівнюємо по центру */
+        align-items: center; /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
     }
 
 
     .w-25, .w-75 {
-        width: 100% !important; /* Робимо елементи повної ширини */
+        width: 100% !important; /* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
     }
 
     .navmelody {
