@@ -1,22 +1,22 @@
 ﻿//створює мелодію за натисканням клавіш піаніно
-//читання нотного рядку відбувається по одній ноті у конструкторі Note(string input) 
+//читання нотного рядку відбувається по одній ноті у конструкторі Note(string input)
 
 document.addEventListener("DOMContentLoaded", function () {
 
     console.log("createMelody.js starts.");
-    
+
 
     const buttons = document.querySelectorAll('#pianoroll button');
     const audioPlayer = document.getElementById('audioPlayer'); // аудіоплеєр
-    const audioSource = document.getElementById('audioSource'); // джерело для аудіофайлу     
+    const audioSource = document.getElementById('audioSource'); // джерело для аудіофайлу
     let pianodisplay = document.getElementById("pianodisplay");
     const keysInput_save = document.getElementById("keysInput-save")
-    const keysInput_search = document.getElementById("keysInput-search")
+    const keysInput_hidden = document.getElementById("keysInput-search")
     const createMIDIButton = document.getElementById('createMIDI');//кнопка "зберегти"
     const searchButton = document.getElementById('searchBtn');//кнопка "зберегти"
-    const playButton = document.getElementById('melodyPlayBtn');
+    const melodyPlayButton = document.getElementById('melodyPlayBtn');
     const saver = document.getElementById("saver");//тимчасове збереження мелодії
-    const authorSaver = document.getElementById("authorSaver");//тимчасове збереження автора    
+    const authorSaver = document.getElementById("authorSaver");//тимчасове збереження автора
     const titleInput = document.getElementById("titleInput");
     const selectAuthor = document.getElementById("selectAuthor");
     const submitMelodyBtn = document.getElementById("submitMelodyBtn")
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
     pianodisplay.value = saver.innerText;
     const savedTitle = sessionStorage.getItem("savedTitle");
     const savedAuthorId = sessionStorage.getItem("selectedAuthorId");
-    
+
 
     if (savedTitle) {
         console.log(`restoring saved title: ${savedTitle}`)
@@ -37,15 +37,15 @@ document.addEventListener("DOMContentLoaded", function () {
         selectAuthor.value = savedAuthorId;
     }
     else console.log(`saved authorId is null`);
-    
-    
-    
+
+
+
     saver.style.display = 'none';
 
     if (savedTitle && savedAuthorId)
     submitMelodyBtn.style.display = 'block';
 
-    
+
 
     //обробник кнопок з тривалістю
     let duration = '4';
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // // (треба буде додати запобіжник для любителів грати в стилі Зеленського)
     buttons.forEach(button => {
         button.addEventListener('click', function () {
-            const key = this.getAttribute('data-key'); // Отримуємо значення клавіші            
+            const key = this.getAttribute('data-key'); // Отримуємо значення клавіші
             console.log(`Натиснута клавіша: ${key}`);
             const audioPath = `/sounds/${key}.mp3`;
             if (!audioPlayer.paused) {
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             pianodisplay.value += `${key}${duration}_`;
             createMIDIButton.style.background = "lightgreen";
-            playButton.style.background = "lightgray";
+            melodyPlayButton.style.background = "lightgray";
             document.querySelector('.fas.fa-play').style.color = "gray";
         });
 
@@ -89,12 +89,12 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(`Натиснута клавіша: пауза`);
         pianodisplay.value += `r${duration}_`;
         createMIDIButton.style.background = "lightgreen";
-        playButton.style.background = "lightgray";
+        melodyPlayButton.style.background = "lightgray";
         document.querySelector('.fas.fa-play').style.color = "gray";
     })
 
     //кнопка "Відтворення"
-    playButton.addEventListener('click', function (e) {
+    melodyPlayButton.addEventListener('click', function (e) {
 
         const previewMp3path = document.getElementById('previewMp3path')
         var filepath = previewMp3path.textContent.trim();
@@ -120,8 +120,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log(`Збереження Title: ${titleInput.value}, selectedAuthorId: ${selectAuthor.value}`);
             // Викликає OnPostMelody()
             document.getElementById('melodyForm').submit();
-            
-            
+
+
         }
         else alert("Мелодія даного автора з такою назвою вже існує");
 
@@ -130,8 +130,8 @@ document.addEventListener("DOMContentLoaded", function () {
     //кнопка "Пошук"
     searchButton.addEventListener('click', function (event) {
         event.preventDefault();
-        keysInput_search.value = pianodisplay.value
-        console.log("Відправка форми з Keys:", keysInput_search.value);
+        keysInput_hidden.value = pianodisplay.value
+        console.log("Відправка форми з Keys:", keysInput_hidden.value);
         // Відправка форми
         document.getElementById('notesearchForm').submit();
 
@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     titleInput.addEventListener("input", function () {
-        
+
         if (titleInput.value.length > 2 && selectAuthor.value) {
             submitMelodyBtn.style.display = 'block';
             console.log("displaying submit btn");
