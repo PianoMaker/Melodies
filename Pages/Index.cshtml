@@ -24,20 +24,26 @@
             <div class="container flex-column justify-content-center align-items-start mt-5 w-25 haslo">
                 <h3 class="homepagetitle mt-lg-5">Поринь у світ музики</h3>
                 <p class="homepagesubtitle">Мелодії з усього світу в одному сайті!</p>
+                <!--ПОШУК-->
                 <form method="post" asp-page-handler="Search" class="mt-3 w-100 d-flex flex-row align-items-baseline">
                     <input asp-for="Search" type="text" class="form-control searchfield" />
                     <button type="submit" class="btn btn-index mt-2">🔍 Пошук</button>
                 </form>
+                <form method="post" asp-page-handler="AdvencedSearch" class="mt-3 w-100 d-flex flex-row align-items-baseline">
+                    <button type="submit" class="btn btn-index w-100 mt-2 btn-notes">🔍 Пошук по нотах</button>
+                </form>
             </div>
+
+            <!--кнопки входу/реєстрації-->
             <div class="d-flex flex-column align-items-end w-75 rightcontainer mt-0">
-                
+
                 @if (SignInManager.IsSignedIn(User))
                 {
                     <div class="d-flex gap-3 m-3">
                         <a class="btn btn-light link-dark shadow" asp-area="Identity" asp-page="/Account/Users" title="Manage">
                             Ви увійшли як @User.Identity?.Name!
                         </a>
-                    
+
                         <form class="form-inline" method="post" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
                             <button type="submit" class="btn btn-light link-dark shadow">Вийти</button>
                         </form>
@@ -49,11 +55,11 @@
                         <a class="btn btn-light link-dark shadow" asp-area="Identity" asp-page="/Account/Register">Зареєструватися</a>
                         <a class="btn btn-light link-dark shadow" asp-area="Identity" asp-page="/Account/Login">Увійти</a>
                     </div>
-                }                
+                }
             </div>
-        </div>    
+        </div>
     }
-    else   
+    else
     {<!--позичений дизайн-->
         <div data-elementor-type="wp-page" data-elementor-id="22" class="elementor elementor-22">
             <section class="elementor-section elementor-top-section elementor-element elementor-element-0b3aa23 elementor-section-boxed elementor-section-height-default elementor-section-height-default" data-id="0b3aa23" data-element_type="section" data-settings="{&quot;jet_parallax_layout_list&quot;:[{&quot;jet_parallax_layout_image&quot;:{&quot;url&quot;:&quot;&quot;,&quot;id&quot;:&quot;&quot;,&quot;size&quot;:&quot;&quot;},&quot;_id&quot;:&quot;c352893&quot;,&quot;jet_parallax_layout_image_tablet&quot;:{&quot;url&quot;:&quot;&quot;,&quot;id&quot;:&quot;&quot;,&quot;size&quot;:&quot;&quot;},&quot;jet_parallax_layout_image_mobile&quot;:{&quot;url&quot;:&quot;&quot;,&quot;id&quot;:&quot;&quot;,&quot;size&quot;:&quot;&quot;},&quot;jet_parallax_layout_speed&quot;:{&quot;unit&quot;:&quot;%&quot;,&quot;size&quot;:50,&quot;sizes&quot;:[]},&quot;jet_parallax_layout_type&quot;:&quot;scroll&quot;,&quot;jet_parallax_layout_direction&quot;:null,&quot;jet_parallax_layout_fx_direction&quot;:null,&quot;jet_parallax_layout_z_index&quot;:&quot;&quot;,&quot;jet_parallax_layout_bg_x&quot;:50,&quot;jet_parallax_layout_bg_x_tablet&quot;:&quot;&quot;,&quot;jet_parallax_layout_bg_x_mobile&quot;:&quot;&quot;,&quot;jet_parallax_layout_bg_y&quot;:50,&quot;jet_parallax_layout_bg_y_tablet&quot;:&quot;&quot;,&quot;jet_parallax_layout_bg_y_mobile&quot;:&quot;&quot;,&quot;jet_parallax_layout_bg_size&quot;:&quot;auto&quot;,&quot;jet_parallax_layout_bg_size_tablet&quot;:&quot;&quot;,&quot;jet_parallax_layout_bg_size_mobile&quot;:&quot;&quot;,&quot;jet_parallax_layout_animation_prop&quot;:&quot;transform&quot;,&quot;jet_parallax_layout_on&quot;:[&quot;desktop&quot;,&quot;tablet&quot;]}],&quot;background_background&quot;:&quot;classic&quot;}">
@@ -76,7 +82,8 @@
                             </form>
                         </div>
                     </div>
-                </div>            
+                </div>
+            <!--кнопки входу/реєстрації-->
             @if (SignInManager.IsSignedIn(User))
             {
                 <div class="d-flex gap-3 m-3">
@@ -100,7 +107,7 @@
 
             <div class="notka"></div>
             <div class="notka-blue"></div>
-            
+
         </div>
     }
 </div>
