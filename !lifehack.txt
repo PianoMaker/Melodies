@@ -12,4 +12,4 @@ git restore --source=master E:\Programming\Melodies\Models\
 git restore --source=master E:\Programming\Melodies\Services\
 git restore --source=twoDatabases E:\Programming\Melodies\lifehack.txt
 
-git restore --source=possible-production-config E:\Programming\Melodies\wwwroot\js
+git restore --source=master E:\Programming\Melodies\wwwroot\js
