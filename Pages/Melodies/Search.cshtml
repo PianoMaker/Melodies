@@ -3,9 +3,9 @@
 
 @{
     ViewData["Title"] = "Мелодія - пошук";
-    var melodyPattern = ViewData["melodypattern"] as List<string>;    
-    var matchedMelodiesCount = ViewData["matchedMelodiesCount"] as int? ?? 0;    
-    
+    var melodyPattern = ViewData["melodypattern"] as List<string>;
+    var matchedMelodiesCount = ViewData["matchedMelodiesCount"] as int? ?? 0;
+
 }
 
 <h1>Пошук</h1>
@@ -55,7 +55,7 @@
 
         <!--МІЙ СТЕЙНВЕЙ-->
         @await Html.PartialAsync("_PianoKeys")
-        
+
         <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
         @await Html.PartialAsync("_durationsTable")
 
@@ -119,7 +119,7 @@
 <div class="notescontainer">
     @if (melodyPattern != null)
     {
-        <p>Введено мелодію:     
+        <p>Введено мелодію:
             @foreach (var notes in melodyPattern)
             {
                 <text>@notes </text>
@@ -155,7 +155,7 @@
                     <text>@songPattern[j] </text>
                     }
                 }
-                </p> 
+                </p>
                  @* <p>@string.Join(", ", songPattern)</p>  *@
             </div>
         }
