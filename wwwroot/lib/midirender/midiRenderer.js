@@ -445,11 +445,26 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
         correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat);
 
-
         console.log(`start to draw measure ${index + 1}`);
 
+        // Виклик makeBeams для групування нот
+        let beams = [];
+        if (typeof makeBeams === 'function' && notes.length > 0) {
+            try {
+                const measureForBeams = { notes: notes };
+                const beamResult = makeBeams(measureForBeams, ticksPerBeat, {
+                    beamableDurations: new Set(['8', '16', '32', '64', '128']),
+                    minGroupSize: 2,
+                    splitOnBeat: false
+                });
+                beams = beamResult.beams || [];
+                console.log(`makeBeams found ${beams.length} beam groups for measure ${index + 1}`);
+            } catch (beamError) {
+                console.warn(`Error in makeBeams for measure ${index + 1}:`, beamError);
+            }
+        }
 
-        drawMeasure(notes, score, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator);
+        drawMeasure(notes, score, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, beams);
 
         Xposition += STAVE_WIDTH;
         
@@ -636,7 +651,7 @@ function adjustXYposition(Xposition, GENERALWIDTH, BARWIDTH, Yposition, HEIGHT, 
     return { Xposition, Yposition };
 }
 
-function drawMeasure(notes, score, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator) {
+function drawMeasure(notes, score, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, beams = []) {
     console.log("FOO: midiRenderer.js - drawMeasure");
     try {
         if (notes.length > 0) {
@@ -663,6 +678,18 @@ function drawMeasure(notes, score, BARWIDTH, context, stave, ties, index, commen
             
             // Малюємо голос
             voice.draw(context, stave);
+            
+            // Малюємо beam об'єкти (групування нот)
+            if (beams && beams.length > 0) {
+                beams.forEach((beam) => {
+                    try {
+                        beam.setContext(context).draw();
+                        console.log(`Beam drawn for measure ${index + 1}`);
+                    } catch (beamError) {
+                        console.warn(`Error drawing beam in measure ${index + 1}:`, beamError);
+                    }
+                });
+            }
             
             // Малюємо лігатури з обробкою помилок
             ties.forEach((tie) => {
