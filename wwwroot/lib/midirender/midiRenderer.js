@@ -481,34 +481,6 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
                 }
             });
         }
-
-        correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat);
-
-        console.log(`start to draw measure ${index + 1}`);
-
-        // Виклик makeBeams для групування нот
-        let beams = [];
-        if (typeof makeBeams === 'function' && notes.length > 0) {
-            try {
-                const measureForBeams = { notes: notes };
-                const beamResult = makeBeams(measureForBeams, ticksPerBeat, {
-                    beamableDurations: new Set(['8', '16', '32', '64', '128']),
-                    minGroupSize: 2,
-                    splitOnBeat: false
-                });
-                beams = beamResult.beams || [];
-                console.log(`makeBeams found ${beams.length} beam groups for measure ${index + 1}`);
-            } catch (beamError) {
-                console.warn(`Error in makeBeams for measure ${index + 1}:`, beamError);
-            }
-        }
-
-        drawMeasure(notes, score, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, beams);
-
-        Xposition += STAVE_WIDTH;
-        
-        // Скидаємо флаг після обробки першого такту в рядку
-        isFirstMeasureInRow = false;
     });
 
 };
@@ -777,6 +749,18 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
             
             // Малюємо голос
             voice.draw(context, stave);
+            
+            // Малюємо beam об'єкти (групування нот)
+            if (beams && beams.length > 0) {
+                beams.forEach((beam, beamIndex) => {
+                    try {
+                        beam.setContext(context).draw();
+                        console.log(`Beam ${beamIndex + 1} drawn for measure ${index + 1}`);
+                    } catch (beamError) {
+                        console.warn(`Error drawing beam ${beamIndex + 1} in measure ${index + 1}:`, beamError);
+                    }
+                });
+            }
             
             // Малюємо лігатури з обробкою помилок
             ties.forEach((tie, tieIndex) => {
