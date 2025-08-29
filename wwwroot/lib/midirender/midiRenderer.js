@@ -264,7 +264,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
 // Приймає мапу тактів, масив тактів, кількість тіксів на біт, об'єкт score і context з VexFlow та інші параметри.
 // Рендерить кожен такт у нотний стан з урахуванням активних нот, пауз, лігатур та інших музичних елементів.
 // Параметри:
-// - measureMap: Об'єкт, що відображає індекси тактів у початкові тікі.
+// - measureMap: Об'єкт, що відображає індекси тактів у початкові тіки.
 // - measures: Масив тактів, де кожен такт — це масив MIDI-подій.
 // - ticksPerBeat: Кількість тіків на чвертну ноту.
 // - score: Об'єкт score з VexFlow для створення нот.
@@ -353,8 +353,11 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
         let STAVE_WIDTH = adjustStaveWidth(BARWIDTH, index, CLEFZONE, isFirstMeasureInRow, timeSignatureChanged);
 
+        // Створюємо нотний стан (stave)
+        // Додаємо ключ та розмір такту, якщо потрібно
         const stave = setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, currentDenominator, isFirstMeasureInRow, timeSignatureChanged);
 
+        // Малюємо нотний стан
         stave.setContext(context).draw();
 
         const notes = [];
@@ -362,68 +365,10 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         let lastNoteOffTime = 0;
         let lastNoteOnTime = -1;
 
-        //Обробка кожної події в такті
+       
+        // почергово обробляємо всі події в такті
         console.log(`Processing events in measure ${index + 1}`);
-        measure.forEach((event, idx) => {
-
-            console.log("MIDI Event:", event);
-            // Note On
-            if (event.type === 0x9 && !(event.data && event.data[1] === 0)) {
-
-                const pitch = event.data[0];
-                console.log(`note On event for pitch ${pitch}`)
-                if (stepRead) stepRead.innerHTML += ` on ${pitch} <span class="tick">[${event.absTime}]</span>`
-                // Додаємо паузу тільки якщо немає активних нот
-                if (idx == 0 && Object.keys(activeNotes).length === 0) {
-                    AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime);
-                }
-
-                addRestsBetween(lastNoteOffTime, event, ticksPerBeat, thresholdGap, notes);
-
-                checkConcide(event, lastNoteOnTime);
-
-                activeNotes[pitch] = event.absTime;
-                console.log(`adding active note with pitch: ${pitch}, abs.time ${event.absTime}`)
-                lastNoteOnTime = event.absTime;
-            }
-            // Note Off
-            else if (event.type === 0x8 || (event.type === 0x9 && event.data && event.data[1] === 0)) { // Note Off
-                const pitch = event.data[0];
-                const startTime = activeNotes[pitch];
-                console.log(`note Off event for pitch ${pitch}`)
-                if (stepRead) stepRead.innerHTML += ` off ${pitch} <span class="tick">[${event.absTime}]</span>`;
-                if (startTime !== undefined) {
-                    const durationTicks = event.absTime - startTime;
-
-                    if (durationTicks > 0) {
-                        const durationsCode = getDurationFromTicks(durationTicks, ticksPerBeat);
-                        const { key, accidental } = midiNoteToVexFlow(pitch);
-
-                        let previousNote = null;
-
-                        durationsCode.forEach((durationCode) => {
-                            console.log(`Processing note with pitch: ${pitch}, key: ${key}, accidental: ${accidental}, durationCode: ${durationCode}`);
-                            const note = processNoteElement(durationCode, key, accidental);
-                            notes.push(note);
-
-                            // Якщо є попередня нота, додаємо лігу
-                            AddTie(previousNote, ties, note);
-
-                            previousNote = note;
-                        });
-
-
-                    }
-                    lastNoteOffTime = event.absTime;
-
-                }
-                else { console.log(`starttime for ${pitch} is ${startTime}`) }
-                if (activeNotes[pitch] !== undefined) {
-                    console.log(`deleting active note with pitch ${pitch}`)
-                    delete activeNotes[pitch];
-                }
-            }
-        });
+        renderMeasure();
 
                         
         // Якщо є активні ноти, домалюємо їх до кінця такту
@@ -443,33 +388,99 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
             addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, ticksPerBeat);
         }
 
+        // Перевіряємо, чи потрібно скоротити останню ноту/паузу, якщо вона виходить за межі такту
         correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat);
 
         console.log(`start to draw measure ${index + 1}`);
 
-        // Виклик makeBeams для групування нот
-        let beams = [];
-        if (typeof makeBeams === 'function' && notes.length > 0) {
-            try {
-                const measureForBeams = { notes: notes };
-                const beamResult = makeBeams(measureForBeams, ticksPerBeat, {
-                    beamableDurations: new Set(['8', '16', '32', '64', '128']),
-                    minGroupSize: 2,
-                    splitOnBeat: false
-                });
-                beams = beamResult.beams || [];
-                console.log(`makeBeams found ${beams.length} beam groups for measure ${index + 1}`);
-            } catch (beamError) {
-                console.warn(`Error in makeBeams for measure ${index + 1}:`, beamError);
-            }
-        }
-
-        drawMeasure(notes, score, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, beams);
+        // Передаємо ticksPerBeat в drawMeasure
+        drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat);
 
         Xposition += STAVE_WIDTH;
         
         // Скидаємо флаг після обробки першого такту в рядку
         isFirstMeasureInRow = false;
+
+
+        //Обробка кожної події в такті
+        // ----------------------
+        // Для кожної події:
+        // - Якщо це Note On з velocity > 0:
+        //   - Додає паузу на початку такту, якщо це перша нота і немає активних нот.
+        //   - Додає паузи між останньою Note Off і поточною Note On.
+        //   - Перевіряє, чи збігається час з останньою Note On.
+        //   - Додає ноту до активних нот.
+        // - Якщо це Note Off або Note On з velocity = 0:
+        //   - Завершує ноту, обчислює її тривалість.
+        //   - Додає ліги між нотами.
+        //   - Видаляє ноту з активних нот.
+        // ----------------------
+        function renderMeasure() {
+            let isFirstNoteInMeasure = true; 
+            measure.forEach((event, idx) => {
+
+                console.log("MIDI Event:", event);
+                // Note On
+                if (event.type === 0x9 && !(event.data && event.data[1] === 0)) {
+
+                    const pitch = event.data[0];
+                    console.log(`note On event for pitch ${pitch}`);
+                    if (stepRead) stepRead.innerHTML += ` on ${pitch} <span class="tick">[${event.absTime}]</span>`;
+
+                    // Додаємо паузу тільки якщо немає активних нот
+                    if (isFirstNoteInMeasure && Object.keys(activeNotes).length === 0) {
+                        AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime);
+                        isFirstNoteInMeasure = false;
+                    }
+
+                    addRestsBetween(lastNoteOffTime, event, ticksPerBeat, thresholdGap, notes);
+
+                    checkConcide(event, lastNoteOnTime);
+
+                    activeNotes[pitch] = event.absTime;
+                    console.log(`adding active note with pitch: ${pitch}, abs.time ${event.absTime}`);
+                    lastNoteOnTime = event.absTime;
+                }
+
+                // Note Off
+                else if (event.type === 0x8 || (event.type === 0x9 && event.data && event.data[1] === 0)) { // Note Off
+                    const pitch = event.data[0];
+                    const startTime = activeNotes[pitch];
+                    console.log(`note Off event for pitch ${pitch}`);
+                    if (stepRead) stepRead.innerHTML += ` off ${pitch} <span class="tick">[${event.absTime}]</span>`;
+                    if (startTime !== undefined) {
+                        const durationTicks = event.absTime - startTime;
+
+                        if (durationTicks > 0) {
+                            const durationsCode = getDurationFromTicks(durationTicks, ticksPerBeat);
+                            const { key, accidental } = midiNoteToVexFlow(pitch);
+
+                            let previousNote = null;
+
+                            durationsCode.forEach((durationCode) => {
+                                console.log(`Processing note with pitch: ${pitch}, key: ${key}, accidental: ${accidental}, durationCode: ${durationCode}`);
+                                const note = processNoteElement(durationCode, key, accidental);
+                                notes.push(note);
+
+                                // Якщо є попередня нота, додаємо лігу
+                                AddTie(previousNote, ties, note);
+
+                                previousNote = note;
+                            });
+
+
+                        }
+                        lastNoteOffTime = event.absTime;
+
+                    }
+                    else { console.log(`starttime for ${pitch} is ${startTime}`); }
+                    if (activeNotes[pitch] !== undefined) {
+                        console.log(`deleting active note with pitch ${pitch}`);
+                        delete activeNotes[pitch];
+                    }
+                }
+            });
+        }
     });
 
 };
@@ -490,6 +501,7 @@ function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat) {
         const duration = note.getDuration();
         const isRest = duration.endsWith('r');
         const baseDuration = isRest ? duration.slice(0, -1) : duration;
+        const dotted = /\./.test(duration);
         const noteTicks = calculateTicksFromDuration(baseDuration, ticksPerBeat);
         totalTicks += noteTicks;
     });
@@ -502,6 +514,7 @@ function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat) {
         const lastNoteDuration = lastNote.getDuration();
         const isRest = lastNoteDuration.endsWith('r');
         const baseDuration = isRest ? lastNoteDuration.slice(0, -1) : lastNoteDuration;
+        const dotted = /\./.test(lastNoteDuration);
         const lastNoteTicks = calculateTicksFromDuration(baseDuration, ticksPerBeat);
         
         // Обчислюємо скільки тіків залишається для останньої ноти
@@ -651,7 +664,24 @@ function adjustXYposition(Xposition, GENERALWIDTH, BARWIDTH, Yposition, HEIGHT, 
     return { Xposition, Yposition };
 }
 
-function drawMeasure(notes, score, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, beams = []) {
+// Оновлена функція drawMeasure з покращеною обробкою помилок та перевірками
+// ----------------------
+// Параметри:
+// - notes: Масив нот для рендерингу.
+// - BARWIDTH: Ширина такту в пікселях.
+// - context: Контекст рендерингу з VexFlow.
+// - stave: Об'єкт stave з VexFlow для поточного такту.
+// - ties: Масив лігатур для нот.
+// - index: Індекс поточного такту.
+// - commentsDiv: HTML елемент для виведення коментарів.
+// - currentNumerator: Поточний чисельник розміру такту.
+// - currentDenominator: Поточний знаменник розміру такту.
+// - ticksPerBeat: Кількість тіків на чвертну ноту.
+// Повертає: void
+// ----------------------
+// Використовує Vex.Flow.Voice, Vex.Flow.Formatter та makeBeams для форматування та рендерингу нот.
+    
+function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat) {
     console.log("FOO: midiRenderer.js - drawMeasure");
     try {
         if (notes.length > 0) {
@@ -661,6 +691,47 @@ function drawMeasure(notes, score, BARWIDTH, context, stave, ties, index, commen
             if (validNotes.length === 0) {
                 console.warn(`Measure ${index + 1} has no valid notes to render.`);
                 return;
+            }
+
+            // Обчислення ребер (beams) з обробкою помилок
+            let beams = [];
+            if (typeof makeBeams === 'function' && validNotes.length > 0 && ticksPerBeat) {
+                try {
+                    // Створюємо правильну структуру для makeBeams
+                    const measureForBeams = {
+                        notes: validNotes.map(note => ({
+                            vexNote: note // Обгортаємо StaveNote в очікувану структуру
+                        }))
+                    };
+                    console.log(`Calling makeBeams for measure ${index + 1} with ${validNotes.length} notes and ticksPerBeat ${ticksPerBeat}`);
+                    
+                    // Кастомний durationResolver для роботи з VexFlow нотами
+                    const customDurationResolver = (noteWrapper) => {
+                        if (noteWrapper && noteWrapper.vexNote && typeof noteWrapper.vexNote.getDuration === 'function') {
+                            let d = noteWrapper.vexNote.getDuration();
+                            const isRest = d.endsWith('r');
+                            const base = d.replace(/r$/, '').replace(/\.+$/, '');
+                            const dotted = /\./.test(d);
+                            return { code: base, isRest, dotted };
+                        }
+                        return { code: '', isRest: true, dotted: false };
+                    };
+                    
+                    const beamResult = makeBeams(measureForBeams, ticksPerBeat, {
+                        beamableDurations: new Set(['8', '16', '32', '64', '128']),
+                        minGroupSize: 2,
+                        splitOnBeat: false,
+                        durationResolver: customDurationResolver
+                    });
+                    
+                    beams = beamResult.beams || [];
+                    console.log(`makeBeams found ${beams.length} beam groups for measure ${index + 1}`);
+                } catch (beamError) {
+                    console.warn(`Error in makeBeams for measure ${index + 1}:`, beamError);
+                    beams = []; // Fallback до порожнього масиву
+                }
+            } else {
+                console.log(`makeBeams skipped for measure ${index + 1}: function=${typeof makeBeams}, notes=${validNotes.length}, ticksPerBeat=${ticksPerBeat}`);
             }
             
             // Створюємо voice з урахуванням поточного розміру такту
@@ -681,29 +752,29 @@ function drawMeasure(notes, score, BARWIDTH, context, stave, ties, index, commen
             
             // Малюємо beam об'єкти (групування нот)
             if (beams && beams.length > 0) {
-                beams.forEach((beam) => {
+                beams.forEach((beam, beamIndex) => {
                     try {
                         beam.setContext(context).draw();
-                        console.log(`Beam drawn for measure ${index + 1}`);
+                        console.log(`Beam ${beamIndex + 1} drawn for measure ${index + 1}`);
                     } catch (beamError) {
-                        console.warn(`Error drawing beam in measure ${index + 1}:`, beamError);
+                        console.warn(`Error drawing beam ${beamIndex + 1} in measure ${index + 1}:`, beamError);
                     }
                 });
             }
             
             // Малюємо лігатури з обробкою помилок
-            ties.forEach((tie) => {
+            ties.forEach((tie, tieIndex) => {
                 try {
                     tie.setContext(context).draw();
                 } catch (tieError) {
-                    console.warn(`Error drawing tie in measure ${index + 1}:`, tieError);
+                    console.warn(`Error drawing tie ${tieIndex + 1} in measure ${index + 1}:`, tieError);
                 }
             });
         } else {
             console.warn(`Measure ${index + 1} has no notes to render.`);
         }
     } catch (error) {
-        console.error(`Error rendering measure ${index + 1}: ${error.message}<br>`);
+        console.error(`Error rendering measure ${index + 1}: ${error.message}`);
         commentsDiv.innerHTML += `<br>Error rendering measure ${index + 1}: ${error.message}<br>`;
     }
 }
