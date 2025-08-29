@@ -102,11 +102,98 @@ namespace Melodies25.Pages.Account
             return collection;
         }
 
-        public void OnPostDeleteFile(int Id)
+        public IActionResult OnPostDeleteFile(string fileId)
         {
             MessageL(COLORS.yellow, "FileNames/DeleteFile method starts");
-            TempFiles.RemoveAt(Id);
-            MessageL(COLORS.yellow, "file removed");
+
+            if (string.IsNullOrEmpty(fileId))
+            {
+                ErrorMessageL("File ID is null or empty");
+                return Page();
+            }
+
+            // Ініціалізуємо файли
+            InitializeFiles();
+
+            // Парсимо ID файлу
+            if (!int.TryParse(fileId, out int id))
+            {
+                ErrorMessageL("Invalid file ID format");
+                return Page();
+            }
+
+            try
+            {
+                // Шукаємо файл у всіх колекціях
+                FileInformation? fileToDelete = null;
+                string? subcategory = null;
+
+                // Перевіряємо у TempFiles
+                if (TempFiles != null && id < TempFiles.Count)
+                {
+                    fileToDelete = TempFiles[id];
+                    subcategory = "temporary";
+                }
+                // Перевіряємо у MidiFiles  
+                else if (MidiFiles != null && id < MidiFiles.Count)
+                {
+                    fileToDelete = MidiFiles[id];
+                    subcategory = "melodies";
+                }
+                // Перевіряємо у Mp3Files
+                else if (Mp3Files != null && id < Mp3Files.Count)
+                {
+                    fileToDelete = Mp3Files[id];
+                    subcategory = "mp3";
+                }
+
+                if (fileToDelete == null || subcategory == null)
+                {
+                    ErrorMessageL("File not found in any collection");
+                    return Page();
+                }
+
+                // Створюємо повний шлях до файлу
+                var filePath = Path.Combine(_environment.WebRootPath, subcategory, fileToDelete.Value.Name);
+
+                // Перевіряємо чи існує файл
+                if (System.IO.File.Exists(filePath))
+                {
+                    // Видаляємо фізичний файл
+                    System.IO.File.Delete(filePath);
+                    MessageL(COLORS.green, $"Physical file deleted: {filePath}");
+                }
+                else
+                {
+                    MessageL(COLORS.yellow, $"Physical file not found: {filePath}");
+                }
+
+                // Видаляємо з відповідної колекції
+                if (subcategory == "temporary")
+                {
+                    TempFiles?.RemoveAt(id);
+                }
+                else if (subcategory == "melodies")
+                {
+                    MidiFiles?.RemoveAt(id);
+                }
+                else if (subcategory == "mp3")
+                {
+                    Mp3Files?.RemoveAt(id);
+                }
+
+                MessageL(COLORS.cyan, "File removed successfully");
+
+                // Оновлюємо статистику
+                NumberOfFiles = (TempFiles?.Count ?? 0) + (MidiFiles?.Count ?? 0) + (Mp3Files?.Count ?? 0);
+                TotalSize = GetTotalSize();
+            }
+            catch (Exception ex)
+            {
+                ErrorMessageL($"Error deleting file: {ex.Message}");
+            }
+
+            return Page();
         }
 
         public void OnPostMassDelete()

@@ -121,7 +121,7 @@
                             <td>@file.Date</td>
                             <td>
                                 <form method="post" asp-page-handler="DeleteFile" asp-route-fileId="@file.Id" class="d-inline">
-                                    <button type="submit" class="btn btn-danger">Видалити файл</button>
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Ви впевнені, що хочете видалити цей файл?')">Видалити файл</button>
                                 </form>
                             </td>
                         </tr>
