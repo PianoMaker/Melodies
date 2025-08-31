@@ -21,4 +21,6 @@
  Проєкт у trello
  https://trello.com/w/melodiesproject
 
+ Публічний сайт з демо-версією:
+ http://pianomaker2-001-site1.jtempurl.com/
  
