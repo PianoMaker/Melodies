@@ -18,15 +18,32 @@ body {
     margin: 0;
     padding: 0;
     /*overflow: hidden;*/
-    background: linear-gradient(rgba(245,255,200,.7), rgba(255,235,200,.5));
+    background: linear-gradient(rgb(231 153 42 / 80%) 20%, rgb(239, 100, 247, 0.7) 40%, rgb(91 109 9 / 80%) 90%, rgb(9 148 195 / 86%));
+    background-attachment: fixed;
+    background-repeat: no-repeat;
 }
 
+    body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url(../images/notes_bck.png);
+        background-size: 300px 300px;
+        background-repeat: repeat;
+        pointer-events: none; /* Щоб не заважати взаємодії з елементами сторінки */
+        opacity: 0.2; /* Регулює прозорість фону */
+        z-index: -1; /* Розміщує фон позаду всіх інших елементів */
+    }
 
 
 a.link-light:hover {
     color: yellow !important;
 }
 
+/* пошук по нотах - головна */
 .btn-notes {
     background: #ffd83d !important; /* soft gold */
     color: #212529;
@@ -50,7 +67,7 @@ a.link-light:hover {
         outline-offset: 2px;
     }
 
-
+/*кнпоки вибору тривалостей для вводу мелодій*/
 .durbtn {
     width: 40px;
     height: 40px;
@@ -65,6 +82,7 @@ a.link-light:hover {
         vertical-align: top;
     }
 
+/* підсвічує меню   */
 .highlight {
     background-color: yellow;
 }
@@ -73,8 +91,9 @@ li.active {
     background-color: rgba(255, 255, 0, 0.4) !important;
 }
 
+/*стилі елементів головного меню*/
 .melodyitem {
-    height: 110px !important;
+    height: 95px !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -383,6 +402,14 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     display: block;
 }
 
+.addcontainer, .searchcontainer {
+    border: 1px solid black;
+    border-radius: 15px;
+    box-shadow: darkgray 0px 1px 10px 5px;
+    padding: 25px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
 .searchrightcontainer {
     /*display: inline-block;*/
     width: 70%;
@@ -400,13 +427,17 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 .searchcontainer {
     display: inline-flex;
     width: 100%;
+    height: 350px
+}
+
+.addcontainer, .searchcontainer, .searchleftcontainer, .searchrightcontainer {
+    background: #fffcd1;
+}
+
+.table {
     border: 1px solid black;
     border-radius: 15px;
     box-shadow: darkgray 0px 1px 10px 5px;
-    padding: 25px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    height: 350px
 }
 
 .controlcontainer {
@@ -431,6 +462,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     margin: 0;
 }
 
+/* Розташування чорних клавіш */
 .cis1 {
     top: 0px; /* Відступ зверху */
     left: 35px; /* Відступ зліва */
@@ -521,6 +553,9 @@ p {
     .searchleftcontainer {
         width: 100%;
     }
+
+   
+
 
     .notesinfo{
         width:65vh;
