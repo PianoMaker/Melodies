@@ -25,12 +25,13 @@
     margin: 0;
 }
 
-.footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: #fef7e2;
-    height: 30px;
+
+
+.imgcontainer {
+
+    min-width: 200px;
+    max-width: 250px;
+    display: flex;
 }
 
 /* Надписи на горі */

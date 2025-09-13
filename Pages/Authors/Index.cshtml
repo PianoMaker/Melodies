@@ -5,17 +5,20 @@
     ViewData["Title"] = "Мелодія - автори";
 }
 
-<p>Авторів у базі даних - @Model.Author.Count</p>
-<p>
-    <a asp-page="Create" 
-    class="btn btn-outline-dark light-background border-dark">
-    Додати автора</a>
-</p>
-<form method="post" asp-page-handler="translit">
-    <button type="submit" class="btn btn-outline-dark light-background border-dark">
-        Оновити
-    </button>
-</form>
+<h1>Авторів у базі даних - @Model.Author.Count</h1>
+<div style="display:inline">
+
+    <a asp-page="Create"
+       class="btn btn-outline-dark light-background border-dark">
+        Додати автора
+    </a>
+
+    <form method="post" asp-page-handler="translit" style="display:inline">
+        <button type="submit" class="btn btn-outline-dark light-background border-dark m-4">
+            Оновити
+        </button>
+    </form>
+</div>
 <table class="table">
     <thead>
         <tr>
