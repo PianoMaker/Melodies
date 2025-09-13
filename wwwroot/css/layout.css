@@ -29,8 +29,10 @@
 
 
 .imgcontainer {
-    min-width: 70px;
-    max-width: 80px;
+
+    min-width: 200px;
+    max-width: 250px;
+    display: flex;
 }
 
 
@@ -125,6 +127,9 @@
 .title {
     font-size: 1.8em;
     margin-bottom: 10px;
+    font-family: "Great Vibes", cursive;
+    font-weight: 500;
+    font-style: normal;
 }
     /* Анімація м'якого пульсування світла */
     @keyframes glow {
