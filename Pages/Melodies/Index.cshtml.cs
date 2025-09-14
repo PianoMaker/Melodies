@@ -60,7 +60,7 @@ namespace Melodies25.Pages.Melodies
                 "title_asc" => melodiesQuery.OrderBy(m => m.Title),
                 "title_desc" => melodiesQuery.OrderByDescending(m => m.Title),
                 "author_asc" => melodiesQuery.OrderBy(m => m.Author.Surname).ThenBy(m => m.Author.Name),
-                "author_desc" => melodiesQuery.OrderByDescending(m => m.Author.Name).ThenByDescending(m => m.Author.Surname),
+                "author_desc" => melodiesQuery.OrderByDescending(m => m.Author.Surname).ThenByDescending(m => m.Author.Name),
                 _ => melodiesQuery // Якщо немає сортування, залишаємо список без змін
             };
 
