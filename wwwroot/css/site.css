@@ -91,6 +91,16 @@ li.active {
     background-color: rgba(255, 255, 0, 0.4) !important;
 }
 
+.letter {
+    font-size: 0.7em;
+    background-color: silver;
+    border-radius: 1px;
+    border: solid 1px black;
+    margin: 1px;
+    margin-top: 20px;
+}
+
+
 /*стилі елементів головного меню*/
 .melodyitem {
     height: 95px !important;
