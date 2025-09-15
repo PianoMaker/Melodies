@@ -149,6 +149,53 @@ const allowDotted = false;
         return fraction * localTicksPerBeat;
     }
 
+    // --- STEM NORMALIZATION (added) ---------------------------------------
+    // Узгоджує напрямок штилів усередині групи коли є лише один «відступ»
+    // або пара з двох нот з протилежними напрямками, щоб уникнути розриву beam.
+    function unifyBeamGroupDirections(currentGroup) {
+        try {
+            if (!currentGroup || !currentGroup.notes || currentGroup.notes.length < 2) return;
+            const notes = currentGroup.notes.map(n => n.vexNote || n).filter(Boolean);
+            if (notes.length < 2) return;
+            let upCount = 0, downCount = 0, sumLines = 0, totalHeads = 0;
+            const dirs = [];
+            notes.forEach(vn => {
+                if (typeof vn.getStemDirection === 'function') {
+                    const dir = vn.getStemDirection();
+                    if (dir === 1) upCount++; else if (dir === -1) downCount++;
+                    dirs.push(dir);
+                }
+                if (typeof vn.getKeyProps === 'function') {
+                    const kp = vn.getKeyProps();
+                    kp.forEach(k => { sumLines += k.line; totalHeads++; });
+                }
+            });
+            if (!(upCount && downCount)) return; // вже однорідно
+            // Визначаємо чи є ситуація для уніфікації
+            const minority = Math.min(upCount, downCount);
+            const needUnify = (minority === 1) || (upCount === downCount && notes.length === 2);
+            if (!needUnify) return; // складний контур – залишаємо
+            const avgLine = totalHeads ? (sumLines / totalHeads) : 3;
+            let majorityDir;
+            if (upCount === downCount) {
+                // Tie -> використовуємо середню лінію (>=3 -> вниз)
+                majorityDir = (avgLine >= 3) ? Vex.Flow.Stem.DOWN : Vex.Flow.Stem.UP;
+            } else {
+                majorityDir = (upCount > downCount) ? Vex.Flow.Stem.UP : Vex.Flow.Stem.DOWN;
+            }
+            notes.forEach(vn => {
+                if (typeof vn.setStemDirection === 'function') {
+                    vn.setStemDirection(majorityDir);
+                    if (typeof vn.reset === 'function') {
+                        try { vn.reset(); } catch { /* ignore */ }
+                    }
+                }
+            });
+        } catch (e) {
+            console.warn('Stem normalization failed:', e);
+        }
+    }
+
     function closeGroup(current, beamGroups, beams, reason) {
         console.log("MB: closeGroup method starts");
         if (current.notes.length >= minGroupSize) {
@@ -167,6 +214,8 @@ const allowDotted = false;
 
             if (typeof Vex !== 'undefined' && Vex.Flow && Vex.Flow.Beam) {
                 try {
+                    // НОВЕ: перед створенням beam – уніфікуємо напрямки за потреби
+                    unifyBeamGroupDirections(current);
                     beams.push(new Vex.Flow.Beam(current.notes.map(n => n.vexNote || n)));
                 } catch (e) {
                     console.warn('Beam creation failed:', e);
