@@ -3,6 +3,25 @@
 
 
 /**
+ * (AUTO-STEM HELPER)
+ * -------------------------------------------------
+ * Added helper to optionally apply VexFlow auto stem logic to every created note
+ * without modifying or removing existing functions or comments. Rest durations
+ * (codes ending with 'r') are skipped. Safe to call multiple times.
+ */
+function applyAutoStem(note, durationCode) {
+    try {
+        if (!note) return;
+        if (typeof durationCode === 'string' && /r$/.test(durationCode)) return; // skip rests
+        if (typeof note.autoStem === 'function') {
+            note.autoStem();
+        }
+    } catch (e) {
+        console.warn('applyAutoStem failed:', e);
+    }
+}
+
+/**
  * drawScore
  * ----------
  * Renders a musical score from a MIDI file and displays it in the specified HTML element.
@@ -485,6 +504,8 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
                             durationsCode.forEach((durationCode, pieceIdx) => {
                                 const accToDraw = decideAccidentalForNote(vexKey, accidental, currentKeySig, measureAccState, pieceIdx);
                                 const note = processNoteElement(durationCode, vexKey, accToDraw);
+                                // APPLY AUTO STEM for each note piece
+                                applyAutoStem(note, durationCode);
 
                                 const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
                                 note.__srcTicks = allocatedTicks;
@@ -596,6 +617,8 @@ function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat) {
                                 newNote.addModifier(modifier);
                             }
                         });
+                        // APPLY AUTO STEM for shortened note
+                        applyAutoStem(newNote, newDuration);
                         notes[notes.length - 1] = newNote;
                         console.log(`AN: Shortened last note to: ${newDuration}`);
                     }
@@ -642,6 +665,7 @@ function drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties,
                 // UPDATED: measure-aware accidental logic for split pieces of a sustained note
                 const accToDraw = decideAccidentalForNote(key, accidental, currentKeySig, measureAccState, pieceIdx);
                 const note = processNoteElement(durationCode, key, accToDraw);
+                applyAutoStem(note, durationCode);
 
                 const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
                 note.__srcTicks = allocatedTicks;
@@ -1235,6 +1259,8 @@ function processNoteElement(durationCode, key, accidental) {
     if (note && accidental) {
         note.addAccidental(0, new Vex.Flow.Accidental(accidental));
     }
+    // APPLY AUTO STEM for every newly processed note
+    applyAutoStem(note, durationCode);
     return note;
 }
 
