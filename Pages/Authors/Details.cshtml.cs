@@ -24,6 +24,10 @@ namespace Melodies25.Pages.Authors
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
+            Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
+            Response.Headers["Pragma"] = "no-cache";
+            Response.Headers["Expires"] = "0";
+
             if (id == null)
             {
                 return NotFound();
@@ -49,5 +53,7 @@ namespace Melodies25.Pages.Authors
             }
             return Page();
         }
+
+
     }
 }
