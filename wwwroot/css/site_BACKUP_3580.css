@@ -1,0 +1,705 @@
+html {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    margin-bottom: 60px;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    /*overflow: hidden;*/
+    background: linear-gradient(rgb(231 153 42 / 80%) 20%, rgb(239, 100, 247, 0.7) 40%, rgb(91 109 9 / 80%) 90%, rgb(9 148 195 / 86%));
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+    body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url(../images/notes_bck.png);
+        background-size: 300px 300px;
+        background-repeat: repeat;
+        pointer-events: none; /* Щоб не заважати взаємодії з елементами сторінки */
+        opacity: 0.2; /* Регулює прозорість фону */
+        z-index: -1; /* Розміщує фон позаду всіх інших елементів */
+    }
+
+
+a.link-light:hover {
+    color: yellow !important;
+}
+
+<<<<<<< HEAD
+=======
+/* пошук по нотах - головна */
+.btn-notes {
+    background: #ffd83d !important; /* soft gold */
+    color: #212529;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,.18), 0 1px 1px rgba(0,0,0,.10);
+    transition: box-shadow .2s ease, transform .2s ease;
+}
+
+    .btn-notes:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,.22), 0 2px 4px rgba(0,0,0,.12);
+        transform: translateY(-1px);
+    }
+
+    .btn-notes:active {
+        box-shadow: 0 1px 2px rgba(0,0,0,.25);
+        transform: translateY(0);
+    }
+
+    .btn-notes:focus-visible {
+        outline: 3px solid #2d6cdf;
+        outline-offset: 2px;
+    }
+
+/*кнпоки вибору тривалостей для вводу мелодій*/
+>>>>>>> 9cacdb3 (UI design improved)
+.durbtn {
+    width: 40px;
+    height: 40px;
+    border: 1px solid black;
+    border-radius: 2px;
+    margin: 5px;
+    transition: background-color 0.3s ease;
+}
+
+    .durbtn img {
+        height: 30px;
+        vertical-align: top;
+    }
+
+/* підсвічує меню   */
+.highlight {
+    background-color: yellow;
+}
+
+li.active {
+    background-color: rgba(255, 255, 0, 0.4) !important;
+}
+
+/*стилі елементів головного меню*/
+.melodyitem {
+    height: 95px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+.btn-light {
+    transition: linear 0.5s;
+    z-index: 3;
+}
+
+.bg-yellow {
+    background-color: yellow;
+}
+
+
+.btn-light:hover {
+    background-color: darkgray;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* Збільшена тінь при наведенні */
+    transform: translateY(-2px); /* Невеликий підйом кнопки */
+}
+
+
+#innerNotesContainer {
+    border: 1px solid gray;
+    border-radius: 12px;
+    padding: 2px;
+    background: rgba(2255,255,225,0.8)
+}
+
+.logoimage {
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    height: 100px;
+}
+
+table {
+    background-color: white;
+    opacity: 0.9;
+    font-family: 'Times New Roman';
+    font-style: normal;
+    border: 1px solid black;
+}
+
+    table a {
+        font-style: normal;
+        text-decoration: none;
+    }
+
+        table a:hover {
+            color: blueviolet !important;
+        }
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+    font-size: 0.9em;
+}
+
+th {
+    background: linear-gradient(to right, #4b4f18, #5a5e38);
+    color: white;
+}
+
+table, th, td {
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
+
+
+
+.mainpage {
+    height: 100%;
+    background: linear-gradient(217deg, rgba(255,100,100,.8), rgba(255,100,0,0) 70.71%), linear-gradient(127deg, rgba(255,255,100,.8), rgba(255,255,0,0) 70.71%), linear-gradient(336deg, rgba(100,100,255,.8), rgba(255,255,255,0) 70.71%);
+    margin: 0;
+}
+
+.filesbox{
+
+    border: 1px solid gray;
+    background: #fefee7;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
+    margin-top:20px;
+    margin-bottom:40px;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #fef7e2;
+    height: 30px;
+}
+
+.h-85 {
+    height: 85%;
+}
+/* слід ще поексперементувати...
+https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
+    */
+
+
+.imgcontainer {
+    min-width: 90px;
+    max-width: 100px;
+}
+
+
+/* Надписи на горі */
+.navbar-nav {
+    display: flex;
+    width: 100%;
+}
+
+.nav-item {
+    flex-grow: 1; /* Розтягує кожен елемент рівномірно */
+    text-align: center; /* Вирівнює текст по центру */
+}
+
+.navmelody {
+    font-size: 1.4em;
+    margin: 20px 0px 0px 15px;
+    transition: linear 0.5s;
+    font-family: "Montserrat", serif;
+}
+
+    .navmelody:hover {
+        color: lemonchiffon !important;
+        transform: scale(1.08) translateY(-2px);
+    }
+
+.notestaff {
+    margin: 3px;
+}
+
+
+.notestaff-container {
+    position: absolute;
+    z-index: 2;
+}
+
+.notescontainer {
+    font-size: 0.8em;
+    border: 1px solid gray;
+    background-color: lightgoldenrodyellow;
+    padding: 8px;
+}
+
+    .notescontainer h3 {
+        font-size: 1em;
+    }
+
+.notebox {
+    display: inline-block;
+    font-size: 0.9em;
+    text-align: center;
+    padding: 2px;
+    height: 30px;
+    margin: 5px 1px 1px 1px;
+    min-width: 35px;
+    border: 1px solid gray;
+    background-color: antiquewhite;
+    border-radius: 5px;
+    box-shadow: rgba(55,55,0,0.3) 2px 2px;
+}
+
+.pausebox {
+    font-size: 1.1em;
+    background-color: white;
+    border: none;
+    background-color: white;
+}
+
+#degreesChart, #weightChart {
+    width: 400px;
+    height: 200px;
+}
+
+.outerNoteBox {
+    display: inline-block;
+    text-align: center;
+}
+
+.innerNotesContainer {
+    padding: 5px;
+    border: 1px solid darkred;
+    background-color: rgba(255,255,200,0.9);
+}
+
+.noteanalysis {
+    display: inline-block;
+    background-color: lightgoldenrodyellow;
+    padding: 5px;
+    border: 1px solid darkred;
+}
+
+
+.indexcontainer {
+    display: flex;
+    flex-direction: row; /* За замовчуванням елементи поруч */
+    justify-content: center;
+    align-items: start;
+    width: 25%;
+}
+
+
+.commoncontainer {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+
+.rightcontainer {
+    width: 80vh;
+    height: 115%;
+    padding: 5px;
+    margin-top: 0;
+    background-image: url(../images/elephantplays.png);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: lightgray;
+}
+
+.light-background {
+    background-color: lightgray;
+}
+
+
+
+/* Анімація м'якого пульсування світла */
+@keyframes glow {
+    from {
+        text-shadow: 4px 4px 15px rgb(230 255 15), 0px 0px 16px rgb(255 247 11)
+    }
+
+    to {
+        text-shadow: 0px 0px 12px rgb(255 50 50), 0px 0px 20px rgb(255 100 50);
+    }
+}
+
+.homepagesubtitle {
+    color: #5a3d1c; /* Темно-коричневий */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    font-size: 1.2em;
+}
+
+
+.btn-index {
+    background-color: rgba(100,100,255,.8);
+}
+
+    .btn-index:hover {
+        background-color: rgba(120,150,255,.8);
+    }
+
+.smallfont {
+    font-size: 0.8em !important;
+    color: darkslategrey;
+}
+
+
+.notka, .notka-blue {
+    position: absolute;
+    bottom: -50px;
+    width: 50px;
+    height: 50px;
+    background-image: url("/images/note-yellow.png");
+    background-size: contain;
+    background-position: center;
+    opacity: 0.6;
+    animation: float 10s infinite linear;
+}
+
+.notka-blue {
+    background-image: url("/images/note.png");
+    opacity: 0.3;
+}
+
+@keyframes float {
+    0% {
+        transform: translateX(0) translateY(0) scale(1.1) rotate(0deg);
+    }
+
+    100% {
+        transform: translateX(var(--randomHorizontalEnd, 0)) translateY(var(--randomVerticalEnd, 0)) scale(0.4) rotate(var(--randomRotate, 0deg));
+        ;
+    }
+}
+
+/*<!--SEARCH PAGE -->*/
+
+.notesinfo {
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: lightgray;
+    width: 750px;
+    padding: 10px;
+    margin: 10px;
+    display: block;
+}
+
+.addcontainer, .searchcontainer {
+    border: 1px solid black;
+    border-radius: 15px;
+    box-shadow: darkgray 0px 1px 10px 5px;
+    padding: 25px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.searchrightcontainer {
+    /*display: inline-block;*/
+    width: 70%;
+    height: 100%;
+    margin: 10px
+}
+
+.searchleftcontainer {
+    display: inline-block;
+    height: 100%;
+    width: 30%;
+    margin: 10px
+}
+
+.searchcontainer {
+    display: inline-flex;
+    width: 100%;
+    height: 350px
+}
+
+.addcontainer, .searchcontainer, .searchleftcontainer, .searchrightcontainer {
+    background: #fffcd1;
+}
+
+.table {
+    border: 1px solid black;
+    border-radius: 15px;
+    box-shadow: darkgray 0px 1px 10px 5px;
+}
+
+.controlcontainer {
+    display: inline-block;
+    border: 0px solid grey;
+    flex: 1 2 100px;
+}
+
+#pianoroll {
+    position: relative;
+    width: 800px;
+    height: 200px;
+    font-size: 0;
+    padding-left: 10px;
+}
+
+.blackpianobutton {
+    position: absolute;
+    width: 40px;
+    height: 110px;
+    background: linear-gradient(black, darkslategrey);
+    margin: 0;
+}
+
+/* Розташування чорних клавіш */
+.cis1 {
+    top: 0px; /* Відступ зверху */
+    left: 35px; /* Відступ зліва */
+}
+
+.dis1 {
+    top: 0px;
+    left: 90px;
+}
+
+.fis1 {
+    top: 0px;
+    left: 180px;
+}
+
+.gis1 {
+    top: 0px;
+    left: 235px;
+}
+
+.b1 {
+    top: 0px;
+    left: 290px;
+}
+
+.cis2 {
+    top: 0px; /* Відступ зверху */
+    left: 385px; /* Відступ зліва */
+}
+
+.dis2 {
+    top: 0px;
+    left: 440px;
+}
+
+.fis2 {
+    top: 0px;
+    left: 530px;
+}
+
+.gis2 {
+    top: 0px;
+    left: 585px;
+}
+
+.b2 {
+    top: 0px;
+    left: 640px;
+}
+
+.whitepianobutton {
+    height: 200px;
+    width: 50px;
+    margin: 0;
+    gap: 0px;
+}
+
+h1 {
+    font-size: 1.3em;
+}
+
+p {
+    font-size: 0.9em;
+}
+
+@media (max-width: 1024px) {
+
+    .searchcontainer {
+        display: block;
+    }
+
+    .searchleftcontainer {
+        width: 100%;
+    }
+
+   
+
+
+    .notesinfo{
+        width:65vh;
+    }
+
+    .whitepianobutton {
+        width: 45px;
+    }
+
+    .blackpianobutton {
+        width: 40px;
+    }
+
+
+    .cis1 {
+        top: 0px; /* Відступ зверху */
+        left: 35px; /* Відступ зліва */
+    }
+
+    .dis1 {
+        top: 0px;
+        left: 90px;
+    }
+
+    .fis1 {
+        top: 0px;
+        left: 180px;
+    }
+
+    .gis1 {
+        top: 0px;
+        left: 235px;
+    }
+
+    .b1 {
+        top: 0px;
+        left: 290px;
+    }
+
+    .cis2 {
+        top: 0px; /* Відступ зверху */
+        left: 385px; /* Відступ зліва */
+    }
+
+    .dis2 {
+        top: 0px;
+        left: 440px;
+    }
+
+    .fis2 {
+        top: 0px;
+        left: 530px;
+    }
+
+    .gis2 {
+        top: 0px;
+        left: 585px;
+    }
+
+    .b2 {
+        top: 0px;
+        left: 640px;
+    }
+
+    .cis1 {
+        left: 30px; /* Відступ зліва */
+    }
+
+    .dis1 {
+        left: 80px;
+    }
+
+    .fis1 {
+        left: 165px;
+    }
+
+    .gis1 {
+        left: 215px;
+    }
+
+    .b1 {
+        top: 0px;
+        left: 265px;
+    }
+
+    .cis2 {
+        top: 0px; /* Відступ зверху */
+        left: 345px; /* Відступ зліва */
+    }
+
+    .dis2 {
+        top: 0px;
+        left: 395px;
+    }
+
+    .fis2 {
+        top: 0px;
+        left: 480px;
+    }
+
+    .gis2 {
+        top: 0px;
+        left: 530px;
+    }
+
+    .b2 {
+        top: 0px;
+        left: 580px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .d-flex {
+        flex-direction: column;
+        align-items: center; /* Вирівнюємо по центру */
+    }
+
+
+    .w-25, .w-75 {
+        width: 100% !important; /* Робимо елементи повної ширини */
+    }
+
+    .navmelody {
+        margin: 20px 10px 0px 10px;
+        padding-right: 0px !important;
+    }
+
+    .smallfont {
+        font-size: 0.7em !important;
+        color: darkslategrey;
+    }
+}
+
+
+@media (max-width: 512px) {
+    .haslo {
+        min-width: 200px;
+    }
+
+    .searchfield {
+        width: 200px;
+    }
+
+    .homepagetitle {
+        font-size: 2em;
+    }
+
+    .title {
+        font-size: 1.5em;
+    }
+
+    .navmelody {
+        margin: 20px 0px 0px 0px;
+        padding-right: 0px;
+    }
+}

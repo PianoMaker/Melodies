@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const authorSaver = document.getElementById("authorSaver");//тимчасове збереження автора    
     const titleInput = document.getElementById("titleInput");
     const selectAuthor = document.getElementById("selectAuthor");
+    const copyBtn = document.getElementById("copyBtn");
     const submitMelodyBtn = document.getElementById("submitMelodyBtn")
     const melodyFileInput = document.getElementById('melodyFileInput');
 

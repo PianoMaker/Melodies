@@ -14,12 +14,10 @@
 
 .logoimage {
     position: absolute;
-    top: 2px;
-    left: 30px;
-    height: 110px;
-    
+    top: 10px;
+    left: 20px;
+    height: 100px;
 }
-
 
 .mainpage {
     height: 100%;
@@ -27,6 +25,14 @@
     margin: 0;
 }
 
+<<<<<<< HEAD
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #fef7e2;
+    height: 30px;
+=======
 
 
 .imgcontainer {
@@ -34,8 +40,8 @@
     min-width: 200px;
     max-width: 250px;
     display: flex;
+>>>>>>> 9cacdb3 (UI design improved)
 }
-
 
 /* Надписи на горі */
 .navbar-nav {
@@ -49,7 +55,7 @@
 }
 
 .navmelody {
-    font-size: 1.2em;
+    font-size: 1.4em;
     margin: 20px 0px 0px 15px;
     transition: linear 0.5s;
     font-family: "Montserrat", serif;
@@ -60,24 +66,13 @@
         transform: scale(1.08) translateY(-2px);
     }
 
-.footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: #fef7e2;
-    height: 30px;
-}
-
-
-
-
 .singerellamenue {
     font-family: sans-serif;
     letter-spacing: -0.2px;
 }
 
 .homepagetitle {
-    font-size: 40px;
+    font-size: 48px;
     font-weight: bold;
     text-transform: uppercase;
     background: linear-gradient(45deg, #ff6347, #ff8c00, #ffcc00);
@@ -101,6 +96,8 @@
     color: #5a3d1c; /* Темно-коричневий */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
     font-size: 1.2em;
+
+
 }
 
 .haslo {
@@ -111,20 +108,20 @@
     width: 250px;
 }
 
-#navbarstrip {
-    height: 80px;
-}
-
 .title, .navmelody {
-    padding: 0px 25px 0px 5px;
+    padding: 0px 25px 5px 15px;
     color: aliceblue !important;
-    font-size: 1.3em;
+    font-size: 3em;
     text-shadow: 2px 2px 2px darkviolet;
     font-family: var(--heading-font);
     text-decoration: none;
-    margin-bottom: 20px;
 }
 
+<<<<<<< HEAD
+/* Анімація м'якого пульсування світла */
+@keyframes glow {
+    from {
+=======
 .title {
     font-size: 1.8em;
     margin-bottom: 10px;
@@ -135,6 +132,7 @@
     /* Анімація м'якого пульсування світла */
     @keyframes glow {
         from {
+>>>>>>> 9cacdb3 (UI design improved)
         text-shadow: 4px 4px 15px rgb(230 255 15), 0px 0px 16px rgb(255 247 11)
     }
 
