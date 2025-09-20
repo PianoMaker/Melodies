@@ -71,10 +71,13 @@ namespace Melodies25.Utilities
                     throw new Exception("Файл вже існує");
                 }
 
-                // Робоча копія
-                string workMidiPath = Path.Combine(
-                    Path.GetDirectoryName(originalMidiPath)!,
-                    "_work_" + Path.GetFileName(originalMidiPath));
+                // Робоча копія у категорії temporary
+                string tempDir = Path.Combine(environment.WebRootPath, "temporary");
+                if (!Directory.Exists(tempDir))
+                {
+                    Directory.CreateDirectory(tempDir);
+                }
+                string workMidiPath = Path.Combine(tempDir, "_work_" + Path.GetFileName(originalMidiPath));
                 File.Copy(originalMidiPath, workMidiPath, true);
 
                 // Усунення поліфонії на копії
