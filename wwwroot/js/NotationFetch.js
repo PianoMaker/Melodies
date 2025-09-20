@@ -101,8 +101,19 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function drawNotation(selectedFile) {
-    // Delegate to midiRenderer helper that wraps fetch->File and calls drawScore
-    renderMidiFromUrl(`/melodies/${selectedFile}`, 'notation', 'code');
+    // Ensure the comments element exists (without touching midiRenderer.js)
+    let res = document.getElementById('result');
+    if (!res) {
+        const host = document.getElementById('SheetMusic') || document.body;
+        res = document.createElement('div');
+        res.id = 'result';
+        host.appendChild(res);
+    }
+
+    // Measure left panel width and render
+    const sheet = document.getElementById('SheetMusic') || document.getElementById('notation')?.parentElement;
+    const width = Math.max(320, Math.floor(sheet?.clientWidth || sheet?.getBoundingClientRect().width || 1200));
+    renderMidiFromUrl(`/melodies/${selectedFile}`, 'notation', 'result', width);
 }
 function getTimeSignatures(midiFile) {
     const signatures = [];
