@@ -91,6 +91,16 @@ li.active {
     background-color: rgba(255, 255, 0, 0.4) !important;
 }
 
+.letter {
+    font-size: 0.7em;
+    background-color: silver;
+    border-radius: 1px;
+    border: solid 1px black;
+    margin: 1px;
+    margin-top: 20px;
+}
+
+
 /*стилі елементів головного меню*/
 .melodyitem {
     height: 95px !important;
@@ -128,20 +138,45 @@ li.active {
     background: rgba(2255,255,225,0.8)
 }
 
-.logoimage {
-    position: absolute;
-    top: 10px;
-    left: 20px;
-    height: 100px;
+#code {
+    white-space: pre;
+    font-family: "Arial Unicode MS", "Segoe UI Symbol", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
-table {
-    background-color: white;
-    opacity: 0.9;
-    font-family: 'Times New Roman';
-    font-style: normal;
-    border: 1px solid black;
+.exp-top {
+    background-color: lemonchiffon;
+    color: black;
+    border: solid 1px black;
+    height: 50px;
 }
+
+    .exp-top a {
+        font-size: 0.9em;
+        color: black;
+        text-align: center;
+        padding: 10px 15px;
+        text-decoration: none;
+        transition: transform 0.2s ease;
+        display: inline-block;
+        height: 100%;
+    }
+        .exp-top a:hover {
+            transform: scale(1.1);
+            color: darkred;
+        }
+        .exp-top a.active {
+            background-color: rgba(255, 125, 12, 0.2) !important;
+        }
+
+    table {
+        background-color: white;
+        opacity: 0.9;
+        font-family: 'Times New Roman';
+        font-style: normal;
+        border: 1px solid black;
+    }
 
     table a {
         font-style: normal;
@@ -188,13 +223,6 @@ table, th, td {
     margin-bottom:40px;
 }
 
-.footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: #fef7e2;
-    height: 30px;
-}
 
 .h-85 {
     height: 85%;
@@ -204,34 +232,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     */
 
 
-.imgcontainer {
-    min-width: 90px;
-    max-width: 100px;
-}
-
-
-/* Надписи на горі */
-.navbar-nav {
-    display: flex;
-    width: 100%;
-}
-
-.nav-item {
-    flex-grow: 1; /* Розтягує кожен елемент рівномірно */
-    text-align: center; /* Вирівнює текст по центру */
-}
-
-.navmelody {
-    font-size: 1.4em;
-    margin: 20px 0px 0px 15px;
-    transition: linear 0.5s;
-    font-family: "Montserrat", serif;
-}
-
-    .navmelody:hover {
-        color: lemonchiffon !important;
-        transform: scale(1.08) translateY(-2px);
-    }
 
 .notestaff {
     margin: 3px;
@@ -267,7 +267,14 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     border-radius: 5px;
     box-shadow: rgba(55,55,0,0.3) 2px 2px;
 }
-
+.NotesList {
+    display: inline-block;
+    width: 20%;
+    border: 1px solid black;
+    border-radius: 5px;
+    vertical-align: top;
+    background-color: rgb(255,255,200)
+}
 .pausebox {
     font-size: 1.1em;
     background-color: white;
@@ -405,13 +412,17 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     display: block;
 }
 
-.addcontainer, .searchcontainer {
+.addcontainer, .infocontainer, .searchcontainer {
     border: 1px solid black;
     border-radius: 15px;
     box-shadow: darkgray 0px 1px 10px 5px;
     padding: 25px;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.infocontainer {
+    style ="display:block"
 }
 .searchrightcontainer {
     /*display: inline-block;*/
@@ -433,7 +444,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     height: 350px
 }
 
-.addcontainer, .searchcontainer, .searchleftcontainer, .searchrightcontainer {
+.addcontainer, .infocontainer, .searchcontainer, .searchleftcontainer, .searchrightcontainer {
     background: #fffcd1;
 }
 
@@ -530,6 +541,22 @@ h1 {
 p {
     font-size: 0.9em;
 }
+
+#transpose-controls {
+    display: flex; /* важливо для justify-content */
+    justify-content: start;
+    align-items: center;
+    width: 800px;
+    margin-bottom: 20px;
+    padding: 5px;
+    border: 1px solid black;
+    gap: 10px; /* відступ між кнопками */
+    background-color: #f9f9cc; /* необов’язково, для кращої видимості */
+    border-radius: 8px; /* необов’язково, для естетики */
+    font-size: 0.8em !important;
+}
+
+
 
 @media (max-width: 1024px) {
 
@@ -652,6 +679,8 @@ p {
         top: 0px;
         left: 580px;
     }
+
+
 }
 
 @media (max-width: 768px) {
