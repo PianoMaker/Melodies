@@ -412,13 +412,17 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     display: block;
 }
 
-.addcontainer, .searchcontainer {
+.addcontainer, .infocontainer, .searchcontainer {
     border: 1px solid black;
     border-radius: 15px;
     box-shadow: darkgray 0px 1px 10px 5px;
     padding: 25px;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.infocontainer {
+    style ="display:block"
 }
 .searchrightcontainer {
     /*display: inline-block;*/
@@ -440,7 +444,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     height: 350px
 }
 
-.addcontainer, .searchcontainer, .searchleftcontainer, .searchrightcontainer {
+.addcontainer, .infocontainer, .searchcontainer, .searchleftcontainer, .searchrightcontainer {
     background: #fffcd1;
 }
 
