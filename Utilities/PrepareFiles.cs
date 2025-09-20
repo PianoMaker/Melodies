@@ -100,9 +100,12 @@ namespace Melodies25.Utilities
                     
                     throw new Exception($"Файл вже існує");
                 }
-                             
 
-                var midiFile = new MidiFile(midiPath);
+                // Робоча копія
+                string workMidiPath = Path.Combine(
+                    Path.GetDirectoryName(originalMidiPath)!,
+                    "_work_" + Path.GetFileName(originalMidiPath));
+                File.Copy(originalMidiPath, workMidiPath, true);
 
                 var check = 0;
                 //преревірка на поліфонію
