@@ -284,7 +284,8 @@ namespace Melodies25.Pages.Melodies
             }
 
 
-            //завантаження файлу якщо є
+            //ЯКЩО ФАЙЛ ЗАВАНТАЖЕНО ЧЕРЕЗ ФОРМУ
+            
             if (fileupload is not null)
             {
                 //складаємо ім'я файлу
@@ -294,11 +295,21 @@ namespace Melodies25.Pages.Melodies
                 MessageL(COLORS.green, $"try to process uploaded file {newfilename}");
 
 
-                // Записуємо файл на сервер
+                // Записуємо файл з uploadPath на сервер
                 var midifilePath = Path.Combine(uploadsPath, newfilename);
                 using (var stream = new FileStream(midifilePath, FileMode.Create))
                 {
                     await fileupload.CopyToAsync(stream);
+                }
+
+                // встановлюємо тональність, якщо її не вказано
+                if (string.IsNullOrWhiteSpace(Melody.Tonality))
+                {
+                    var autoTonality = MidiKeySignatureDetector.TryDetectTonality(midifilePath);
+                    if (!string.IsNullOrWhiteSpace(autoTonality))
+                    {
+                        Melody.Tonality = autoTonality; // якщо у вас є Tonality4, замініть на Melody.Tonality4
+                    }
                 }
 
                 // перевірка на поліфоню 
@@ -331,7 +342,7 @@ namespace Melodies25.Pages.Melodies
 
             }
 
-            // запис новоствореного файлу
+            // ЯКЩО ФАЙЛ СТВОРЕНО НА ВІРТУАЛЬНІЙ КЛАВІАТУРІ САЙТУ
             else if (!string.IsNullOrEmpty(TempMidiFilePath))
             {
 
