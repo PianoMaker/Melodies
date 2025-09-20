@@ -17,17 +17,18 @@
 <p> @Model.CheckMessage</p>
 
 
-<div style="display:inline-block; width:100%; margin-top: 20px">
+<div style="display:flex; width:100%; margin-top:20px; align-items:flex-start;">
     <!-- НОТИ -->
-    <div id="SheetMusic" style="display:inline-block; width:80%; background-color: rgb(255,255,230)">
+    <div id="SheetMusic" style="flex:0 0 80%; background-color: rgb(255,255,230)">
         <p style="text-align: center">Ноти</p>
         <div id="notation"></div>
+        <div id="result"></div>
     </div>
     <!-- ПАНЕЛЬ ПРАВОРУЧ -->
-    <div class="NotesList">
+    <div class="NotesList" style="flex:0 0 20%;">
         <p style="text-align: center">Музичний розмір:</br> <span id="timesignature"></span></p>
         <p style="text-align: center">Список нот</p>
-        <div id="code" style="padding-left: 15px; "></div>
+        <div id="code" style="padding-left: 15px;"></div>
     </div>
 </div>
 <script src="~/lib/midifile/midifile.bundle.js"></script> <!-- MIDI -->
