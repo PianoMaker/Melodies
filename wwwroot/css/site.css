@@ -138,11 +138,18 @@ li.active {
     background: rgba(2255,255,225,0.8)
 }
 
+#code {
+    white-space: pre;
+    font-family: "Arial Unicode MS", "Segoe UI Symbol", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+}
 
 .exp-top {
     background-color: lemonchiffon;
     color: black;
     border: solid 1px black;
+    height: 50px;
 }
 
     .exp-top a {
@@ -153,12 +160,15 @@ li.active {
         text-decoration: none;
         transition: transform 0.2s ease;
         display: inline-block;
+        height: 100%;
     }
         .exp-top a:hover {
             transform: scale(1.1);
             color: darkred;
         }
-
+        .exp-top a.active {
+            background-color: rgba(255, 125, 12, 0.2) !important;
+        }
 
     table {
         background-color: white;
@@ -257,7 +267,14 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     border-radius: 5px;
     box-shadow: rgba(55,55,0,0.3) 2px 2px;
 }
-
+.NotesList {
+    display: inline-block;
+    width: 20%;
+    border: 1px solid black;
+    border-radius: 5px;
+    vertical-align: top;
+    background-color: rgb(255,255,200)
+}
 .pausebox {
     font-size: 1.1em;
     background-color: white;
@@ -395,13 +412,17 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     display: block;
 }
 
-.addcontainer, .searchcontainer {
+.addcontainer, .infocontainer, .searchcontainer {
     border: 1px solid black;
     border-radius: 15px;
     box-shadow: darkgray 0px 1px 10px 5px;
     padding: 25px;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.infocontainer {
+    style ="display:block"
 }
 .searchrightcontainer {
     /*display: inline-block;*/
@@ -423,7 +444,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     height: 350px
 }
 
-.addcontainer, .searchcontainer, .searchleftcontainer, .searchrightcontainer {
+.addcontainer, .infocontainer, .searchcontainer, .searchleftcontainer, .searchrightcontainer {
     background: #fffcd1;
 }
 
