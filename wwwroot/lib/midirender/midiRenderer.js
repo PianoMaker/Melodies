@@ -1373,8 +1373,13 @@ function getStaveWidth(BARWIDTH, index, CLEFZONE) {
 
 
 const logEvent = (msg) => {
-    if (stepRead) {
-        stepRead.innerHTML += msg;
+    try {
+        const stepReadEl = document.getElementById("stepRead");
+        if (stepReadEl) {
+            stepReadEl.innerHTML += msg;
+        }
+    } catch (e) {
+        console.warn('logEvent failed:', e);
     }
 };
 
