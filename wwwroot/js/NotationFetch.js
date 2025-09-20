@@ -37,7 +37,9 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('MIDI data length:', midiData.length);
             console.log('MIDI file tracks:', midiFile.tracks);
 
-            drawNotation(midiFile);
+            // Render score via midiRenderer using URL (so drawScore gets element IDs)
+            drawNotation(selectedFile);
+
             const formattedData = formatMidiNotesForDisplay(midiFile);
             codeDiv.textContent = formattedData;
 
@@ -85,8 +87,9 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('MIDI data length:', midiData.length);
             console.log('MIDI file tracks:', midiFile.tracks);
 
-            drawNotation(midiFile);
-            const formattedData = formatMidiNotesForDisplay(midiFile);
+            // Use the URL-based renderer so we pass element IDs (strings)
+            drawNotation(selectedFile);
+            const formattedData = formatMidiNotesForDisplay(midiFile, notationDiv, codeDiv);
             codeDiv.textContent = formattedData;
             const timeSignaturesText = timeSignatures.map(signature => `${signature.numerator} / ${signature.denominator}`).join(", ");
             timesignDiv.innerText = timeSignaturesText;
@@ -97,121 +100,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-function drawNotation(midiFile) {
-    console.log(`starting drawNotation`);    
-    const { Renderer, Stave, StaveNote, Formatter } = Vex.Flow;
-    const div = document.getElementById('notation');
-    const renderer = new Renderer(div, Renderer.Backends.SVG);
-
-    renderer.resize(800, 1000);
-    const context = renderer.getContext();
-
-    const ticksPerBeat = midiFile.header.getTicksPerBeat();
-    const timeSignatures = getTimeSignatures(midiFile);
-    const notesData = getNotesData(midiFile);
-
-    // 1. Визначаємо паузи між нотами
-    let lastEndTick = 0;
-    const rests = [];
-
-    notesData.forEach(note => {
-        if (note.startTick > lastEndTick) {
-            rests.push({
-                startTick: lastEndTick,
-                durationTicks: note.startTick - lastEndTick,
-                isRest: true
-            });
-        }
-        lastEndTick = Math.max(lastEndTick, note.startTick + note.durationTicks);
-    });
-
-    // 2. Об'єднуємо ноти та паузи
-    const allElements = [...notesData, ...rests]
-        .sort((a, b) => a.startTick - b.startTick);
-
-    // 3. Створюємо VexFlow елементи
-    const vexflowElements = allElements.map(element => {
-        if (element.isRest) {            
-            return new StaveNote({
-                keys: ["b/4"], // Нота поза межами видимості
-                duration: "16r",
-            });       
-        } else {
-            const noteName = getVexFlowNoteName(element.noteNumber);
-            const duration = getDurationSymbol(element.durationTicks, ticksPerBeat);
-
-            const staveNote = new StaveNote({
-                keys: [noteName],
-                duration: duration,
-                auto_stem: true
-            });
-
-            if (noteName.includes('#')) {
-                staveNote.addAccidental(0, new Vex.Flow.Accidental("#"));
-            } else if (noteName.includes('b') && !noteName.startsWith('b')) {
-                staveNote.addAccidental(0, new Vex.Flow.Accidental("b"));
-            }
-
-            return staveNote;
-        }
-    });
-
-
-    // 4. Відображення на нотоносці
-    const staveWidth = 700;
-    const staveHeight = 100;
-    let x = 10;
-    let y = 40;
-    let stave = new Stave(x, y, staveWidth);
-
-    if (timeSignatures.length > 0) {
-        const ts = timeSignatures[0];
-        stave.addTimeSignature(`${ts.numerator}/${ts.denominator}`);
-    } else {
-        stave.addTimeSignature('4/4');
-    }
-
-    stave.addClef('treble');
-    stave.setContext(context).draw();
-
-    let elementsPerStave = [];
-    let widthUsed = 0;
-    const elementSpacing = 40;
-
-
-    let timeSignatureIndex = 0;
-    vexflowElements.forEach((element, idx) => {
-        console.log(`Processing element ${idx}:`, element);
-
-        elementsPerStave.push(element);
-        widthUsed += elementSpacing;
-
-        console.log(`Width used after adding element ${idx}:`, widthUsed);
-
-        // Додаємо тактову риску, якщо час зміни тактового підпису
-        const currentTick = element.startTick || 0;
-        if (timeSignatureIndex < timeSignatures.length && currentTick >= timeSignatures[timeSignatureIndex].startTick) {
-            console.log(`Adding time signature at tick ${currentTick}`);
-            stave.addTimeSignature(`${timeSignatures[timeSignatureIndex].numerator}/${timeSignatures[timeSignatureIndex].denominator}`);
-            timeSignatureIndex++;
-        }
-
-        // Якщо відстань до кінця стану або це останній елемент, перехід на новий рядок
-        if (widthUsed >= staveWidth - 50 || idx === vexflowElements.length - 1) {
-            console.log(`Drawing elements for stave (index: ${idx})`);
-            Formatter.FormatAndDraw(context, stave, elementsPerStave);
-
-            // Перехід на новий рядок, додавання ключа
-            x = 10;
-            y += staveHeight;
-            stave = new Stave(x, y, staveWidth);
-            stave.addClef('treble'); // Додаємо ключ на новому рядку
-            stave.setContext(context).draw();
-            widthUsed = 0;
-            elementsPerStave = [];
-        }
-    });
-
+function drawNotation(selectedFile) {
+    // Delegate to midiRenderer helper that wraps fetch->File and calls drawScore
+    renderMidiFromUrl(`/melodies/${selectedFile}`, 'notation', 'code');
 }
 function getTimeSignatures(midiFile) {
     const signatures = [];
