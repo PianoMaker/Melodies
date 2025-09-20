@@ -361,7 +361,11 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+<<<<<<< HEAD
+/wwwroot/temporary
+=======
 /wwwroot/images/Melody3 – копія.png
 /wwwroot/images/Melody3.png
 /wwwroot/images/Melody3.tif
 /wwwroot/images/Melody3-assets/Melody3.jpg
+>>>>>>> 3517d61 (new songs)
