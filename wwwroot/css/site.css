@@ -1,3 +1,11 @@
+:root {
+  --brand-red: #be0000;          /* navbar red */
+  --brand-gold: #ffd83d;         /* accent */
+  --surface: #fffcd1;            /* light panel background */
+  --text-dark: #1f1f1f;
+}
+
+
 html {
     position: relative;
     width: 100%;
@@ -46,10 +54,10 @@ a.link-light:hover {
 /* Make outline-dark buttons hover in dark red (match navbar) */
 .btn-outline-dark.light-background:hover,
 .btn-outline-dark.light-background:focus {
-    background-color: #be0000; /* rgb(190,0,0) */
-    border-color: #be0000;
+    background-color: var(--brand-red);
+    border-color: var(--brand-red);
     color: #fff;
-}
+}   
 
 /* пошук по нотах - головна */
 .btn-notes {
@@ -108,6 +116,18 @@ li.active {
     margin-top: 20px;
 }
 
+/* Align first row with the top buttons */
+.letters-row .letter {
+    margin-top: 0;
+}
+
+/* Brand-colored hover/focus without affecting size */
+.letter:hover,
+.letter:focus {
+    background-color: var(--brand-red);
+    border-color: var(--brand-red);
+    color: #fff;
+}
 
 /*стилі елементів головного меню*/
 .melodyitem {
@@ -138,6 +158,14 @@ li.active {
     transform: translateY(-2px); /* Невеликий підйом кнопки */
 }
 
+.btn-compact-40 {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.1;
+    padding-top: .125rem; 
+    padding-bottom: .125rem;
+}
 
 #innerNotesContainer {
     border: 1px solid gray;
@@ -212,6 +240,24 @@ table, th, td {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
 }
+
+/* Zebra + hover */
+.table tbody tr:nth-child(odd) td { background-color: rgba(255,255,255,0.96); }
+.table tbody tr:nth-child(even) td { background-color: rgba(250,250,250,0.96); }
+.table tbody tr:hover td { background-color: #f6f6f6; }
+
+/* Sticky header for easier scanning */
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Narrow fixed width for action column if desired */
+.table td:last-child, .table th:last-child { width: 120px; white-space: nowrap; }
+
+/* Icon-only buttons: keep compact */
+.btn.btn-outline-dark i { pointer-events: none; }
 
 
 
@@ -346,7 +392,8 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     background-color: lightgray;
 }
 
-
+/* Tighten spacing for the top action strip */
+.d-flex > .btn.btn-compact-40 { margin: .25rem !important; }
 
 /* Анімація м'якого пульсування світла */
 @keyframes glow {
@@ -511,8 +558,8 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 .cis2 {
-    top: 0px; /* Відступ зверху */
-    left: 385px; /* Відступ зліва */
+    top: 0px;
+    left: 385px;
 }
 
 .dis2 {
@@ -737,8 +784,6 @@ p {
         padding-right: 0px;
     }
 }
-<<<<<<< HEAD
-=======
 
 /* Вирівняти верхній край першого ряду літер із кнопками */
 .letters-row .letter {
@@ -746,4 +791,8 @@ p {
 }
 
 
->>>>>>> 09595d6 (buttons design)
+
+
+
+
+
