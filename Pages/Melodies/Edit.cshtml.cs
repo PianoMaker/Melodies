@@ -242,6 +242,13 @@ namespace Melodies25.Pages.Melodies
                         await PrepareMp3Async(_environment, "_work_" + Melody.FilePath, false); // передаємо ім'я копії
                         ViewData["Message"] = "Файл успішно завантажено!";                        
                         Melody.IsFileEligible = true;
+
+                        // Видаляємо робочу копію
+                        if (System.IO.File.Exists(workPath))
+                        {
+                            System.IO.File.Delete(workPath);
+                            MessageL(COLORS.cyan, "Temporary working copy deleted");
+                        }
                     }
                     catch
                     {

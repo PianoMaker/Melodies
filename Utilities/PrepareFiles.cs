@@ -95,6 +95,13 @@ namespace Melodies25.Utilities
                 // Фінальна нормалізація тільки копії
                 await PrepareMP3fromMIDIAsync(workMidiPath, mp3Path);
 
+                // Видаляємо робочу копію
+                if (File.Exists(workMidiPath))
+                {
+                    File.Delete(workMidiPath);
+                    MessageL(COLORS.cyan, "Temporary working copy deleted");
+                }
+
                 MessageL(COLORS.cyan, "PrepareMp3Async finished (original preserved)");
             }
             catch (Exception ex)
