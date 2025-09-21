@@ -21,11 +21,11 @@
             @foreach (var letter in Enumerable.Range('A', 26).Select(i => ((char)i).ToString()))
             {
                 <form asp-page-handler="FilterByLetter" asp-route-letter="@letter" method="post">
-                    <button type="submit" class="letter">@letter</button>
+                    <button type="submit" class="letter btn-outline-dark light-background border-dark">@letter</button>
                 </form>
             }
             <form asp-page-handler="FilterByLetter" asp-route-letter="" method="post">
-                <button type="submit" class="letter">cancel</button>
+                <button type="submit" class="letter btn-outline-dark light-background border-dark">cancel</button>
             </form>
         </div>
         <div class="d-flex flex-wrap gap-1 mb-2 letters-row">

@@ -43,6 +43,14 @@ a.link-light:hover {
     color: yellow !important;
 }
 
+/* Make outline-dark buttons hover in dark red (match navbar) */
+.btn-outline-dark.light-background:hover,
+.btn-outline-dark.light-background:focus {
+    background-color: #be0000; /* rgb(190,0,0) */
+    border-color: #be0000;
+    color: #fff;
+}
+
 /* пошук по нотах - головна */
 .btn-notes {
     background: #ffd83d !important; /* soft gold */
@@ -742,3 +750,5 @@ p {
 .letters-row .letter {
     margin-top: 0; /* перекриває глобальні 20px */
 }
+
+
