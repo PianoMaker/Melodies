@@ -839,15 +839,16 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig) {
         chosen = 'E#';
     }
 
-    // МІНОР: VI і VII підвищуються; I і VII не понижуються
+    // МІНОР: IV, VI і VII підвищуються; I і VII не понижуються
     if (currentKeySig && currentKeySig.mi === 1) {
         const tonicPc = getMinorTonicPc(currentKeySig);
         if (typeof tonicPc === 'number') {
             const raisedVI  = (tonicPc + 9)  % 12; // VI#
             const raisedVII = (tonicPc + 11) % 12; // VII# (ввідний тон)
+			const raisedIV = (tonicPc + 6) % 12; // IV#
 
             // Якщо поточна нота є VI↑ або VII↑ — примусово дієзне/натуральне написання
-            if (pc === raisedVI || pc === raisedVII) {
+            if (pc === raisedVI || pc === raisedVII || pc === raisedIV) {
                 chosen = sharpNames[pc];
                 outOctave = octaveRaw; // скидаємо можливу корекцію октави
             }
