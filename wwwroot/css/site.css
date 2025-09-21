@@ -130,6 +130,14 @@ li.active {
     transform: translateY(-2px); /* Невеликий підйом кнопки */
 }
 
+.btn-compact-40 {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.1;
+    padding-top: .125rem; 
+    padding-bottom: .125rem;
+}
 
 #innerNotesContainer {
     border: 1px solid gray;
@@ -728,4 +736,9 @@ p {
         margin: 20px 0px 0px 0px;
         padding-right: 0px;
     }
+}
+
+/* Вирівняти верхній край першого ряду літер із кнопками */
+.letters-row .letter {
+    margin-top: 0; /* перекриває глобальні 20px */
 }
