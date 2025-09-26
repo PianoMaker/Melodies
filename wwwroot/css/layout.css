@@ -185,7 +185,6 @@
 
 /* Make #mainNavbar exactly as wide as the navbar (bleed through container padding) */
 #mainNavbar {
-  margin-left: calc(-1 * var(--bs-gutter-x, .75rem));
-  margin-right: calc(-1 * var(--bs-gutter-x, .75rem));
-  width: calc(100% + (2 * var(--bs-gutter-x, .75rem)));
+    width: 100%;
+    margin: 0;
 }
