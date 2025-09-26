@@ -131,9 +131,18 @@ li.active {
 
 /*стилі елементів головного меню*/
 .melodyitem {
-    height: 95px !important;
+    
+    height: auto !important;
     display: flex;
-    align-items: center;
+    align-items: stretch;   /* let link fill full navbar height */
+    justify-content: center;
+}
+
+#navbarstrip .melodyitem {
+    /* match li height to mainNavbar/navbar height */
+    height: var(--nav-height) !important;
+    display: flex;
+    align-items: stretch;   /* let link fill full navbar height */
     justify-content: center;
 }
 
@@ -787,7 +796,22 @@ p {
 
 /* Вирівняти верхній край першого ряду літер із кнопками */
 .letters-row .letter {
-    margin-top: 0; /* перекриває глобальні 20px */
+    margin-top: 0; /* Вирівнюємо по верхньому краю */
+}
+
+/* Force letters rows to wrap horizontally and fill width on all screens */
+.letters-row {
+    display: flex;               /* ensure flex container regardless of Bootstrap overrides */
+    flex-direction: row !important; /* override global .d-flex on small screens */
+    flex-wrap: wrap;             /* wrap to next line */
+    gap: .25rem;                 /* small gap between letters */
+    width: 100%;
+}
+
+/* Make each form shrink to content so multiple letters fit per row */
+.letters-row form {
+    flex: 0 0 auto;
+    margin: 0;
 }
 
 

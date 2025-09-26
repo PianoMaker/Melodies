@@ -12,14 +12,19 @@
     z-index: 1;
 }
 
+/* Define a single navbar height and use it everywhere so the active highlight can fill 100% */
+#navbarstrip {
+    --nav-height: 64px;           /* desktop navbar height */
+    height: var(--nav-height);    /* fix navbar height */
+}
+
 .logoimage {
-    position: static;          /* was absolute */
-    height: 90px;              /* keep within navbar */
-    max-height: 90px;
+    position: static;
+    height: var(--nav-height);    /* match navbar height */
+    max-height: var(--nav-height);
     width: auto;
     display: block;
 }
-
 
 .mainpage {
     height: 100%;
@@ -27,20 +32,23 @@
     margin: 0;
 }
 
-
-
 .imgcontainer {
-
     min-width: 200px;
     max-width: 250px;
     display: flex;
 }
 
-
 /* Надписи на горі */
+.navbar-collapse,
+.navbar-nav,
+.navbar-nav .nav-item {
+    height: var(--nav-height); /* allow links to fill full navbar height */
+}
+
 .navbar-nav {
     display: flex;
     width: 100%;
+    align-items: stretch;
 }
 
 .nav-item {
@@ -48,17 +56,33 @@
     text-align: center; /* Вирівнює текст по центру */
 }
 
+/* Normalize nav link spacing to match navbar height exactly */
 .navmelody {
     font-size: 1.2em;
-    margin: 20px 0px 0px 15px;
-    transition: linear 0.5s;
+    margin: 0;
+    padding: 0 1rem;             /* horizontal padding only */
+    transition: linear 0.2s;
     font-family: "Montserrat", serif;
+    display: flex;               /* center text vertically */
+    align-items: center;
+    justify-content: center;
+    height: 100%;                 /* fill li (which matches navbar height) */
 }
 
-    .navmelody:hover {
-        color: lemonchiffon !important;
-        transform: scale(1.08) translateY(-2px);
-    }
+/* Active item highlight on the link, so it spans the full navbar height */
+.navbar-nav .nav-item.active > .nav-link,
+.navbar-nav .nav-link.active {
+    background: rgba(255, 165, 0, 0.65);
+    border-radius: 0;
+}
+
+/* Avoid legacy li.active backgrounds interfering in the navbar */
+#navbarstrip .nav-item.active { background: transparent !important; }
+
+.navmelody:hover {
+    color: lemonchiffon !important;
+    transform: scale(1.02) translateY(-1px);
+}
 
 .footer {
     position: fixed;
@@ -68,13 +92,7 @@
     height: 30px;
 }
 
-
-
-
-.singerellamenue {
-    font-family: sans-serif;
-    letter-spacing: -0.2px;
-}
+.singerellamenue { font-family: sans-serif; letter-spacing: -0.2px; }
 
 .homepagetitle {
     font-size: 40px;
@@ -92,11 +110,6 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-    .homepagetitle:hover {
-        transform: scale(1.05);
-        box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
-    }
-
 .homepagesubtitle {
     color: #5a3d1c; /* Темно-коричневий */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
@@ -111,10 +124,7 @@
     width: 250px;
 }
 
-#navbarstrip {
-    height: 80px;
-}
-
+/* Keep visual styles but remove bottom margin from nav links */
 .title, .navmelody {
     padding: 0px 25px 0px 5px;
     color: aliceblue !important;
@@ -122,7 +132,7 @@
     text-shadow: 2px 2px 2px darkviolet;
     font-family: var(--heading-font);
     text-decoration: none;
-    margin-bottom: 20px;
+    margin-bottom: 0;
 }
 
 .title {
@@ -143,61 +153,39 @@
     }
 }
 
+/* Mobile navbar improvements */
 @media (max-width: 768px) {
+    #navbarstrip { height: auto; min-height: 56px; }
+    #navbarstrip { --nav-height: auto; }
 
-    .d-flex {
-        flex-direction: column;
-        align-items: center; /* Вирівнюємо по центру */
-    }
+    .imgcontainer { min-width: auto; max-width: none; }
+    .logoimage { height: 48px; max-height: 48px; }
 
+    .navbar-collapse { padding: .5rem 0; width: 100%; height: auto; }
 
-    .w-25, .w-75 {
-        width: 100% !important; /* Робимо елементи повної ширини */
-    }
+    .navbar-nav { flex-direction: column; align-items: stretch !important; width: 100%; padding: 0; height: auto; }
+    .nav-item { flex-grow: 0; text-align: center; height: auto !important; width: 100%; margin: 0; }
 
-    .navmelody {
-        margin: 20px 10px 0px 10px;
-        padding-right: 0px !important;
-    }
+    .navmelody { font-size: 1.2rem; margin: 0; padding: .75rem 1rem; display: block; width: 100%; height: auto; }
 
-
-
-    /* слід ще поексперементувати...
-https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
-    */
-    .title, .navmelody {
-        padding: 0px 25px 5px 15px;
-        color: aliceblue !important;
-        font-size: 3em;
-        text-shadow: 2px 2px 2px darkviolet;
-        font-family: var(--heading-font);
-        text-decoration: none;
-    }
-
+    .navbar-nav .nav-item.active > .nav-link,
+    .navbar-nav .nav-link.active { background: rgba(255,255,255,0.12); border-radius: 0; }
 }
 
-
-
-
 @media (max-width: 512px) {
-    .haslo {
-        min-width: 200px;
-    }
+    .haslo { min-width: 200px; }
+    .searchfield { width: 200px; }
+    .homepagetitle { font-size: 2em; }
+    .title { font-size: 1.5em; }
+    .navmelody { margin: 20px 0 0 0; padding-right: 0; }
+}
 
-    .searchfield {
-        width: 200px;
-    }
+/* Make toggler outline visible on colored background */
+.navbar-dark .navbar-toggler { border-color: rgba(255,255,255,.5); }
 
-    .homepagetitle {
-        font-size: 2em;
-    }
-
-    .title {
-        font-size: 1.5em;
-    }
-
-    .navmelody {
-        margin: 20px 0px 0px 0px;
-        padding-right: 0px;
-    }
+/* Make #mainNavbar exactly as wide as the navbar (bleed through container padding) */
+#mainNavbar {
+  margin-left: calc(-1 * var(--bs-gutter-x, .75rem));
+  margin-right: calc(-1 * var(--bs-gutter-x, .75rem));
+  width: calc(100% + (2 * var(--bs-gutter-x, .75rem)));
 }

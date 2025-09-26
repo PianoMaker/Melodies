@@ -37,8 +37,8 @@
 
     <!--Верхня панель-->
     <header >
-        <nav id="navbarstrip" class="navbar navbar-expand-sm navbar-toggleable-sm bg-sky border-bottom box-shadow p-0" style="height:100px !important">
-            <div class="container d-flex" style="height:95px !important">
+        <nav id="navbarstrip" class="navbar navbar-expand-md navbar-dark bg-sky border-bottom box-shadow p-0">
+            <div class="container-fluid d-flex">
                 <!--Логотип-->
                 <a class="navbar-brand imgcontainer" asp-page="/Index">
                     <img src="~/images/Melody3a.png" class="logoimage" alt="Melodies25 logo" />
@@ -46,12 +46,12 @@
                 
                 @* <a class="title" asp-area="" asp-page="/Index">Мелодія</a> *@
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar"
                 aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-flex justify-content-between" style="height:95px !important">
-                    <ul class="navbar-nav flex-grow-1" style="padding:0; align-items: center; height:95px !important">
+                <div id="mainNavbar" class="navbar-collapse collapse justify-content-between">
+                    <ul class="navbar-nav flex-grow-1" style="padding:0; align-items: center;">
                         <!--стиль елемента меню залежить від поточної сторінки-->
                         @if (currentPage.StartsWith("/Melodies"))
                         {
