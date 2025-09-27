@@ -24,7 +24,16 @@ namespace Melodies25.Models
         public int AuthorID { get; set; }  
         public Author? Author { get; set; }  // Автор пісні
 
-       
+        public bool IfPublicDomain 
+        { 
+            get
+            {
+                if (Author == null) return false;
+                return Author.IfPublicDomain;
+            }
+        }   
+
+
         [Display(Name = "MIDI файл")]
         [NotMapped]
         public IFormFile? File { get; set; } 
