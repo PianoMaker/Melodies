@@ -224,8 +224,10 @@ namespace Melodies25.Pages.Melodies
                     return;
                 }
 
-                // Робоча копія
-                string workPath = Path.Combine(uploadsPath, "_work_" + Melody.FilePath);
+                // Робоча копія ТІЛЬКИ у temporary з унікальним префіксом, щоб не конфліктувати
+                string tempDir = Path.Combine(_environment.WebRootPath, "temporary");
+                Directory.CreateDirectory(tempDir);
+                string workPath = Path.Combine(tempDir, "_check_" + Path.GetFileName(Melody.FilePath));
                 System.IO.File.Copy(originalMidiPath, workPath, true);
 
                 var midiFile = new MidiFile(workPath);
@@ -236,19 +238,13 @@ namespace Melodies25.Pages.Melodies
 
                 if (ifeligible)
                 {
-                    MessageL(COLORS.standart, $"генеруємо mp3 з {workPath}");
+                    MessageL(COLORS.standart, $"генеруємо mp3 з оригіналу (не змінюючи його), тимчасові копії всередині PrepareMp3Async");
                     try
                     {
-                        await PrepareMp3Async(_environment, "_work_" + Melody.FilePath, false); // передаємо ім'я копії
-                        ViewData["Message"] = "Файл успішно завантажено!";                        
+                        // Генерація MP3 на основі оригінального імені файлу (без префіксів)
+                        await PrepareMp3Async(_environment, Melody.FilePath, false);
+                        ViewData["Message"] = "Файл успішно завантажено!";
                         Melody.IsFileEligible = true;
-
-                        // Видаляємо робочу копію
-                        if (System.IO.File.Exists(workPath))
-                        {
-                            System.IO.File.Delete(workPath);
-                            MessageL(COLORS.cyan, "Temporary working copy deleted");
-                        }
                     }
                     catch
                     {
@@ -259,6 +255,13 @@ namespace Melodies25.Pages.Melodies
                 {
                     ViewData["Message"] = "Файл не є мелодією";
                     Melody.IsFileEligible = false;
+                }
+
+                // Видаляємо робочу копію з temporary
+                if (System.IO.File.Exists(workPath))
+                {
+                    System.IO.File.Delete(workPath);
+                    MessageL(COLORS.cyan, "Temporary working copy deleted");
                 }
             }
             catch (Exception ex)
