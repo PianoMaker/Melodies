@@ -35,6 +35,7 @@ function applyAutoStem(note, durationCode) {
  * @param {number} [BARWIDTH=250] - The width of each measure/bar in pixels.
  * @param {number} [CLEFZONE=60] - The width reserved for the clef and time signature zone in pixels.
  * @param {number} [Xmargin=10] - The left margin for the score in pixels.
+ * @param {number} [maxBarsToRender=1000] - Maximum number of measures to render (1000 means full rendering).
  *
  * Reads the provided MIDI file, parses its contents, and renders the musical notation using VexFlow.
  * Stores the resulting SVG and comments in sessionStorage for later retrieval.
@@ -42,7 +43,7 @@ function applyAutoStem(note, durationCode) {
  */
 
 
-function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, options = undefined) {
+function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, maxBarsToRender = 1000) {
     console.log("FOO: midiRenderer.js - drawScore");
     const notationDiv = document.getElementById(ELEMENT_FOR_RENDERING);
     const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
@@ -56,15 +57,32 @@ function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWID
             console.log("drawScore: File read successfully");
             const uint8 = new Uint8Array(e.target.result);
 
-
             try {
-                renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin, commentsDiv);
+                // pass maxBarsToRender and get info about applied limitation
+                const renderInfo = renderMidiFileToNotation(
+                    uint8,
+                    ELEMENT_FOR_RENDERING,
+                    GENERALWIDTH,
+                    HEIGHT,
+                    TOPPADDING,
+                    BARWIDTH,
+                    CLEFZONE,
+                    Xmargin,
+                    commentsDiv,
+                    maxBarsToRender
+                );
+
                 const svg = notationDiv.querySelector("svg");
                 if (svg) {
                     sessionStorage.setItem("notationSVG", svg.outerHTML);
                 }
-                commentsDiv.innerHTML += `File rendered successfully`;
-                sessionStorage.setItem("comment", commentsDiv.innerHTML)
+
+                // Message depends on maxBarsToRender value
+                const msg = (maxBarsToRender === 1000)
+                    ? "нотне зображення виведено повністю"
+                    : `нотне зображення виведено з обмеженням у ${maxBarsToRender} тактів`;
+                commentsDiv.innerHTML += msg;
+                sessionStorage.setItem("comment", commentsDiv.innerHTML);
             }
             catch (error) {
                 console.error("drawScore: Error rendering MIDI file:", error);
@@ -84,6 +102,7 @@ function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWID
  * All layout parameters mirror drawScore and have the same defaults.
  *
  * @param {string} midiUrl - URL (relative or absolute) to .mid file
+ * @param {number} [maxBarsToRender=1000] - Maximum number of measures to render (1000 means full rendering).
  * @param {string} [ELEMENT_FOR_RENDERING='notation'] - target element id for notation
  * @param {string} [ELEMENT_FOR_COMMENTS='comments'] - target element id for messages
  * @param {number} [GENERALWIDTH=1200]
@@ -95,10 +114,11 @@ function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWID
  * @returns {Promise<void>}
  *
  * Usage example:
- *   await renderMidiFromUrl('/Uploads/example.mid');
+ *   await renderMidiFromUrl('/Uploads/example.mid', 8);
  */
 async function renderMidiFromUrl(
     midiUrl,
+    maxBarsToRender = 1000,
     ELEMENT_FOR_RENDERING = 'notation',
     ELEMENT_FOR_COMMENTS = 'comments',
     GENERALWIDTH = 1200,
@@ -106,8 +126,7 @@ async function renderMidiFromUrl(
     TOPPADDING = 20,
     BARWIDTH = 250,
     CLEFZONE = 60,
-    Xmargin = 10,
-    options = undefined
+    Xmargin = 10
 ) {
     try {
         if (!midiUrl) throw new Error('midiUrl is required');
@@ -116,10 +135,10 @@ async function renderMidiFromUrl(
         const blob = await resp.blob();
         const filename = midiUrl.split('/').pop() || 'remote.mid';
         const file = new File([blob], filename, { type: blob.type || 'audio/midi' });
-        drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin, options);
+        drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin, maxBarsToRender);
     } catch (err) {
         console.error('renderMidiFromUrl error:', err);
-        const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
+        const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);  
         if (commentsDiv) {
             commentsDiv.innerHTML = `Error loading MIDI: ${err.message}`;
         }
@@ -248,7 +267,7 @@ function hasNoteOn(measure) {
 // ---------------------
 
 
-function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, commentsDiv) {
+function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, commentsDiv, maxBarsToRender = 1000) {
     console.log("FOO: midiRenderer.js - renderMidiFileToNotation");
     if (!ELEMENT_FOR_RENDERING) {
         throw new Error(`Element with id ${ELEMENT_FOR_RENDERING} not found.`);
@@ -263,20 +282,28 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
     const measureMap = createMeasureMap(allEvents, ticksPerBeat);
     const measures = groupEventsByMeasure(allEvents, measureMap);
 
+    // Determine how many measures to render based on maxBarsToRender
+    let measuresToRender = measures;
+    let limited = false;
+    if (typeof maxBarsToRender === 'number' && isFinite(maxBarsToRender) && maxBarsToRender !== 1000 && measures.length > maxBarsToRender) {
+        measuresToRender = measures.slice(0, maxBarsToRender);
+        limited = true;
+        console.log(`Limiting rendered measures to ${maxBarsToRender}`);
+    }
+
     // ВИКОРИСТАТИ ФАКТИЧНУ ШИРИНУ КОНТЕЙНЕРА, щоб ноти не виходили за межі поля
-    // Мінімальна ширина партитури: або 320, або обчислена від макета (CLEFZONE + BARWIDTH + Xmargin*2)
-const MIN_SCORE_WIDTH = Math.max(320, CLEFZONE + BARWIDTH + Xmargin * 2);
+    const MIN_SCORE_WIDTH = Math.max(320, CLEFZONE + BARWIDTH + Xmargin * 2);
 
-const target = document.getElementById(ELEMENT_FOR_RENDERING);
-const containerWidth = (target && target.clientWidth) ? target.clientWidth : 0;
+    const target = document.getElementById(ELEMENT_FOR_RENDERING);
+    const containerWidth = (target && target.clientWidth) ? target.clientWidth : 0;
 
-// Якщо containerWidth = 0 (прихований або не в DOM), падаємо на GENERALWIDTH або 1200
-const effectiveWidth = Math.max(
-  MIN_SCORE_WIDTH,
-  containerWidth || GENERALWIDTH || 1200
-);
+    // Якщо containerWidth = 0 (прихований або не в DOM), падаємо на GENERALWIDTH або 1200
+    const effectiveWidth = Math.max(
+        MIN_SCORE_WIDTH,
+        containerWidth || GENERALWIDTH || 1200
+    );
 
-    GENERALHEIGHT = calculateRequiredHeight(measures.length, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
+    GENERALHEIGHT = calculateRequiredHeight(measuresToRender.length, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
     setTimeout(() => {
         const factory = new Vex.Flow.Factory({
@@ -291,8 +318,16 @@ const effectiveWidth = Math.max(
         const score = factory.EasyScore();
 
         // Передаємо effectiveWidth у renderMeasures як GENERALWIDTH
-        renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, effectiveWidth, commentsDiv);
+        renderMeasures(measureMap, measuresToRender, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, effectiveWidth, commentsDiv);
     }, 0);
+
+    // Return info so caller can set correct message
+    return {
+        totalMeasures: measures.length,
+        renderedMeasures: measuresToRender.length,
+        limited,
+        maxBarsToRender
+    };
 }
 
 // ФУНКЦІЯ РЕНДЕРИНГУ ТАКТІВ
@@ -982,7 +1017,8 @@ function adjustXYposition(Xposition, GENERALWIDTH, BARWIDTH, Yposition, HEIGHT, 
 // - ticksPerBeat: Кількість тіків на чвертну ноту.
 // Повертає: void
 // ----------------------
-    
+
+
 function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat) {
     console.log("FOO: midiRenderer.js - drawMeasure");
     try {
@@ -1149,7 +1185,7 @@ function drawBeams(beams, context, index) {
 // ----------------------
 // ФУНКЦІЯ ДЛЯ СТВОРЕННЯ ПАУЗИ (REST) З ВИКОРИСТАННЯМ VEXFLOW
 // Параметри:
-// - durationCode: Рядок тривалості паузи (наприклад, "q", "h", "8", "16.", тощо).
+// - durationCode: Рядок тривалості паузи (наприклад, "q", "h", "8", "16." тощо).
 // Повертає: Об'єкт Vex.Flow.StaveNote, що являє собою паузу, або null у разі помилки.
 // ----------------------
     
