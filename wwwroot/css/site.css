@@ -1,4 +1,4 @@
-:root {
+п»ї:root {
   --brand-red: #be0000;          /* navbar red */
   --brand-gold: #ffd83d;         /* accent */
   --surface: #fffcd1;            /* light panel background */
@@ -26,7 +26,14 @@ body {
     margin: 0;
     padding: 0;
     /*overflow: hidden;*/
-    background: linear-gradient(rgb(231 153 42 / 80%) 20%, rgb(239, 100, 247, 0.7) 40%, rgb(91 109 9 / 80%) 90%, rgb(9 148 195 / 86%));
+    /* СЏСЃРєСЂР°РІРёР№ РіСЂР°РґС–С”РЅС‚ */
+    /*background: linear-gradient(
+        rgb(231 153 42 / 80%) 20%,*/ /* РїРѕРјР°СЂР°РЅС‡РµРІРѕвЂ‘Р¶РѕРІС‚РёР№ */
+    /*rgb(239, 100, 247, 0.7) 40%,*/ /* СЂРѕР¶РµРІРѕвЂ‘С„С–РѕР»РµС‚РѕРІРёР№ */
+    /*rgb(91 109 9 / 80%) 90%,*/ /* РѕР»РёРІРєРѕРІРёР№ */
+    /*rgb(9 148 195 / 86%)*/ /* Р±Р»Р°РєРёС‚РЅРёР№ */
+    /*);*/
+    background-color: #f0e68c; /* lightkhaki */
     background-attachment: fixed;
     background-repeat: no-repeat;
 }
@@ -41,9 +48,9 @@ body {
         background: url(../images/notes_bck.png);
         background-size: 300px 300px;
         background-repeat: repeat;
-        pointer-events: none; /* Щоб не заважати взаємодії з елементами сторінки */
-        opacity: 0.2; /* Регулює прозорість фону */
-        z-index: -1; /* Розміщує фон позаду всіх інших елементів */
+        pointer-events: none; /* Р©РѕР± РЅРµ Р·Р°РІР°Р¶Р°С‚Рё РІР·Р°С”РјРѕРґС–С— Р· РµР»РµРјРµРЅС‚Р°РјРё СЃС‚РѕСЂС–РЅРєРё */
+        opacity: 0.2; /* Р РµРіСѓР»СЋС” РїСЂРѕР·РѕСЂС–СЃС‚СЊ С„РѕРЅСѓ */
+        z-index: -1; /* Р РѕР·РјС–С‰СѓС” С„РѕРЅ РїРѕР·Р°РґСѓ РІСЃС–С… С–РЅС€РёС… РµР»РµРјРµРЅС‚С–РІ */
     }
 
 
@@ -59,7 +66,7 @@ a.link-light:hover {
     color: #fff;
 }   
 
-/* пошук по нотах - головна */
+/* РїРѕС€СѓРє РїРѕ РЅРѕС‚Р°С… - РіРѕР»РѕРІРЅР° */
 .btn-notes {
     background: #ffd83d !important; /* soft gold */
     color: #212529;
@@ -83,7 +90,7 @@ a.link-light:hover {
         outline-offset: 2px;
     }
 
-/*кнпоки вибору тривалостей для вводу мелодій*/
+/*РєРЅРїРѕРєРё РІРёР±РѕСЂСѓ С‚СЂРёРІР°Р»РѕСЃС‚РµР№ РґР»СЏ РІРІРѕРґСѓ РјРµР»РѕРґС–Р№*/
 .durbtn {
     width: 40px;
     height: 40px;
@@ -98,7 +105,7 @@ a.link-light:hover {
         vertical-align: top;
     }
 
-/* підсвічує меню   */
+/* РїС–РґСЃРІС–С‡СѓС” РјРµРЅСЋ   */
 .highlight {
     background-color: yellow;
 }
@@ -129,7 +136,7 @@ li.active {
     color: #fff;
 }
 
-/*стилі елементів головного меню*/
+/*СЃС‚РёР»С– РµР»РµРјРµРЅС‚С–РІ РіРѕР»РѕРІРЅРѕРіРѕ РјРµРЅСЋ*/
 .melodyitem {
     
     height: auto !important;
@@ -163,8 +170,8 @@ li.active {
 
 .btn-light:hover {
     background-color: darkgray;
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* Збільшена тінь при наведенні */
-    transform: translateY(-2px); /* Невеликий підйом кнопки */
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* Р—Р±С–Р»СЊС€РµРЅР° С‚С–РЅСЊ РїСЂРё РЅР°РІРµРґРµРЅРЅС– */
+    transform: translateY(-2px); /* РќРµРІРµР»РёРєРёР№ РїС–РґР№РѕРј РєРЅРѕРїРєРё */
 }
 
 .btn-compact-40 {
@@ -290,7 +297,7 @@ table, th, td {
 .h-85 {
     height: 85%;
 }
-/* слід ще поекспериментувати...
+/* СЃР»С–Рґ С‰Рµ РїРѕРµРєСЃРїРµСЂРёРјРµРЅС‚СѓРІР°С‚Рё...
 https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     */
 
@@ -371,7 +378,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
 .indexcontainer {
     display: flex;
-    flex-direction: row; /* За замовчуванням елементи поруч */
+    flex-direction: row; /* Р—Р° Р·Р°РјРѕРІС‡СѓРІР°РЅРЅСЏРј РµР»РµРјРµРЅС‚Рё РїРѕСЂСѓС‡ */
     justify-content: center;
     align-items: start;
     width: 25%;
@@ -404,7 +411,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 /* Tighten spacing for the top action strip */
 .d-flex > .btn.btn-compact-40 { margin: .25rem !important; }
 
-/* Анімація м'якого пульсування світла */
+/* РђРЅС–РјР°С†С–СЏ Рј'СЏРєРѕРіРѕ РїСѓР»СЊСЃСѓРІР°РЅРЅСЏ СЃРІС–С‚Р»Р° */
 @keyframes glow {
     from {
         text-shadow: 4px 4px 15px rgb(230 255 15), 0px 0px 16px rgb(255 247 11)
@@ -416,7 +423,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 .homepagesubtitle {
-    color: #5a3d1c; /* Темно-коричневий */
+    color: #5a3d1c; /* РўРµРјРЅРѕ-РєРѕСЂРёС‡РЅРµРІРёР№ */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
     font-size: 1.2em;
 }
@@ -540,10 +547,10 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     margin: 0;
 }
 
-/* Розташування чорних клавіш */
+/* Р РѕР·С‚Р°С€СѓРІР°РЅРЅСЏ С‡РѕСЂРЅРёС… РєР»Р°РІС–С€ */
 .cis1 {
-    top: 0px; /* Відступ зверху */
-    left: 35px; /* Відступ зліва */
+    top: 0px; /* Р’С–РґСЃС‚СѓРї Р·РІРµСЂС…Сѓ */
+    left: 35px; /* Р’С–РґСЃС‚СѓРї Р·Р»С–РІР° */
 }
 
 .dis1 {
@@ -607,16 +614,16 @@ p {
 }
 
 #transpose-controls {
-    display: flex; /* важливо для justify-content */
+    display: flex; /* РІР°Р¶Р»РёРІРѕ РґР»СЏ justify-content */
     justify-content: start;
     align-items: center;
     width: 800px;
     margin-bottom: 20px;
     padding: 5px;
     border: 1px solid black;
-    gap: 10px; /* відступ між кнопками */
-    background-color: #f9f9cc; /* необов’язково, для кращої видимості */
-    border-radius: 8px; /* необов’язково, для естетики */
+    gap: 10px; /* РІС–РґСЃС‚СѓРї РјС–Р¶ РєРЅРѕРїРєР°РјРё */
+    background-color: #f9f9cc; /* РЅРµРѕР±РѕРІвЂ™СЏР·РєРѕРІРѕ, РґР»СЏ РєСЂР°С‰РѕС— РІРёРґРёРјРѕСЃС‚С– */
+    border-radius: 8px; /* РЅРµРѕР±РѕРІвЂ™СЏР·РєРѕРІРѕ, РґР»СЏ РµСЃС‚РµС‚РёРєРё */
     font-size: 0.8em !important;
 }
 
@@ -649,8 +656,8 @@ p {
 
 
     .cis1 {
-        top: 0px; /* Відступ зверху */
-        left: 35px; /* Відступ зліва */
+        top: 0px; /* Р’С–РґСЃС‚СѓРї Р·РІРµСЂС…Сѓ */
+        left: 35px; /* Р’С–РґСЃС‚СѓРї Р·Р»С–РІР° */
     }
 
     .dis1 {
@@ -674,8 +681,8 @@ p {
     }
 
     .cis2 {
-        top: 0px; /* Відступ зверху */
-        left: 385px; /* Відступ зліва */
+        top: 0px; /* Р’С–РґСЃС‚СѓРї Р·РІРµСЂС…Сѓ */
+        left: 385px; /* Р’С–РґСЃС‚СѓРї Р·Р»С–РІР° */
     }
 
     .dis2 {
@@ -705,12 +712,12 @@ p {
 
     .d-flex {
         flex-direction: column;
-        align-items: center; /* Вирівнюємо по центру */
+        align-items: center; /* Р’РёСЂС–РІРЅСЋС”РјРѕ РїРѕ С†РµРЅС‚СЂСѓ */
     }
 
 
     .w-25, .w-75 {
-        width: 100% !important; /* Робимо елементи повної ширини */
+        width: 100% !important; /* Р РѕР±РёРјРѕ РµР»РµРјРµРЅС‚Рё РїРѕРІРЅРѕС— С€РёСЂРёРЅРё */
     }
 
     .navmelody {
@@ -748,9 +755,9 @@ p {
     }
 }
 
-/* Вирівняти верхній край першого ряду літер із кнопками */
+/* Р’РёСЂС–РІРЅСЏС‚Рё РІРµСЂС…РЅС–Р№ РєСЂР°Р№ РїРµСЂС€РѕРіРѕ СЂСЏРґСѓ Р»С–С‚РµСЂ С–Р· РєРЅРѕРїРєР°РјРё */
 .letters-row .letter {
-    margin-top: 0; /* Вирівнюємо по верхньому краю */
+    margin-top: 0; /* Р’РёСЂС–РІРЅСЋС”РјРѕ РїРѕ РІРµСЂС…РЅСЊРѕРјСѓ РєСЂР°СЋ */
 }
 
 /* Force letters rows to wrap horizontally and fill width on all screens */
@@ -769,14 +776,14 @@ p {
 }
 
 .charts-container { width: 100%; max-width: 600px; }
-/* Компактний блок дій під мелодією */
+/* РљРѕРјРїР°РєС‚РЅРёР№ Р±Р»РѕРє РґС–Р№ РїС–Рґ РјРµР»РѕРґС–С”СЋ */
 .infocontainer.actions-container {
-    padding: 8px 12px;       /* менші внутрішні відступи */
-    margin: 8px 0;           /* менші зовнішні */
+    padding: 8px 12px;       /* РјРµРЅС€С– РІРЅСѓС‚СЂС–С€РЅС– РІС–РґСЃС‚СѓРїРё */
+    margin: 8px 0;           /* РјРµРЅС€С– Р·РѕРІРЅС–С€РЅС– */
 }
 .actions-row {
     display: inline-flex;
-    gap: .5rem;              /* відступ між кнопками */
+    gap: .5rem;              /* РІС–РґСЃС‚СѓРї РјС–Р¶ РєРЅРѕРїРєР°РјРё */
     align-items: center;
 }
 
