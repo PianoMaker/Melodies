@@ -10,42 +10,46 @@
 
 <p>
     <a asp-page="Create"
-       class="btn btn-outline-dark light-background border-dark m-4">>
+       class="btn btn-outline-dark light-background border-dark m-4">
        Додати країну</a>
 </p>
 </div>
-<table class="table w-75">
-    <thead>
-        <tr>
-            <th class="w-50">
-               Назва
-            </th>
-            <th class="w-25">
-                Авторів у базі даних
-            </th>
-            <th class="w-25">
-                Мелодій у базі даних
-            </th>
-            <th class="w-50">Радегування/Вилучення</th>
-        </tr>
-    </thead>
-    <tbody>
+
+<!-- Use the same melody-width container to keep widths identical and centered -->
+<div class="melody-width">
+    <table class="table w-100">
+        <thead>
+            <tr>
+                <th class="w-50">
+                   Назва
+                </th>
+                <th class="w-25">
+                    Авторів у базі даних
+                </th>
+                <th class="w-25">
+                    Мелодій у базі даних
+                </th>
+                <th class="w-50">Редагування/Вилучення</th>
+            </tr>
+        </thead>
+        <tbody>
 @foreach (var item in Model.Country) {
-        <tr>
-            <td>
-                   <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Name)</a>
-            </td>
+            <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.AuthorsCount)
+                       <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Name)</a>
                 </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.AuthorsCount)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.MelodiesCount)
+                    </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.MelodiesCount)
+                        <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
+                        <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
                 </td>
-            <td>
-                    <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
-                    <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
-            </td>
-        </tr>
+            </tr>
 }
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
