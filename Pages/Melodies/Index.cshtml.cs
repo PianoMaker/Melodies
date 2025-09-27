@@ -128,7 +128,7 @@ namespace Melodies25.Pages.Melodies
             .ToListAsync();
 
             var duplicates = melodies
-                .GroupBy(m => new {m.Title})
+                .GroupBy(m => new { m.Title })
                 .Where(g => g.Count() > 1) // Фільтруємо дублікати
                 .ToList();
 
@@ -136,7 +136,7 @@ namespace Melodies25.Pages.Melodies
             foreach (var duplicateGroup in duplicates)
             {
                 var duplicateList = duplicateGroup.ToList();
-                
+
 
                 // Залишаємо перший елемент і видаляємо решту
                 for (int i = 1; i < duplicateList.Count; i++)
@@ -146,7 +146,7 @@ namespace Melodies25.Pages.Melodies
                 }
             }
 
-            
+
 
             // Зберігаємо зміни
             await _context.SaveChangesAsync();
@@ -157,7 +157,22 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
+
+        public async Task<IActionResult> OnPostFilterByLetter(string letter)
+        {
+            if (string.IsNullOrEmpty(letter) || letter.Length != 1 || !char.IsLetter(letter[0]))
+            {
+                Melody = await _context.Melody.Include(m => m.Author).ToListAsync();
+                return Page();
+            }
+
+            MessageL(COLORS.yellow, $"MELODY/INDEX -  FilterByLetter {letter}");
+
+            Melody = await _context.Melody.Include(m => m.Author).Where(m => m.Title.StartsWith(letter)).ToListAsync();
+
+            return Page();
+        }
     }
 }
 
-
+    

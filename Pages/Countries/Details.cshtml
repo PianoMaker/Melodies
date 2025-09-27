@@ -5,12 +5,18 @@
     ViewData["Title"] = "Мелодія - країни";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
+}
+
+<div class="infocontainer melody-width">
 <h1>@Model.Country.Name</h1>
 
 <div>
     <p>Авторів на сайті - @Model.Author.Count</p>
     <hr />
 
+</div>
 </div>
 <table class="table">
     <thead>
@@ -48,7 +54,9 @@
         }
     </tbody>
 </table>
-<div>
-    <a asp-page="./Edit" asp-route-id="@Model.Country.ID">Редагуватти</a> |
-    <a asp-page="./Index">Назад до списку</a>
+<div class="infocontainer actions-container melody-width">
+    <div class="actions-row">
+        <a asp-page="./Edit" asp-route-id="@Model.Country.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
+        <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку</a>
+    </div>
 </div>

@@ -3,7 +3,7 @@
 
 @{
     ViewData["Title"] = "Мелодії в Базі даних";
-    var message = TempData["Message"]?.ToString(); 
+    var message = TempData["Message"]?.ToString();
     if (message is not null)
     {
         <script>
@@ -11,40 +11,43 @@
         </script>
     }
 }
-
-<h1>Мелодій у базі даних - @Model.Melody.Count</h1>
-<div class="d-flex">
-    <a asp-page="search" class="btn btn-outline-dark light-background border-dark m-4" style="height:40px">Розширений пошук</a>
-    <a asp-page="Create" class="btn btn-outline-dark light-background border-dark m-4" style="height:40px">Додати мелодію</a>
-    <div class="d-flex flex-column">
-        <div class="d-flex mb-2">
-            @foreach (var letter in Enumerable.Range('A', 26).Select(i => ((char)i).ToString()))
-            {
-                <form asp-page-handler="FilterByLetter" asp-route-letter="@letter" method="post">
-                    <button type="submit" class="letter btn-outline-dark light-background border-dark">@letter</button>
+@section Styles {
+    <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
+}
+<div class="infocontainer">
+    <h1>Мелодій у базі даних - @Model.Melody.Count</h1>
+    <div class="d-flex">
+        <a asp-page="search" class="btn btn-outline-dark light-background border-dark m-2 btn-compact-40 align-self-start">Розширений пошук</a>
+        <a asp-page="Create" class="btn btn-outline-dark light-background border-dark m-2 btn-compact-40 align-self-start">Додати мелодію</a>
+        <div class="d-flex flex-column">
+            <div class="d-flex flex-wrap gap-1 mb-2 letters-row">
+                @foreach (var letter in Enumerable.Range('A', 26).Select(i => ((char)i).ToString()))
+                {
+                    <form asp-page-handler="FilterByLetter" asp-route-letter="@letter" method="post">
+                        <button type="submit" class="letter btn-outline-dark light-background border-dark">@letter</button>
+                    </form>
+                }
+                <form asp-page-handler="FilterByLetter" asp-route-letter="" method="post">
+                    <button type="submit" class="letter btn-outline-dark light-background border-dark">cancel</button>
                 </form>
-            }
-            <form asp-page-handler="FilterByLetter" asp-route-letter="" method="post">
-                <button type="submit" class="letter btn-outline-dark light-background border-dark">cancel</button>
-            </form>
-        </div>
-        <div class="d-flex mb-2">
-            @{
-                var ukrLetters = new[] { "А", "Б", "В", "Г", "Д", "Е", "Є", "Ж", "З", "И", "І", "Ї", "К", "Л", "М", "Н", "О", "П", "Р", "С", "Т", "У", "Ф", "Х", "Ц", "Ч", "Ш", "Щ", "Ю", "Я" };
-            }
-            @foreach (var letter in ukrLetters)
-            {
-                <form asp-page-handler="FilterByLetter" asp-route-letter="@letter" method="post">
-                    <button type="submit" class="letter">@letter</button>
+            </div>
+            <div class="d-flex flex-wrap gap-1 mb-2 letters-row">
+                @{
+                    var ukrLetters = new[] { "А", "Б", "В", "Г", "Д", "Е", "Є", "Ж", "З", "І", "Ї", "К", "Л", "М", "Н", "О", "П", "Р", "С", "Т", "У", "Ф", "Х", "Ц", "Ч", "Ш", "Щ", "Ю", "Я" };
+                }
+                @foreach (var letter in ukrLetters)
+                {
+                    <form asp-page-handler="FilterByLetter" asp-route-letter="@letter" method="post">
+                        <button type="submit" class="letter btn-outline-dark light-background border-dark">@letter</button>
+                    </form>
+                }
+                <form asp-page-handler="FilterByLetter" asp-route-letter="" method="post">
+                    <button type="submit" class="letter btn-outline-dark light-background border-dark">cancel</button>
                 </form>
-            }
-            <form asp-page-handler="FilterByLetter" asp-route-letter="" method="post">
-                <button type="submit" class="letter">cancel</button>
-            </form>
+            </div>
         </div>
     </div>
 </div>
-
 <table class="table">
     <thead>
         <tr>
@@ -61,7 +64,7 @@
             <th>
                 Файл
             </th>
-            
+
             <th>Редагувати/Вилучити</th>
         </tr>
     </thead>
@@ -71,17 +74,17 @@
             <tr>
                 <!--НАЗВА-->
                 <td>
-                    
+
                     <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
                 </td>
                 <!--АВТОР-->
                 <td>
-                    @if(item.Author is not null)
+                    @if (item.Author is not null)
                     {
                         <span>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</span>
                     }
                 </td>
-                
+
                 <!-- ФАЙЛ -->
                 <td>
                     @if (!string.IsNullOrEmpty(item.FilePath))
@@ -108,15 +111,15 @@
                                 <button class="btn btn-outline-dark light-background playbutton"
                                         data-filepath="@item.FilePath" id="playButton_@item.FilePath">
                                     <i class="fas fa-play"></i>
-                                </button>                           
-                                <button id="stopButton_@item.FilePath" disabled="disabled"
-                                    class="stopButton btn btn-outline-dark light-background">
-                                <i class="fas fa-stop"></i>
                                 </button>
-                            }                           
+                                <button id="stopButton_@item.FilePath" disabled="disabled"
+                                        class="stopButton btn btn-outline-dark light-background">
+                                    <i class="fas fa-stop"></i>
+                                </button>
+                            }
                             else if (@item.IsFileEligible is false)
                             {
-                               <p>Midi File is not correct</p>
+                                <p>Midi File is not correct</p>
                             }
                             <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: none">
                                 <source src="@mp3filepath" type="audio/mpeg" />
@@ -130,31 +133,36 @@
                     }
                 </td>
 
-               
+
                 <td>
                     <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
                     <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
-                    
+
 
                 </td>
             </tr>
         }
     </tbody>
 </table>
-<form method="post">
-    <button type="submit">Refresh</button>
-</form>
-<form asp-page-handler="killdupes" method="post">
-    <button type="submit">Kill Duplicates</button>
-</form>
+
+<div class="infocontainer actions-container melody-width">
+    <div class="actions-row">
+        <form method="post" class="m-0">
+            <button type="submit" class="btn btn-outline-dark light-background link-dark">Оновити</button>
+        </form>
+        <form asp-page-handler="killdupes" method="post" class="m-0">
+            <button type="submit" class="btn btn-outline-dark light-background link-dark">Вилучити Дублікати</button>
+        </form>
+    </div>
+</div>
+
 <div class="controlcontainer">
 
     <p>@Model.Msg</p>
     <p>@Model.Errormsg</p>
-  
+
 </div>
 
 <script src="~/js/play.js">
-    
+
 </script>
-    

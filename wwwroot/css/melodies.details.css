@@ -1,0 +1,96 @@
+/* Styles scoped to Melodies/Details page */
+
+/* Charts container */
+.charts-container { width: 100%; max-width: 600px; }
+
+/* Compact actions block at bottom */
+.infocontainer.actions-container {
+    padding: 8px 12px;
+    margin: 8px 0;
+}
+.actions-row {
+    display: inline-flex;
+    gap: .5rem;
+    align-items: center;
+}
+
+/* Melody details layout: notation vs analysis cards */
+.melody-details { max-width: 1200px; margin: 0 auto; }
+
+.melody-details .panel-notes,
+.melody-details .panel-analysis {
+    background: #ffffee;
+    border: 1px solid var(--brand-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.06);
+}
+
+.melody-details .panel-notes    { border-left: 4px solid var(--brand-border); }
+.melody-details .panel-analysis { border-left: 4px solid var(--brand-border); margin-top: 12px; }
+
+.melody-details .section-header {
+    font-weight: 600;
+    color: #5a3d1c;
+    margin: 0 0 .5rem 0;
+    display: flex; align-items: center; gap: .5rem;
+}
+
+.melody-details .section-divider {
+    height: 2px; border: 0; margin: 12px 0;
+    background: linear-gradient(90deg, transparent, rgba(0,0,0,.15), transparent);
+}
+
+/* Center rendered SVG notation within its panel */
+#notation > svg { display: block; margin: 0 auto; }
+
+/* Compact headings and +/- buttons inside analysis */
+.panel-analysis h3 { font-size: 1rem; margin: .25rem 0; display: inline-flex; align-items: center; }
+.panel-analysis .toggle-btn { margin-left: .5rem; }
+
+/* Unified shell for equal horizontal alignment on the page */
+.melody-shell {
+    box-sizing: border-box;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+.melody-shell > .infocontainer,
+.melody-shell > .notescontainer,
+.melody-shell > .actions-container {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Compact vertical spacing (Details/Index) */
+.melody-shell .infocontainer.melody-width,
+.infocontainer.melody-width {
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+
+.melody-shell .infocontainer.melody-width hr,
+.infocontainer.melody-width hr {
+    margin: 6px 0;
+}
+
+/* Table spacing balance */
+.melody-shell .table,
+.infocontainer.melody-width + .table {
+    margin-top: 6px;
+    margin-bottom: 8px;
+}
+
+/* Reduce gap between table and bottom actions */
+.table + .infocontainer.actions-container {
+    margin-top: 4px;
+}
+
+/* Unify border color on local containers */
+.melody-shell .infocontainer,
+.melody-shell .notescontainer,
+.infocontainer.actions-container {
+    border-color: var(--brand-border) !important;
+}

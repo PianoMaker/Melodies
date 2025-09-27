@@ -60,8 +60,13 @@ namespace Melodies25.Pages.Melodies
                 return NotFound();
             }
             Melody = melody;
+            if (Melody.FilePath is not null)
+            {
+                var midiFilepath = Path.Combine(_environment.WebRootPath, "melodies", Melody.FilePath);
+                Tempo = (int)GetTempofromMidi(midiFilepath);
+            }
 
-            MessageL(COLORS.purple, $"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}");
+            GrayMessageL($"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}, Tempo = {Tempo}");
             ViewData["AuthorID"] = new SelectList(_context.Author.OrderBy(a => a.Surname), "ID", "Surname");
             ViewData["Tonalities"] = new SelectList(new List<string>
             {
@@ -69,21 +74,7 @@ namespace Melodies25.Pages.Melodies
                 "F-dur", "B-dur", "Es-dur", "As-dur", "Des-dur", "Ges-dur", "Ces-dur",
                 "a-moll", "e-moll", "h-moll", "fis-moll", "cis-moll", "gis-moll", "dis-moll", "ais-moll",
                 "d-moll", "g-moll", "c-moll", "f-moll", "b-moll", "es-moll", "as-moll"
-            });
-
-            if (Melody.MidiMelody is not null)
-            {
-                try
-                {
-                    await GetMidiMelody(melody);
-                    Tempo = melody.MidiMelody?.Tempo ?? 120;
-                }
-                catch (Exception e)
-                {
-                    ErrorMessageL(e.Message);
-                }
-            }
-            
+            });            
 
             return Page();
         }
@@ -108,7 +99,7 @@ namespace Melodies25.Pages.Melodies
         {
             MessageL(COLORS.yellow, "MELODIES/EDIT OnPost");
             if (Melody is null) ErrorMessageL("Melody is null");
-            else GrayMessageL($"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}, Tempo = {Tempo}"); // Чому FilePath null
+            else GrayMessageL($"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}, Tempo = {Tempo}");
 
             if (!ModelState.IsValid)
             {
@@ -226,22 +217,38 @@ namespace Melodies25.Pages.Melodies
             MessageL(COLORS.olive, $"PrepareAudio method, path = {uploadsPath}");
             try
             {
-                string midiFilePath = Path.Combine(uploadsPath, Melody.FilePath);
-                var midiFile = new MidiFile(midiFilePath);
+                string originalMidiPath = Path.Combine(uploadsPath, Melody.FilePath);
+                if (!System.IO.File.Exists(originalMidiPath))
+                {
+                    ErrorMessage("Файл не існує");
+                    return;
+                }
 
+                // Робоча копія
+                string workPath = Path.Combine(uploadsPath, "_work_" + Melody.FilePath);
+                System.IO.File.Copy(originalMidiPath, workPath, true);
+
+                var midiFile = new MidiFile(workPath);
                 int changed = 0;
-                StraightMidiFile(midiFilePath, ref changed);
+                StraightMidiFile(workPath, ref changed); // працюємо тільки з копією
 
-                var ifeligible = IfMonody(midiFilePath);
+                var ifeligible = IfMonody(workPath); // перевірка копії
 
                 if (ifeligible)
                 {
-                    MessageL(COLORS.standart, $"перезаписуємо міді-файл {midiFilePath} в mp3");
+                    MessageL(COLORS.standart, $"генеруємо mp3 з {workPath}");
                     try
                     {
-                        await PrepareMp3Async(_environment, midiFilePath, false);
+                        await PrepareMp3Async(_environment, "_work_" + Melody.FilePath, false); // передаємо ім'я копії
                         ViewData["Message"] = "Файл успішно завантажено!";                        
                         Melody.IsFileEligible = true;
+
+                        // Видаляємо робочу копію
+                        if (System.IO.File.Exists(workPath))
+                        {
+                            System.IO.File.Delete(workPath);
+                            MessageL(COLORS.cyan, "Temporary working copy deleted");
+                        }
                     }
                     catch
                     {
@@ -331,7 +338,7 @@ namespace Melodies25.Pages.Melodies
             {
                 try
                 {
-                    await PrepareMp3Async(_environment, melody.FilePath, false);
+                    await PrepareMp3Async(_environment, melody.FilePath, false); // генеруємо з копією всередині
                 }
                 catch (Exception e)
                 {

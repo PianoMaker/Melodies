@@ -56,6 +56,9 @@
                 <span asp-validation-for="Melody.Title" class="text-danger"></span>                
             </div>
             <p id="warning"></p>
+            <button id="copyBtn" type="button" onclick="copytitle(event)" 
+                class="btn btn-primary btn-outline-dark bg-light" style="display:none">
+                копіювати з файлу </button>
             <div class="form-group">
                 <label asp-for="Melody.Year" class="control-label">Рік</label>
                 <input asp-for="Melody.Year" class="form-control" />
