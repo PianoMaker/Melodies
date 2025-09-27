@@ -180,7 +180,7 @@ li.active {
     border: 1px solid gray;
     border-radius: 12px;
     padding: 2px;
-    background: rgba(2255,255,225,0.8)
+    background: rgba(255,255,225,0.8);
 }
 
 #code {
@@ -290,7 +290,7 @@ table, th, td {
 .h-85 {
     height: 85%;
 }
-/* слід ще поексперементувати...
+/* слід ще поекспериментувати...
 https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     */
 
@@ -486,7 +486,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 .infocontainer {
-    style ="display:block"
+    display: block;
 }
 .searchrightcontainer {
     /*display: inline-block;*/
@@ -698,52 +698,6 @@ p {
         left: 640px;
     }
 
-    .cis1 {
-        left: 30px; /* Відступ зліва */
-    }
-
-    .dis1 {
-        left: 80px;
-    }
-
-    .fis1 {
-        left: 165px;
-    }
-
-    .gis1 {
-        left: 215px;
-    }
-
-    .b1 {
-        top: 0px;
-        left: 265px;
-    }
-
-    .cis2 {
-        top: 0px; /* Відступ зверху */
-        left: 345px; /* Відступ зліва */
-    }
-
-    .dis2 {
-        top: 0px;
-        left: 395px;
-    }
-
-    .fis2 {
-        top: 0px;
-        left: 480px;
-    }
-
-    .gis2 {
-        top: 0px;
-        left: 530px;
-    }
-
-    .b2 {
-        top: 0px;
-        left: 580px;
-    }
-
 
 }
 
@@ -812,6 +766,18 @@ p {
 .letters-row form {
     flex: 0 0 auto;
     margin: 0;
+}
+
+.charts-container { width: 100%; max-width: 600px; }
+/* Компактний блок дій під мелодією */
+.infocontainer.actions-container {
+    padding: 8px 12px;       /* менші внутрішні відступи */
+    margin: 8px 0;           /* менші зовнішні */
+}
+.actions-row {
+    display: inline-flex;
+    gap: .5rem;              /* відступ між кнопками */
+    align-items: center;
 }
 
 

@@ -6,242 +6,250 @@
     var item = Model.Melody;
     var url = Url.Content($"~/melodies/{item.FilePath}");
 }
+@section Styles {
+    <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
+}
+<div class="melody-shell">
+    <!--ІНФОРАЦІЯ  ПРО ФАЙЛ-->
+    <div class="infocontainer melody-width">
+        <h1>@item.Title</h1>
+        <div>
+            @if (@item.Author is not null && !@item.Author.Surname.Contains("народна"))
+            {
+                <h4>автор - <a asp-page="/Authors/Details" asp-route-id="@item.AuthorID">@item.Author.Name @item.Author.Surname</a></h4>
+                <p>(@item.Author.DateOfBirth - @item.Author.DateOfDeath)</p>
+            }
+            else if (@item.Author is not null)
+            {
+                <p>@item.Author.Surname</p>
 
-<h1>@item.Title</h1>
-
-<div>
-    @if (@item.Author is not null && !@item.Author.Surname.Contains("народна"))
-    {
-        <h4>автор - <a asp-page="/Authors/Details" asp-route-id="@item.AuthorID">@item.Author.Name @item.Author.Surname</a></h4>
-        <p>(@item.Author.DateOfBirth - @item.Author.DateOfDeath)</p>
-    }
-    else if(@item.Author is not null)
-    {
-        <p>@item.Author.Surname</p>
-
-    }
-    @if (item.Year is not null)
-    {
-        <p>Написана у @item.Year році</p>
-    }
-</div>
-<p><i>@item.Description</i></p>
-<hr />
-<div class="container">
-
-    @if (!string.IsNullOrEmpty(item.FilePath))
-    {
-        var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
-        var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
-
-        <div style="display:inline-flex">
-
-            <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: inline; width:500px;">
-                <source src="@mp3filepath" type="audio/mpeg" />
-                Your browser does not support the audio element.
-            </audio>
-            <a href="@midifilepath" download class="btn btn-outline-dark light-background">
-                Завантажити Midi <i class="fas fa-download"></i>
-            </a>
-            <a href="@mp3filepath" download class="btn btn-outline-dark light-background">
-                Завантажити mp3 <i class="fas fa-download"></i>
-            </a>
-
+            }
+            @if (item.Year is not null)
+            {
+                <p>Написана у @item.Year році</p>
+            }
         </div>
-        @if (!string.IsNullOrEmpty(Model.Melody.Tonality))
-        {
-            <p>MIDI файл завантажено в тональності @Model.Melody.Tonality</p>
-        }
-        else
-        {
-            <p>тональність MIDI файлу не визначено</p>
-        }
-    }
-    else
-    {
-        <span>Файл не доступний</span>
-    }
+        <p><i>@item.Description</i></p>
+        <hr />
+        <div class="container">
 
+            @if (!string.IsNullOrEmpty(item.FilePath))
+            {
+                var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
+                var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
 
-    <hr />
+                <div style="display:inline-flex">
 
-    <div class="notescontainer">
-        <div id="notation">notation will be shown here</div>
-        <div id="comments"></div>
-        <div id="stepRead" style="display:none"></div>
+                    <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: inline; width:500px;">
+                        <source src="@mp3filepath" type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                    </audio>
+                    <a href="@midifilepath" download class="btn btn-outline-dark light-background">
+                        Завантажити Midi <i class="fas fa-download"></i>
+                    </a>
+                    <a href="@mp3filepath" download class="btn btn-outline-dark light-background">
+                        Завантажити mp3 <i class="fas fa-download"></i>
+                    </a>
+
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Melody.Tonality))
+                {
+                    <p>MIDI файл завантажено в тональності @Model.Melody.Tonality</p>
+                }
+                else
+                {
+                    <p>тональність MIDI файлу не визначено</p>
+                }
+            }
+            else
+            {
+                <span>Файл не доступний</span>
+            }
+            <hr />
+        </div>
     </div>
 
-    <div class="notescontainer">
-        @if (@item.MidiMelody is null)
-        {
+    <!-- НОТИ І СТАТИСТИКА -->
+    <div class="notescontainer melody-details melody-width">
+        <!-- НОТНИЙ ТЕКСТ (wrapper added) -->
+        <div class="panel-notes">
+            <div id="notation">notation will be shown here</div>
+            <div id="comments"></div>
+            <div id="stepRead" style="display:none"></div>
+        </div>
 
-            <form method="post">
-                <button type="submit">Порахувати статистику</button>
-            </form>
+        <hr class="section-divider" />
 
-        }
-        else
-        {
-            <h3>Нот у мелодії - @item.MidiMelody.Notes.Count
-                <button class="toggle-btn" id="notesbtn" onclick="toggleContent('innerNotesContainer', 'notesbtn')">+</button>
-            </h3>
-            <div id="innerNotesContainer" style="display:none">
-                @foreach (var note in @item.MidiMelody.Notes)
-                {
-                    string width = $"{note.DisplayWidth(45, 20)}px";
-                    string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
-                    <div class="outerNoteBox" style="width:@width; height:10px;">
-                        <div class="notebox" style="margin-bottom: @marginbottom; width:@width">
-                            <text>@note.DurSymbol</text><br>
-                        </div>
-                        <text class="notaname">@note.Name</text>
-                    </div>
-                }
-            </div>
-
-
-            <div>
+        <!-- СТАТИСТИКА (wrapper added) -->
+        <div class="panel-analysis">
+            @if (@item.MidiMelody is null)
+            {
+                <form method="post">
+                    <button type="submit">Порахувати статистику</button>
+                </form>
+            }
+            else
+            {
                 <h3>
-                    Тривалості
-                    <button class="toggle-btn" id="durationsbtn" onclick="toggleContent('durations', 'durationsbtn')">+</button>
+                    Нот у мелодії - @item.MidiMelody.Notes.Count
+                    <button class="toggle-btn" id="notesbtn" onclick="toggleContent('innerNotesContainer', 'notesbtn')">+</button>
                 </h3>
-                <div class="hidden-content" id="durations" style="display: none;">
+                <div id="innerNotesContainer" style="display:none">
+                    @foreach (var note in @item.MidiMelody.Notes)
+                    {
+                        string width = $"{note.DisplayWidth(45, 20)}px";
+                        string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
+                        <div class="outerNoteBox" style="width:@(string.IsNullOrWhiteSpace(width) ? "1px" : width); height:10px;">
+                            <div class="notebox" style="margin-bottom:@(string.IsNullOrWhiteSpace(marginbottom) ? "0px" : marginbottom); width:@(string.IsNullOrWhiteSpace(width) ? "1px" : width)">
+                                <text>@note.DurSymbol</text><br>
+                            </div>
+                            <text class="notaname">@note.Name</text>
+                        </div>
+                    }
+                </div>
+                <div>
+                    <h3>
+                        Тривалості
+                        <button class="toggle-btn" id="durationsbtn" onclick="toggleContent('durations', 'durationsbtn')">+</button>
+                    </h3>
+                    <div class="hidden-content" id="durations" style="display: none;">
+                        <p>
+                            @foreach (var note in @item.MidiMelody.Notes)
+                            {
+                                <text>
+                                    <text> @note.Duration.RelDuration() [@note.AbsDuration()]</text>
+                                </text>
+                            }
+                        </p>
+                    </div>
+                </div>
+
+                <h3>
+                    Інтервальний ряд у півонах
+                    <button class="toggle-btn" id="intervalsbtn" onclick="toggleContent('intervals','intervalsbtn')">+</button>               
+                </h3>
+                <div class="hidden-content" id="intervals" style="display: none;">
                     <p>
-                        @foreach (var note in @item.MidiMelody.Notes)
+                        @foreach (var interval in @item.MidiMelody.IntervalList)
                         {
                             <text>
-                                <text> @note.Duration.RelDuration() [@note.AbsDuration()]</text>
+                                <text>@interval </text>
                             </text>
                         }
                     </p>
                 </div>
-            </div>
-
-            <h3>
-                Інтервальний ряд у півонах
-                <button class="toggle-btn" id="intervalsbtn" onclick="toggleContent('intervals','intervalsbtn')">+</button>
-            </h3>
-            <div class="hidden-content" id="intervals" style="display: none;">
-                <p>
-                    @foreach (var interval in @item.MidiMelody.IntervalList)
-                    {
-                        <text>
-                            <text>@interval </text>
-                        </text>
-                    }
-                </p>
-            </div>
-
-
-            <h3>Дієзність (beta)
-                <button class="toggle-btn" id="sharpnessbtn" onclick="toggleContent('sharpness','sharpnessbtn')">+</button>
-            </h3>
-            <div class="hidden-content" id="sharpness" style="display: none;">
-            <p>
-                @foreach (var note in @item.MidiMelody.Notes)
-                {
-                    <text>
-                        <text>@note.Sharpness </text>
-                    </text>
-                }
-            </p>
-            </div>
-            /*  СТАТИСТИКА  */
-
-            <div style="display:block">
-
-                <h3>Статистика нот (beta)
-                    <button class="toggle-btn" id="statsbtn" onclick="toggleContent('stats','statsbtn')">+</button>
+              
+                <div style="display:block">
+                <h3>
+                    Дієзність (beta)
+                    <button class="toggle-btn" id="sharpnessbtn" onclick="toggleContent('sharpness','sharpnessbtn')">+</button>
                 </h3>
-                <div class="hidden-content" id="stats" style="display: none;">
-                @if (@item.MidiMelody.GetStats() is not null)
-                {
-                    <div class="noteanalysis">
-                        <h3>без урахування тривалості</h3>
-                        @foreach (var note in @item.MidiMelody.GetStats())
+                <div class="hidden-content" id="sharpness" style="display: none;">
+                    <p>
+                        @foreach (var note in @item.MidiMelody.Notes)
                         {
-                            <p><text>@note.Key - @note.Value %</text></p>
+                            <text>
+                                <text>@note.Sharpness </text>
+                            </text>
                         }
-                    </div>
-                }
-
-                @if (@item.MidiMelody.GetDegreesStats() is not null)
-                {
-                    <div class="noteanalysis">
-                        <h3>по ступенях</h3>
-                        @foreach (var value in @item.MidiMelody.GetDegreesStats())
-                        {
-                            <p><text>@value.Key - @value.Value %</text></p>
-                        }
-                    </div>
-                }
-
-
-
-                @if (@item.MidiMelody.GetWeight() is not null)
-                {
-                    <div class="noteanalysis">
-                        <h3>з урахуванням тривалостей</h3>
-                        @foreach (var note in @item.MidiMelody.GetWeight())
-                        {
-                            <p><text>@note.Key - @note.Value %</text></p>
-                        }
-                    </div>
-                }
-
-                @if (@item.MidiMelody.GetDegreesWeightStats() is not null)
-                {
-                    <div class="noteanalysis">
-                        <p>по ступенях </p>
-                        @foreach (var value in @item.MidiMelody.GetDegreesWeightStats())
-                        {
-                            <p><text>@value.Key - @value.Value %</text></p>
-                        }
-                    </div>
-                }
+                    </p>
                 </div>
-
-                @* ДІАГРАМИ *@
-
-                <script>
-                    window.chartLabels = @Html.Raw(Model.Labels);
-                    window.chartValues = @Html.Raw(Model.Values);
-                    window.chartWeightValues = @Html.Raw(Model.WeightValues);
-                </script>
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <script src="~/js/chartDegree.js"></script>
-                <script src="~/js/togglecontent.js"></script>
-                <div style="width: 600px !important; height: 300px !important;">
-                @if (@item.MidiMelody.Tonality is not null)
-                {
-
-                        <input type="radio" id="degreesRadio" name="chartToggle" checked>
-                        <label for="degreesRadio">Графік значень</label>
-
-                        <input type="radio" id="weightRadio" name="chartToggle">
-                        <label for="weightRadio">Графік ваги</label>
-
-                        <canvas id="degreesChart" width="400" height="200" style="width: 400px !important; height: 200px !important;"></canvas>
-                        <canvas id="weightChart" width="400" height="200" style="width: 400px !important; height: 200px !important; display: none;"></canvas>
-
-                }
-                else
-                {
-                    <p> @Model.ErrorMsg</p>
-                }
                 </div>
-            </div>
-        }
+                <div style="display:block">
+                    <h3>
+                        Статистика нот (beta)
+                        <button class="toggle-btn" id="statsbtn" onclick="toggleContent('stats','statsbtn')">+</button>
+                    </h3>
+                    <div class="hidden-content" id="stats" style="display: none;">
+                        @if (@item.MidiMelody.GetStats() is not null)
+                        {
+                            <div class="noteanalysis">
+                                <h3>без урахування тривалості</h3>
+                                @foreach (var note in @item.MidiMelody.GetStats())
+                                {
+                                    <p><text>@note.Key - @note.Value %</text></p>
+                                }
+                            </div>
+                        }
 
+                        @if (@item.MidiMelody.GetDegreesStats() is not null)
+                        {
+                            <div class="noteanalysis">
+                                <h3>по ступенях</h3>
+                                @foreach (var value in @item.MidiMelody.GetDegreesStats())
+                                {
+                                    <p><text>@value.Key - @value.Value %</text></p>
+                                }
+                            </div>
+                        }
+
+
+
+                        @if (@item.MidiMelody.GetWeight() is not null)
+                        {
+                            <div class="noteanalysis">
+                                <h3>з урахуванням тривалостей</h3>
+                                @foreach (var note in @item.MidiMelody.GetWeight())
+                                {
+                                    <p><text>@note.Key - @note.Value %</text></p>
+                                }
+                            </div>
+                        }
+
+                        @if (@item.MidiMelody.GetDegreesWeightStats() is not null)
+                        {
+                            <div class="noteanalysis">
+                                <p>по ступенях </p>
+                                @foreach (var value in @item.MidiMelody.GetDegreesWeightStats())
+                                {
+                                    <p><text>@value.Key - @value.Value %</text></p>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    @* ДІАГРАМИ *@
+                    <script>
+                        window.chartLabels = @Html.Raw(Model.Labels);
+                        window.chartValues = @Html.Raw(Model.Values);
+                        window.chartWeightValues = @Html.Raw(Model.WeightValues);
+                    </script>
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script src="~/js/chartDegree.js"></script>
+                    <script src="~/js/togglecontent.js"></script>
+
+                    @if (@item.MidiMelody.Tonality is not null)
+                    {
+                        <div class="charts-container" style="max-width: 600px;">
+                            <input type="radio" id="degreesRadio" name="chartToggle" checked>
+                            <label for="degreesRadio">Графік значень</label>
+
+                            <input type="radio" id="weightRadio" name="chartToggle">
+                            <label for="weightRadio">Графік ваги</label>
+
+                            <canvas id="degreesChart" width="400" height="200" style="width: 400px !important; height: 200px !important;"></canvas>
+                            <canvas id="weightChart" width="400" height="200" style="width: 400px !important; height: 200px !important; display: none;"></canvas>
+                        </div>
+                    }
+                    else
+                    {
+                        <p>@Model.ErrorMsg</p>
+                    }
+                </div>
+            }
+        </div>
     </div>
 
+    <!-- НИЖНІЙ КОНТЕНЙЕР З КНОПКАМИ -->
+    <div class="infocontainer actions-container melody-width">
+        <div class="actions-row">
+            <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
+            <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку мелодій</a>
+        </div>
+    </div>
 </div>
-<div style="margin-top: 50px">
-    <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
-    <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку мелодій</a>
-    <p>.</p>
-    <p>.</p>
-</div>
+
+<!--СКРИТПИ-->
 <script src="~/js/play.js"></script>
 <script src="~/lib/midirender/midifile.bundle.js"></script>
 <script src="~/lib/midirender/vexflow.js"></script>
