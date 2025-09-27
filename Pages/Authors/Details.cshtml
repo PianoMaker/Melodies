@@ -6,11 +6,16 @@
     var Melodies = Model.Melody;
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
+}
+
+<div class="infocontainer melody-width">
 <h1>Інформація про автора</h1>
 
 <div>
     <hr />
-    <dl class="row infocontainer">
+    <dl>
         
         <dd class="col-sm-10 ">
             @Html.DisplayFor(model => model.Author.Name) @Html.DisplayFor(model => model.Author.Surname)
@@ -37,6 +42,7 @@
             @Html.DisplayFor(model => model.Author.Description)
         </dd>
     </dl>
+</div>
 </div>
 <table class="table">
     <thead>
@@ -118,9 +124,11 @@
 
 
 
-<div style="margin-bottom: 50px">
-    <a asp-page="./Edit" asp-route-id="@Model.Author.ID">Редагуватти</a> |
-    <a asp-page="./Index">Назад до списку</a>
+<div class="infocontainer actions-container melody-width">
+    <div class="actions-row">
+        <a asp-page="./Edit" asp-route-id="@Model.Author.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
+        <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку</a>
+    </div>
 </div>
 <script src="~/js/play.js">
 

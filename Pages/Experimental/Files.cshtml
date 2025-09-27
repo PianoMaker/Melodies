@@ -2,19 +2,18 @@
 @model Melodies25.Pages.Account.FilesModel
 @{
 }
-@await Html.PartialAsync("_adminMenu")
+<div class="infocontainer">
+    <p>Усього файлів - @Model.NumberOfFiles</p>
+    <p>Загальний обсяг - @Model.TotalSize кБ</p>
 
-<p>Усього файлів - @Model.NumberOfFiles</p>
-<p>Загальний обсяг - @Model.TotalSize кБ</p>
-
-<form asp-page-handler="MassDelete" style="display:block">
-    <p>
-        Видалити файли за останні
-        <input asp-for="Days" style="width:50px" type="number" /> днів
-    </p>
-    <button type="submit" style="display:block">Видалити</button>
-</form>
-
+    <form asp-page-handler="MassDelete" style="display:block">
+        <p>
+            Видалити файли за останні
+            <input asp-for="Days" style="width:50px" type="number" /> днів
+        </p>
+        <button type="submit" style="display:block">Видалити</button>
+    </form>
+</div>
 
 <h3>Midi-файли</h3>
 <div id="midifilesBox" class="filesbox">
