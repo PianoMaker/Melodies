@@ -42,7 +42,7 @@ function applyAutoStem(note, durationCode) {
  */
 
 
-function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10) {
+function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, options = undefined) {
     console.log("FOO: midiRenderer.js - drawScore");
     const notationDiv = document.getElementById(ELEMENT_FOR_RENDERING);
     const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
@@ -106,7 +106,8 @@ async function renderMidiFromUrl(
     TOPPADDING = 20,
     BARWIDTH = 250,
     CLEFZONE = 60,
-    Xmargin = 10
+    Xmargin = 10,
+    options = undefined
 ) {
     try {
         if (!midiUrl) throw new Error('midiUrl is required');
@@ -115,7 +116,7 @@ async function renderMidiFromUrl(
         const blob = await resp.blob();
         const filename = midiUrl.split('/').pop() || 'remote.mid';
         const file = new File([blob], filename, { type: blob.type || 'audio/midi' });
-        drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin);
+        drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin, options);
     } catch (err) {
         console.error('renderMidiFromUrl error:', err);
         const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
@@ -251,9 +252,9 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
     console.log("FOO: midiRenderer.js - renderMidiFileToNotation");
     if (!ELEMENT_FOR_RENDERING) {
         throw new Error(`Element with id ${ELEMENT_FOR_RENDERING} not found.`);
-    }    
+    }
     let midiData = MidiParser.Uint8(uint8);
-    let ticksPerBeat = Array.isArray(midiData.timeDivision) ? 480 : midiData.timeDivision; 
+    let ticksPerBeat = Array.isArray(midiData.timeDivision) ? 480 : midiData.timeDivision;
     let allEvents = SetEventsAbsoluteTime(midiData);
 
     // Перевірка наявності EndTrack
@@ -262,13 +263,26 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
     const measureMap = createMeasureMap(allEvents, ticksPerBeat);
     const measures = groupEventsByMeasure(allEvents, measureMap);
 
-    GENERALHEIGHT = calculateRequiredHeight(measures.length, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
+    // ВИКОРИСТАТИ ФАКТИЧНУ ШИРИНУ КОНТЕЙНЕРА, щоб ноти не виходили за межі поля
+    // Мінімальна ширина партитури: або 320, або обчислена від макета (CLEFZONE + BARWIDTH + Xmargin*2)
+const MIN_SCORE_WIDTH = Math.max(320, CLEFZONE + BARWIDTH + Xmargin * 2);
+
+const target = document.getElementById(ELEMENT_FOR_RENDERING);
+const containerWidth = (target && target.clientWidth) ? target.clientWidth : 0;
+
+// Якщо containerWidth = 0 (прихований або не в DOM), падаємо на GENERALWIDTH або 1200
+const effectiveWidth = Math.max(
+  MIN_SCORE_WIDTH,
+  containerWidth || GENERALWIDTH || 1200
+);
+
+    GENERALHEIGHT = calculateRequiredHeight(measures.length, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
     setTimeout(() => {
         const factory = new Vex.Flow.Factory({
             renderer: {
                 elementId: ELEMENT_FOR_RENDERING,
-                width: GENERALWIDTH,
+                width: effectiveWidth,
                 height: GENERALHEIGHT
             }
         });
@@ -276,7 +290,8 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         const context = factory.getContext();
         const score = factory.EasyScore();
 
-        renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, GENERALWIDTH, commentsDiv);
+        // Передаємо effectiveWidth у renderMeasures як GENERALWIDTH
+        renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, effectiveWidth, commentsDiv);
     }, 0);
 }
 
@@ -967,7 +982,6 @@ function adjustXYposition(Xposition, GENERALWIDTH, BARWIDTH, Yposition, HEIGHT, 
 // - ticksPerBeat: Кількість тіків на чвертну ноту.
 // Повертає: void
 // ----------------------
-// Використовує Vex.Flow.Voice, Vex.Flow.Formatter та makeBeams для форматування та рендерингу нот.
     
 function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat) {
     console.log("FOO: midiRenderer.js - drawMeasure");
@@ -1180,8 +1194,9 @@ function adjustTimeSignature(measure, currentNumerator, currentDenominator) {
 // ФУНКЦІЯ ДЛЯ ДОДАВАННЯ НОТ ІЗ ПОПЕРЕДНЬОГО ТАКТУ
 // якщо є активні ноти з попереднього такту
 // Параметри:
-// - activeNotes: Об'єкт з активними нотами {pitch: startTime}.
-// - measure: Масив MIDI подій поточного такту.
+// - previousNote: Попередня нота (Vex.Flow.StaveNote) або null.
+// - ties: Масив ліг (Vex.Flow.StaveTie) для рендерингу.
+// - note: Поточна нота (Vex.Flow.StaveNote).
 // Повертає: void
 // ----------------------
 function AddNotesFromPreviousBar(activeNotes, measure) {
@@ -1329,6 +1344,7 @@ function processNoteElement(durationCode, key, accidental) {
 function calculateRequiredHeight(measuresCount, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
     console.log("FOO: midiRenderer.js - calculateRequiredHeight");
     let Xposition = Xmargin;
+    let Yposition = TOPPADDING;
     let rows = 1;
     for (let i = 0; i < measuresCount; i++) {
         let STAVE_WIDTH = BARWIDTH;
