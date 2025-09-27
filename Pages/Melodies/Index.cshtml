@@ -11,6 +11,9 @@
         </script>
     }
 }
+@section Styles {
+    <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
+}
 <div class="infocontainer">
     <h1>Мелодій у базі даних - @Model.Melody.Count</h1>
     <div class="d-flex">
@@ -141,12 +144,18 @@
         }
     </tbody>
 </table>
-<form method="post">
-    <button type="submit">Refresh</button>
-</form>
-<form asp-page-handler="killdupes" method="post">
-    <button type="submit">Kill Duplicates</button>
-</form>
+
+<div class="infocontainer actions-container melody-width">
+    <div class="actions-row">
+        <form method="post" class="m-0">
+            <button type="submit" class="btn btn-outline-dark light-background link-dark">Оновити</button>
+        </form>
+        <form asp-page-handler="killdupes" method="post" class="m-0">
+            <button type="submit" class="btn btn-outline-dark light-background link-dark">Вилучити Дублікати</button>
+        </form>
+    </div>
+</div>
+
 <div class="controlcontainer">
 
     <p>@Model.Msg</p>
