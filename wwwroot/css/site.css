@@ -845,14 +845,21 @@ p {
 
   /* Right side login/status area */
   .rightcontainer { background-image: none !important; background: none !important; background-color: transparent !important; height: auto !important; width: 100% !important; margin-left: auto; margin-right: auto; max-width: 26rem; }
-  .rightcontainer .btn.btn-light.link-dark,
-  .rightcontainer .btn-light.link-dark,
-  .rightcontainer form button.btn.btn-light { background-color: var(--brand-mobile-button) !important; color: var(--text-dark) !important; border-radius: var(--radius-lg); box-shadow: var(--shadow-1); border: 2px solid rgba(0,0,0,.05); }
-  .rightcontainer .btn { width: clamp(14rem, 92vw, 26rem); margin: .5rem auto; display: inline-flex; justify-content: center; align-items: center; }
+  /* Mobile: specific styles for signed-in status and exit buttons scoped to #signedUser */
+  #signedUser {
+    background-color: var(--brand-mobile-button) !important;
+    border-color: var(--brand-mobile-button) !important;
+    color: var(--text-dark) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-1);
+    border: 2px solid rgba(0,0,0,.05);
+    width: clamp(14rem, 92vw, 26rem);
+    margin-left: auto; margin-right: auto;
+    display: inline-flex; justify-content: center; align-items: center;
+  }
+
   .rightcontainer.align-items-end { align-items: center !important; }
 
-  /* Home page position */
-  body.home .rightcontainer { margin: 1.25rem auto 0 !important; }
 
   /* Background pattern softer on mobile */
   body::after { opacity: .12; }
@@ -861,14 +868,10 @@ p {
   .btn:focus-visible, .search-button:focus-visible, .searchfield:focus-visible { outline: 3px solid #2d6cdf; outline-offset: 2px; }
 
 
-  body.home .mainpage { padding-top: 0.75rem; }
+  mainpage { padding-top: 0.75rem; }
 
-  /* When navbar is expanded, add a bit more spacing to main content */
-  #mainNavbar.show ~ .container,
-  #mainNavbar.collapsing ~ .container,
-  #mainNavbar.show ~ .mainpage,
-  #mainNavbar.collapsing ~ .mainpage {
-    margin-top: .5rem;
+ .commoncontainer { 
+    padding-top: 12rem !important; /* ~21px at 14px base font-size */
   }
 }
 

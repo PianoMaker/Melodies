@@ -222,6 +222,14 @@
   .homepagesubtitle { display: none !important; }
 }
 
+/* Desktop and larger: keep #logo&toggler no wider than its left logo container */
+@media (min-width: 769px) {
+  /* Cancel Bootstrap w-100 and avoid growing */
+  #logo\&toggler { width: auto !important; flex: 0 0 auto !important; display: inline-flex !important; }
+  /* Left logo container should not flex-grow on desktop */
+  #logocontainer { flex: 0 1 auto !important; }
+}
+
 /* Smallest screens extra tweak */
 @media (max-width: 512px) {
   .navmelody { margin: .2rem auto; }
