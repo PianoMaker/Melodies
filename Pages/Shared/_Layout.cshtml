@@ -39,18 +39,27 @@
     <!--Верхня панель-->
     <header >
         <nav id="navbarstrip" class="navbar navbar-expand-md navbar-dark bg-sky border-bottom box-shadow p-0">
-            <div class="container-fluid d-flex px-0 px-md-3">
-                <!--Логотип-->
-                <a class="navbar-brand imgcontainer" asp-page="/Index">
-                    <img src="~/images/Melody3a.png" class="logoimage" alt="Melodies25 logo" />
-                </a>
-                
-                @* <a class="title" asp-area="" asp-page="/Index">Мелодія</a> *@
+            <div class="container-fluid d-flex flex-nowrap align-items-center px-0 px-md-3">
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar"
-                aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <!-- Лого + гамбургер в одному рядку -->
+                <div id="logo&toggler" class="w-100" style="display:flex;flex-wrap:nowrap;align-items:center;">
+                    <div id="logocontainer" class="flex-grow-1" style="display:flex;align-items:center;min-width:0;">
+                        <!-- Логотип -->
+                        <a class="navbar-brand imgcontainer me-2 p-0" style="display:flex;align-items:center;flex-shrink:1;" asp-page="/Index">
+                            <img src="~/images/Melody5.png" class="logoimage" style="max-width:100%;height:var(--nav-height);" alt="Melodies25 logo" />
+                        </a>
+                    </div>
+
+                    <div id="togglecontainer" class="ms-auto" style="display:flex;align-items:center;flex:0 0 auto;">
+                        <!-- Гамбургер праворуч (лише мобільна версія) -->
+                        <button class="navbar-toggler d-md-none" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                                aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                    </div>
+                </div>
+
                 <div id="mainNavbar" class="navbar-collapse collapse justify-content-between">
                     <ul class="navbar-nav flex-grow-1" style="padding:0; align-items: center;">
                         <!--стиль елемента меню залежить від поточної сторінки-->
@@ -74,7 +83,7 @@
                         }
                         else
                         {
-                            <li class="nav-item">
+                            <li class="nav-item melodyitem">
                                 <a class="nav-link navmelody @(currentPage == "/Authors/Index" ? "active" : "")" asp-page="/Authors/Index">Автори</a>
                             </li>
                         }
