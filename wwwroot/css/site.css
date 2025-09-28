@@ -749,7 +749,6 @@ p {
    
 
 
-
     .notesinfo{
         width:65vh;
     }
@@ -816,22 +815,25 @@ p {
 
 }
 
-/* Consolidated mobile rules (single block). Overrides earlier scattered @media (max-width: 768px) blocks */
+/* Consolidated mobile rules: single @media block for ≤768px. Removed previous duplicates */
 @media (max-width: 768px) {
-  /* Helpers */
+  /* Layout helpers */
   .d-flex { flex-direction: column; align-items: center; }
   .w-25, .w-75 { width: 100% !important; }
 
-  /* Navbar menu buttons: tighter and shorter */
+  /* Navbar menu buttons spacing/size (visuals come from layout.css) */
   .navmelody {
-    display: block; text-align: center; width: clamp(14rem, 92vw, 26rem);
-    font-size: 1.2rem !important;         /* slightly smaller */
-    line-height: 1.2;                      /* compact line-height */
-    margin: .15rem auto !important;        /* tighter gaps */
-    padding: .30rem .55rem !important;     /* shorter buttons */
-    min-height: 40px;                      /* ensure touchable height */
-    border-width: 1px !important;          /* thinner border */
+    display: block;
+    text-align: center;
+    width: clamp(14rem, 92vw, 26rem);
+    font-size: 1.25rem !important;
+    line-height: 1.2;
+    margin: .15rem auto !important;
+    padding: .35rem .6rem !important;
+    min-height: 40px;
+    border-width: 1px !important;
   }
+  .smallfont { font-size: 0.7em !important; color: darkslategrey; }
 
   /* Search form layout */
   .search-form { display: flex; flex-direction: column; align-items: stretch; gap: .5rem; }
@@ -841,7 +843,7 @@ p {
   .search-form .search-button:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
   .search-form-notes { display: none !important; }
 
-  /* Right side login/status area look */
+  /* Right side login/status area */
   .rightcontainer { background-image: none !important; background: none !important; background-color: transparent !important; height: auto !important; width: 100% !important; margin-left: auto; margin-right: auto; max-width: 26rem; }
   .rightcontainer .btn.btn-light.link-dark,
   .rightcontainer .btn-light.link-dark,
@@ -849,33 +851,25 @@ p {
   .rightcontainer .btn { width: clamp(14rem, 92vw, 26rem); margin: .5rem auto; display: inline-flex; justify-content: center; align-items: center; }
   .rightcontainer.align-items-end { align-items: center !important; }
 
-  /* Keep auth buttons centered and a bit lower on the page (home) */
+  /* Home page position */
   body.home .rightcontainer { margin: 1.25rem auto 0 !important; }
 
-  /* Slightly calmer notes pattern behind the form area */
+  /* Background pattern softer on mobile */
   body::after { opacity: .12; }
 
-  /* Strong, consistent focus for accessibility on mobile */
+  /* Strong focus for accessibility */
   .btn:focus-visible, .search-button:focus-visible, .searchfield:focus-visible { outline: 3px solid #2d6cdf; outline-offset: 2px; }
 
-  /* Nudge content below the menu a touch to ensure search is visible */
-  .mainpage { padding-top: .25rem; }
-}
 
-/* Mobile: tighten menu button spacing so the search input is visible */
-@media (max-width: 768px) {
-  /* перекриває layout.css, бо site.css підключено пізніше */
-  .navmelody {
-    margin: .15rem auto !important;
-    padding: .35rem .6rem !important;
-    border-width: 1px !important;
-    font-size: 1.25rem !important;
+  body.home .mainpage { padding-top: 0.75rem; }
+
+  /* When navbar is expanded, add a bit more spacing to main content */
+  #mainNavbar.show ~ .container,
+  #mainNavbar.collapsing ~ .container,
+  #mainNavbar.show ~ .mainpage,
+  #mainNavbar.collapsing ~ .mainpage {
+    margin-top: .5rem;
   }
-}
-
-/* Option: якщо навіть після ущільнення інпут пошуку частково перекривається — опустити блоковий контент трохи вниз */
-@media (max-width: 768px) {
-  .mainpage { padding-top: .25rem; }
 }
 
 

@@ -229,3 +229,11 @@
   .navmelody:focus,
   .navmelody:active { background-color: var(--brand-mobile-button) !important; color: var(--text-dark) !important; }
 }
+
+/* Center logo inside its container */
+#logocontainer {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* center the brand/logo horizontally */
+}
+#logocontainer .imgcontainer { margin: 0 !important; }
