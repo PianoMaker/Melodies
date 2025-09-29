@@ -144,8 +144,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    //кнопка "Зберегти" (лише коли є відповідні елементи)
+    //кнопка "Зберегти" (Create) або "попередній перегляд" (Search)
     if (createMIDIButton && titleInput && selectAuthor && submitMelodyBtn) {
+        // Create page behavior
         createMIDIButton.addEventListener('click', function (event) {
             event.preventDefault();
             var unique = checkIfunique();
@@ -161,6 +162,16 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             else alert("Мелодія даного автора з такою назвою вже існує");
 
+        });
+    } else if (createMIDIButton) {
+        // Fallback для сторінок без title/author (наприклад, Search)
+        createMIDIButton.addEventListener('click', function (event) {
+            // Не відміняємо submit, просто встановлюємо Keys перед відправкою
+            if (keysInput_save) keysInput_save.value = pianodisplay.value;
+            console.log("Preview submit with Keys:", keysInput_save ? keysInput_save.value : '(no element)');
+            // якщо потрібно, можна вручну сабмітнути, але кнопка type=submit вже зробить це
+            // const melodyForm = document.getElementById('melodyForm');
+            // if (melodyForm) melodyForm.submit();
         });
     }
 
