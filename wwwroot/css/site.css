@@ -14,6 +14,7 @@
     --radius-lg: 12px;
     --shadow-1: 0 1px 2px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.08);
     --shadow-inset: 0 1px 2px rgba(0,0,0,.12) inset;
+    --btnheight: 40px;
 }
 
 
@@ -69,6 +70,51 @@ a.link-light:hover {
     color: yellow !important;
 }
 
+
+/* ГОЛОВНА */
+
+/* Надпис на головній сторінці "Знайди схожу мелодію" */
+.homepagetitle {
+    font-size: 40px;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: linear-gradient(45deg, #ff6347, #ff8c00, #ffcc00);
+    color: #fff5e1;
+    margin: 25px 25px 20px 10px;
+    transform: rotate(-2deg);
+    padding: 10px;
+    display: inline-block;
+    border-radius: 10px;
+    animation: glow 1.2s infinite alternate;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Надпис Мелодії з усього світу на одному сайті*/
+.homepagesubtitle {
+    color: #5a3d1c; /* Темно-коричневий */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    font-size: 1.2em;
+}
+
+/* лівий контейнер*/
+#mainpageleftcontainer {
+    min-width: 390px;
+}
+
+/* поле пошуку */
+.searchfield {
+    width: 250px;
+    height: var(--btnheight);
+}
+
+
+/* КНОПКИ */
+
+.btn {
+    height: var(--btnheight);
+}
+
 /* Make outline-dark buttons hover in dark red (match navbar) */
 .btn-outline-dark.light-background:hover,
 .btn-outline-dark.light-background:focus {
@@ -101,20 +147,8 @@ a.link-light:hover {
         outline-offset: 2px;
     }
 
-/*кнпоки вибору тривалостей для вводу мелодій*/
-.durbtn {
-    width: 40px;
-    height: 40px;
-    border: 1px solid black;
-    border-radius: 2px;
-    margin: 5px;
-    transition: background-color 0.3s ease;
-}
 
-    .durbtn img {
-        height: 30px;
-        vertical-align: top;
-    }
+
 
 /* підсвічує меню   */
 .highlight {
@@ -180,6 +214,11 @@ label, .form-label, .col-form-label {
 }
 
 
+.bg-yellow {
+    background-color: yellow;
+}
+
+
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
@@ -187,10 +226,6 @@ label, .form-label, .col-form-label {
 .btn-light {
     transition: linear 0.5s;
     z-index: 3;
-}
-
-.bg-yellow {
-    background-color: yellow;
 }
 
 
@@ -201,11 +236,11 @@ label, .form-label, .col-form-label {
 }
 
 .btn-compact-40 {
-    min-height: 40px;
+    min-height: var(--btnheight);
     display: inline-flex;
     align-items: center;
     line-height: 1.1;
-    padding-top: .125rem; 
+    padding-top: .125rem;
     padding-bottom: .125rem;
     font-size: 1rem; /* larger text on compact buttons */
 }
@@ -305,12 +340,15 @@ table, th, td {
 
 
 
+/* ГОЛОВНА СТОРІНКА */
+/* частина зі слоном */
 .mainpage {
     height: 100%;
     background: linear-gradient(217deg, rgba(255,100,100,.8), rgba(255,100,0,0) 70.71%), linear-gradient(127deg, rgba(255,255,100,.8), rgba(255,255,0,0) 70.71%), linear-gradient(336deg, rgba(100,100,255,.8), rgba(255,255,255,0) 70.71%);
     margin: 0;
 }
 
+/* сирпінка файлів*/
 .filesbox{
 
     border: 1px solid gray;
@@ -328,17 +366,6 @@ table, th, td {
 https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     */
 
-
-
-.notestaff {
-    margin: 3px;
-}
-
-
-.notestaff-container {
-    position: absolute;
-    z-index: 2;
-}
 
 .notescontainer {
     font-size: 0.8em;
@@ -542,6 +569,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     height: 350px
 }
 
+/* біле тло контейнерів */
 .addcontainer, .infocontainer, .searchcontainer, .searchleftcontainer, .searchrightcontainer {
     background: #fffcd1;
 }
@@ -558,15 +586,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     flex: 1 2 100px;
 }
 
-#pianoroll {
-    position: relative;
-    width: 800px;
-    height: 200px;
-
-    font-size: 0;
-    padding-left: 10px;
-}
-
 
 h1 {
     font-size: 1.6em; /* was 1.3em */
@@ -574,20 +593,6 @@ h1 {
 
 p {
     font-size: 1em; /* was 0.9em */
-}
-
-#transpose-controls {
-    display: flex; /* важливо для justify-content */
-    justify-content: start;
-    align-items: center;
-    width: 800px;
-    margin-bottom: 20px;
-    padding: 5px;
-    border: 1px solid black;
-    gap: 10px; /* відступ між кнопками */
-    background-color: #f9f9cc; /* необов’язково, для кращої видимості */
-    border-radius: 8px; /* необов’язково, для естетики */
-    font-size: 0.8em !important;
 }
 
 
@@ -602,16 +607,6 @@ p {
         width: 100%;
     }
 
-   
-
-
-    .notesinfo{
-        width:65vh;
-    }
-
-  
-
-
 }
 
 @media (max-width: 768px) {
@@ -623,25 +618,15 @@ p {
     .searchleftcontainer {
         width: 100%;
     }
-
-   
-
-
-    .notesinfo{
-        width:65vh;
-    }
-
-   
-
 }
 
-/* Consolidated mobile rules: single @media block for ≤768px. Removed previous duplicates */
+/* ДЛЯ МОБІЛЬНИХ ЕКРАНІВ */
 @media (max-width: 768px) {
   /* Layout helpers */
   .d-flex { flex-direction: column; align-items: center; }
   .w-25, .w-75 { width: 100% !important; }
 
-  /* Navbar menu buttons spacing/size (visuals come from layout.css) */
+  /* навігаційна смуга */
   .navmelody {
     display: block;
     text-align: center;
@@ -656,15 +641,49 @@ p {
   .smallfont { font-size: 0.7em !important; color: darkslategrey; }
 
   /* Search form layout */
-  .search-form { display: flex; flex-direction: column; align-items: stretch; gap: .5rem; }
-  .search-form .searchfield { width: 100%; min-height: 48px; border-radius: var(--radius-lg); border: 2px solid rgba(0,0,0,.15); box-shadow: var(--shadow-inset); }
-  .search-form .searchfield:focus { border-color: var(--brand-red); outline: 3px solid rgba(189, 0, 0, .2); outline-offset: 2px; }
+  .search-form 
+  { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: stretch; 
+      gap: .5rem; 
+
+  }
+  .search-form .searchfield 
+  { 
+      width: 100%; 
+      min-height: 48px; 
+      border-radius: var(--radius-lg); 
+      border: 2px solid rgba(0,0,0,.15); 
+      box-shadow: var(--shadow-inset); 
+
+  }
+  .search-form .searchfield:focus 
+  { 
+      border-color: var(--brand-red); 
+      outline: 3px solid rgba(189, 0, 0, .2); 
+      outline-offset: 2px; 
+
+  }
+
   .search-form .search-button { width: 100%; min-height: 48px; border-radius: var(--radius-lg); background-color: var(--brand-mobile-button) !important; border: 2px solid rgba(0,0,0,.05); color: var(--text-dark) !important; box-shadow: var(--shadow-1); display: inline-flex; align-items: center; justify-content: center; gap: .5rem; }
   .search-form .search-button:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
   .search-form-notes { display: none !important; }
 
   /* Right side login/status area */
-  .rightcontainer { background-image: none !important; background: none !important; background-color: transparent !important; height: auto !important; width: 100% !important; margin-left: auto; margin-right: auto; max-width: 26rem; }
+  .rightcontainer 
+  { 
+      background-image: none !important; 
+      background: none !important; 
+      background-color: transparent !important; 
+      height: auto !important; 
+      width: 100% !important; 
+      margin-left: auto; 
+      margin-right: auto; 
+      max-width: 26rem; 
+
+  }
+
   /* Mobile: specific styles for signed-in status and exit buttons scoped to #signedUser */
   #signedUser {
     background-color: var(--brand-mobile-button) !important;
@@ -685,7 +704,12 @@ p {
   body::after { opacity: .12; }
 
   /* Strong focus for accessibility */
-  .btn:focus-visible, .search-button:focus-visible, .searchfield:focus-visible { outline: 3px solid #2d6cdf; outline-offset: 2px; }
+  .btn:focus-visible, .search-button:focus-visible, .searchfield:focus-visible 
+  { 
+      outline: 3px solid #2d6cdf; 
+      outline-offset: 2px; 
+
+  }
 
 
   mainpage { padding-top: 0.75rem; }

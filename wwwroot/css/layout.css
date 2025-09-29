@@ -2,6 +2,21 @@
     overflow: hidden;
 }
 
+/* Навігаційна стрічка */
+#navbarstrip {
+    --nav-height: 75px; /* ВИСОТА */
+    height: var(--nav-height);
+}
+
+/* ЛОГО */
+.logoimage {
+    position: static;
+    height: var(--nav-height);
+    max-height: var(--nav-height);
+    width: auto;
+    display: block;
+}
+
 /*смуга на горі */
 .bg-sky {
     /*background: linear-gradient(90deg, rgba(100,100,255,.8), rgba(255,120,120,.8) 15%, rgba(150,150,255,.8));*/
@@ -11,37 +26,20 @@
     z-index: 1;
 }
 
-/* Define a single navbar height and use it everywhere so the active highlight can fill 100% */
-#navbarstrip {
-    --nav-height: 64px;           /* desktop navbar height */
-    height: var(--nav-height);    /* fix navbar height */
-}
-
-.logoimage {
-    position: static;
-    height: var(--nav-height);    /* match navbar height */
-    max-height: var(--nav-height);
-    width: auto;
-    display: block;
-}
-
-.mainpage {
-    height: 100%;
-    background: linear-gradient(217deg, rgba(255,100,100,.8), rgba(255,100,0,0) 70.71%), linear-gradient(127deg, rgba(255,255,100,.8), rgba(255,255,0,0) 70.71%), linear-gradient(336deg, rgba(100,100,255,.8), rgba(255,255,255,0) 70.71%);
-    margin: 0;
-}
+ 
 
 .imgcontainer {
-    min-width: 200px;
-    max-width: 250px;
+    min-width: 300px;
+    max-width: 390px;
     display: flex;
-}
+} 
+   
 
-/* Надписи на горі */
+ Надписи на горі 
 .navbar-collapse,
 .navbar-nav,
 .navbar-nav .nav-item {
-    height: var(--nav-height); /* allow links to fill full navbar height */
+    height: var(--nav-height); 
 }
 
 .navbar-nav {
@@ -55,7 +53,7 @@
     text-align: center; /* Вирівнює текст по центру */
 }
 
-/* Normalize nav link spacing to match navbar height exactly */
+/* стрічка з посиланнмяи меню */
 .navmelody {
     font-size: 1.2em;
     margin: 0;
@@ -81,12 +79,13 @@
 /* Avoid legacy li.active backgrounds interfering in the navbar */
 #navbarstrip .nav-item.active { background: transparent !important; }
 
-/* Ховер */
+/* Наведення на елементи меню */
 .navmelody:hover {
   color: lemonchiffon !important;
   transform: scale(1.02) translateY(-1px);
 }
 
+/* Нижня стрічка */
 .footer {
     position: fixed;
     bottom: 0;
@@ -97,55 +96,11 @@
 
 .singerellamenue { font-family: sans-serif; letter-spacing: -0.2px; }
 
-/* Надпис на головній сторінці "Знайди схожу мелодію" */
-.homepagetitle {
-    font-size: 40px;
-    font-weight: bold;
-    text-transform: uppercase;
-    background: linear-gradient(45deg, #ff6347, #ff8c00, #ffcc00);
-    color: #fff5e1;
-    margin: 25px 25px 20px 10px;
-    transform: rotate(-2deg);
-    padding: 10px;
-    display: inline-block;
-    border-radius: 10px;
-    animation: glow 1.2s infinite alternate;
-    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.homepagesubtitle {
-    color: #5a3d1c; /* Темно-коричневий */
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-    font-size: 1.2em;
-}
-
-#mainpageleftcontainer {
-    min-width: 390px;
-}
 
 .searchfield {
     width: 250px;
 }
 
-/* Keep visual styles but remove bottom margin from nav links */
-.title {
-    padding: 0px 25px 0px 5px;
-    color: aliceblue !important;
-    font-size: 1.3em;
-    text-shadow: 2px 2px 2px darkviolet;
-    font-family: var(--heading-font);
-    text-decoration: none;
-    margin-bottom: 0;
-}
-
-.title {
-    font-size: 1.8em;
-    margin-bottom: 10px;
-    font-family: "Great Vibes", cursive;
-    font-weight: 500;
-    font-style: normal;
-}
 
 /* Cancel Bootstrap w-100 and avoid growing */
 #logo\&toggler {
@@ -171,7 +126,8 @@
 
 /* ДЛЯ МОБІЛОК */
 @media (max-width: 768px) {
-  /* Navbar height for mobile */
+  
+    /* Навігаційна стрічка */
   #navbarstrip {
     --nav-height: 50px;
     height: var(--nav-height) !important;

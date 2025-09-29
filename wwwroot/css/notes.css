@@ -1,5 +1,6 @@
 
-/* Notes lists and boxes */
+/* ФОРТЕПІАННА КЛАВІАТУРА */
+/* Контейнер для нот */
 .notescontainer {
     font-size: 0.8em;
     border: 1px solid gray;
@@ -8,6 +9,7 @@
 }
 .notescontainer h3 { font-size: 1em; }
 
+/* Контейнер для пошуку нот */
 .notebox {
     display: inline-block;
     font-size: 0.9em;
@@ -21,6 +23,7 @@
     border-radius: 5px;
     box-shadow: rgba(55,55,0,0.3) 2px 2px;
 }
+
 .NotesList {
     display: inline-block;
     width: 20%;
@@ -43,18 +46,44 @@
     background-color: rgba(255,255,200,0.9);
 }
 
-.noteanalysis { display: inline-block; background-color: lightgoldenrodyellow; padding: 5px; border: 1px solid darkred; }
 
-/* Duration buttons */
-.durbtn { width: 40px; height: 40px; border: 1px solid black; border-radius: 2px; margin: 5px; transition: background-color 0.3s ease; }
-.durbtn img { height: 30px; vertical-align: top; }
 
-/* Piano roll */
-#pianoroll { position: relative; width: 800px; height: 200px; font-size: 0; padding-left: 10px; }
-.whitepianobutton { height: 200px; width: 50px; margin: 0; gap: 0px; }
-.blackpianobutton { position: absolute; width: 40px; height: 110px; background: linear-gradient(black, darkslategrey); margin: 0; }
+/*Кнопки вибору тривалостей для вводу мелодій*/
+.durbtn {
+    width: 40px;
+    height: 40px;
+    border: 1px solid black;
+    border-radius: 2px;
+    margin: 5px;
+    transition: background-color 0.3s ease;
+}
 
-/* Black keys placement */
+    .durbtn img {
+        height: 30px;
+        vertical-align: top;
+    }
+
+
+/* Клавіатура */
+#pianoroll 
+{ 
+    position: relative; 
+    width: 800px; 
+    height: 200px; 
+    font-size: 0; 
+    padding-left: 10px; 
+
+}
+
+/* білі клавіші */
+.whitepianobutton 
+{ height: 200px; width: 50px; margin: 0; gap: 0px; }
+
+/* чорні клавіші */
+.blackpianobutton 
+{ position: absolute; width: 40px; height: 110px; background: linear-gradient(black, darkslategrey); margin: 0; }
+
+/* позиції для кожної чорної клавіші */
 .cis1 { top: 0px; left: 35px; }
 .dis1 { top: 0px; left: 90px; }
 .fis1 { top: 0px; left: 180px; }
@@ -81,11 +110,8 @@
     font-size: 0.8em !important;
 }
 
-/* Notation helpers */
-.notestaff { margin: 3px; }
-.notestaff-container { position: absolute; z-index: 2; }
 
-/* Responsive adjustments for notes UI */
+
 @media (max-width: 1024px) {
   .searchcontainer { display: block; }
   .searchleftcontainer { width: 100%; }
