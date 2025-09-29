@@ -6,6 +6,10 @@
     var melody = @Model.Melody;
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/notes.css" asp-append-version="true" />
+}
+
 <h1>@melody.Author.Name  @melody.Author.Name  - @melody.Title</h1>
 
 <h4></h4>

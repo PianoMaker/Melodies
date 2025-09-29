@@ -2,10 +2,14 @@
 @model Melodies25.Pages.Melodies.SearchModel
 
 @{
-    ViewData["Title"] = "Мелодія - пошук";
-    var melodyPattern = ViewData["melodypattern"] as List<string>;    
-    var matchedMelodiesCount = ViewData["matchedMelodiesCount"] as int? ?? 0;    
-    
+    ViewData["Title"] = "Мелодія - Пошук";
+    // Pull data prepared in the PageModel for display blocks below
+    var melodyPattern = ViewData["melodypattern"] as IEnumerable<string>;
+    var matchedMelodiesCount = ViewData["matchedMelodiesCount"] as int? ?? 0;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/notes.css" asp-append-version="true" />
 }
 
 <h1>Пошук</h1>

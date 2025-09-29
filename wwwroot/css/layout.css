@@ -120,8 +120,8 @@
     font-size: 1.2em;
 }
 
-.haslo {
-    min-width: 300px;
+#mainpageleftcontainer {
+    min-width: 390px;
 }
 
 .searchfield {
@@ -146,8 +146,20 @@
     font-weight: 500;
     font-style: normal;
 }
-    /* Анімація м'якого пульсування світла */
-    @keyframes glow {
+
+/* Cancel Bootstrap w-100 and avoid growing */
+#logo\&toggler {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    display: inline-flex !important;
+}
+/* Left logo container should not flex-grow on desktop */
+#logocontainer {
+    flex: 0 1 auto !important;
+}
+
+/* Анімація м'якого пульсування світла */
+@keyframes glow {
         from {
         text-shadow: 4px 4px 15px rgb(230 255 15), 0px 0px 16px rgb(255 247 11)
     }
@@ -168,27 +180,93 @@
   }
 
   /* Keep header items on one line */
-  #navbarstrip .container-fluid { display: flex; align-items: center; flex-wrap: nowrap !important; }
+  #navbarstrip .container-fluid {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap !important;
+  }
 
   /* Logo + brand */
-  .imgcontainer { min-width: auto; max-width: none; }
-  .logoimage { height: var(--nav-height) !important; max-height: var(--nav-height) !important; }
-  .navbar-brand { padding: 0 !important; margin-right: .5rem; display: flex; align-items: center; }
+  .imgcontainer {
+    min-width: auto;
+    max-width: none;
+  }
+  .logoimage {
+    height: var(--nav-height) !important;
+    max-height: var(--nav-height) !important;
+  }
+  .navbar-brand {
+    padding: 0 !important;
+    margin-right: .5rem;
+    display: flex;
+    align-items: center;
+  }
 
   /* Toggler */
-  .navbar-dark .navbar-toggler { border-color: rgba(255,255,255,.5); }
-  .navbar-dark .navbar-toggler { background-color: rgba(255,255,255,.08); border-color: rgba(255,255,255,.35); border-radius: 8px; padding: .35rem .5rem; }
-  .navbar-toggler { margin-left: auto; height: var(--nav-height) !important; display: flex; align-items: center; justify-content: center; }
-  .navbar-toggler-icon { width: 2rem; height: 2rem; background-size: 100% 100%; }
+  .navbar-dark .navbar-toggler {
+    border-color: rgba(255,255,255,.5);
+  }
+  .navbar-dark .navbar-toggler {
+    background-color: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.35);
+    border-radius: 8px;
+    padding: .35rem .5rem;
+  }
+  .navbar-toggler {
+    margin-left: auto;
+    height: var(--nav-height) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .navbar-toggler-icon {
+    width: 2rem;
+    height: 2rem;
+    background-size: 100% 100%;
+  }
 
   /* Collapse panel spacing + background */
-  .navbar-collapse { padding: .5rem 0 .75rem; width: 100%; height: auto; position: relative; background-color: #f0e68c; border-top: 1px solid rgba(0,0,0,.2); }
-  .navbar-collapse::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: url(../images/notes_bck.png); background-size: 300px 300px; background-repeat: repeat; opacity: .10; }
-  .navbar-collapse > * { position: relative; z-index: 1; }
+  .navbar-collapse {
+    padding: .5rem 0 .75rem;
+    width: 100%;
+    height: auto;
+    position: relative;
+    /*background-color: #f0e68c;*/
+    border-top: 1px solid rgba(0,0,0,.2);
+  }
+    .navbar-collapse::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background: url(../images/notes_bck.png);        
+        background-size: 300px 300px;
+        background-repeat: repeat;
+        opacity: .10;
+    }
+  .navbar-collapse > * {
+    position: relative;
+    z-index: 1;
+  }
 
   /* Stack nav items as buttons - yellow rounded rectangle */
-  .navbar-nav { flex-direction: column; align-items: center !important; width: 100%; padding: 0; height: auto; }
-  .nav-item { flex-grow: 0; text-align: center; height: auto !important; width: 100%; margin: 0; display: flex; justify-content: center; }
+  .navbar-nav {
+    flex-direction: column;
+    align-items: center !important;
+    width: 100%;
+    padding: 0;
+    height: auto;
+  }
+  .nav-item {
+    flex-grow: 0;
+    text-align: center;
+    height: auto !important;
+    width: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+  }
   .navmelody {
     box-sizing: border-box;
     font-size: 1.3rem;
@@ -208,34 +286,66 @@
   /* Keep the same yellow on interaction on mobile */
   .navmelody:hover,
   .navmelody:focus,
-  .navmelody:active { background-color: var(--brand-mobile-button) !important; color: var(--text-dark) !important; text-decoration: none; transform: none !important; }
+  .navmelody:active {
+    background-color: var(--brand-mobile-button) !important;
+    color: var(--text-dark) !important;
+    text-decoration: none;
+    transform: none !important;
+  }
   .navbar-nav .nav-item.active > .nav-link,
-  .navbar-nav .nav-link.active { background: var(--brand-mobile-button) !important; color: var(--text-dark) !important; border-radius: 12px; border-color: rgba(255,255,255,0.95); }
+  .navbar-nav .nav-link.active {
+    background: var(--brand-mobile-button) !important;
+    color: var(--text-dark) !important;
+    border-radius: 12px;
+    border-color: rgba(255,255,255,0.95);
+  }
 
   /* Mobile: navbar uses solid brand-red background */
-  #navbarstrip.bg-sky { background: var(--brand-red) !important; background-image: none !important; }
+  #navbarstrip.bg-sky {
+    background: var(--brand-red) !important;
+    background-image: none !important;
+  }
 
-  /* Make homepage title calmer on mobile */
-  .homepagetitle { background: none !important; animation: none !important; box-shadow: none !important; transform: none !important; border-radius: 0 !important; font-size: 1.6rem; margin: 12px 12px 6px 12px; padding: 0; color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,.25); letter-spacing: .5px; line-height: 1.2; }
+  /* ЗНАЙДИ СХОЖУ МЕЛОДІЮ */
+  .homepagetitle 
+  { 
+      background: none !important; 
+      animation: none !important; 
+      box-shadow: none !important; 
+      transform: none !important; 
+      border-radius: 0 !important; 
+      font-size: 1.6rem; 
+      margin: 12px 12px 6px 12px; 
+      padding: 0; 
+      color: #ffffff; 
+      text-shadow: 0 1px 2px rgba(0,0,0,.25); 
+      letter-spacing: .5px; 
+      line-height: 1.2; 
 
-  /* Hide the homepage subtitle on mobile */
-  .homepagesubtitle { display: none !important; }
+  }
+
+  /* Мелодії з усього світу в одному сайті! */
+  .homepagesubtitle {
+    display: none !important;
+  }
+
+  #mainpageleftcontainer {
+    min-width: 0 !important;
+  }
 }
 
-/* Desktop and larger: keep #logo&toggler no wider than its left logo container */
-@media (min-width: 769px) {
-  /* Cancel Bootstrap w-100 and avoid growing */
-  #logo\&toggler { width: auto !important; flex: 0 0 auto !important; display: inline-flex !important; }
-  /* Left logo container should not flex-grow on desktop */
-  #logocontainer { flex: 0 1 auto !important; }
-}
 
 /* Smallest screens extra tweak */
 @media (max-width: 512px) {
-  .navmelody { margin: .2rem auto; }
+  .navmelody {
+    margin: .2rem auto;
+  }
   .navmelody:hover,
   .navmelody:focus,
-  .navmelody:active { background-color: var(--brand-mobile-button) !important; color: var(--text-dark) !important; }
+  .navmelody:active {
+    background-color: var(--brand-mobile-button) !important;
+    color: var(--text-dark) !important;
+  }
 }
 
 /* Center logo inside its container */
@@ -244,4 +354,8 @@
   align-items: center;
   justify-content: center; /* center the brand/logo horizontally */
 }
-#logocontainer .imgcontainer { margin: 0 !important; }
+#logocontainer .imgcontainer {
+  margin: 0 !important;
+}
+
+
