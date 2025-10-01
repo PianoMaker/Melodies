@@ -622,106 +622,163 @@ p {
 
 /* ДЛЯ МОБІЛЬНИХ ЕКРАНІВ */
 @media (max-width: 768px) {
-  /* Layout helpers */
-  .d-flex { flex-direction: column; align-items: center; }
-  .w-25, .w-75 { width: 100% !important; }
+    /* Layout helpers */
+    .d-flex {
+        flex-direction: column;
+        align-items: center;
+    }
 
-  /* навігаційна смуга */
-  .navmelody {
-    display: block;
-    text-align: center;
-    width: clamp(14rem, 92vw, 26rem);
-    font-size: 1.25rem !important;
-    line-height: 1.2;
-    margin: .15rem auto !important;
-    padding: .35rem .6rem !important;
-    min-height: 40px;
-    border-width: 1px !important;
-  }
-  .smallfont { font-size: 0.7em !important; color: darkslategrey; }
+    .w-25, .w-75 {
+        width: 100% !important;
+    }
 
-  /* Search form layout */
-  .search-form 
-  { 
-      display: flex; 
-      flex-direction: column; 
-      align-items: stretch; 
-      gap: .5rem; 
+    /* навігаційна смуга */
+    .navmelody {
+        display: block;
+        text-align: center;
+        width: clamp(14rem, 92vw, 26rem);
+        font-size: 1.25rem !important;
+        line-height: 1.2;
+        margin: .15rem auto !important;
+        padding: .35rem .6rem !important;
+        min-height: 40px;
+        border-width: 1px !important;
+    }
 
-  }
-  .search-form .searchfield 
-  { 
-      width: 100%; 
-      min-height: 48px; 
-      border-radius: var(--radius-lg); 
-      border: 2px solid rgba(0,0,0,.15); 
-      box-shadow: var(--shadow-inset); 
+    .smallfont {
+        font-size: 0.7em !important;
+        color: darkslategrey;
+    }
 
-  }
-  .search-form .searchfield:focus 
-  { 
-      border-color: var(--brand-red); 
-      outline: 3px solid rgba(189, 0, 0, .2); 
-      outline-offset: 2px; 
+    /* Search form layout */
+    .search-form {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: .5rem;
+    }
 
-  }
+        .search-form .searchfield {
+            width: 100%;
+            min-height: 48px;
+            border-radius: var(--radius-lg);
+            border: 2px solid rgba(0,0,0,.15);
+            box-shadow: var(--shadow-inset);
+        }
 
-  .search-form .search-button { width: 100%; min-height: 48px; border-radius: var(--radius-lg); background-color: var(--brand-mobile-button) !important; border: 2px solid rgba(0,0,0,.05); color: var(--text-dark) !important; box-shadow: var(--shadow-1); display: inline-flex; align-items: center; justify-content: center; gap: .5rem; }
-  .search-form .search-button:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
-  .search-form-notes { display: none !important; }
+            .search-form .searchfield:focus {
+                border-color: var(--brand-red);
+                outline: 3px solid rgba(189, 0, 0, .2);
+                outline-offset: 2px;
+            }
 
-  /* Right side login/status area */
-  .rightcontainer 
-  { 
-      background-image: none !important; 
-      background: none !important; 
-      background-color: transparent !important; 
-      height: auto !important; 
-      width: 100% !important; 
-      margin-left: auto; 
-      margin-right: auto; 
-      max-width: 26rem; 
+        .search-form .search-button {
+            width: 100%;
+            min-height: 48px;
+            border-radius: var(--radius-lg);
+            background-color: var(--brand-mobile-button) !important;
+            border: 2px solid rgba(0,0,0,.05);
+            color: var(--text-dark) !important;
+            box-shadow: var(--shadow-1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+        }
 
-  }
+            .search-form .search-button:active {
+                transform: translateY(1px);
+                box-shadow: 0 1px 2px rgba(0,0,0,.08);
+            }
 
-  /* Mobile: specific styles for signed-in status and exit buttons scoped to #signedUser */
-  #signedUser {
-    background-color: var(--brand-mobile-button) !important;
-    border-color: var(--brand-mobile-button) !important;
-    color: var(--text-dark) !important;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-1);
-    border: 2px solid rgba(0,0,0,.05);
-    width: clamp(14rem, 92vw, 26rem);
-    margin-left: auto; margin-right: auto;
-    display: inline-flex; justify-content: center; align-items: center;
-  }
+    .search-form-notes {
+        display: none !important;
+    }
 
-  .rightcontainer.align-items-end { align-items: center !important; }
+    /* Right side login/status area */
+    .rightcontainer {
+        background-image: none !important;
+        background: none !important;
+        background-color: transparent !important;
+        height: auto !important;
+        width: 100% !important;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 26rem;
+    }
+
+    /* Mobile: specific styles for signed-in status and exit buttons scoped to #signedUser */
+    #signedUser {
+        background-color: var(--brand-mobile-button) !important;
+        border-color: var(--brand-mobile-button) !important;
+        color: var(--text-dark) !important;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-1);
+        border: 2px solid rgba(0,0,0,.05);
+        width: clamp(14rem, 92vw, 26rem);
+        margin-left: auto;
+        margin-right: auto;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .rightcontainer.align-items-end {
+        align-items: center !important;
+    }
 
 
-  /* Background pattern softer on mobile */
-  body::after { opacity: .12; }
+    /* Background pattern softer on mobile */
+    body::after {
+        opacity: .12;
+    }
 
-  /* Strong focus for accessibility */
-  .btn:focus-visible, .search-button:focus-visible, .searchfield:focus-visible 
-  { 
-      outline: 3px solid #2d6cdf; 
-      outline-offset: 2px; 
-
-  }
+    /* Strong focus for accessibility */
+    .btn:focus-visible, .search-button:focus-visible, .searchfield:focus-visible {
+        outline: 3px solid #2d6cdf;
+        outline-offset: 2px;
+    }
 
 
-  mainpage { padding-top: 0.75rem; }
+    mainpage {
+        padding-top: 0.75rem;
+    }
 
- .commoncontainer { 
-    padding-top: 12rem !important; /* ~21px at 14px base font-size */
-  }
+    .commoncontainer {
+        padding-top: 12rem !important; /* ~21px at 14px base font-size */
+    }
+
+
 }
 
+/* Half-page responsive container: 100% below 992px, 50% from 992px up */
+.halfpagecontainer {
+    flex: 0 0 auto;
+    width: 100%;
+}
 
+@media (min-width: 992px) {
+    .halfpagecontainer {
+        flex: 0 0 auto;
+        width: 50%;
+    }
+}
 
+@media (max-width: 480px) {
+    .ifnarrowscreen {
+        display: none;
+    }
+}
 
+/* File info text size: slightly smaller on tablets and phones */
+.fileinfo {
+    font-size: 1rem; /* базово */
+}
 
+@media (max-width: 768px) {
+    .fileinfo { font-size: 0.95rem; }
+}
 
-
+@media (max-width: 576px) {
+    .fileinfo { font-size: 0.9rem; }
+}
