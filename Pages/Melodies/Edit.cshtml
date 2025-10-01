@@ -46,6 +46,7 @@
                 </button>
                 
             }
+            <!--ТОНАЛЬНІСТЬ-->
             <div class="form-group">
                 <label asp-for="Melody.Tonality" class="control-label">Тональність (MIDI-файлу)</label>
                 <select asp-for="Melody.Tonality" class="form-control" asp-items="ViewBag.Tonalities" >
@@ -53,12 +54,14 @@
                 </select>
                 <span asp-validation-for="Melody.Tonality" class="text-danger"></span>
             </div>
+            <button id="getTonality" type="button" class="btn btn-outline-dark light-background">Визначити за MIDI-файлом</button>
+            <!--ТЕМП-->
             <div class="form-group">
                 <label asp-for="Melody.MidiMelody.Tempo" class="control-label">Темп</label>
                 <input id="tempoChange" asp-for="@Model.Tempo" class="form-control" />
                 <input type="hidden" asp-for="@Model.Tempocorrected" id="tempoChangeHidden" />                
                 <span asp-validation-for="@Model.Tempo" class="text-danger"></span>
-            </div>
+            </input>
             
             <div class="form-group">
                 <label asp-for="Melody.Title" class="control-label">Назва</label>
@@ -101,6 +104,5 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
-<script src="~/js/editMelody.js">
-</script>
+    <script src="~/js/editMelody.js"></script>
+}</script>

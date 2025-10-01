@@ -95,6 +95,41 @@ namespace Melodies25.Pages.Melodies
             return midifile;
         }
 
+        // AJAX: Detect tonality from MIDI Key Signature meta-event and persist to DB
+        public async Task<JsonResult> OnGetDetectTonalityAsync(int id)
+        {
+            try
+            {
+                var melody = await _context.Melody.FirstOrDefaultAsync(m => m.ID == id);
+                if (melody == null)
+                {
+                    return new JsonResult(new { ok = false, error = "melody_not_found" });
+                }
+                if (string.IsNullOrWhiteSpace(melody.FilePath))
+                {
+                    return new JsonResult(new { ok = false, error = "no_file" });
+                }
+                var fullPath = Path.Combine(_environment.WebRootPath, "melodies", melody.FilePath);
+                var tonality = MidiKeySignatureDetector.TryDetectTonality(fullPath);
+                if (string.IsNullOrWhiteSpace(tonality))
+                {
+                    return new JsonResult(new { ok = false, error = "no_keysig" });
+                }
+
+                // Persist detected tonality
+                melody.Tonality = tonality;
+                _context.Attach(melody);
+                _context.Entry(melody).Property(x => x.Tonality).IsModified = true;
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new { ok = true, tonality });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { ok = false, error = ex.Message });
+            }
+        }
+
         public async Task<IActionResult> OnPostAsync(IFormFile? fileupload)
         {
             MessageL(COLORS.yellow, "MELODIES/EDIT OnPost");
@@ -238,7 +273,7 @@ namespace Melodies25.Pages.Melodies
 
                 if (ifeligible)
                 {
-                    MessageL(COLORS.standart, $"генеруємо mp3 з оригіналу (не змінюючи його), тимчасові копії всередині PrepareMp3Async");
+                    MessageL(COLORS.standart, $"генеруємо mp3 з оригінала (не змінюючи його), тимчасові копії всередині PrepareMp3Async");
                     try
                     {
                         // Генерація MP3 на основі оригінального імені файлу (без префіксів)
