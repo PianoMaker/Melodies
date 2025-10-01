@@ -79,13 +79,13 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
-        private async Task GetMidiMelody(Melody melody)
-        {
-            MidiFile midifile = GetMidiFile(melody);
-            Globals.lng = Music.LNG.uk;
-            Globals.notation = Music.Notation.eu;
-            melody.MidiMelody = await MidiConverter.GetMelodyFromMidiAsync(midifile);
-        }
+        //private async Task GetMidiMelody(Melody melody)
+        //{
+        //    MidiFile midifile = GetMidiFile(melody);
+        //    Globals.lng = Music.LNG.uk;
+        //    Globals.notation = Music.Notation.eu;
+        //    melody.MidiMelody = await MidiConverter.GetMelodyFromMidiAsync(midifile);
+        //}
 
         private MidiFile GetMidiFile(Melody melody)
         {
@@ -98,6 +98,7 @@ namespace Melodies25.Pages.Melodies
         // AJAX: Detect tonality from MIDI Key Signature meta-event and persist to DB
         public async Task<JsonResult> OnGetDetectTonalityAsync(int id)
         {
+            MessageL(COLORS.yellow, "MELODIES/DETECT TONALITY");
             try
             {
                 var melody = await _context.Melody.FirstOrDefaultAsync(m => m.ID == id);
@@ -123,6 +124,38 @@ namespace Melodies25.Pages.Melodies
                 await _context.SaveChangesAsync();
 
                 return new JsonResult(new { ok = true, tonality });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { ok = false, error = ex.Message });
+            }
+        }
+
+        // AJAX: change to parallel (relative) tonality and persist
+        public async Task<JsonResult> OnGetParallelTonalityAsync(int id)
+        {
+            MessageL(COLORS.yellow, "MELODIES/RELATIVE TONALITY");
+            try
+            {
+                var melody = await _context.Melody.FirstOrDefaultAsync(m => m.ID == id);
+                if (melody == null)
+                    return new JsonResult(new { ok = false, error = "melody_not_found" });
+
+                if (string.IsNullOrWhiteSpace(melody.Tonality))
+                    return new JsonResult(new { ok = false, error = "no_tonality" });
+
+                // Побудувати тональність з рядка і перейти до паралельної (VI ступінь)
+                var current = new Music.Tonalities(melody.Tonality);
+                current.Transport(6); // dur <-> moll (relative/паралельна)
+
+                var newTonality = $"{current.Name()}-{(current.Mode == Music.MODE.dur ? "dur" : "moll")}";
+
+                melody.Tonality = newTonality;
+                _context.Attach(melody);
+                _context.Entry(melody).Property(x => x.Tonality).IsModified = true;
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new { ok = true, tonality = newTonality });
             }
             catch (Exception ex)
             {

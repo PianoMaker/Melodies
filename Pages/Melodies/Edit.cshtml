@@ -9,12 +9,12 @@
 @section Styles {
     <link rel="stylesheet" href="~/css/notes.css" asp-append-version="true" />
 }
-
+<div class="row infocontainer">
 <h1>@melody.Author.Name  @melody.Author.Name  - @melody.Title</h1>
 
 <h4></h4>
 <hr />
-<div class="row infocontainer">
+
     <div class="col-md-4">
         <form method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -54,7 +54,10 @@
                 </select>
                 <span asp-validation-for="Melody.Tonality" class="text-danger"></span>
             </div>
-            <button id="getTonality" type="button" class="btn btn-outline-dark light-background">Визначити за MIDI-файлом</button>
+            <div style="display:flex; gap:8px; align-items:center">
+                <button id="getTonality" type="button" class="btn btn-outline-dark light-background">Визначити<span class="ifwidescreen"> за MIDI-файлом</span></button>
+            <button id="paralellTonality" type="button" class="btn btn-outline-dark light-background">паралельна</button>
+            </div>
             <!--ТЕМП-->
             <div class="form-group">
                 <label asp-for="Melody.MidiMelody.Tempo" class="control-label">Темп</label>
