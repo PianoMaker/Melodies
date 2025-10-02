@@ -16,6 +16,7 @@ using static Music.MidiConverter;
 using static Melodies25.Utilities.PrepareFiles;
 using Melody = Melodies25.Models.Melody;
 using System.IO;
+using System.Diagnostics;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -134,9 +135,11 @@ namespace Melodies25.Pages.Melodies
         // AJAX: change to parallel (relative) tonality and persist
         public async Task<JsonResult> OnGetParallelTonalityAsync(int id)
         {
-            MessageL(COLORS.yellow, "MELODIES/RELATIVE TONALITY");
+            MessageL(COLORS.yellow, "MELODIES/RELATIVE TONALITY starts");
             try
             {
+
+                var sw = Stopwatch.StartNew();
                 var melody = await _context.Melody.FirstOrDefaultAsync(m => m.ID == id);
                 if (melody == null)
                     return new JsonResult(new { ok = false, error = "melody_not_found" });
@@ -144,21 +147,40 @@ namespace Melodies25.Pages.Melodies
                 if (string.IsNullOrWhiteSpace(melody.Tonality))
                     return new JsonResult(new { ok = false, error = "no_tonality" });
 
-                // Побудувати тональність з рядка і перейти до паралельної (VI ступінь)
-                var current = new Music.Tonalities(melody.Tonality);
-                current.Transport(6); // dur <-> moll (relative/паралельна)
+                var tonStr = (melody.Tonality ?? "").Trim()
+                    .Replace('\u2013','-').Replace('\u2014','-').Replace('\u2212','-')
+                    .Replace('–','-').Replace('—','-').Replace('−','-')
+                    .Replace("  "," ");
+                MessageL(COLORS.gray, $"[normalized tonality='{tonStr}' ({sw.ElapsedMilliseconds} ms)");
 
-                var newTonality = $"{current.Name()}-{(current.Mode == Music.MODE.dur ? "dur" : "moll")}";
+                var current = new Music.Tonalities(tonStr);
+                MessageL(COLORS.gray, $"parsed Tonalities ({sw.ElapsedMilliseconds} ms)");
+
+                if (current.Mode == Music.MODE.dur) current.Transport(6); else current.Transport(3);
+                MessageL(COLORS.gray, $"after transport ({sw.ElapsedMilliseconds} ms)");
+
+                int sf = current.Keysignatures();
+                int idx = sf + 7;
+                string[] majors = { "Ces","Ges","Des","As","Es","B","F","C","G","D","A","E","H","Fis","Cis" };
+                string[] minors = { "as","es","b","f","c","g","d","a","e","h","fis","cis","gis","dis","ais" };
+                string name = current.Mode == Music.MODE.dur
+                    ? (idx >= 0 && idx < majors.Length ? majors[idx] : current.Name())
+                    : (idx >= 0 && idx < minors.Length ? minors[idx] : current.Name());
+
+                var newTonality = $"{name}-{(current.Mode == Music.MODE.dur ? "dur" : "moll")}";
+                MessageL(COLORS.purple, $"new tonality is {newTonality}");
 
                 melody.Tonality = newTonality;
                 _context.Attach(melody);
                 _context.Entry(melody).Property(x => x.Tonality).IsModified = true;
                 await _context.SaveChangesAsync();
+                MessageL(COLORS.green, $"parsed Tonalities ({sw.ElapsedMilliseconds} ms)");
 
                 return new JsonResult(new { ok = true, tonality = newTonality });
             }
             catch (Exception ex)
             {
+                MessageL(COLORS.red, $"error: {ex}");
                 return new JsonResult(new { ok = false, error = ex.Message });
             }
         }
@@ -409,6 +431,22 @@ namespace Melodies25.Pages.Melodies
             {
                 try
                 {
+                    // Update MIDI key signature based on selected tonality
+                    if (!string.IsNullOrWhiteSpace(melody.Tonality))
+                    {
+                        var tonal = new Music.Tonalities(melody.Tonality);
+                        int sharps = tonal.Keysignatures(); // -7..+7
+                        var mode = tonal.Mode; // MODE.dur / MODE.moll
+
+                        var fullPath = Path.Combine(_environment.WebRootPath, "melodies", melody.FilePath);
+                        if (System.IO.File.Exists(fullPath))
+                        {
+                            var midi = new MidiFile(fullPath);
+                            MidiConverter.UpdateKeySignatureInMidiFile(midi, sharps, mode);
+                            MidiFile.Export(fullPath, midi.Events);
+                        }
+                    }
+
                     await PrepareMp3Async(_environment, melody.FilePath, false); // генеруємо з копією всередині
                 }
                 catch (Exception e)

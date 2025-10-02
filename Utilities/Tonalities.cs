@@ -86,37 +86,42 @@ namespace Music
         {
             if (tonality.Length < 4)
                 throw new IncorrectNote("impossible to determint input: " + tonality);
+
+            // Завжди парсимо тональності у європейській нотації (es/is, H/B)
+            notation = Notation.eu;
+
+            // Нормалізація тире (en/em/minus) і пробілів перед зниженням регістру
+            tonality = tonality.Trim()
+                .Replace('\u2013', '-') // en-dash
+                .Replace('\u2014', '-') // em-dash
+                .Replace('\u2212', '-') // minus sign
+                .Replace('–', '-')      // safety
+                .Replace('—', '-')      // safety
+                .Replace('−', '-')      // safety
+                .Replace("  ", " ");
+
+            // до нижнього регістру
             string temp = "";
             for (int i = 0; i < tonality.Length; i++)
-            {
-                temp += char.ToLower(tonality[i]);
-            }
+                temp += char.ToLowerInvariant(tonality[i]);
             tonality = temp;
 
             if (!tonality.EndsWith("dur") && !tonality.EndsWith("moll"))
-            {
                 throw new IncorrectNote("impossible to determint input: " + tonality);
-            }
 
             if (tonality.EndsWith("dur") && tonality.Substring(tonality.Length - 4, 1) != "-")
-            {
                 tonality = tonality.Insert(tonality.Length - 3, "-");
-            }
 
             if (tonality.EndsWith("moll") && tonality.Substring(tonality.Length - 5, 1) != "-")
-            {
                 tonality = tonality.Insert(tonality.Length - 4, "-");
-            }
 
             if (tonality[2] == '-' && tonality[3] == '-')
-            {
                 tonality = tonality.Remove(3, 1);
-            }
 
             if (tonality[3] == '-' && tonality[4] == '-')
-            {
                 tonality = tonality.Remove(3, 1);
-            }
+
+            // Більше не перетворюємо 'as' -> 'aes': Engine.key_to_pitch підтримує 's' у європейській нотації
 
             if (key_to_step(tonality.Substring(0, 1)) == -100 &&
                 key_to_step(tonality.Substring(0, 2)) == -100 &&
@@ -124,6 +129,7 @@ namespace Music
             {
                 throw new IncorrectNote("impossible to determint input: " + tonality);
             }
+
             return tonality;
         }
 

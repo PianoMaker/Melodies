@@ -515,8 +515,62 @@ namespace Music
         }
 
 
+        public static MidiEventCollection InsertKeySignatures(int sharps, MODE mode)
+        {
+            // Create a collection compatible with the rest of the MIDI utilities
+            var collection = new MidiEventCollection(Globals.MidiFileType, Globals.PPQN);
 
-        // Пошук одночасно взятих нот 
+            // MIDI Key Signature meta expects sf in range [-7..+7]
+            if (sharps > 7) sharps = 7;
+            if (sharps < -7) sharps = -7;
+
+            // 0 = major (dur), 1 = minor (moll)
+            int mi = (mode == MODE.moll) ? 1 : 0;
+
+            // Add Key Signature meta at time 0
+            var keySignature = new KeySignatureEvent(0, sharps, mi);
+            collection.AddEvent(keySignature, Globals.TrackNumber);
+
+            return collection;
+        }
+
+        public static void UpdateKeySignatureInMidiFile(MidiFile midiFile, int sharps, MODE mode)
+        {
+            MessageL(COLORS.olive, $"UpdateKeySignatures method, sharps = {sharps}, mode = {mode}");
+
+            // Clamp sf to MIDI range [-7..+7]
+            if (sharps > 7) sharps = 7;
+            if (sharps < -7) sharps = -7;
+
+            // 0 = major (dur), 1 = minor (moll)
+            int mi = (mode == MODE.moll) ? 1 : 0;
+
+            // Replace first existing Key Signature event if present
+            bool replaced = false;
+            foreach (var track in midiFile.Events)
+            {
+                for (int i = 0; i < track.Count; i++)
+                {
+                    if (track[i] is KeySignatureEvent)
+                    {
+                        var abs = track[i].AbsoluteTime;
+                        int absInt = abs > int.MaxValue ? int.MaxValue : (abs < int.MinValue ? int.MinValue : (int)abs);
+                        track[i] = new KeySignatureEvent(absInt, sharps, mi);
+                        replaced = true;
+                        break;
+                    }
+                }
+                if (replaced) break;
+            }
+
+            // If none existed, insert at the very beginning of the first track
+            if (!replaced)
+            {
+                midiFile.Events[0].Insert(0, new KeySignatureEvent(0, sharps, mi));
+            }
+        }
+
+        // Пошук одночасно взятиих нот 
         public static bool CheckForPolyphony(MidiFile midiFile)
         {
             foreach (var track in midiFile.Events)
@@ -651,6 +705,50 @@ namespace Music
 
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
