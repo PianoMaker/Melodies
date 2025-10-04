@@ -51,14 +51,14 @@ namespace Music
         {
 
             string name = EnterTonalityName(input);
-            string[] tokens = name.Split('-', ' '); // Розбиваємо рядок на токени за допомогою роздільників '-'' та ' '
-            string key = tokens[0]; // Отримуємо перший токен як ключ
-            string tempmode = tokens.Length > 1 ? tokens[1] : "dur"; // Отримуємо другий токен як лад, якщо відсутній - використовуємо мажор
+            string[] tokens = name.Split('-', ' '); 
+            string key = tokens[0]; 
+            string tempmode = tokens.Length > 1 ? tokens[1] : "dur"; 
 
-            step = (NOTES)key_to_step(key); // Отримуємо крок
-            int pitch = key_to_pitch(key); // Отримуємо висоту тона
-            alter = (ALTER)pitch_to_alter(step, pitch); // Отримуємо альтерацію якщо є
-            mode = (tempmode == "dur") ? MODE.dur : MODE.moll; // Визначаємо, чи мінорний лад
+            step = (NOTES)key_to_step(key); 
+            int pitch = key_to_pitch(key); 
+            alter = (ALTER)pitch_to_alter(step, pitch); 
+            mode = (tempmode == "dur") ? MODE.dur : MODE.moll; 
 
         }
 

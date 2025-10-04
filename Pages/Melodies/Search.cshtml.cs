@@ -59,6 +59,10 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public string Keys { get; set; }
 
+        // Search algorithm selection: "Substring" (default) or "Subsequence"
+        [BindProperty]
+        public string SearchAlgorithm { get; set; } = "Substring";
+
         public Music.Melody NewPattern { get; set; }
         internal string TempMidiFilePath { get; set; }
 
@@ -364,6 +368,7 @@ namespace Melodies25.Pages.Melodies
 
                 //Передаємо список введених нот 
                 ViewData["melodypattern"] = MelodyPattern.NotesList;
+                ViewData["searchAlgorithm"] = SearchAlgorithm;
                 GrayMessageL($"melodypattern = {MelodyPattern.NotesList}");
 
                 //Передаємо списки нот по кожній мелодії
@@ -416,20 +421,38 @@ namespace Melodies25.Pages.Melodies
             MessageL(COLORS.olive, "CompareMelodies method");
             var sw = new Stopwatch();
             sw.Start();
-            int[] patternShape = MelodyPattern.IntervalList.ToArray();
-            var filteredMelodies = new List<(Melody melody, int length)>();
 
-            MatchedMelodies.Clear();  // Очистимо перед новим пошуком
+            int[] patternShape = MelodyPattern.IntervalList.ToArray();
+            MatchedMelodies.Clear();
 
             foreach (var melody in Melody)
             {
                 if (melody.MidiMelody is null) continue;
 
                 var melodyshape = melody.MidiMelody.IntervalList.ToArray();
-                var (length, position) = LongestCommonSubstring(patternShape, melodyshape);                
+
+                int length = 0;
+                int position = -1;
+
+                switch (SearchAlgorithm?.ToLowerInvariant())
+                {
+                    case "subsequence":
+                        var (lcsLen, indices) = LongestCommonSubsequenceIndices(patternShape, melodyshape);
+                        length = lcsLen;
+                        position = indices.Count > 0 ? indices[0] : -1;
+                        break;
+
+                    case "substring":
+                    default:
+                        var (subLen, startPos) = LongestCommonSubstring(patternShape, melodyshape);
+                        length = subLen;
+                        position = startPos;
+                        break;
+                }
+
                 if (length >= minimummatch)
                 {
-                    length++; //рахуємо ноти, не інтервали  
+                    length++; // інтервалів + 1 нота
                     MatchedMelodies.Add((melody, length, position));
                 }
             }

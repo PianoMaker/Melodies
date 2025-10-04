@@ -18,7 +18,7 @@
     <!--ЛІВОРУЧ-->
 
     <div class="searchleftcontainer">
-        <form method="post" asp-page-handler="search">
+        <form method="post" asp-page-handler="search" id="metaSearchForm">
             <label>Автор</label>
             <input type="text" asp-for="Author" class="form-control w-75" placeholder="шукати серед усіх" />
 
@@ -50,12 +50,29 @@
             </select>
             <button type="submit" class="btn btn-primary">Пошук</button>
         </form>
+
     </div>
 
     <!--ПРАВОРУЧ-->
     <div class="searchrightcontainer">
         <!--КНОПКИ УПРАВЛІННЯ І Нотний рядок-->
         @await Html.PartialAsync("_pianoDisplay")
+
+        <!--режим пошуку-->
+        <div class="d-flex align-items-center gap-3 my-2">
+            <div class="form-check me-3">
+                <input class="form-check-input" type="radio" name="SearchAlgorithm"
+                       value="Substring" id="algSubstring" form="notesearchForm"
+                       @(Model.SearchAlgorithm?.Equals("Substring", StringComparison.OrdinalIgnoreCase) == true ? "checked" : null) />
+                <label class="form-check-label" for="algSubstring">Longest common substring</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="SearchAlgorithm"
+                       value="Subsequence" id="algSubsequence" form="notesearchForm"
+                       @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? "checked" : null) />
+                <label class="form-check-label" for="algSubsequence">Longest common subsequence</label>
+            </div>
+        </div>
 
         <!--МІЙ СТЕЙНВЕЙ-->
         @await Html.PartialAsync("_PianoKeys")

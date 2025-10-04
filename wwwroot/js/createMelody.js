@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let pianodisplay = document.getElementById("pianodisplay");
     const keysInput_save = document.getElementById("keysInput-save")
     const keysInput_search = document.getElementById("keysInput-search")
+    const searchAlgorithmInput = document.getElementById("searchAlgorithmInput");
     const createMIDIButton = document.getElementById('createMIDI');//кнопка "зберегти"
     const searchButton = document.getElementById('searchBtn');//кнопка "зберегти"
     const playButton = document.getElementById('melodyPlayBtn');
@@ -181,6 +182,14 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault();
             if (keysInput_search) keysInput_search.value = pianodisplay.value
             console.log("Відправка форми з Keys:", keysInput_search ? keysInput_search.value : '(no element)');
+
+            // синхронізувати вибраний алгоритм пошуку
+            const selectedAlg = document.querySelector('input[name="SearchAlgorithm"]:checked');
+            if (selectedAlg && searchAlgorithmInput) {
+                searchAlgorithmInput.value = selectedAlg.value;
+                console.log("Selected algorithm:", selectedAlg.value);
+            }
+
             // Відправка форми
             const searchForm = document.getElementById('notesearchForm');
             if (searchForm) searchForm.submit();

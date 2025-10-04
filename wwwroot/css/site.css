@@ -782,3 +782,24 @@ p {
 @media (max-width: 576px) {
     .fileinfo { font-size: 0.9rem; }
 }
+
+/* Keep letter pickers horizontal and wrapping on all screen sizes */
+.letters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Each letter form should size to content, not stretch */
+.letters-row form {
+    flex: 0 0 auto;
+}
+
+/* Override the global mobile .d-flex column rule for letters */
+@media (max-width: 768px) {
+    .letters-row { 
+        flex-direction: row !important;
+    }
+}
