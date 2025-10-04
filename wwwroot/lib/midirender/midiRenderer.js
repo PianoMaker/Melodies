@@ -21,6 +21,71 @@ function applyAutoStem(note, durationCode) {
     }
 }
 
+// ---------------------------------------------
+// GLOBAL HELPERS for creating VexFlow notes/rests
+// Used by processNoteElement and patternRenderer.js
+// ---------------------------------------------
+function createNote(key, durationCode) {
+    try {
+        // key can be like 'C4' or 'C/4' (accidentals handled separately by caller)
+        let k = String(key || '').trim();
+        if (!k) return null;
+        // Normalize to VexFlow key format 'c/4'
+        k = k.replace('/', '');
+        const m = k.match(/^([A-Ga-g])([#b]?)(\d)$/);
+        if (!m) {
+            // try fallback: already like 'c/4'
+            if (/^[a-g][#b]?\/[0-9]$/.test(key)) {
+                k = key.toLowerCase();
+            } else {
+                console.warn('createNote: unexpected key format:', key);
+                return null;
+            }
+        } else {
+            const letter = m[1].toLowerCase();
+            const octave = m[3];
+            k = `${letter}/${octave}`;
+        }
+
+        // Handle dotted duration: VexFlow prefers dot modifiers, not 'q.' in duration
+        const dotted = /\./.test(durationCode);
+        const baseDur = String(durationCode || 'q').replace(/\./g, '');
+
+        const note = new Vex.Flow.StaveNote({
+            keys: [k],
+            duration: baseDur
+        });
+        if (dotted) {
+            // add a dot to the single notehead
+            note.addDotToAll();
+        }
+        return note;
+    } catch (e) {
+        console.warn('createNote failed:', e);
+        return null;
+    }
+}
+
+function createRest(durationCode) {
+    try {
+        // VexFlow rest is duration with 'r' suffix and any placeholder key like 'b/4'
+        const dotted = /\./.test(durationCode);
+        const baseDur = String(durationCode || 'q').replace(/\./g, '');
+        const dur = `${baseDur}r`;
+        const rest = new Vex.Flow.StaveNote({
+            keys: ['b/4'],
+            duration: dur,
+        });
+        if (dotted) {
+            rest.addDotToAll();
+        }
+        return rest;
+    } catch (e) {
+        console.warn('createRest failed:', e);
+        return null;
+    }
+}
+
 /**
  * drawScore
  * ----------

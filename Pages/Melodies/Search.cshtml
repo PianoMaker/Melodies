@@ -82,6 +82,10 @@
 
         <!--ТАБЛО НОТ ВНИЗУ -->
         <div id="innerNotesContainer">
+            <!-- LIVE notation (stays on top, updated as user types/clicks)-->
+            <div id="liveNotation" class="mb-3"></div>
+            <div id="patternComments" style="display:none"></div>
+
             @if (@Model.NewPattern is not null)
             {
                 @for (int index = 0; index < @Model.NewPattern.Count(); index++)
@@ -363,3 +367,10 @@
 <script src="~/js/play.js"></script>
 <script src="~/js/searchResults.js"></script>
 <script src="~/js/createMelody.js"></script>
+
+<!-- Pattern renderer dependencies and live renderer for Search page only -->
+<script src="~/lib/midirender/vexflow.js"></script>
+<script src="~/lib/midirender/makeBeams.js"></script>
+<script src="~/lib/midirender/midiRenderer.js"></script>
+<script src="~/lib/midirender/patternRenderer.js"></script>
+<script src="~/js/livePatternRenderer.js" asp-append-version="true"></script>
