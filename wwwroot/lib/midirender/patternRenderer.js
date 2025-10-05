@@ -3,6 +3,7 @@
 // --------------------------------------------------------
 // Supports EU note names: c d e f g a h, sharps with 'is' (cis, dis, fis, gis, ais),
 // optional flats with 'es' or trailing 's' (des, es, ges, as, bes),
+// special-case: single 'b' means Bb (B-flat) like in German notation,
 // octave marks using apostrophes (') up, commas (,) down. Default octave = 4.
 // Durations: trailing 1|2|4|8|16|32 optionally dot (e.g., 4.) mapped to VexFlow codes: w,h,q,8,16,32.
 // Separator between tokens: underscore '_'. Example: "fis4_gis4_d'4_f'4_a4_f4_".
@@ -46,13 +47,22 @@
         else if (base.endsWith('es')) { accidental = 'b'; base = base.slice(0, -2); }
         else if (base.endsWith('s')) { accidental = 'b'; base = base.slice(0, -1); }
 
-        const letter = mapEuBase(base);
-        if (!letter) {
+        // Special-case: German notation single 'b' means Bb (B-flat)
+        // If user wrote just 'b' (without 'es'/'is'), default to B with flat accidental
+        let letterName = null;
+        if (base === 'b') {
+            letterName = 'B';
+            if (!accidental) accidental = 'b';
+        } else {
+            letterName = mapEuBase(base);
+        }
+
+        if (!letterName) {
             // unknown base; treat as rest
             return { isRest: true, durationCode: mapDurationToVex(durNum, dotted) };
         }
 
-        const vexKey = `${letter}/${octave}`; // VexFlow format
+        const vexKey = `${letterName}/${octave}`; // VexFlow format
         const durationCode = mapDurationToVex(durNum, dotted);
         return { isRest, key: vexKey, accidental, durationCode };
     }
