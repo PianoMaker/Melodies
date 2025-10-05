@@ -164,11 +164,15 @@
         var startposition = Model.MatchedMelodies[i].position;
         var length = Model.MatchedMelodies[i].commonLength;
         var endposition = startposition + length;
+        var filePath = Model.MatchedMelodies[i].melody.FilePath;
+        var midiUrl = string.IsNullOrEmpty(filePath) ? null : Url.Content($"~/melodies/{filePath}");
 
         if (songPattern != null)
         {
             var @melodyId = $"melody{i}";
-            <div id="@melodyId">
+            var notationId = $"notation_match_{i}";
+            var commentsId = $"comments_match_{i}";
+            <div id="@melodyId" class="mb-3">
                 <p>@title</p>
                 <p>
                 @for(int j = 0; j<songPattern.Count; j++)
@@ -182,8 +186,23 @@
                     <text>@songPattern[j] </text>
                     }
                 }
-                </p> 
-                 @* <p>@string.Join(", ", songPattern)</p>  *@
+                </p>
+
+                <!-- Notation preview (limited to 8 bars) -->
+                <div id="@notationId" class="mb-2"></div>
+                <div id="@commentsId" class="small text-muted"></div>
+                @if (!string.IsNullOrEmpty(midiUrl))
+                {
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function(){
+                            try {
+                                if (typeof window.renderMidiFromUrl === 'function') {
+                                    window.renderMidiFromUrl('@midiUrl', 8, '@notationId', '@commentsId', 900, 200, 20, 250, 60, 10);
+                                }
+                            } catch(e) { console.warn('renderMidiFromUrl failed', e); }
+                        });
+                    </script>
+                }
             </div>
         }
         else
@@ -370,8 +389,9 @@
 
 <!-- Pattern renderer dependencies and live renderer for Search page only -->
 <script src="~/lib/midirender/vexflow.js"></script>
+<script src="~/lib/midirender/midiparser.js"></script>
+<script src="~/lib/midirender/midiparser_ext.js"></script>
 <script src="~/lib/midirender/makeBeams.js"></script>
 <script src="~/lib/midirender/midiRenderer.js"></script>
 <script src="~/lib/midirender/patternRenderer.js"></script>
-<script src="~/lib/midirender/midiparser_ext.js"></script>
 <script src="~/js/livePatternRenderer.js" asp-append-version="true"></script>

@@ -21,8 +21,6 @@ function applyAutoStem(note, durationCode) {
     }
 }
 
-s
-
 /**
  * drawScore
  * ----------

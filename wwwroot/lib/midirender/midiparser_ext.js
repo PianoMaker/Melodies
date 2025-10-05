@@ -460,7 +460,7 @@ function isKeySignatureEvent(ev) {
     const META_KEY_ID = 0x59; // 89
     const isMeta =
         ev.type === 0xFF ||
-        ev.type === (typeof MIDIEvents !== 'undefined' ? MIDIEvents.EVENT_META : undefined) ||
+        (typeof MIDIEvents !== 'undefined' ? ev.type === MIDIEvents.EVENT_META : false) ||
         ev.meta === true;
 
     // metaType або subtype або можливі рядкові значення
@@ -796,15 +796,15 @@ function midiNoteFromVexKey(key) {
 //--------------------------------------------------------------------
 function ensureEndEvent(midiEvents, element) {
     console.log("FOO: midiparser_ext.js - ensureEndEvent");
-    const hasEndTrack = midiEvents.some(e => e.type === MIDIEvents.EVENT_META && e.subtype === MIDIEvents.EVENT_META_END_OF_TRACK
-    );
+    // Robust check without relying on MIDIEvents global
+    const hasEndTrack = midiEvents.some(e => e && (e.type === 0xFF || e.meta === true || e.type === 'meta') && (e.metaType === 0x2F || e.subtype === 0x2F));
     if (!hasEndTrack) {
-        let lastEvent = midiEvents[midiEvents.length - 1];
+        let lastEvent = midiEvents[midiEvents.length - 1] || {};
         let endTime = lastEvent.absTime || lastEvent.playTime || 0;
         midiEvents.push({
-            type: MIDIEvents.EVENT_META,
-            subtype: MIDIEvents.EVENT_META_END_OF_TRACK,
-            delta: 0,
+            type: 0xFF,
+            metaType: 0x2F,
+            deltaTime: 0,
             absTime: endTime,
             playTime: endTime,
             track: lastEvent.track || 0
