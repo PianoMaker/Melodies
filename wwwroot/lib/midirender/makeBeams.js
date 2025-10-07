@@ -388,4 +388,30 @@ const allowDotted = false;
         globalThis.detectTuplets = detectTuplets;
     }
 
+    /**
+ * (AUTO-STEM HELPER)
+ * -------------------------------------------------
+ * Added helper to optionally apply VexFlow auto stem logic to every created note
+ * without modifying or removing existing functions or comments. Rest durations
+ * (codes ending with 'r') are skipped. Safe to call multiple times.
+ */
+    function applyAutoStem(note, durationCode) {
+        try {
+            if (!note) return;
+            if (typeof durationCode === 'string' && /r$/.test(durationCode)) return; // skip rests
+            if (typeof note.autoStem === 'function') {
+                note.autoStem();
+            }
+        } catch (e) {
+            console.warn('applyAutoStem failed:', e);
+        }
+    }
+
+    // Make available as global
+    if (typeof globalThis !== 'undefined') {
+        globalThis.applyAutoStem = applyAutoStem;
+    } else if (typeof window !== 'undefined') {
+        window.applyAutoStem = applyAutoStem;
+    }
+
 })();
