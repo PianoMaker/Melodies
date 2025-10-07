@@ -69,7 +69,8 @@ function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWID
                     CLEFZONE,
                     Xmargin,
                     commentsDiv,
-                    maxBarsToRender
+                    maxBarsToRender,
+                    0 // startAtMeasureIndex (default from beginning)
                 );
 
                 const svg = notationDiv.querySelector("svg");
@@ -142,6 +143,86 @@ async function renderMidiFromUrl(
         if (commentsDiv) {
             commentsDiv.innerHTML = `Error loading MIDI: ${err.message}`;
         }
+    }
+}
+
+/**
+ * renderMidiSegmentFromUrl
+ * ------------------------
+ * Loads MIDI by URL and renders a segment starting from the measure nearest to (and <=) the
+ * measure that contains the startNoteIndex-th NoteOn event. Start measure is snapped to multiples of 4 (0,4,8,...).
+ */
+async function renderMidiSegmentFromUrl(
+    midiUrl,
+    startNoteIndex = 0,
+    ELEMENT_FOR_RENDERING = 'notation',
+    ELEMENT_FOR_COMMENTS = 'comments',
+    GENERALWIDTH = 1200,
+    HEIGHT = 200,
+    TOPPADDING = 20,
+    BARWIDTH = 250,
+    CLEFZONE = 60,
+    Xmargin = 10,
+    barsToRender = 12
+) {
+    try {
+        if (!midiUrl) throw new Error('midiUrl is required');
+        const resp = await fetch(midiUrl);
+        if (!resp.ok) throw new Error(`Failed to fetch MIDI (${resp.status})`);
+        const arrayBuf = await resp.arrayBuffer();
+        const uint8 = new Uint8Array(arrayBuf);
+
+        // Pre-parse to find measure index for the matched note
+        const midiData = MidiParser.Uint8(uint8);
+        const ticksPerBeat = Array.isArray(midiData.timeDivision) ? 480 : midiData.timeDivision;
+        let allEvents = SetEventsAbsoluteTime(midiData);
+        ensureEndEvent(allEvents);
+        const measureMap = createMeasureMap(allEvents, ticksPerBeat);
+        const measures = groupEventsByMeasure(allEvents, measureMap);
+
+        // Find absTime of the startNoteIndex-th NoteOn (velocity > 0)
+        let targetAbsTime = 0;
+        let count = 0;
+        for (const ev of allEvents) {
+            if (ev && ev.type === 0x9 && Array.isArray(ev.data) && ev.data[1] > 0) {
+                if (count === (parseInt(startNoteIndex, 10) || 0)) {
+                    targetAbsTime = ev.absTime || 0;
+                    break;
+                }
+                count++;
+            }
+        }
+        // Determine measure index containing this absTime
+        const idxKeys = Object.keys(measureMap).map(k => parseInt(k, 10)).sort((a,b)=>a-b);
+        let matchedMeasureIdx = 0;
+        for (let i = 0; i < idxKeys.length - 1; i++) {
+            const start = measureMap[idxKeys[i]];
+            const next = measureMap[idxKeys[i + 1]];
+            if (targetAbsTime >= start && targetAbsTime < next) { matchedMeasureIdx = idxKeys[i]; break; }
+        }
+        // Snap to nearest lower multiple of 4
+        let startAtMeasureIndex = matchedMeasureIdx - (matchedMeasureIdx % 4);
+        if (startAtMeasureIndex < 0) startAtMeasureIndex = 0;
+
+        // Render the segment
+        const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
+        renderMidiFileToNotation(
+            uint8,
+            ELEMENT_FOR_RENDERING,
+            GENERALWIDTH,
+            HEIGHT,
+            TOPPADDING,
+            BARWIDTH,
+            CLEFZONE,
+            Xmargin,
+            commentsDiv,
+            barsToRender,
+            startAtMeasureIndex
+        );
+    } catch (err) {
+        console.error('renderMidiSegmentFromUrl error:', err);
+        const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
+        if (commentsDiv) commentsDiv.innerHTML = `Error loading MIDI: ${err.message}`;
     }
 }
 
@@ -267,7 +348,7 @@ function hasNoteOn(measure) {
 // ---------------------
 
 
-function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, commentsDiv, maxBarsToRender = 1000) {
+function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, commentsDiv, maxBarsToRender = 1000, startAtMeasureIndex = 0) {
     console.log("FOO: midiRenderer.js - renderMidiFileToNotation");
     if (!ELEMENT_FOR_RENDERING) {
         throw new Error(`Element with id ${ELEMENT_FOR_RENDERING} not found.`);
@@ -282,22 +363,32 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
     const measureMap = createMeasureMap(allEvents, ticksPerBeat);
     const measures = groupEventsByMeasure(allEvents, measureMap);
 
-    // Determine how many measures to render based on maxBarsToRender
-    let measuresToRender = measures;
-    let limited = false;
-    if (typeof maxBarsToRender === 'number' && isFinite(maxBarsToRender) && maxBarsToRender !== 1000 && measures.length > maxBarsToRender) {
-        measuresToRender = measures.slice(0, maxBarsToRender);
-        limited = true;
-        console.log(`Limiting rendered measures to ${maxBarsToRender}`);
+    // Compute slice start (snap to lower multiple of 4)
+    let startIdx = parseInt(startAtMeasureIndex, 10);
+    if (!isFinite(startIdx) || startIdx < 0) startIdx = 0;
+    startIdx = startIdx - (startIdx % 4);
+    if (startIdx > measures.length - 1) startIdx = Math.max(0, measures.length - 1);
+
+    // Compute how many measures to render
+    const remaining = Math.max(0, measures.length - startIdx);
+    const renderCount = (typeof maxBarsToRender === 'number' && isFinite(maxBarsToRender) && maxBarsToRender !== 1000)
+        ? Math.min(remaining, maxBarsToRender)
+        : remaining;
+
+    const measuresToRender = measures.slice(startIdx, startIdx + renderCount);
+
+    // Build a sliced measureMap aligned to the sliced measures (including sentinel)
+    const slicedMap = {};
+    for (let i = 0; i <= renderCount; i++) {
+        slicedMap[i] = measureMap[startIdx + i];
     }
 
-    // ВИКОРИСТАТИ ФАКТИЧНУ ШИРИНУ КОНТЕЙНЕРА, щоб ноти не виходили за межі поля
+    // ВИКОРИСТАТИ ФАКТИЧНУ ШИРИНУ КОНТЕЙНЕРА
     const MIN_SCORE_WIDTH = Math.max(320, CLEFZONE + BARWIDTH + Xmargin * 2);
 
     const target = document.getElementById(ELEMENT_FOR_RENDERING);
     const containerWidth = (target && target.clientWidth) ? target.clientWidth : 0;
 
-    // Якщо containerWidth = 0 (прихований або не в DOM), падаємо на GENERALWIDTH або 1200
     const effectiveWidth = Math.max(
         MIN_SCORE_WIDTH,
         containerWidth || GENERALWIDTH || 1200
@@ -317,16 +408,15 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         const context = factory.getContext();
         const score = factory.EasyScore();
 
-        // Передаємо effectiveWidth у renderMeasures як GENERALWIDTH
-        renderMeasures(measureMap, measuresToRender, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, effectiveWidth, commentsDiv);
+        renderMeasures(slicedMap, measuresToRender, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, effectiveWidth, commentsDiv);
     }, 0);
 
-    // Return info so caller can set correct message
     return {
         totalMeasures: measures.length,
         renderedMeasures: measuresToRender.length,
-        limited,
-        maxBarsToRender
+        limited: renderCount < remaining,
+        maxBarsToRender,
+        startAtMeasureIndex: startIdx
     };
 }
 
@@ -368,10 +458,10 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
     let currentKeySig = null;
 
     // Prune trailing measures that contain no Note On events (only offs / meta etc.)
-    while (measures.length > 0 && !hasNoteOn(measures[measures.length - 1])) {
-        console.log("Pruning trailing empty measure without Note On events");
-        measures.pop();
-    }
+//     while (measures.length > 0 && !hasNoteOn(measures[measures.length - 1])) {
+//         console.log("Pruning trailing empty measure without Note On events");
+//         measures.pop();
+//     }
 
     // Перебирає усі такти
     // ----------------------
@@ -497,6 +587,8 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         //   - Видаляє ноту з активних нот.
         // - Додає обчислені ноти і паузи до масиву notes[]        
         // ----------------------
+
+
         function renderMeasure() {
             console.log("FOO: midiRenderer.js - renderMeasure"); 
             let isFirstNoteInMeasure = true; 
@@ -521,7 +613,8 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
                     const pitch = event.data[0];
                     if (stepRead) stepRead.innerHTML += ` on ${pitch} <span class="tick">[${event.absTime}]</span>`;
 
-                    if (isFirstNoteInMeasure && Object.keys(activeNotes).length === 0) {
+//                     if (isFirstNoteInMeasure && Object.keys(activeNotes).length === 0) {
+                    if (isFirstNoteInMeasure) {
                         AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime);
                         isFirstNoteInMeasure = false;
                     }
@@ -992,8 +1085,10 @@ function adjustStaveWidth(BARWIDTH, index, CLEFZONE, isFirstMeasureInRow = false
 
 function adjustXYposition(Xposition, GENERALWIDTH, BARWIDTH, Yposition, HEIGHT, Xmargin, index, barStartAbsTime) {
     console.log("FOO: midiRenderer.js - adjustXYposition");
+    // Restore wrapping: when remaining width is not enough for another measure, move to next row
     if (Xposition > GENERALWIDTH - BARWIDTH) {
-        Yposition += HEIGHT; Xposition = Xmargin;
+        Yposition += HEIGHT;
+        Xposition = Xmargin;
         console.log("Yposition updated:", Yposition);
     } else {
         console.log(`General width ${GENERALWIDTH} vs ${BARWIDTH} + ${Xposition}`);
@@ -1107,7 +1202,7 @@ function calculateBeams(validNotes, ticksPerBeat, index, currentNumerator, curre
 }
 
 // ----------------------
-// ФУНКЦІЯ ДЛЯ ОБРОБКИ І МАЛЮВАННЯ ЛІГ З ОБРОБКОЮ ПОМИЛОК
+// ФУНКЦІЯ ДЛЯ ОБРОБКИ І МАЛюВАННЯ ЛІГ З ОБРОБКОЮ ПОМИЛОК
 // Використовує Vex.Flow.StaveTie
 // Параметри:
 // - ties: Масив об'єктів StaveTie з VexFlow.
@@ -1250,7 +1345,7 @@ function AddNotesFromPreviousBar(activeNotes, measure) {
 }
 
 // ----------------------
-// ФУНКЦІЯ ДЛЯ ОТРИМАННЯ ПОТОЧНОГО РОЗМІРУ ТАКТУ З ПОДІЙ TIME SIGNATURE
+// ФУНКЦІЯ ДЛЯ ОТРИМАННЯ ПОТОЧНОГО РОЗМІРУ ТАКТУ ЗАПОДІЯМИ TIME SIGNATURE
 // шукає подію TimeSignature тільки в першому такті
 // повертає {numerator, denominator}
 // якщо немає події, повертає 4/4 за замовчуванням
@@ -1437,5 +1532,6 @@ const logEvent = (msg) => {
 };
 
 
+// expose APIs
 window.drawScore = drawScore;
 window.renderMidiFromUrl = renderMidiFromUrl;
