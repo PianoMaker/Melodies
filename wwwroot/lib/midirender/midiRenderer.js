@@ -330,7 +330,7 @@ function hasNoteOn(measure) {
 // ФУНКЦІЯ ВІЗУАЛІЗАЦІЇ MIDI ФАЙЛУ
 // ----------------------
 // Приймає Uint8Array з MIDI файлом, ID елемента для рендерингу, ширину і висоту нотного стану та інші параметри.
-// Використовує бібліотеки MidiParser і VexFlow для парсингу MIDI та рендерингу нот.
+// Використовує бібліотеки MidiParser и VexFlow для парсингу MIDI та рендерингу нот.
 // Рендерить нотний стан у вказаний HTML елемент.
 // Параметри:
 // - uint8: Uint8Array з MIDI файлом.
@@ -375,11 +375,20 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         ? Math.min(remaining, maxBarsToRender)
         : remaining;
 
-    const measuresToRender = measures.slice(startIdx, startIdx + renderCount);
+    // Slice desired window
+    const measuresWindow = measures.slice(startIdx, startIdx + renderCount);
 
-    // Build a sliced measureMap aligned to the sliced measures (including sentinel)
+    // IMPORTANT: Trim trailing empty measures (without Note On) to avoid extra vertical space
+    const measuresToRender = [...measuresWindow];
+    while (measuresToRender.length > 0 && !hasNoteOn(measuresToRender[measuresToRender.length - 1])) {
+        console.log("Pruning trailing empty measure without Note On events (pre-height)");
+        measuresToRender.pop();
+    }
+    const effectiveCount = measuresToRender.length;
+
+    // Build a sliced measureMap aligned to the trimmed measures (including sentinel)
     const slicedMap = {};
-    for (let i = 0; i <= renderCount; i++) {
+    for (let i = 0; i <= effectiveCount; i++) {
         slicedMap[i] = measureMap[startIdx + i];
     }
 
@@ -394,7 +403,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         containerWidth || GENERALWIDTH || 1200
     );
 
-    GENERALHEIGHT = calculateRequiredHeight(measuresToRender.length, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
+    GENERALHEIGHT = calculateRequiredHeight(effectiveCount, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
     setTimeout(() => {
         const factory = new Vex.Flow.Factory({
@@ -413,8 +422,8 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
 
     return {
         totalMeasures: measures.length,
-        renderedMeasures: measuresToRender.length,
-        limited: renderCount < remaining,
+        renderedMeasures: effectiveCount,
+        limited: effectiveCount < remaining,
         maxBarsToRender,
         startAtMeasureIndex: startIdx
     };
@@ -1497,7 +1506,8 @@ function getXYposition(Xmargin, TOPPADDING, GENERALWIDTH, BARWIDTH, HEIGHT, inde
     let Xposition = Xmargin;
     let Yposition = TOPPADDING;
     if (Xposition > GENERALWIDTH - BARWIDTH) {
-        Yposition += HEIGHT; Xposition = Xmargin;
+        Yposition += HEIGHT;
+        Xposition = Xmargin;
         console.log("Yposition updated:", Yposition);
     }
     else {
@@ -1530,7 +1540,6 @@ const logEvent = (msg) => {
         console.warn('logEvent failed:', e);
     }
 };
-
 
 // expose APIs
 window.drawScore = drawScore;

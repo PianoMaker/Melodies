@@ -26,8 +26,9 @@
         return m[letter] || null;
     }
 
+    // Створює об'єкт ноти VexFlow
+	// Параметр: durationCode: 'w', 'h', 'q', '8', '16', '32' (може бути з крапкою, напр. 'q.')
     function parseToken(rawToken) {
-        // returns { isRest, key, accidental, durationCode }
         if (!rawToken) return null;
         let token = String(rawToken).trim();
         if (!token) return null;
@@ -89,6 +90,7 @@
         }
         return dotted ? `${code}.` : code;
     }
+
 
     function durationToQuarterUnits(code) {
         // Returns how many quarter-notes this duration represents (q=1, h=2, w=4, 8=0.5, etc.), ignoring dots

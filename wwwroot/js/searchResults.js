@@ -34,14 +34,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
+            // Зменшено HEIGHT і TOPPADDING для мінімізації пустого вертикального простору перед коментарями
             window.renderMidiSegmentFromUrl(
                 midiUrl,
                 startPos,
                 notationEl.id,
                 commentsElId,
                 900,  // GENERALWIDTH
-                200,  // HEIGHT per row
-                20,   // TOPPADDING
+                130,  // HEIGHT for row
+                10,   // TOPPADDING
                 250,  // BARWIDTH
                 60,   // CLEFZONE
                 10,   // Xmargin
