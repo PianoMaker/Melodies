@@ -1,5 +1,100 @@
 ﻿// midiRenderer.js
 
+
+
+/**
+ * (AUTO-STEM HELPER)
+ * -------------------------------------------------
+ * Added helper to optionally apply VexFlow auto stem logic to every created note
+ * without modifying or removing existing functions or comments. Rest durations
+ * (codes ending with 'r') are skipped. Safe to call multiple times.
+ */
+function applyAutoStem(note, durationCode) {
+    try {
+        if (!note) return;
+        if (typeof durationCode === 'string' && /r$/.test(durationCode)) return; // skip rests
+        if (typeof note.autoStem === 'function') {
+            note.autoStem();
+        }
+    } catch (e) {
+        console.warn('applyAutoStem failed:', e);
+    }
+}
+
+/**
+ * drawScore
+ * ----------
+ * Renders a musical score from a MIDI file and displays it in the specified HTML element.
+ *
+ * @param {File} file - The MIDI file to render.
+ * @param {string} ELEMENT_FOR_RENDERING - The ID of the HTML element where the score SVG will be rendered.
+ * @param {string} ELEMENT_FOR_COMMENTS - The ID of the HTML element where status or error messages will be displayed.
+ * @param {number} [GENERALWIDTH=1200] - The width of the rendered score in pixels.
+ * @param {number} [HEIGHT=200] - The height of each stave row in pixels.
+ * @param {number} [TOPPADDING=20] - The top padding for the score in pixels.
+ * @param {number} [BARWIDTH=250] - The width of each measure/bar in pixels.
+ * @param {number} [CLEFZONE=60] - The width reserved for the clef and time signature zone in pixels.
+ * @param {number} [Xmargin=10] - The left margin for the score in pixels.
+ * @param {number} [maxBarsToRender=1000] - Maximum number of measures to render (1000 means full rendering).
+ *
+ * Reads the provided MIDI file, parses its contents, and renders the musical notation using VexFlow.
+ * Stores the resulting SVG and comments in sessionStorage for later retrieval.
+ * Displays success or error messages in the comments element.
+ */
+
+
+function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, maxBarsToRender = 1000) {
+    console.log("FOO: midiRenderer.js - drawScore");
+    const notationDiv = document.getElementById(ELEMENT_FOR_RENDERING);
+    const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
+
+    if (file) {
+        console.log("drawScore: File selected:", file);
+        const reader = new FileReader();
+        notationDiv.innerHTML = "";
+        commentsDiv.innerHTML = "";
+        reader.onload = function (e) {
+            console.log("drawScore: File read successfully");
+            const uint8 = new Uint8Array(e.target.result);
+
+            try {
+                // pass maxBarsToRender and get info about applied limitation
+                const renderInfo = renderMidiFileToNotation(
+                    uint8,
+                    ELEMENT_FOR_RENDERING,
+                    GENERALWIDTH,
+                    HEIGHT,
+                    TOPPADDING,
+                    BARWIDTH,
+                    CLEFZONE,
+                    Xmargin,
+                    commentsDiv,
+                    maxBarsToRender,
+                    0 // startAtMeasureIndex (default from beginning)
+                );
+
+                const svg = notationDiv.querySelector("svg");
+                if (svg) {
+                    sessionStorage.setItem("notationSVG", svg.outerHTML);
+                }
+
+                // Message depends on maxBarsToRender value
+                const msg = (maxBarsToRender === 1000)
+                    ? "нотне зображення виведено повністю"
+                    : `нотне зображення виведено з обмеженням у ${maxBarsToRender} тактів`;
+                commentsDiv.innerHTML += msg;
+                sessionStorage.setItem("comment", commentsDiv.innerHTML);
+            }
+            catch (error) {
+                console.error("drawScore: Error rendering MIDI file:", error);
+                commentsDiv.innerHTML = `Error rendering MIDI file ${error}`;
+                sessionStorage.setItem("comment", commentsDiv.innerHTML);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+}
+
 /**
  * renderMidiFromUrl
  * -----------------
@@ -130,82 +225,6 @@ async function renderMidiSegmentFromUrl(
         if (commentsDiv) commentsDiv.innerHTML = `Error loading MIDI: ${err.message}`;
     }
 }
-
-
-/**
- * drawScore
- * ----------
- * Renders a musical score from a MIDI file and displays it in the specified HTML element.
- *
- * @param {File} file - The MIDI file to render.
- * @param {string} ELEMENT_FOR_RENDERING - The ID of the HTML element where the score SVG will be rendered.
- * @param {string} ELEMENT_FOR_COMMENTS - The ID of the HTML element where status or error messages will be displayed.
- * @param {number} [GENERALWIDTH=1200] - The width of the rendered score in pixels.
- * @param {number} [HEIGHT=200] - The height of each stave row in pixels.
- * @param {number} [TOPPADDING=20] - The top padding for the score in pixels.
- * @param {number} [BARWIDTH=250] - The width of each measure/bar in pixels.
- * @param {number} [CLEFZONE=60] - The width reserved for the clef and time signature zone in pixels.
- * @param {number} [Xmargin=10] - The left margin for the score in pixels.
- * @param {number} [maxBarsToRender=1000] - Maximum number of measures to render (1000 means full rendering).
- *
- * Reads the provided MIDI file, parses its contents, and renders the musical notation using VexFlow.
- * Stores the resulting SVG and comments in sessionStorage for later retrieval.
- * Displays success or error messages in the comments element.
- */
-
-
-function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, maxBarsToRender = 1000) {
-    console.log("FOO: midiRenderer.js - drawScore");
-    const notationDiv = document.getElementById(ELEMENT_FOR_RENDERING);
-    const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
-
-    if (file) {
-        console.log("drawScore: File selected:", file);
-        const reader = new FileReader();
-        notationDiv.innerHTML = "";
-        commentsDiv.innerHTML = "";
-        reader.onload = function (e) {
-            console.log("drawScore: File read successfully");
-            const uint8 = new Uint8Array(e.target.result);
-
-            try {
-                // pass maxBarsToRender and get info about applied limitation
-                const renderInfo = renderMidiFileToNotation(
-                    uint8,
-                    ELEMENT_FOR_RENDERING,
-                    GENERALWIDTH,
-                    HEIGHT,
-                    TOPPADDING,
-                    BARWIDTH,
-                    CLEFZONE,
-                    Xmargin,
-                    commentsDiv,
-                    maxBarsToRender,
-                    0 // startAtMeasureIndex (default from beginning)
-                );
-
-                const svg = notationDiv.querySelector("svg");
-                if (svg) {
-                    sessionStorage.setItem("notationSVG", svg.outerHTML);
-                }
-
-                // Message depends on maxBarsToRender value
-                const msg = (maxBarsToRender === 1000)
-                    ? "нотне зображення виведено повністю"
-                    : `нотне зображення виведено з обмеженням у ${maxBarsToRender} тактів`;
-                commentsDiv.innerHTML += msg;
-                sessionStorage.setItem("comment", commentsDiv.innerHTML);
-            }
-            catch (error) {
-                console.error("drawScore: Error rendering MIDI file:", error);
-                commentsDiv.innerHTML = `Error rendering MIDI file ${error}`;
-                sessionStorage.setItem("comment", commentsDiv.innerHTML);
-            }
-        };
-        reader.readAsArrayBuffer(file);
-    }
-}
-
 
 /**
  * createmeasureMap
