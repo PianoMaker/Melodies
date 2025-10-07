@@ -389,3 +389,22 @@
 <script src="~/lib/midirender/midiRenderer.js"></script>
 <script src="~/lib/midirender/patternRenderer.js"></script>
 <script src="~/js/livePatternRenderer.js" asp-append-version="true"></script>
+
+<!-- Auto-render matched melodies notation into notescontainer -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const blocks = document.querySelectorAll('[id^="notation_match_"]');
+        if (!blocks.length) return;
+        blocks.forEach(div => {
+            const midiUrl = div.getAttribute('data-midi-url');
+            const commentsId = div.getAttribute('data-comments-id');
+            if (!midiUrl || typeof window.renderMidiFromUrl !== 'function') return;
+            // Render up to 12 measures into this block
+            try {
+                window.renderMidiFromUrl(midiUrl, 12, div.id, commentsId);
+            } catch (e) {
+                console.warn('renderMidiFromUrl failed for', div.id, e);
+            }
+        });
+    });
+</script>
