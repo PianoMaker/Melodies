@@ -1,12 +1,21 @@
 // patternRenderer.js
-// Utilities for rendering from a pattern string (non-MIDI)
+// Утиліта для рендерингу нот з рядка шаблону (не MIDI)
 // --------------------------------------------------------
-// Supports EU note names: c d e f g a h, sharps with 'is' (cis, dis, fis, gis, ais),
-// optional flats with 'es' or trailing 's' (des, es, ges, as, bes),
-// special-case: single 'b' means Bb (B-flat) like in German notation,
-// octave marks using apostrophes (') up, commas (,) down. Default octave = 4.
-// Durations: trailing 1|2|4|8|16|32 optionally dot (e.g., 4.) mapped to VexFlow codes: w,h,q,8,16,32.
-// Separator between tokens: underscore '_'. Example: "fis4_gis4_d'4_f'4_a4_f4_".
+// Вхідний рядок шаблону: послідовність нот/пауз, кожна з трьох частин:
+// 1) Буква ноти (c,d,e,f,g,a,h) або 'p'/'r' для паузи
+//    - 'h' в європейській системі відповідає 'B' в англійській
+// 2) Маркери октави: апострофи (') для підвищення, коми (,) для пониження
+// 3) Код тривалості: цифра (1,2,4,8,16,32) з необов'язковою крапкою (.) для подовження
+//	- 1 = ціла, 2 = половинна, 4 = чверть, 8 = восьма, 16 = шістнадцята, 32 = тридцять друга
+// 4) Необов'язковий суфікс для альтерації: 'is' для диеза (#), 'es' або 's' для бемоля (b)
+//    - 'b' самостійно означає 'H' з бемолем (Bb)
+// Параметри:
+// - pattern: рядок шаблону, наприклад "c4_d4_e4_f4_g4_a4_h4_c'4"
+// - ELEMENT_FOR_RENDERING: id елемента для рендерингу нот
+// - ELEMENT_FOR_COMMENTS: id елемента для повідомлень/коментарів
+// - numerator, denominator: розмір такту (4/4 за замовчуванням)
+// - GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin: параметри рендерингу
+// --------------------------------------------------------
 
 (function(){
     const BASE_OCTAVE = 4; // default octave for tokens without marks
