@@ -160,9 +160,9 @@
     @for (int i = 0; i < matchedMelodiesCount; i++)
     {
         var songPattern = ViewData[$"songpattern{i}"] as List<string>;
-        var title = Model.MatchedMelodies[i].melody.Title;
-        var startposition = Model.MatchedMelodies[i].position;
-        var length = Model.MatchedMelodies[i].commonLength;
+        var title = Model.MatchedMelodies[i].melody.Title;//назва мелодії
+        var startposition = Model.MatchedMelodies[i].position;//позиція початку збігу
+        var length = Model.MatchedMelodies[i].commonLength;//довжина збігу
         var endposition = startposition + length;
         var filePath = Model.MatchedMelodies[i].melody.FilePath;
         var midiUrl = string.IsNullOrEmpty(filePath) ? null : Url.Content($"~/melodies/{filePath}");
@@ -186,22 +186,16 @@
                     <text>@songPattern[j] </text>
                     }
                 }
-                </p>
-
-                <!-- Notation preview (limited to 8 bars) -->
-                <div id="@notationId" class="mb-2"></div>
-                <div id="@commentsId" class="small text-muted"></div>
+                </p>                
                 @if (!string.IsNullOrEmpty(midiUrl))
                 {
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function(){
-                            try {
-                                if (typeof window.renderMidiFromUrl === 'function') {
-                                    window.renderMidiFromUrl('@midiUrl', 8, '@notationId', '@commentsId', 900, 200, 20, 250, 60, 10);
-                                }
-                            } catch(e) { console.warn('renderMidiFromUrl failed', e); }
-                        });
-                    </script>
+                    <!-- 12 тактів нотного прикладу -->
+                    <div id="@notationId"
+                         class="mb-2"
+                         data-midi-url="@midiUrl"
+                         data-start-position="@startposition"
+                         data-comments-id="@commentsId"></div>
+                    <div id="@commentsId" class="small text-muted" data-suppress-summary="1"></div>
                 }
             </div>
         }

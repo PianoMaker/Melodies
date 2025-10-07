@@ -26,8 +26,15 @@ namespace Melodies25.Pages.Melodies
 
         public IList<Melody> Melody { get; set; } = default!;
 
+        // Список знайдених мелодій з довжиною збігу та позицією
+        // commonLength - довжина збігу в нотах
+        // position - позиція початку збігу в мелодії
+        // Якщо position = -1, збіг не є підрядком (для алгоритму підпослідовності)
+        // Якщо position >= 0, збіг є підрядком (для алгоритму підрядка)
+        // Сортування за commonLength у спадному порядку
+        // Використовується в OnPostNotesearch
         public List<(Melody melody, int commonLength, int position)> MatchedMelodies { get; set; } = new();
-
+        // Чи відображати результати пошуку за нотами
         public bool NoteSearch { get; set; }
         public string Msg { get; set; }
 
@@ -50,19 +57,22 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public string Title { get; set; }
 
+        // Повний збіг (false) чи частковий (true)
         [BindProperty]
         public bool IfPartly { get; set; }
 
         [TempData]
         public string Description { get; set; }
 
+        // Введені ноти для пошуку
         [BindProperty]
         public string Keys { get; set; }
 
-        // Search algorithm selection: "Substring" (default) or "Subsequence"
+        // Алгоритм пошуку: "Substring" (default) or "Subsequence"
         [BindProperty]
         public string SearchAlgorithm { get; set; } = "Substring";
 
+        // Нова мелодія, створена на сторінці пошуку
         public Music.Melody NewPattern { get; set; }
         internal string TempMidiFilePath { get; set; }
 
