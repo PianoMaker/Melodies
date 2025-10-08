@@ -157,38 +157,37 @@ const allowDotted = false;
             if (!currentGroup || !currentGroup.notes || currentGroup.notes.length < 2) return;
             const notes = currentGroup.notes.map(n => n.vexNote || n).filter(Boolean);
             if (notes.length < 2) return;
+
             let upCount = 0, downCount = 0, sumLines = 0, totalHeads = 0;
-            const dirs = [];
             notes.forEach(vn => {
                 if (typeof vn.getStemDirection === 'function') {
                     const dir = vn.getStemDirection();
-                    if (dir === 1) upCount++; else if (dir === -1) downCount++;
-                    dirs.push(dir);
+                    if (dir === 1 || dir === Vex.Flow.Stem.UP) upCount++;
+                    else if (dir === -1 || dir === Vex.Flow.Stem.DOWN) downCount++;
                 }
                 if (typeof vn.getKeyProps === 'function') {
                     const kp = vn.getKeyProps();
                     kp.forEach(k => { sumLines += k.line; totalHeads++; });
                 }
             });
-            if (!(upCount && downCount)) return; // вже однорідно
-            // Визначаємо чи є ситуація для уніфікації
-            const minority = Math.min(upCount, downCount);
-            const needUnify = (minority === 1) || (upCount === downCount && notes.length === 2);
-            if (!needUnify) return; // складний контур – залишаємо
-            const avgLine = totalHeads ? (sumLines / totalHeads) : 3;
-            let majorityDir;
-            if (upCount === downCount) {
-                // Tie -> використовуємо середню лінію (>=3 -> вниз)
-                majorityDir = (avgLine >= 3) ? Vex.Flow.Stem.DOWN : Vex.Flow.Stem.UP;
+
+            // Якщо напрям однорідний — нічого не робимо
+            if (!(upCount && downCount)) return;
+
+            // Визначаємо цільовий напрям
+            let targetDir;
+            if (upCount !== downCount) {
+                targetDir = (upCount > downCount) ? Vex.Flow.Stem.UP : Vex.Flow.Stem.DOWN;
             } else {
-                majorityDir = (upCount > downCount) ? Vex.Flow.Stem.UP : Vex.Flow.Stem.DOWN;
+                const avgLine = totalHeads ? (sumLines / totalHeads) : 3;
+                targetDir = (avgLine >= 3) ? Vex.Flow.Stem.DOWN : Vex.Flow.Stem.UP;
             }
+
+            // Примусово виставляємо однаковий напрям для всіх нот групи
             notes.forEach(vn => {
                 if (typeof vn.setStemDirection === 'function') {
-                    vn.setStemDirection(majorityDir);
-                    if (typeof vn.reset === 'function') {
-                        try { vn.reset(); } catch { /* ignore */ }
-                    }
+                    vn.setStemDirection(targetDir);
+                    if (typeof vn.reset === 'function') { try { vn.reset(); } catch { /* ignore */ } }
                 }
             });
         } catch (e) {
