@@ -445,27 +445,10 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
     let isFirstMeasureInRow = true;
     // Поточний key signature (оновлюється при meta подіях 0x59)
     let currentKeySig = null;
+    let meanBarWidth = null;
 
-	const meanWidth = GetMeanWidth(BARWIDTH, measures);
+    meanBarWidth = GetMeanBarWidth(BARWIDTH, measures);
 
-    let meanBarWidth = BARWIDTH;    
-    let sumBarWidth = 0;
-    let currentWidth;
-
-
-
-    measures.forEach((m) => {
-        let notesamount = getNumberOfNotes(m);
-        if (notesamount !== undefined) {
-            currentWidth = meanBarWidth / 3 + meanBarWidth * notesamount / 7;
-            sumBarWidth += currentWidth;
-        }
-        console.log(`notesamount: ${notesamount} meanBarWidth current: ${currentWidth}`);
-    });
-
-	
-	meanBarWidth = sumBarWidth / measures.length;
-    console.log(`meanBarWidth total: ${meanBarWidth}`);
 
     // Перебирає усі такти
     // ----------------------
@@ -551,7 +534,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
             const nextBoundary = measureMap[index + 1];
             const measureEndTick = (nextBoundary !== undefined) ? nextBoundary : barStartAbsTime + ticksPerMeasure; // fallback
             console.log(`AN: bar ${index + 1}, measureEndTick = ${measureEndTick}`)
-            console.log(`${Object.keys(activeNotes).length} active note(s) still exists in measure ${index + 1}`);
+            //console.log(`${Object.keys(activeNotes).length} active note(s) still exists in measure ${index + 1}`);
             if (stepRead) stepRead.innerHTML += `<i> act.note</i>`;
             // UPDATED: передаємо measureAccState для консистентних знаків у межах такту
             drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState);

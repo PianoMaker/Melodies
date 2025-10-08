@@ -366,7 +366,7 @@ function createRest(duration) {
 
 function createNote(noteKey, duration) {
     console.log("FOO: midiparser_ext.js - createNote");
-    console.log(`Creating note with noteKey ${noteKey} duration: ${duration}`);
+    //console.log(`Creating note with noteKey ${noteKey} duration: ${duration}`);
     const noteMatch = noteKey.match(/^([a-gA-G])(b|#)?(\d)?$/);
     if (!noteMatch) {
         console.error(`Invalid note key: ${noteKey}`);
@@ -393,6 +393,9 @@ function createNote(noteKey, duration) {
         if (isDotted && !isTriplet) {
             staveNote.addDot(0); // Add dot if dotted
         }
+        if (typeof staveNote.autoStem === 'function') {
+            staveNote.autoStem(); 
+        }
 
         if (isTriplet) {
             // Помітимо ноту як тріольну для швидкого складання Tuplet
@@ -400,8 +403,7 @@ function createNote(noteKey, duration) {
             staveNote.__tripletBase = baseDuration; // 'q','8','16','32'
             staveNote.__durationCode = duration;    // 'qt','8t','16t','32t'
         }
-
-        console.log(`Created note: ${key}, duration: ${baseDuration}`);
+        //        console.log(`Created note: ${key}, duration: ${baseDuration}`);
         return staveNote;
     } catch (error) {
         console.error(`Failed to create note with key: ${noteKey} and duration: ${duration}`, error);
@@ -947,7 +949,7 @@ function GetMeanBarWidth(BARWIDTH, measures) {
             currentWidth = meanBarWidth / 3 + meanBarWidth * notesamount / 7;
             sumBarWidth += currentWidth;
         }
-        console.log(`notesamount: ${notesamount} meanBarWidth current: ${currentWidth}`);
+        //console.log(`notesamount: ${notesamount} meanBarWidth current: ${currentWidth}`);
     });
 
     meanBarWidth = sumBarWidth / measures.length;
