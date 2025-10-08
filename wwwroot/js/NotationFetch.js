@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const notationDiv = document.getElementById('notation');
     const codeDiv = document.getElementById('code');
     const timesignDiv = document.getElementById('timesignature');
+    const keysignDiv = document.getElementById('keysignatures');
     console.log("notationFetch.js starts ##");
 
     async function loadSelectedMidiFile() {
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
         notationDiv.innerHTML = '';
         codeDiv.innerHTML = '';
         timesignDiv.innerText = '';
+        if (keysignDiv) keysignDiv.innerText = '';
 
         if (!selectedFile) {
             console.log('No file selected.');
@@ -33,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const midiData = new Uint8Array(arrayBuffer);
             const midiFile = new MIDIFile(midiData);
             const timeSignatures = getTimeSignatures(midiFile);
+            const keySignatures = getKeySignatures(midiFile);
 
             console.log('MIDI data length:', midiData.length);
             console.log('MIDI file tracks:', midiFile.tracks);
@@ -45,6 +48,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const timeSignaturesText = timeSignatures.map(signature => `${signature.numerator} / ${signature.denominator}`).join(", ");
             timesignDiv.innerText = timeSignaturesText;
+            const keySignaturesText = keySignatures.map(ks => ks.human).join(', ');
+            if (keysignDiv) keysignDiv.innerText = keySignaturesText;
         } catch (error) {
             console.error('Помилка завантаження або розбору:', error);
             codeDiv.textContent = `Помилка: ${error.message}`;
@@ -62,6 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const notationDiv = document.getElementById('notation');
     const codeDiv = document.getElementById('code');
     const timesignDiv = document.getElementById('timesignature');
+    const keysignDiv = document.getElementById('keysignatures');
     console.log("notationFetch.js starts ##");
 
     select.addEventListener('change', async function () {
@@ -83,6 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const midiData = new Uint8Array(arrayBuffer);
             const midiFile = new MIDIFile(midiData);
             const timeSignatures = getTimeSignatures(midiFile);
+            const keySignatures = getKeySignatures(midiFile);
 
             console.log('MIDI data length:', midiData.length);
             console.log('MIDI file tracks:', midiFile.tracks);
@@ -93,6 +100,8 @@ document.addEventListener('DOMContentLoaded', function () {
             codeDiv.textContent = formattedData;
             const timeSignaturesText = timeSignatures.map(signature => `${signature.numerator} / ${signature.denominator}`).join(", ");
             timesignDiv.innerText = timeSignaturesText;
+            const keySignaturesText = keySignatures.map(ks => ks.human).join(', ');
+            if (keysignDiv) keysignDiv.innerText = keySignaturesText;
         } catch (error) {
             console.error('Помилка завантаження або розбору:', error);
             codeDiv.textContent = `Помилка: ${error.message}`;
@@ -131,6 +140,46 @@ function getTimeSignatures(midiFile) {
     });
     
     return signatures;
+}
+
+function getKeySignatures(midiFile) {
+    const keys = [];
+    midiFile.tracks.forEach((track, index) => {
+        const events = midiFile.getTrackEvents(index);
+        events.forEach(event => {
+            // Meta event Key Signature: subtype 0x59, data[0]=sf (-7..+7 signed), data[1]=mi (0=major,1=minor)
+            if (event.subtype === 0x59 && event.data && event.data.length >= 2) {
+                // Convert to signed -128..127 as in MIDI spec
+                let sf = event.data[0];
+                if (sf > 127) sf = sf - 256; // just in case, but data[0] is 0..255; not needed in JS normally
+                if (sf > 7) sf = 7; if (sf < -7) sf = -7;
+                const mi = event.data[1];
+                const human = mapKeyToHuman(sf, mi);
+                keys.push({ sf, mi, human });
+            }
+        });
+    });
+
+    // Deduplicate consecutive duplicates keeping order
+    const result = [];
+    let prev = null;
+    for (const k of keys) {
+        const key = `${k.sf}:${k.mi}`;
+        if (prev !== key) {
+            result.push(k);
+            prev = key;
+        }
+    }
+    return result;
+}
+
+function mapKeyToHuman(sf, mi) {
+    // Align with server-side MapKsToName in C#
+    const majors = ["Ces","Ges","Des","As","Es","B","F","C","G","D","A","E","H","Fis","Cis"];
+    const minors = ["as","es","b","f","c","g","d","a","e","h","fis","cis","gis","dis","ais"];
+    const idx = sf + 7;
+    if (idx < 0 || idx >= majors.length) return `sf=${sf}, mi=${mi}`;
+    return mi === 0 ? `${majors[idx]}-dur` : `${minors[idx]}-moll`;
 }
 
 
