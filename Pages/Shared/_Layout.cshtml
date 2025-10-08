@@ -178,8 +178,12 @@
     <script src="~/lib/vexflow.js"></script> <!-- ноти -->
     <script src="~/lib/midifile/midifile.bundle.js"></script> <!-- MIDI -->
 
-
-
+    <environment include="Development">
+        <script>window.__APP_DEBUG__ = true;</script>
+    </environment>
+    <environment exclude="Development">
+        <script>window.__APP_DEBUG__ = false;</script>
+    </environment>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
