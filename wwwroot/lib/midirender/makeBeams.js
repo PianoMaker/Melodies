@@ -293,7 +293,7 @@ const allowDotted = false;
     }
 
     // Розпізнання тріолей (8-мих, 16-тих і чвертних)
-    function detectTuplets(measure, ticksPerBeat, timeSignature) {
+    function detectTuplets(measure, ticksPerBeat) {
         if (!measure || !Array.isArray(measure.notes) || measure.notes.length < 3) return [];
         const local = ticksPerBeat || 480;
         const tuplets = [];
@@ -381,11 +381,39 @@ const allowDotted = false;
         return tuplets;
     }
 
+
     // Експортуємо для виклику з midiRenderer.js
     if (typeof window !== 'undefined') {
         window.detectTuplets = detectTuplets;
     } else if (typeof globalThis !== 'undefined') {
         globalThis.detectTuplets = detectTuplets;
+    }
+
+    /**
+ * (AUTO-STEM HELPER)
+ * -------------------------------------------------
+ * Added helper to optionally apply VexFlow auto stem logic to every created note
+ * without modifying or removing existing functions or comments. Rest durations
+ * (codes ending with 'r') are skipped. Safe to call multiple times.
+ */
+    function applyAutoStem(note, durationCode) {
+        try {
+            if (!note) return;
+            console.log('applyAutoStem is working');
+            if (typeof durationCode === 'string' && /r$/.test(durationCode)) return; // skip rests
+            if (typeof note.autoStem === 'function') {
+                note.autoStem();
+            }
+        } catch (e) {
+            console.warn('applyAutoStem failed:', e);
+        }
+    }
+
+    // Експортуємо для виклику з midiRenderer.js
+    if (typeof window !== 'undefined') {
+        window.applyAutoStem = applyAutoStem;
+    } else if (typeof globalThis !== 'undefined') {
+        globalThis.applyAutoStem = applyAutoStem;
     }
 
 })();

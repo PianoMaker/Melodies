@@ -3,25 +3,6 @@
 
 
 /**
- * (AUTO-STEM HELPER)
- * -------------------------------------------------
- * Added helper to optionally apply VexFlow auto stem logic to every created note
- * without modifying or removing existing functions or comments. Rest durations
- * (codes ending with 'r') are skipped. Safe to call multiple times.
- */
-function applyAutoStem(note, durationCode) {
-    try {
-        if (!note) return;
-        if (typeof durationCode === 'string' && /r$/.test(durationCode)) return; // skip rests
-        if (typeof note.autoStem === 'function') {
-            note.autoStem();
-        }
-    } catch (e) {
-        console.warn('applyAutoStem failed:', e);
-    }
-}
-
-/**
  * drawScore
  * ----------
  * Renders a musical score from a MIDI file and displays it in the specified HTML element.
@@ -1481,6 +1462,28 @@ function processNoteElement(durationCode, key, accidental) {
 // - Xmargin: Лівий відступ (за замовчуванням 10).
 // Повертає: Загальну висоту канвасу, необхідну для розміщення всіх тактів.
 // ----------------------
+
+
+
+
+/**
+ * (AUTO-STEM HELPER)
+ * -------------------------------------------------
+ * Added helper to optionally apply VexFlow auto stem logic to every created note
+ * without modifying or removing existing functions or comments. Rest durations
+ * (codes ending with 'r') are skipped. Safe to call multiple times.
+ */
+//function applyAutoStem(note, durationCode) {
+//    try {
+//        if (!note) return;
+//        if (typeof durationCode === 'string' && /r$/.test(durationCode)) return; // skip rests
+//        if (typeof note.autoStem === 'function') {
+//            note.autoStem();
+//        }
+//    } catch (e) {
+//        console.warn('applyAutoStem failed:', e);
+//    }
+//}
 function calculateRequiredHeight(measuresCount, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
     console.log("FOO: midiRenderer.js - calculateRequiredHeight");
     let Xposition = Xmargin;
