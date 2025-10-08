@@ -237,7 +237,7 @@ namespace Melodies25.Pages.Melodies
                 await PrepareAudio(uploadsPath);
             }
 
-            foreach (var prop in new[] { "Title", "Year", "AuthorID", "Description", "IsFileEligible" })
+            foreach (var prop in new[] { "Title", "Year", "AuthorID", "Description", "IsFileEligible", "Tonality" })
             {
                 _context.Entry(Melody).Property(prop).IsModified = true;
             }
@@ -297,6 +297,34 @@ namespace Melodies25.Pages.Melodies
             else
             {
                 GrayMessageL($"Темп незмінний: {Tempo}");
+            }
+
+            // ОНОВЛЕННЯ Key Signature за вибраною тональністю при натисканні "Зберегти"
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(Melody.Tonality) && !string.IsNullOrWhiteSpace(Melody.FilePath))
+                {
+                    var fullPath = Path.Combine(_environment.WebRootPath, "melodies", Melody.FilePath);
+                    if (System.IO.File.Exists(fullPath))
+                    {
+                        var tonal = new Music.Tonalities(Melody.Tonality);
+                        int sharps = tonal.Keysignatures(); // -7..+7
+                        var mode = tonal.Mode; // MODE.dur / MODE.moll
+
+                        var midi = new MidiFile(fullPath);
+                        MidiConverter.UpdateKeySignatureInMidiFile(midi, sharps, mode);
+                        MidiFile.Export(fullPath, midi.Events);
+                        MessageL(COLORS.purple, $"Key Signature updated in MIDI: sf={sharps}, mode={mode}");
+                    }
+                }
+                else
+                {
+                    GrayMessageL("No tonality selected; Key Signature update skipped");
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessageL($"Failed to update Key Signature: {ex.Message}");
             }
 
             return RedirectToPage("./Details", new { id = Melody.ID });
