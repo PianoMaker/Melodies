@@ -37,7 +37,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const midiData = new Uint8Array(arrayBuffer);
             const midiFile = new MIDIFile(midiData);
             const timeSignatures = getTimeSignatures(midiFile);
-            const keySignatures = getKeySignatures(midiFile);
+            // pass raw bytes for robust fallback
+            const keySignatures = getKeySignatures(midiFile, midiData);
 
             console.log('MIDI data length:', midiData.length);
             console.log('MIDI file tracks:', midiFile.tracks);
@@ -92,7 +93,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const midiData = new Uint8Array(arrayBuffer);
             const midiFile = new MIDIFile(midiData);
             const timeSignatures = getTimeSignatures(midiFile);
-            const keySignatures = getKeySignatures(midiFile);
+            // pass raw bytes for robust fallback
+            const keySignatures = getKeySignatures(midiFile, midiData);
 
             console.log('MIDI data length:', midiData.length);
             console.log('MIDI file tracks:', midiFile.tracks);
@@ -146,32 +148,56 @@ function getTimeSignatures(midiFile) {
     return signatures;
 }
 
-function getKeySignatures(midiFile) {
+function getKeySignatures(midiFile, rawBytes) {
     const keys = [];
-    midiFile.tracks.forEach((track, index) => {
+
+    const pushKs = (sf, mi) => {
+        if (sf == null || mi == null) return;
+        // normalize signed [-7..7]
+        const sfs = sf > 127 ? sf - 256 : sf;
+        const clamped = Math.max(-7, Math.min(7, sfs));
+        const mode = mi ? 1 : 0;
+        keys.push({ sf: clamped, mi: mode, human: mapKeyToHuman(clamped, mode) });
+    };
+
+    // 1) Primary: через MIDIFile події (підтримка різних форм)
+    midiFile.tracks.forEach((_, index) => {
         const events = midiFile.getTrackEvents(index);
-        events.forEach(event => {
-            // Meta event Key Signature: subtype 0x59, data[0]=sf (-7..+7 signed), data[1]=mi (0=major,1=minor)
-            if (event.subtype === 0x59 && event.data && event.data.length >= 2) {
-                // Convert to signed -128..127 as in MIDI spec
-                let sf = event.data[0];
-                if (sf > 127) sf = sf - 256; // just in case, but data[0] is 0..255; not needed in JS normally
-                if (sf > 7) sf = 7; if (sf < -7) sf = -7;
-                const mi = event.data[1];
-                const human = mapKeyToHuman(sf, mi);
-                keys.push({ sf, mi, human });
+        events.forEach(ev => {
+            const isKs = (ev.subtype === 0x59) || (ev.type === 0xFF && ev.metaType === 0x59);
+            if (!isKs) return;
+
+            if (ev.data && ev.data.length >= 2) {
+                pushKs(ev.data[0], ev.data[1]); // data[0]=sf, data[1]=mi
+            } else if (typeof ev.key !== 'undefined' && typeof ev.scale !== 'undefined') {
+                pushKs(ev.key, ev.scale); // деякі збірки MIDIFile
             }
         });
     });
 
-    // Deduplicate consecutive duplicates keeping order
+    // 2) Fallback: якщо нічого не знайдено — скануємо сирі байти на FF 59 02
+    if (keys.length === 0 && rawBytes && rawBytes.length > 5) {
+        for (let i = 0; i < rawBytes.length - 4; i++) {
+            if (rawBytes[i] === 0xFF && rawBytes[i + 1] === 0x59) {
+                const len = rawBytes[i + 2];
+                if (len >= 2) {
+                    const sf = rawBytes[i + 3];
+                    const mi = rawBytes[i + 4];
+                    pushKs(sf, mi);
+                    i += 4; // стрибок далі
+                }
+            }
+        }
+    }
+
+    // 3) Прибрати поспіль однакові
     const result = [];
     let prev = null;
     for (const k of keys) {
-        const key = `${k.sf}:${k.mi}`;
-        if (prev !== key) {
+        const sig = `${k.sf}:${k.mi}`;
+        if (sig !== prev) {
             result.push(k);
-            prev = key;
+            prev = sig;
         }
     }
     return result;
