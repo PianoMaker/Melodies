@@ -20,7 +20,7 @@ const allowDotted = false;
             return { beamGroups: [], beams: [] };
         }
 
-        console.log('MB: makeBeams called with measure:', measure, 'ticksPerBeat:', ticksPerBeat);
+        //console.log('MB: makeBeams called with measure:', measure, 'ticksPerBeat:', ticksPerBeat);
 
         const localTicksPerBeat = ticksPerBeat || 480;
         const beamGroups = [];
@@ -36,7 +36,7 @@ const allowDotted = false;
         let runningTicks = 0; 
 
         measure.notes.forEach((note, idx) => {
-            console.log(`MB: analysing note idx=${idx} (raw=${note}) currentGroupLen=${currentGroup.notes.length}`);
+            //console.log(`MB: analysing note idx=${idx} (raw=${note}) currentGroupLen=${currentGroup.notes.length}`);
 
             if (!note) {
                 if (currentGroup.notes.length) closeGroup(currentGroup, beamGroups, beams, 'null-note');
