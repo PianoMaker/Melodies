@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="~/css/notes.css" asp-append-version="true" />
 }
 <div class="row infocontainer">
-<h1>@melody.Author.Name  @melody.Author.Name  - @melody.Title</h1>
+<h1>@melody.Author.Name - @melody.Title</h1>
 
 <h4></h4>
 <hr />
@@ -56,7 +56,7 @@
             </div>
             <div style="display:flex; gap:8px; align-items:center">
                 <button id="getTonality" type="button" class="btn btn-outline-dark light-background">Визначити<span class="ifnarrowscreen"> за MIDI-файлом</span></button>
-            <button id="paralellTonality" type="button" class="btn btn-outline-dark light-background">Паралельна</button>
+            <button id="paralellTonality" type="button" class="btn btn-outline-dark light-background">Паралельна</button>            
             </div>
             <!--ТЕМП-->
             <div class="form-group">
@@ -108,4 +108,4 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script src="~/js/editMelody.js"></script>
-}</script>
+}
