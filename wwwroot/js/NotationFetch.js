@@ -3,6 +3,7 @@
 
 document.addEventListener('DOMContentLoaded', function () {
     const select = document.getElementById('midifiles');
+    const sheetMusicDiv = document.getElementById('SheetMusic');
     const notationDiv = document.getElementById('notation');
     const codeDiv = document.getElementById('code');
     const timesignDiv = document.getElementById('timesignature');
@@ -10,11 +11,12 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("notationFetch.js starts ##");
 
     async function loadSelectedMidiFile() {
-        const selectedFile = select.value;
+        const selectedFile = select?.value;
         console.log(`selectedFile = ${selectedFile}`);
 
         // Очищаємо попередній нотний запис
-        notationDiv.innerHTML = '';
+        sheetMusicDiv.innerHTML = '<p style="text-align: center">Ноти</p>';
+        document.getElementById('comments')?.replaceChildren();
         codeDiv.innerHTML = '';
         timesignDiv.innerText = '';
         if (keysignDiv) keysignDiv.innerText = '';
@@ -40,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('MIDI data length:', midiData.length);
             console.log('MIDI file tracks:', midiFile.tracks);
 
-            // Render score via midiRenderer using URL (so drawScore gets element IDs)
+            // Render score via midiRenderer using URL into SheetMusic container
             drawNotation(selectedFile);
 
             const formattedData = formatMidiNotesForDisplay(midiFile);
@@ -60,22 +62,23 @@ document.addEventListener('DOMContentLoaded', function () {
     loadSelectedMidiFile();
 
     // Викликаємо завантаження при зміні вибору
-    select.addEventListener('change', loadSelectedMidiFile);
+    select?.addEventListener('change', loadSelectedMidiFile);
 });
 ('DOMContentLoaded', function () {
     const select = document.getElementById('midifiles');
+    const sheetMusicDiv = document.getElementById('SheetMusic');
     const notationDiv = document.getElementById('notation');
     const codeDiv = document.getElementById('code');
     const timesignDiv = document.getElementById('timesignature');
     const keysignDiv = document.getElementById('keysignatures');
     console.log("notationFetch.js starts ##");
 
-    select.addEventListener('change', async function () {
+    select?.addEventListener('change', async function () {
         const selectedFile = select.value;
         console.log(`selectedFile = ${selectedFile}`);
 
         // Очищаємо попередній нотний запис
-        notationDiv.innerHTML = '';
+        sheetMusicDiv.innerHTML = '<p style="text-align: center">Ноти</p>';
         codeDiv.innerHTML = '';
 
         try {
@@ -110,19 +113,20 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function drawNotation(selectedFile) {
-    // Ensure the comments element exists (without touching midiRenderer.js)
-    let res = document.getElementById('result');
-    if (!res) {
-        const host = document.getElementById('SheetMusic') || document.body;
-        res = document.createElement('div');
-        res.id = 'result';
-        host.appendChild(res);
+    // Ensure the comments element exists (outside of SheetMusic)
+    if (!document.getElementById('comments')) {
+        const host = document.body;
+        const c = document.createElement('div');
+        c.id = 'comments';
+        host.appendChild(c);
     }
 
-    // Measure left panel width and render
-    const sheet = document.getElementById('SheetMusic') || document.getElementById('notation')?.parentElement;
+    // Measure left panel width and render into SheetMusic
+    const sheet = document.getElementById('SheetMusic');
     const width = Math.max(320, Math.floor(sheet?.clientWidth || sheet?.getBoundingClientRect().width || 1200));
-    renderMidiFromUrl(`/melodies/${selectedFile}`, 'notation', 'result', width);
+
+    // Render directly into SheetMusic element with correct argument order
+    renderMidiFromUrl(`/melodies/${selectedFile}`, 1000, 'SheetMusic', 'comments', width);
 }
 function getTimeSignatures(midiFile) {
     const signatures = [];
