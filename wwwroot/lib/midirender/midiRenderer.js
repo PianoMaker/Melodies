@@ -38,9 +38,8 @@ function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWID
             console.log("drawScore: File read successfully");
             const uint8 = new Uint8Array(e.target.result);
 
-            try {
-                // pass maxBarsToRender and get info about applied limitation
-                const renderInfo = renderMidiFileToNotation(
+            try {                
+                renderMidiFileToNotation(
                     uint8,
                     ELEMENT_FOR_RENDERING,
                     GENERALWIDTH,
@@ -447,11 +446,26 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
     // Поточний key signature (оновлюється при meta подіях 0x59)
     let currentKeySig = null;
 
-    // Prune trailing measures that contain no Note On events (only offs / meta etc.)
-//     while (measures.length > 0 && !hasNoteOn(measures[measures.length - 1])) {
-//         console.log("Pruning trailing empty measure without Note On events");
-//         measures.pop();
-//     }
+	const meanWidth = GetMeanWidth(BARWIDTH, measures);
+
+    let meanBarWidth = BARWIDTH;    
+    let sumBarWidth = 0;
+    let currentWidth;
+
+
+
+    measures.forEach((m) => {
+        let notesamount = getNumberOfNotes(m);
+        if (notesamount !== undefined) {
+            currentWidth = meanBarWidth / 3 + meanBarWidth * notesamount / 7;
+            sumBarWidth += currentWidth;
+        }
+        console.log(`notesamount: ${notesamount} meanBarWidth current: ${currentWidth}`);
+    });
+
+	
+	meanBarWidth = sumBarWidth / measures.length;
+    console.log(`meanBarWidth total: ${meanBarWidth}`);
 
     // Перебирає усі такти
     // ----------------------
@@ -497,9 +511,10 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         // --- Встановлюємо startTime для активних нот на початку такту ---
         processActiveNotesFromPreviousBar(activeNotes, index, barStartAbsTime);
 
+
         // Перевіряємо, чи потрібно перейти на новий рядок
         const oldYposition = Yposition;
-        ({ Xposition, Yposition } = adjustXYposition(Xposition, GENERALWIDTH, BARWIDTH, Yposition, HEIGHT, Xmargin, index, barStartAbsTime));
+        ({ Xposition, Yposition } = adjustXYposition(Xposition, GENERALWIDTH, meanBarWidth, Yposition, HEIGHT, Xmargin, index, barStartAbsTime));   
         
         // Якщо Y позиція змінилась, значить почався новий рядок
         if (Yposition !== oldYposition) {
@@ -507,7 +522,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
             console.log(`New row started at measure ${index + 1}, Y position: ${Yposition}`);
         }
 
-        let STAVE_WIDTH = adjustStaveWidth(BARWIDTH, index, CLEFZONE, isFirstMeasureInRow, timeSignatureChanged);
+        let STAVE_WIDTH = adjustStaveWidth(meanBarWidth, index, CLEFZONE, isFirstMeasureInRow, timeSignatureChanged);
 
         // Створюємо нотний стан (stave)
         // Додаємо ключ та розмір такту, якщо потрібно (тепер також і key signature)
@@ -555,7 +570,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         console.log(`start to draw measure ${index + 1}`);
 
         // Передаємо ticksPerBeat в drawMeasure
-        drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat);
+        drawMeasure(notes, meanBarWidth, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat);
 
         Xposition += STAVE_WIDTH;
         
@@ -1465,25 +1480,6 @@ function processNoteElement(durationCode, key, accidental) {
 
 
 
-
-/**
- * (AUTO-STEM HELPER)
- * -------------------------------------------------
- * Added helper to optionally apply VexFlow auto stem logic to every created note
- * without modifying or removing existing functions or comments. Rest durations
- * (codes ending with 'r') are skipped. Safe to call multiple times.
- */
-//function applyAutoStem(note, durationCode) {
-//    try {
-//        if (!note) return;
-//        if (typeof durationCode === 'string' && /r$/.test(durationCode)) return; // skip rests
-//        if (typeof note.autoStem === 'function') {
-//            note.autoStem();
-//        }
-//    } catch (e) {
-//        console.warn('applyAutoStem failed:', e);
-//    }
-//}
 function calculateRequiredHeight(measuresCount, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
     console.log("FOO: midiRenderer.js - calculateRequiredHeight");
     let Xposition = Xmargin;

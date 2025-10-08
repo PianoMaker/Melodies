@@ -914,3 +914,45 @@ async function getAllEvents(file) {
 if (typeof window !== 'undefined') window.getAllEvents = getAllEvents;
 
 
+// Рахує кількість NoteOn (velocity > 0) у такті
+function getNumberOfNotes(measure) {
+    console.log("FOO: midiparser_ext.js - getNumberOfNotes");
+    if (!Array.isArray(measure)) return 0;
+    let count = 0;
+    for (const ev of measure) {
+        if (ev && ev.type === 0x9 && Array.isArray(ev.data) && ev.data.length > 1 && ev.data[1] > 0) {
+            count++;
+        }
+    }
+    return count;
+}
+if (typeof window !== 'undefined') window.getNumberOfNotes = getNumberOfNotes;
+
+
+// Розраховує середню ширину такту на основі кількості нот у кожному такті
+function GetMeanBarWidth(BARWIDTH, measures) {
+
+    if (measures === undefined || !Array.isArray(measures) || measures.length === 0) {
+        console.warn("meanBarWidth: Invalid measures array");
+        return BARWIDTH;
+	}
+    console.log("FOO: midiparser_ext.js - meanBarWidth");
+    let meanBarWidth = BARWIDTH;
+    let sumBarWidth = 0;
+    let currentWidth;
+
+    measures.forEach((m) => {
+        let notesamount = getNumberOfNotes(m);
+        if (notesamount !== undefined) {
+            currentWidth = meanBarWidth / 3 + meanBarWidth * notesamount / 7;
+            sumBarWidth += currentWidth;
+        }
+        console.log(`notesamount: ${notesamount} meanBarWidth current: ${currentWidth}`);
+    });
+
+    meanBarWidth = sumBarWidth / measures.length;
+    console.log(`meanBarWidth total: ${meanBarWidth}`);
+
+    return meanBarWidth;
+}   
+if (typeof window !== 'undefined') window.GetMeanBarWidth = GetMeanBarWidth;
