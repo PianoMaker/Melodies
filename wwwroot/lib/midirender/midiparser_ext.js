@@ -70,22 +70,28 @@ function updateKeySignatureFromEvents(events) {
         }
         // Fallback 1: з data байтів
         if (!ks && ev && Array.isArray(ev.data) && ev.data.length >= 2) {
-            let sf = ev.data[0]; if (sf > 127) sf -= 256;
-            const mi = ev.data[1];
+            let bytes = ev.data.slice();
+            if (bytes.length >= 3 && bytes[0] === 2) bytes = bytes.slice(1);
+            let sf = bytes[0]; if (sf > 127) sf -= 256;
+            const miRaw = bytes[1];
+            const mi = (miRaw === 0 || miRaw === 1) ? miRaw : (miRaw ? 1 : 0);
             ks = { sf, mi };
         }
+
         // Fallback 2: param1/param2
         if (!ks && ev && ev.param1 !== undefined && ev.param2 !== undefined) {
             let sf = ev.param1; if (sf > 127) sf -= 256;
-            const mi = ev.param2;
+            const miRaw = ev.param2;
+            const mi = (miRaw === 0 || miRaw === 1) ? miRaw : (miRaw ? 1 : 0);
             ks = { sf, mi };
         }
 
         if (ks) break;
     }
-    if (ks) {
-        // Оновимо глобальну (для midiNoteToVexFlow) і повернемо об'єкт (для midiRenderer.js)
-        if (typeof ks.sf === 'number') currentKeySignature = ks.sf;
+    if (ks && typeof ks.sf === 'number') {
+        currentKeySignature = ks.sf;
+        // Extra safety
+        ks.mi = (ks.mi === 0 || ks.mi === 1) ? ks.mi : (ks.mi ? 1 : 0);
         return { sf: ks.sf, mi: ks.mi };
     }
     return null;
@@ -864,14 +870,23 @@ function normalizeMetaEvents(events) {
 // --------------------------------------------------------------------
 function decodeKeySignature(ev) {
     console.log("FOO: Decoding Key Signature from event:", ev);
-    if (!ev || ev.metaType !== 0x59) return null;
+    if (!ev || (ev.metaType !== 0x59 && ev.subtype !== 0x59)) return null;
+
     let bytes = ev.data;
+    if (!Array.isArray(bytes)) bytes = [];
+
+    // Some libs keep a leading length byte (0x02)
     if (bytes.length === 3 && bytes[0] === 2) bytes = bytes.slice(1);
     if (bytes.length < 2) return null;
+
     let sf = bytes[0]; if (sf > 127) sf -= 256;
-    const mi = bytes[1];
-    const majors = ['Cb', 'Gb', 'Db', 'Ab', 'Eb', 'Bb', 'F', 'C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#'];
-    const minors = ['Abm', 'Ebm', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm', 'Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m', 'A#m'];
+
+    // Clamp mi to 0 or 1; treat any non-zero (incl. 255) as 1
+    const miRaw = bytes[1];
+    const mi = (miRaw === 0 || miRaw === 1) ? miRaw : (miRaw ? 1 : 0);
+
+    const majors = ['Cb','Gb','Db','Ab','Eb','Bb','F','C','G','D','A','E','B','F#','C#'];
+    const minors = ['Abm','Ebm','Bbm','Fm','Cm','Gm','Dm','Am','Em','Bm','F#m','C#m','G#m','D#m','A#m'];
     const idx = sf + 7;
     const name = (idx >= 0 && idx < majors.length) ? (mi === 0 ? majors[idx] : minors[idx]) : `sf=${sf}`;
     return { sf, mi, name, raw: ev.data };

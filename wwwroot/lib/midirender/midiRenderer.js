@@ -523,7 +523,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         const measureAccState = {};
        
         // почергово обробляємо всі події в такті
-        console.log(`Processing events in measure ${index + 1}`);
+        //console.log(`Processing events in measure ${index + 1}`);
 
         // Формує масив notes[] та ties[] для поточного такту
         renderMeasure();
@@ -543,7 +543,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         
         // Якщо остання нота не доходить до кінця такту, додаємо паузу        
         if (Object.keys(activeNotes).length === 0) {
-            console.log(`check for missing rests in measure ${index + 1}`);
+            //console.log(`check for missing rests in measure ${index + 1}`);
             addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, ticksPerBeat);
         }
 

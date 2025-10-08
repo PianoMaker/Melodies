@@ -491,7 +491,7 @@ namespace Music
                             else if (note.NoteNumber == previousNote)
                                 isOpen = false;
 
-                            //GrayMessageL($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                            //GrayMessageL($"{note.Number} - {note.AbsoluteTime} - {note.DeltaTime}");
 
                             //GrayMessageL($"\tduration = {note.AbsoluteTime - currentTime}");
 
@@ -514,60 +514,79 @@ namespace Music
             return newEventCollection;
         }
 
-
-        public static MidiEventCollection InsertKeySignatures(int sharps, MODE mode)
+        // Map sf/mi (-7..+7, 0/1) to human-readable tonality for logs
+        private static string MapKsToName(int sf, int mi)
         {
-            // Create a collection compatible with the rest of the MIDI utilities
-            var collection = new MidiEventCollection(Globals.MidiFileType, Globals.PPQN);
-
-            // MIDI Key Signature meta expects sf in range [-7..+7]
-            if (sharps > 7) sharps = 7;
-            if (sharps < -7) sharps = -7;
-
-            // 0 = major (dur), 1 = minor (moll)
-            int mi = (mode == MODE.moll) ? 1 : 0;
-
-            // Add Key Signature meta at time 0
-            var keySignature = new KeySignatureEvent(0, sharps, mi);
-            collection.AddEvent(keySignature, Globals.TrackNumber);
-
-            return collection;
+            int idx = sf + 7;
+            string[] majors = { "Ces","Ges","Des","As","Es","B","F","C","G","D","A","E","H","Fis","Cis" };
+            string[] minors = { "as","es","b","f","c","g","d","a","e","h","fis","cis","gis","dis","ais" };
+            if (idx < 0 || idx >= majors.Length) return $"sf={sf}, mi={mi}";
+            return mi == 0 ? $"{majors[idx]}-dur" : $"{minors[idx]}-moll";
         }
 
-        public static void UpdateKeySignatureInMidiFile(MidiFile midiFile, int sharps, MODE mode)
+        // NEW authoritative API: insert/update Key Signature meta events directly into an existing MidiFile
+        public static void InsertKeySignatures(MidiFile midiFile, int sharps, MODE mode)
         {
-            MessageL(COLORS.olive, $"UpdateKeySignatures method, sharps = {sharps}, mode = {mode}");
+            MessageL(COLORS.olive, $"InsertKeySignatures: requested sf={sharps}, mode={mode}");
 
-            // Clamp sf to MIDI range [-7..+7]
+            // Clamp sf to [-7..7]
             if (sharps > 7) sharps = 7;
             if (sharps < -7) sharps = -7;
-
-            // 0 = major (dur), 1 = minor (moll)
             int mi = (mode == MODE.moll) ? 1 : 0;
+            string newName = MapKsToName(sharps, mi);
 
-            // Replace first existing Key Signature event if present
-            bool replaced = false;
-            foreach (var track in midiFile.Events)
+            int updateCount = 0;
+
+            // 1) Replace all existing KS events preserving AbsoluteTime
+            for (int t = 0; t < midiFile.Events.Tracks; t++)
             {
+                var track = midiFile.Events[t];
                 for (int i = 0; i < track.Count; i++)
                 {
-                    if (track[i] is KeySignatureEvent)
+                    if (track[i] is KeySignatureEvent oldKs)
                     {
                         var abs = track[i].AbsoluteTime;
-                        int absInt = abs > int.MaxValue ? int.MaxValue : (abs < int.MinValue ? int.MinValue : (int)abs);
+                        int absInt = abs > int.MaxValue ? int.MaxValue : (int)abs;
+                        string oldName = MapKsToName(oldKs.SharpsFlats, oldKs.MajorMinor);
+                        MessageL(COLORS.olive, $"KS update: track={t}, abs={absInt}, {oldName} -> {newName}");
                         track[i] = new KeySignatureEvent(absInt, sharps, mi);
-                        replaced = true;
-                        break;
+                        updateCount++;
                     }
                 }
-                if (replaced) break;
             }
 
-            // If none existed, insert at the very beginning of the first track
-            if (!replaced)
+            // Helper: ensure KS at abs=0 in selected track
+            void EnsureKsAtZero(int trackIndex)
             {
-                midiFile.Events[0].Insert(0, new KeySignatureEvent(0, sharps, mi));
+                if (trackIndex < 0 || trackIndex >= midiFile.Events.Tracks) return;
+                var tr = midiFile.Events[trackIndex];
+                for (int i = 0; i < tr.Count; i++)
+                {
+                    if (tr[i] is KeySignatureEvent && tr[i].AbsoluteTime == 0)
+                    {
+                        tr[i] = new KeySignatureEvent(0, sharps, mi);
+                        MessageL(COLORS.olive, $"KS ensured at track {trackIndex}:0 -> {newName}");
+                        return;
+                    }
+                }
+                tr.Insert(0, new KeySignatureEvent(0, sharps, mi));
+                MessageL(COLORS.olive, $"KS inserted at track {trackIndex}:0 -> {newName}");
             }
+
+            // 2) Ensure presence at track 0 and all note tracks at abs=0
+            var noteTracks = new List<int>();
+            for (int t = 0; t < midiFile.Events.Tracks; t++)
+            {
+                if (midiFile.Events[t].OfType<NoteOnEvent>().Any(e => e.Velocity > 0))
+                    noteTracks.Add(t);
+            }
+
+            EnsureKsAtZero(0);
+            foreach (var t in noteTracks) EnsureKsAtZero(t);
+
+            // 3) Recompute deltas/order
+            midiFile.Events.PrepareForExport();
+            MessageL(COLORS.olive, $"InsertKeySignatures: completed. total updated={updateCount}, ensured {noteTracks.Count + 1} tracks at abs=0 -> {newName}");
         }
 
         // Пошук одночасно взятиих нот 
@@ -575,11 +594,10 @@ namespace Music
         {
             foreach (var track in midiFile.Events)
             {
-                //GrayMessageL("explore track");
                 var noteOnGroups = track
                     .OfType<NoteOnEvent>()
                     .Where(e => e.Velocity > 0)
-                    .GroupBy(e => e.AbsoluteTime)                    
+                    .GroupBy(e => e.AbsoluteTime)
                     .Where(g => g.Count() > 1);
 
                 if (noteOnGroups.Any())
@@ -592,7 +610,6 @@ namespace Music
             MessageL(COLORS.blue, "No polyphony detected");
             return false;
         }
-
 
         private static void Initialize(out int channel, out MidiEventCollection events)
         {
@@ -705,52 +722,4 @@ namespace Music
 
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

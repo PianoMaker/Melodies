@@ -305,17 +305,7 @@ namespace Melodies25.Pages.Melodies
                 if (!string.IsNullOrWhiteSpace(Melody.Tonality) && !string.IsNullOrWhiteSpace(Melody.FilePath))
                 {
                     var fullPath = Path.Combine(_environment.WebRootPath, "melodies", Melody.FilePath);
-                    if (System.IO.File.Exists(fullPath))
-                    {
-                        var tonal = new Music.Tonalities(Melody.Tonality);
-                        int sharps = tonal.Keysignatures(); // -7..+7
-                        var mode = tonal.Mode; // MODE.dur / MODE.moll
-
-                        var midi = new MidiFile(fullPath);
-                        MidiConverter.UpdateKeySignatureInMidiFile(midi, sharps, mode);
-                        MidiFile.Export(fullPath, midi.Events);
-                        MessageL(COLORS.purple, $"Key Signature updated in MIDI: sf={sharps}, mode={mode}");
-                    }
+                    ApplyKeySignature(fullPath, Melody.Tonality);
                 }
                 else
                 {
@@ -328,6 +318,27 @@ namespace Melodies25.Pages.Melodies
             }
 
             return RedirectToPage("./Details", new { id = Melody.ID });
+        }
+
+        private void ApplyKeySignature(string fullPath, string tonality)
+        {
+            if (!System.IO.File.Exists(fullPath)) { GrayMessageL($"MIDI not found: {fullPath}"); return; }
+
+            var tonStr = (tonality ?? "").Trim()
+                .Replace('\u2013','-').Replace('\u2014','-').Replace('\u2212','-')
+                .Replace('–','-').Replace('—','-').Replace('−','-')
+                .Replace("  "," ");
+
+            var tonal = new Music.Tonalities(tonStr);
+            int sharps = tonal.Keysignatures(); // -7..+7
+            var mode = tonal.Mode;              // MODE.dur / MODE.moll
+
+            MessageL(COLORS.olive, $"ApplyKeySignature: {tonStr} -> sf={sharps}, mode={mode}");
+
+            var midi = new MidiFile(fullPath);
+            MidiConverter.InsertKeySignatures(midi, sharps, mode);
+            MidiFile.Export(fullPath, midi.Events);
+            MessageL(COLORS.purple, $"Key Signature inserted: sf={sharps}, mode={mode} ({fullPath})");
         }
 
         private async Task PrepareAudio(string uploadsPath)
@@ -462,17 +473,8 @@ namespace Melodies25.Pages.Melodies
                     // Update MIDI key signature based on selected tonality
                     if (!string.IsNullOrWhiteSpace(melody.Tonality))
                     {
-                        var tonal = new Music.Tonalities(melody.Tonality);
-                        int sharps = tonal.Keysignatures(); // -7..+7
-                        var mode = tonal.Mode; // MODE.dur / MODE.moll
-
                         var fullPath = Path.Combine(_environment.WebRootPath, "melodies", melody.FilePath);
-                        if (System.IO.File.Exists(fullPath))
-                        {
-                            var midi = new MidiFile(fullPath);
-                            MidiConverter.UpdateKeySignatureInMidiFile(midi, sharps, mode);
-                            MidiFile.Export(fullPath, midi.Events);
-                        }
+                        ApplyKeySignature(fullPath, melody.Tonality);
                     }
 
                     await PrepareMp3Async(_environment, melody.FilePath, false); // генеруємо з копією всередині
