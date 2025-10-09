@@ -8,6 +8,7 @@ using static Music.Engine;
 using static Music.Messages;
 using static Music.Globals;
 using static System.Console;
+using NAudio.Midi;
 
 namespace Music
 {
@@ -36,6 +37,71 @@ namespace Music
             this.step = (NOTES)note.Step;             
             alter = (ALTER)note.GetAlter();
             this.mode = mode;
+        }
+
+        public Tonalities(int sharpflat, int majorminor)
+        {
+            MODE mode = (MODE)majorminor;
+            GetTonalityFromKeySignature(sharpflat, mode);
+        }
+
+        public Tonalities(KeySignatureEvent ks)
+        {
+            int sharpflat = (int)ks.SharpsFlats;
+            MODE mode = (MODE)ks.MajorMinor;
+            GetTonalityFromKeySignature(sharpflat, mode);
+        }
+
+        private void GetTonalityFromKeySignature(int sharpflat, MODE mode)
+        {
+            if (mode == MODE.dur)
+            {
+                this.mode = MODE.dur;
+                this.alter = ALTER.NATURAL;
+                switch (sharpflat)
+                {
+
+                    case 0: this.step = NOTES.DO; break;
+                    case 1: this.step = NOTES.SOL; break;
+                    case 2: this.step = NOTES.RE; break;
+                    case 3: this.step = NOTES.LA; break;
+                    case 4: this.step = NOTES.MI; break;
+                    case 5: this.step = NOTES.SI; break;
+                    case 6: this.step = NOTES.FA; this.Alter = ALTER.SHARP; break;
+                    case 7: this.step = NOTES.DO; this.Alter = ALTER.SHARP; break;
+                    case -1: this.step = NOTES.FA; break;
+                    case -2: this.step = NOTES.SI; alter = ALTER.FLAT; break;
+                    case -3: this.step = NOTES.MI; alter = ALTER.FLAT; break;
+                    case -4: this.step = NOTES.LA; alter = ALTER.FLAT; break;
+                    case -5: this.step = NOTES.RE; alter = ALTER.FLAT; break;
+                    case -6: this.step = NOTES.SOL; alter = ALTER.FLAT; break;
+                    case -7: this.step = NOTES.DO; alter = ALTER.FLAT; break;
+                }
+            }
+            else if (mode == MODE.moll)
+            {
+                this.mode = MODE.moll;
+                this.alter = ALTER.NATURAL;
+                switch (sharpflat)
+                {
+
+                    case 0: this.step = NOTES.LA; break;
+                    case 1: this.step = NOTES.MI; break;
+                    case 2: this.step = NOTES.SI; break;
+                    case 3: this.step = NOTES.FA; this.Alter = ALTER.SHARP; break;
+                    case 4: this.step = NOTES.DO; this.Alter = ALTER.SHARP; break;
+                    case 5: this.step = NOTES.SOL; this.Alter = ALTER.SHARP; break;
+                    case 6: this.step = NOTES.RE; this.Alter = ALTER.SHARP; break;
+                    case 7: this.step = NOTES.LA; this.Alter = ALTER.SHARP; break;
+                    case -1: this.step = NOTES.RE; break;
+                    case -2: this.step = NOTES.SOL; break;
+                    case -3: this.step = NOTES.DO; break;
+                    case -4: this.step = NOTES.FA; break;
+                    case -5: this.step = NOTES.SI; alter = ALTER.FLAT; break;
+                    case -6: this.step = NOTES.MI; alter = ALTER.FLAT; break;
+                    case -7: this.step = NOTES.LA; alter = ALTER.FLAT; break;
+                }
+            }
         }
 
         public Tonalities(int step, int pitch, MODE mode)
@@ -422,8 +488,29 @@ namespace Music
             return dictionary;
         }
 
+        public static Tonalities? GetTonalitiesFromMidi(MidiFile midifile)
+        {
 
+            Tonalities? tonalities = null;
+            
+            foreach (var midievent in midifile.Events)
+            {
+                
+                    if (midievent is KeySignatureEvent kse)
+                    {
+                        int sharpflat = (int)kse.SharpsFlats;
+                        MODE mode = (MODE)kse.MajorMinor;                        
+                        tonalities.GetTonalityFromKeySignature(sharpflat, mode);                        
+                    }
+                
+            }
+            return tonalities;
+        }
 
+        public int GetSharpFlats()
+        {
+            return Keysignatures();
+        }
 
 
         public object Clone()

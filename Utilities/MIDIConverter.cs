@@ -84,7 +84,44 @@ namespace Music
             melody.Tempo = (int)tempo;
             return melody;
         }
-        //те саме асинхронно
+        
+        public static Tonalities? GetTonalities(MidiEventCollection midiEvents)
+        {
+            if (midiEvents == null) return null;
+
+            KeySignatureEvent? atZero = null;
+            KeySignatureEvent? first = null;
+
+            for (int t = 0; t < midiEvents.Tracks; t++)
+            {
+                var track = midiEvents[t];
+                foreach (var ev in track)
+                {
+                    if (ev is KeySignatureEvent ks)
+                    {
+                        if (first == null) first = ks;
+                        if (ev.AbsoluteTime == 0)
+                        {
+                            atZero = ks;
+                            break; // prefer KS at time 0 in this track
+                        }
+                    }
+                }
+                if (atZero != null) break;
+            }
+
+            var chosen = atZero ?? first;
+            if (chosen == null) return null;
+
+            // Tonalities has a ctor for KeySignatureEvent
+            return new Tonalities(chosen);
+        }
+
+        public static Tonalities? GetTonalities(MidiFile midiFile)
+        {
+            return midiFile == null ? null : GetTonalities(midiFile.Events);
+        }
+
         public static async Task<Melody> GetMelodyFromMidiAsync(MidiFile midiFile)
         {
             // Використовуємо Task.Run для асинхронної обробки в окремому потоці
@@ -524,72 +561,79 @@ namespace Music
             return mi == 0 ? $"{majors[idx]}-dur" : $"{minors[idx]}-moll";
         }
 
-        // NEW authoritative API: insert/update Key Signature meta events directly into an existing MidiFile
-        public static void InsertKeySignatures(MidiFile midiFile, int sharps, MODE mode)
-        {
-            MessageL(COLORS.olive, $"InsertKeySignatures: requested sf={sharps}, mode={mode}");
 
-            // Clamp sf to [-7..7]
+        public static MidiEventCollection InsertKeySignatures(MidiFile midiFile, int sharps, MODE mode)
+        {
+            // Clamp sf to [-7..7] ; mi: 0=dur, 1=moll
             if (sharps > 7) sharps = 7;
             if (sharps < -7) sharps = -7;
             int mi = (mode == MODE.moll) ? 1 : 0;
             string newName = MapKsToName(sharps, mi);
+            MessageL(COLORS.cyan, $"InsertKeySignatures: requested sf={sharps}, mode={mode} ({newName})");
 
-            int updateCount = 0;
+            var newEventCollection = new MidiEventCollection(midiFile.FileFormat, midiFile.DeltaTicksPerQuarterNote);
 
-            // 1) Replace all existing KS events preserving AbsoluteTime
+            // Наперед визначимо, які треки «нотні»
+            bool[] isNoteTrack = new bool[midiFile.Events.Tracks];
             for (int t = 0; t < midiFile.Events.Tracks; t++)
             {
-                var track = midiFile.Events[t];
-                for (int i = 0; i < track.Count; i++)
+                isNoteTrack[t] = midiFile.Events[t].OfType<NoteOnEvent>().Any(e => e.Velocity > 0);
+            }
+
+            for (int t = 0; t < midiFile.Events.Tracks; t++)
+            {
+                var oldTrack = midiFile.Events[t];
+                var newTrack = new List<MidiEvent>();
+                bool hadKS = false;
+                bool hasKsAtZero = false;
+
+                foreach (var ev in oldTrack)
                 {
-                    if (track[i] is KeySignatureEvent oldKs)
+                    if (ev is KeySignatureEvent oldKs)
                     {
-                        var abs = track[i].AbsoluteTime;
+                        hadKS = true;
+                        var abs = ev.AbsoluteTime;
                         int absInt = abs > int.MaxValue ? int.MaxValue : (int)abs;
+
+                        var replaced = new KeySignatureEvent(absInt, sharps, mi);
+                        if (absInt == 0) hasKsAtZero = true;
+
                         string oldName = MapKsToName(oldKs.SharpsFlats, oldKs.MajorMinor);
-                        MessageL(COLORS.olive, $"KS update: track={t}, abs={absInt}, {oldName} -> {newName}");
-                        track[i] = new KeySignatureEvent(absInt, sharps, mi);
-                        updateCount++;
+                        MessageL(COLORS.cyan, $"KS update: track={t}, abs={absInt}, {oldName} -> {newName}");
+                        newTrack.Add(replaced);
                     }
-                }
-            }
-
-            // Helper: ensure KS at abs=0 in selected track
-            void EnsureKsAtZero(int trackIndex)
-            {
-                if (trackIndex < 0 || trackIndex >= midiFile.Events.Tracks) return;
-                var tr = midiFile.Events[trackIndex];
-                for (int i = 0; i < tr.Count; i++)
-                {
-                    if (tr[i] is KeySignatureEvent && tr[i].AbsoluteTime == 0)
+                    else
                     {
-                        tr[i] = new KeySignatureEvent(0, sharps, mi);
-                        MessageL(COLORS.olive, $"KS ensured at track {trackIndex}:0 -> {newName}");
-                        return;
+                        newTrack.Add(ev);
                     }
                 }
-                tr.Insert(0, new KeySignatureEvent(0, sharps, mi));
-                MessageL(COLORS.olive, $"KS inserted at track {trackIndex}:0 -> {newName}");
+
+                // Гарантуємо наявність KS на abs=0 для треку 0 та всіх нотних треків
+                if ((t == 0 || isNoteTrack[t]) && !hasKsAtZero)
+                {
+                    newTrack.Insert(0, new KeySignatureEvent(0, sharps, mi));
+                    MessageL(COLORS.cyan, $"KS inserted at track {t}:0 -> {newName}");
+                    hadKS = true; // тепер вважається як наявний
+                }
+
+                newEventCollection.AddTrack(newTrack);
             }
 
-            // 2) Ensure presence at track 0 and all note tracks at abs=0
-            var noteTracks = new List<int>();
-            for (int t = 0; t < midiFile.Events.Tracks; t++)
-            {
-                if (midiFile.Events[t].OfType<NoteOnEvent>().Any(e => e.Velocity > 0))
-                    noteTracks.Add(t);
-            }
-
-            EnsureKsAtZero(0);
-            foreach (var t in noteTracks) EnsureKsAtZero(t);
-
-            // 3) Recompute deltas/order
-            midiFile.Events.PrepareForExport();
-            MessageL(COLORS.olive, $"InsertKeySignatures: completed. total updated={updateCount}, ensured {noteTracks.Count + 1} tracks at abs=0 -> {newName}");
+            newEventCollection.PrepareForExport();
+            MessageL(COLORS.olive, "InsertKeySignatures: PrepareForExport done");
+            return newEventCollection;
         }
 
-        // Пошук одночасно взятиих нот 
+        public static void InsertKeySignatures(string midiFilePath, Tonalities tonality)
+        {
+            var midiFile = new MidiFile(midiFilePath);
+            var Midicollection = InsertKeySignatures(midiFile, tonality.GetSharpFlats(), tonality.Mode);
+            Midicollection.PrepareForExport();
+            MidiFile.Export(midiFilePath, Midicollection);
+
+        }
+
+
         public static bool CheckForPolyphony(MidiFile midiFile)
         {
             foreach (var track in midiFile.Events)
@@ -720,6 +764,59 @@ namespace Music
             midiFile.Events[0].Insert(0, newTempoEvent);
         }
 
+        // ДОДАЙ: безпечний перезапис .mid без зміни імені
+public static void ExportOverwrite(string destinationPath, MidiEventCollection events)
+{
+    try
+    {
+        var dir = Path.GetDirectoryName(destinationPath);
+        if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+
+        if (File.Exists(destinationPath))
+        {
+            try
+            {
+                var attrs = File.GetAttributes(destinationPath);
+                if ((attrs & FileAttributes.ReadOnly) != 0)
+                    File.SetAttributes(destinationPath, attrs & ~FileAttributes.ReadOnly);
+
+                File.Delete(destinationPath);
+                MessageL(COLORS.gray, $"[MIDI Export] Old file deleted: {destinationPath}");
+            }
+            catch (Exception delEx)
+            {
+                GrayMessageL($"[MIDI Export] Delete failed, fallback to atomic replace: {delEx.Message}");
+            }
+        }
+
+        if (File.Exists(destinationPath))
+        {
+            // Файл не видалився — пишемо у .tmp і виконуємо атомарну заміну
+            var tmp = destinationPath + ".tmp";
+            MidiFile.Export(tmp, events);
+            try
+            {
+                File.Replace(tmp, destinationPath, null);
+                MessageL(COLORS.gray, $"[MIDI Export] Atomic replace done: {destinationPath}");
+            }
+            finally
+            {
+                if (File.Exists(tmp)) File.Delete(tmp);
+            }
+        }
+        else
+        {
+            // Звичайний запис
+            MidiFile.Export(destinationPath, events);
+            MessageL(COLORS.gray, $"[MIDI Export] Exported: {destinationPath}");
+        }
+    }
+    catch (Exception ex)
+    {
+        ErrorMessageL($"ExportOverwrite failed: {ex.Message}");
+        throw;
+    }
+}
     }
 }
 
