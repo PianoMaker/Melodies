@@ -66,11 +66,16 @@
                        @(Model.SearchAlgorithm?.Equals("Substring", StringComparison.OrdinalIgnoreCase) == true ? "checked" : null) />
                 <label class="form-check-label" for="algSubstring">Longest common substring</label>
             </div>
-            <div class="form-check">
+            <div class="form-check d-flex align-items-center gap-2">
                 <input class="form-check-input" type="radio" name="SearchAlgorithm"
                        value="Subsequence" id="algSubsequence" form="notesearchForm"
                        @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? "checked" : null) />
                 <label class="form-check-label" for="algSubsequence">Longest common subsequence</label>
+                <!-- LCS max gap slider (1..3) -->
+                <input type="range" min="1" max="3" step="1" value="@Model.MaxGap" id="lcsGap"
+                       class="form-range ms-2" style="width:120px" form="notesearchForm" name="MaxGap"
+                       disabled="@((Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true) ? null : "disabled")" />
+                <span class="small ms-1 @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? null : "text-muted")">gap: <span id="lcsGapVal">@Model.MaxGap</span></span>
             </div>
         </div>
 
@@ -117,7 +122,7 @@
             }
             else
             {
-                <p>жодної ноти не введено</p>
+                <p id="noNotesMsg">жодної ноти не введено</p>
             }
         </div>
         <script type="module" src="~/js/noteTable.js"></script>
@@ -130,6 +135,29 @@
             if (saveButton) {                
                 saveButton.textContent = "попередній перегляд";
             }
+
+            // Bind LCS gap display and enable/disable based on algorithm
+            const gap = document.getElementById('lcsGap');
+            const gapVal = document.getElementById('lcsGapVal');
+            const algSub = document.getElementById('algSubstring');
+            const algSeq = document.getElementById('algSubsequence');
+
+            function updateGapEnabled(){
+                const enabled = algSeq && algSeq.checked;
+                if (gap) gap.disabled = !enabled;
+                const labelWrap = gap ? gap.nextElementSibling : null; // span with value
+                if (labelWrap) {
+                    if (enabled) labelWrap.classList.remove('text-muted');
+                    else labelWrap.classList.add('text-muted');
+                }
+            }
+
+            if (gap && gapVal) {
+                gap.addEventListener('input', () => gapVal.textContent = gap.value);
+            }
+            if (algSub) algSub.addEventListener('change', updateGapEnabled);
+            if (algSeq) algSeq.addEventListener('change', updateGapEnabled);
+            updateGapEnabled();
         </script>
         <!--АУДІО-->
 
@@ -156,7 +184,7 @@
 </div>
 
 <!-- ВІДОБРАЖЕННЯ  МЕЛОДІЇ ЩО ЗБІГАЄТЬСЯ-->
-<div class="notescontainer">
+<div class="notescontainer" id="matchedMelodiesContainer">
     @for (int i = 0; i < matchedMelodiesCount; i++)
     {
         var songPattern = ViewData[$"songpattern{i}"] as List<string>;
@@ -172,7 +200,7 @@
             var @melodyId = $"melody{i}";
             var notationId = $"notation_match_{i}";
             var commentsId = $"comments_match_{i}";
-            <div id="@melodyId" class="mb-3">
+            <div id="@melodyId" class="mb-3 melody-block" style="cursor:pointer">
                 <p>@title</p>
                 <p>
                 @for(int j = 0; j<songPattern.Count; j++)
@@ -189,7 +217,7 @@
                 </p>                
                 @if (!string.IsNullOrEmpty(midiUrl))
                 {
-                    <!-- 12 тактів нотного прикладу -->
+                    <!-- placeholder for notation; renders on click only -->
                     <div id="@notationId"
                          class="mb-2"
                          data-midi-url="@midiUrl"
@@ -323,7 +351,7 @@
                                 </form>
                                 <button id="stopButton_@item.FilePath" disabled="disabled"
                                         class="stopButton btn btn-outline-dark light-background">
-                                    <i class="fas fa-stop"></i>
+                                    <i class="fas a-stop"></i>
                                 </button>
                                 <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: none">
                                     <source src="@mp3filepath" type="audio/mpeg" />
@@ -389,22 +417,3 @@
 <script src="~/lib/midirender/midiRenderer.js"></script>
 <script src="~/lib/midirender/patternRenderer.js"></script>
 <script src="~/js/livePatternRenderer.js" asp-append-version="true"></script>
-
-<!-- Auto-render matched melodies notation into notescontainer -->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const blocks = document.querySelectorAll('[id^="notation_match_"]');
-        if (!blocks.length) return;
-        blocks.forEach(div => {
-            const midiUrl = div.getAttribute('data-midi-url');
-            const commentsId = div.getAttribute('data-comments-id');
-            if (!midiUrl || typeof window.renderMidiFromUrl !== 'function') return;
-            // Render up to 12 measures into this block
-            try {
-                window.renderMidiFromUrl(midiUrl, 12, div.id, commentsId);
-            } catch (e) {
-                console.warn('renderMidiFromUrl failed for', div.id, e);
-            }
-        });
-    });
-</script>

@@ -18,7 +18,6 @@ using Melody = Melodies25.Models.Melody;
 using System.IO;
 using System.Diagnostics;
 
-
 namespace Melodies25.Pages.Melodies
 {
     public class EditModel : PageModel
@@ -307,7 +306,7 @@ namespace Melodies25.Pages.Melodies
                 {
                     var fullPath = Path.Combine(_environment.WebRootPath, "melodies", Melody.FilePath);
                     MessageL(COLORS.olive, $"[CALL APPLYKS] {Melody.Tonality} -> {Melody.FilePath}");
-                    ApplyKeySignature(fullPath, Melody.Tonality);
+                    ApplyKeySignatureWierd(fullPath, Melody.Tonality);
                 }
                 else
                 {
@@ -350,7 +349,7 @@ namespace Melodies25.Pages.Melodies
                     {
                         var fullPath = Path.Combine(_environment.WebRootPath, "melodies", melody.FilePath);
                         MessageL(COLORS.olive, $"[CALL APPLYKS] {melody.Tonality} -> {melody.FilePath}");
-                        ApplyKeySignature(fullPath, melody.Tonality);
+                        ApplyKeySignatureWierd(fullPath, melody.Tonality);
                     }
 
                     await PrepareMp3Async(_environment, melody.FilePath, false); // генеруємо з копією всередині
@@ -392,6 +391,98 @@ namespace Melodies25.Pages.Melodies
             else
                 MessageL(COLORS.darkred, "[APPLYKS EXIT] verified: not found");
         }
+
+        private void ApplyKeySignatureWierd(string fullPath, string tonality)
+        {
+            // Байтовий патч Key Signature: шукаємо FF 59 02 і переписуємо sf/mi під тим самим ім'ям файлу
+            try
+            {
+                MessageL(COLORS.olive, $"[APPLYKS-WIERD ENTER] path={fullPath}, inputTon={tonality}");
+                if (!System.IO.File.Exists(fullPath)) { GrayMessageL($"MIDI not found: {fullPath}"); return; }
+
+                // Нормалізація введеної тональності
+                var tonStr = (tonality ?? "").Trim()
+                    .Replace('\u2013','-').Replace('\u2014','-').Replace('\u2212','-')
+                    .Replace('–','-').Replace('—','-').Replace('−','-')
+                    .Replace("  "," ");
+                var tonal = new Music.Tonalities(tonStr);
+                int sharps = tonal.Keysignatures(); // -7..+7
+                var mode = tonal.Mode;               // MODE.dur / MODE.moll
+                byte mi = (byte)(mode == Music.MODE.moll ? 1 : 0);
+                byte sfByte = unchecked((byte)(sbyte)sharps);
+                MessageL(COLORS.olive, $"[APPLYKS-WIERD TARGET] sf={sharps}, mi={mi}");
+
+                // Читаємо байти файлу
+                var attrs = System.IO.File.GetAttributes(fullPath);
+                if ((attrs & System.IO.FileAttributes.ReadOnly) != 0)
+                    System.IO.File.SetAttributes(fullPath, attrs & ~System.IO.FileAttributes.ReadOnly);
+
+                byte[] bytes = System.IO.File.ReadAllBytes(fullPath);
+
+                // Логуємо наявні KS у байтах до патчу
+                int foundBefore = 0;
+                for (int i = 0; i + 4 < bytes.Length; i++)
+                {
+                    if (bytes[i] == 0xFF && bytes[i + 1] == 0x59 && bytes[i + 2] == 0x02)
+                    {
+                        sbyte oldSf = unchecked((sbyte)bytes[i + 3]);
+                        byte oldMi = bytes[i + 4];
+                        MessageL(COLORS.gray, $"[APPLYKS-WIERD BEFORE] pos=0x{i:X}, sf={oldSf}, mi={oldMi}");
+                        foundBefore++;
+                    }
+                }
+                if (foundBefore == 0)
+                {
+                    MessageL(COLORS.yellow, "[APPLYKS-WIERD] No KeySignature meta-events (FF 59 02) found to patch");
+                }
+
+                // Патчимо всі входження FF 59 02
+                int replaced = 0;
+                for (int i = 0; i + 4 < bytes.Length; i++)
+                {
+                    if (bytes[i] == 0xFF && bytes[i + 1] == 0x59 && bytes[i + 2] == 0x02)
+                    {
+                        bytes[i + 3] = sfByte;
+                        bytes[i + 4] = mi;
+                        replaced++;
+                    }
+                }
+
+                // Записуємо назад тим самим ім'ям
+                System.IO.File.WriteAllBytes(fullPath, bytes);
+                MessageL(COLORS.olive, $"[APPLYKS-WIERD WRITE] replaced={replaced}");
+
+                // Логуємо після запису
+                int foundAfter = 0;
+                var bytesAfter = System.IO.File.ReadAllBytes(fullPath);
+                for (int i = 0; i + 4 < bytesAfter.Length; i++)
+                {
+                    if (bytesAfter[i] == 0xFF && bytesAfter[i + 1] == 0x59 && bytesAfter[i + 2] == 0x02)
+                    {
+                        sbyte newSf = unchecked((sbyte)bytesAfter[i + 3]);
+                        byte newMi = bytesAfter[i + 4];
+                        MessageL(COLORS.gray, $"[APPLYKS-WIERD AFTER] pos=0x{i:X}, sf={newSf}, mi={newMi}");
+                        foundAfter++;
+                    }
+                }
+
+                // Додаткова верифікація через NAudio-парсер
+                var verified = GetTonalities(new MidiFile(fullPath));
+                if (verified != null)
+                {
+                    MessageL(COLORS.gray, $"[APPLYKS-WIERD EXIT] verified sf={verified.GetSharpFlats()}, mode={verified.Mode}, patched={replaced}, ksCountBefore={foundBefore}, ksCountAfter={foundAfter}");
+                }
+                else
+                {
+                    MessageL(COLORS.darkred, $"[APPLYKS-WIERD EXIT] verified: not found, patched={replaced}, ksCountBefore={foundBefore}, ksCountAfter={foundAfter}");
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessageL($"[APPLYKS-WIERD ERROR] {ex.Message}");
+            }
+        }
+
 
         private async Task PrepareAudio(string uploadsPath)
         {

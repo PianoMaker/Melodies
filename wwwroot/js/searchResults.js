@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            // Зменшено HEIGHT і TOPPADDING для мінімізації пустого вертикального простору перед коментарями
+            // Зменшено HEIGHT і TOPPADING для мінімізації пустого вертикального простору перед коментарями
             window.renderMidiSegmentFromUrl(
                 midiUrl,
                 startPos,
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 commentsElId,
                 900,  // GENERALWIDTH
                 130,  // HEIGHT for row
-                10,   // TOPPADDING
+                10,   // TOPPADING
                 250,  // BARWIDTH
                 60,   // CLEFZONE
                 10,   // Xmargin
@@ -79,4 +79,29 @@ document.addEventListener("DOMContentLoaded", function () {
             row.style.backgroundColor = "lightyellow";
         });
     });
+
+	// Рендер знайдених мелодій по кліку на них
+    const container = document.getElementById('matchedMelodiesContainer');
+    if (container && typeof window.renderMidiFromUrl === 'function') {
+        function clearAllNotations(){
+            document.querySelectorAll('[id^="notation_match_"]').forEach(div => div.innerHTML = '');
+            document.querySelectorAll('[id^="comments_match_"]').forEach(div => div.innerHTML = '');
+        }
+        container.addEventListener('click', function(e){
+            const melodyBlock = e.target.closest('.melody-block');
+            if (!melodyBlock || !container.contains(melodyBlock)) return;
+            const notationDiv = melodyBlock.querySelector('[id^="notation_match_"]');
+            if (!notationDiv) return;
+            const midiUrl = notationDiv.getAttribute('data-midi-url');
+            const commentsId = notationDiv.getAttribute('data-comments-id');
+            if (!midiUrl) return;
+            try {
+                clearAllNotations();
+                window.renderMidiFromUrl(midiUrl, 12, notationDiv.id, commentsId);
+                notationDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) {
+                console.warn('renderMidiFromUrl failed', e);
+            }
+        });
+    }
 });

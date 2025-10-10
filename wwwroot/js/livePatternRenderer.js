@@ -42,6 +42,17 @@
     const current = getPattern();
     if (current === lastPattern) return;
     lastPattern = current;
+
+    // Hide the 'no notes' message once any input appears
+    const noMsg = document.getElementById('noNotesMsg');
+    if (noMsg) {
+      if (current && current.trim().length > 0) {
+        noMsg.style.display = 'none';
+      } else {
+        noMsg.style.display = '';
+      }
+    }
+
     safeRender(current);
   }
 

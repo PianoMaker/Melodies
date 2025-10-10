@@ -72,6 +72,10 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public string SearchAlgorithm { get; set; } = "Substring";
 
+        // Max allowed gaps for LCS (1..3)
+        [BindProperty]
+        public int MaxGap { get; set; } = 1;
+
         // Нова мелодія, створена на сторінці пошуку
         public Music.Melody NewPattern { get; set; }
         internal string TempMidiFilePath { get; set; }
@@ -447,10 +451,13 @@ namespace Melodies25.Pages.Melodies
                 switch (SearchAlgorithm?.ToLowerInvariant())
                 {
                     case "subsequence":
-                        var (lcsLen, indices) = LongestCommonSubsequenceIndices(patternShape, melodyshape);
-                        length = lcsLen;
-                        position = indices.Count > 0 ? indices[0] : -1;
-                        break;
+                        {
+                            int clamped = Math.Clamp(MaxGap, 1, 3);
+                            var (lcsLen, indices) = LongestCommonSubsequenceLimitedSkips(patternShape, melodyshape, clamped);
+                            length = lcsLen;
+                            position = indices.Count > 0 ? indices[0] : -1;
+                            break;
+                        }
 
                     case "substring":
                     default:
