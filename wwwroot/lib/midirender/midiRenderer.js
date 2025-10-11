@@ -1124,9 +1124,16 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
             // Додаємо нотні елементи до голосу
             voice.addTickables(validNotes);
             
-            // Форматуємо голос
+            // Форматуємо голос. Враховуємо фактичний старт нот після ключа/знаків/розміру такту
             const formatter = new Vex.Flow.Formatter();
-            formatter.joinVoices([voice]).format([voice], BARWIDTH - 50);
+            const staveX = (typeof stave.getX === 'function') ? stave.getX() : stave.x || 0;
+            const staveW = (typeof stave.getWidth === 'function') ? stave.getWidth() : stave.width || BARWIDTH;
+            const noteStartX = (typeof stave.getNoteStartX === 'function') ? stave.getNoteStartX() : (staveX + 10);
+            const rightX = staveX + staveW;
+            const rightPadding = 10; // невеликий відступ від тактової риски
+            const availableWidth = Math.max(10, rightX - noteStartX - rightPadding);
+
+            formatter.joinVoices([voice]).format([voice], availableWidth);
             
             // Малюємо голос
             voice.draw(context, stave);
