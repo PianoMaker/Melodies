@@ -29,7 +29,13 @@ document.addEventListener("DOMContentLoaded", function () {
         return; // без нотного поля немає сенсу виконувати далі
     }
 
-    if (saver) pianodisplay.value = saver.innerText;
+    // Відновлення значення з saver тільки якщо воно не порожнє
+    if (saver) {
+        const saved = (saver.innerText || '').trim();
+        if (saved.length > 0) {
+            pianodisplay.value = saved;
+        }
+    }
     const savedTitle = sessionStorage.getItem("savedTitle");
     const savedAuthorId = sessionStorage.getItem("selectedAuthorId");
     

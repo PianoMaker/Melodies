@@ -5,7 +5,7 @@
 }
 <div id="pianoDiv" class="notesinfo" style="display:block">
     <div id="lettersdisplay" style="display:block; width:100%">
-        <div id="saver" style="display:none">@Model.TempData["Keys"]</div><!--  тимчасове зберігання -->
+        <div id="saver" style="display:none">@TempData["Keys"]</div><!--  тимчасове зберігання -->
         <textarea id="pianodisplay" class="d-inline-block" style="width:90%" rows="2" placeholder="для вводу нот натискайте клавіші клавіатури або введіть код вручну">@Model.Keys</textarea>
     </div>
     <div id="buttonarea" style="display:block; width:60%">
