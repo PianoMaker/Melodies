@@ -994,22 +994,17 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig) {
         chosen = 'E#';
     }
 
-    // МІНОР: IV, VI і VII підвищуються; I і VII не понижуються
-    if (currentKeySig && currentKeySig.mi === 1) {
+    // МІНОР: IV, VI і VII підвищуються; I не понижується
+    // Нормалізація режиму: деякі MIDI дають mi=255 -> вважаємо як minor (truthy)
+    const isMinor = !!(currentKeySig && (currentKeySig.mi === 1 || (typeof currentKeySig.mi === 'number' && currentKeySig.mi !== 0)));
+    if (isMinor) {
         const tonicPc = getMinorTonicPc(currentKeySig);
         if (typeof tonicPc === 'number') {
             const raisedVI  = (tonicPc + 9)  % 12; // VI#
             const raisedVII = (tonicPc + 11) % 12; // VII# (ввідний тон)
-			const raisedIV = (tonicPc + 6) % 12; // IV#
+            const raisedIV  = (tonicPc + 6)  % 12; // IV#
 
-            // Якщо поточна нота є VI↑ або VII↑ — примусово дієзне/натуральне написання
             if (pc === raisedVI || pc === raisedVII || pc === raisedIV) {
-                chosen = sharpNames[pc];
-                outOctave = octaveRaw; // скидаємо можливу корекцію октави
-            }
-
-            // I (тоніка) — не понижується (уникаємо 'b' в написанні)
-            if (pc === tonicPc) {
                 chosen = sharpNames[pc];
                 outOctave = octaveRaw;
             }
