@@ -190,7 +190,7 @@
             const MIN_SCORE_WIDTH = Math.max(320, CLEFZONE + BARWIDTH + Xmargin * 2);
             const containerWidth = (notationDiv && notationDiv.clientWidth) ? notationDiv.clientWidth : 0;
             const effectiveWidth = Math.max(MIN_SCORE_WIDTH, containerWidth || GENERALWIDTH || 1200);
-            const totalHeight = calculateRequiredHeight(measures.length, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
+            const totalHeight = calculateRequiredHeight(measures, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
             const factory = new Vex.Flow.Factory({
                 renderer: { elementId: ELEMENT_FOR_RENDERING, width: effectiveWidth, height: totalHeight }

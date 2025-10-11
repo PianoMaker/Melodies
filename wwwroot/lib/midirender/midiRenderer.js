@@ -394,7 +394,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         containerWidth || GENERALWIDTH || 1200
     );
 
-    const rowsHeight = calculateRequiredHeight(effectiveCount, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
+    const rowsHeight = calculateRequiredHeight(measuresToRender, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
     setTimeout(() => {
         const factory = new Vex.Flow.Factory({
@@ -1521,25 +1521,25 @@ function processNoteElement(durationCode, key, accidental) {
 // Повертає: Загальну висоту канвасу, необхідну для розміщення всіх тактів.
 // ----------------------
 
-
-
-function calculateRequiredHeight(measuresCount, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
+function calculateRequiredHeight(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
     // Emulate the same wrapping as in renderMeasures/adjustStaveWidth:
     // - First measure in each row has extra CLEFZONE width
     // - Wrap when current X + next STAVE_WIDTH would exceed GENERALWIDTH
-    let rows = 1;
+    let rows = 2;
     let x = Xmargin;
+    var actualBarWidth = GetMeanBarWidth(BARWIDTH, measures);
+	const measuresCount = measures.length;
     for (let i = 0; i < measuresCount; i++) {
         const isFirstInRow = (x === Xmargin);
-        let staveWidth = BARWIDTH + (isFirstInRow ? CLEFZONE : 0);
+        let staveWidth = actualBarWidth + (isFirstInRow ? CLEFZONE : 0);
         // If doesn't fit, move to next row and recompute as first measure in row
         if (x + staveWidth > GENERALWIDTH) {
             rows++;
             x = Xmargin;
-            staveWidth = BARWIDTH + CLEFZONE; // First in new row gets CLEFZONE
+            staveWidth = actualBarWidth + CLEFZONE; // First in new row gets CLEFZONE
         }
         x += staveWidth;
     }
     // Height = top padding + N rows * stave height; add extra padding for last row
-    return Math.ceil(TOPPADDING + rows * HEIGHT + 20);
+    return Math.ceil(rows * HEIGHT);
 }
