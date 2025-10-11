@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            // Зменшено HEIGHT і TOPPADING для мінімізації пустого вертикального простору перед коментарями
+            // Зменшено HEIGHT і TOPPADDING для мінімізації пустого вертикального простору перед коментарями
             window.renderMidiSegmentFromUrl(
                 midiUrl,
                 startPos,
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 commentsElId,
                 900,  // GENERALWIDTH
                 130,  // HEIGHT for row
-                10,   // TOPPADING
+                10,   // TOPPADDING
                 250,  // BARWIDTH
                 60,   // CLEFZONE
                 10,   // Xmargin
