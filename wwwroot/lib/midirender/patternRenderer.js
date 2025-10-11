@@ -1,237 +1,302 @@
-// patternRenderer.js
-// ”ÚËÎ≥Ú‡ ‰Îˇ ÂÌ‰ÂËÌ„Û ÌÓÚ Á ˇ‰Í‡ ¯‡·ÎÓÌÛ (ÌÂ MIDI)
+Ôªø// patternRenderer.js
+// –£—Ç–∏–ª—ñ—Ç–∞ –¥–ª—è —Ä–µ–Ω–¥–µ—Ä–∏–Ω–≥—É –Ω–æ—Ç –∑ —Ä—è–¥–∫–∞ —à–∞–±–ª–æ–Ω—É (–Ω–µ MIDI)
 // --------------------------------------------------------
-// ¬ı≥‰ÌËÈ ˇ‰ÓÍ ¯‡·ÎÓÌÛ: ÔÓÒÎ≥‰Ó‚Ì≥ÒÚ¸ ÌÓÚ/Ô‡ÛÁ, ÍÓÊÌ‡ Á Ú¸Óı ˜‡ÒÚËÌ:
-// 1) ¡ÛÍ‚‡ ÌÓÚË (c,d,e,f,g,a,h) ‡·Ó 'p'/'r' ‰Îˇ Ô‡ÛÁË
-//    - 'h' ‚ ∫‚ÓÔÂÈÒ¸Í≥È ÒËÒÚÂÏ≥ ‚≥‰ÔÓ‚≥‰‡∫ 'B' ‚ ‡Ì„Î≥ÈÒ¸Í≥È
-// 2) Ã‡ÍÂË ÓÍÚ‡‚Ë: ‡ÔÓÒÚÓÙË (') ‰Îˇ Ô≥‰‚Ë˘ÂÌÌˇ, ÍÓÏË (,) ‰Îˇ ÔÓÌËÊÂÌÌˇ
-// 3)  Ó‰ ÚË‚‡ÎÓÒÚ≥: ˆËÙ‡ (1,2,4,8,16,32) Á ÌÂÓ·Ó‚'ˇÁÍÓ‚Ó˛ Í‡ÔÍÓ˛ (.) ‰Îˇ ÔÓ‰Ó‚ÊÂÌÌˇ
-//	- 1 = ˆ≥Î‡, 2 = ÔÓÎÓ‚ËÌÌ‡, 4 = ˜‚ÂÚ¸, 8 = ‚ÓÒ¸Ï‡, 16 = ¯≥ÒÚÌ‡‰ˆˇÚ‡, 32 = ÚË‰ˆˇÚ¸ ‰Û„‡
-// 4) ÕÂÓ·Ó‚'ˇÁÍÓ‚ËÈ ÒÛÙ≥ÍÒ ‰Îˇ ‡Î¸ÚÂ‡ˆ≥ø: 'is' ‰Îˇ ‰ËÂÁ‡ (#), 'es' ‡·Ó 's' ‰Îˇ ·ÂÏÓÎˇ (b)
-//    - 'b' Ò‡ÏÓÒÚ≥ÈÌÓ ÓÁÌ‡˜‡∫ 'H' Á ·ÂÏÓÎÂÏ (Bb)
-// œ‡‡ÏÂÚË:
-// - pattern: ˇ‰ÓÍ ¯‡·ÎÓÌÛ, Ì‡ÔËÍÎ‡‰ "c4_d4_e4_f4_g4_a4_h4_c'4"
-// - ELEMENT_FOR_RENDERING: id ÂÎÂÏÂÌÚ‡ ‰Îˇ ÂÌ‰ÂËÌ„Û ÌÓÚ
-// - ELEMENT_FOR_COMMENTS: id ÂÎÂÏÂÌÚ‡ ‰Îˇ ÔÓ‚≥‰ÓÏÎÂÌ¸/ÍÓÏÂÌÚ‡≥‚
-// - numerator, denominator: ÓÁÏ≥ Ú‡ÍÚÛ (4/4 Á‡ Á‡ÏÓ‚˜Û‚‡ÌÌˇÏ)
-// - GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin: Ô‡‡ÏÂÚË ÂÌ‰ÂËÌ„Û
+// –í—Ö—ñ–¥–Ω–∏–π —Ä—è–¥–æ–∫ —à–∞–±–ª–æ–Ω—É: –ø–æ—Å–ª—ñ–¥–æ–≤–Ω—ñ—Å—Ç—å –Ω–æ—Ç/–ø–∞—É–∑, –∫–æ–∂–Ω–∞ –∑ —Ç—Ä—å–æ—Ö —á–∞—Å—Ç–∏–Ω:
+// 1) –ë—É–∫–≤–∞ –Ω–æ—Ç–∏ (c,d,e,f,g,a,h) –∞–±–æ 'p'/'r' –¥–ª—è –ø–∞—É–∑–∏
+//    - 'h' –≤ —î–≤—Ä–æ–ø–µ–π—Å—å–∫—ñ–π —Å–∏—Å—Ç–µ–º—ñ –≤—ñ–¥–ø–æ–≤—ñ–¥–∞—î 'B' –≤ –∞–Ω–≥–ª—ñ–π—Å—å–∫—ñ–π
+// 2) –ú–∞—Ä–∫–µ—Ä–∏ –æ–∫—Ç–∞–≤–∏: –∞–ø–æ—Å—Ç—Ä–æ—Ñ–∏ (') –¥–ª—è –ø—ñ–¥–≤–∏—â–µ–Ω–Ω—è, –∫–æ–º–∏ (,) –¥–ª—è –ø–æ–Ω–∏–∂–µ–Ω–Ω—è
+// 3) –ö–æ–¥ —Ç—Ä–∏–≤–∞–ª–æ—Å—Ç—ñ: —Ü–∏—Ñ—Ä–∞ (1,2,4,8,16,32) –∑ –Ω–µ–æ–±–æ–≤'—è–∑–∫–æ–≤–æ—é –∫—Ä–∞–ø–∫–æ—é (.) –¥–ª—è –ø–æ–¥–æ–≤–∂–µ–Ω–Ω—è
+//	- 1 = —Ü—ñ–ª–∞, 2 = –ø–æ–ª–æ–≤–∏–Ω–Ω–∞, 4 = —á–≤–µ—Ä—Ç—å, 8 = –≤–æ—Å—å–º–∞, 16 = —à—ñ—Å—Ç–Ω–∞–¥—Ü—è—Ç–∞, 32 = —Ç—Ä–∏–¥—Ü—è—Ç—å –¥—Ä—É–≥–∞
+// 4) –ù–µ–æ–±–æ–≤'—è–∑–∫–æ–≤–∏–π —Å—É—Ñ—ñ–∫—Å –¥–ª—è –∞–ª—å—Ç–µ—Ä–∞—Ü—ñ—ó: 'is' –¥–ª—è –¥–∏–µ–∑–∞ (#), 'es' –∞–±–æ 's' –¥–ª—è –±–µ–º–æ–ª—è (b)
+//    - 'b' —Å–∞–º–æ—Å—Ç—ñ–π–Ω–æ –æ–∑–Ω–∞—á–∞—î 'H' –∑ –±–µ–º–æ–ª–µ–º (Bb)
+// –ü–∞—Ä–∞–º–µ—Ç—Ä–∏:
+// - pattern: —Ä—è–¥–æ–∫ —à–∞–±–ª–æ–Ω—É, –Ω–∞–ø—Ä–∏–∫–ª–∞–¥ "c4_d4_e4_f4_g4_a4_h4_c'4"
+// - ELEMENT_FOR_RENDERING: id –µ–ª–µ–º–µ–Ω—Ç–∞ –¥–ª—è —Ä–µ–Ω–¥–µ—Ä–∏–Ω–≥—É –Ω–æ—Ç
+// - ELEMENT_FOR_COMMENTS: id –µ–ª–µ–º–µ–Ω—Ç–∞ –¥–ª—è –ø–æ–≤—ñ–¥–æ–º–ª–µ–Ω—å/–∫–æ–º–µ–Ω—Ç–∞—Ä—ñ–≤
+// - numerator, denominator: —Ä–æ–∑–º—ñ—Ä —Ç–∞–∫—Ç—É (4/4 –∑–∞ –∑–∞–º–æ–≤—á—É–≤–∞–Ω–Ω—è–º)
+// - GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin: –ø–∞—Ä–∞–º–µ—Ç—Ä–∏ —Ä–µ–Ω–¥–µ—Ä–∏–Ω–≥—É
 // --------------------------------------------------------
 
-(function(){
-    const BASE_OCTAVE = 4; // default octave for tokens without marks
+(function () {
+	const BASE_OCTAVE = 4; // default octave for tokens without marks
 
-    function mapEuBase(letter) {
-        // EU 'h' -> 'B'
-        const m = { c:'C', d:'D', e:'E', f:'F', g:'G', a:'A', h:'B' };
-        return m[letter] || null;
-    }
+	function mapEuBase(letter) {
+		// EU 'h' -> 'B'
+		const m = { c: 'C', d: 'D', e: 'E', f: 'F', g: 'G', a: 'A', h: 'B' };
+		return m[letter] || null;
+	}
 
-    // —Ú‚Ó˛∫ Ó·'∫ÍÚ ÌÓÚË VexFlow
-	// œ‡‡ÏÂÚ: durationCode: 'w', 'h', 'q', '8', '16', '32' (ÏÓÊÂ ·ÛÚË Á Í‡ÔÍÓ˛, Ì‡Ô. 'q.')
-    function parseToken(rawToken) {
-        if (!rawToken) return null;
-        let token = String(rawToken).trim();
-        if (!token) return null;
+	// –°—Ç–≤–æ—Ä—é—î –æ–±'—î–∫—Ç –Ω–æ—Ç–∏ VexFlow
+	// –ü–∞—Ä–∞–º–µ—Ç—Ä: durationCode: 'w', 'h', 'q', '8', '16', '32' (–º–æ–∂–µ –±—É—Ç–∏ –∑ –∫—Ä–∞–ø–∫–æ—é, –Ω–∞–ø—Ä. 'q.')
+	function parseToken(rawToken) {
+		if (!rawToken) return null;
+		let token = String(rawToken).trim();
+		if (!token) return null;
 
-        // Extract duration (digits + optional dot) from the end
-        const match = token.match(/(\d+\.?$)/);
-        if (!match) return null; // duration is required
-        const durStr = match[1];
-        const durNum = parseInt(durStr, 10);
-        const dotted = /\.$/.test(durStr);
-        token = token.slice(0, token.length - durStr.length); // remove duration part
+		// Extract duration (digits + optional dot) from the end
+		const match = token.match(/(\d+\.?$)/);
+		if (!match) return null; // duration is required
+		const durStr = match[1];
+		const durNum = parseInt(durStr, 10);
+		const dotted = /\.$/.test(durStr);
+		token = token.slice(0, token.length - durStr.length); // remove duration part
 
-        // Rest detection: allow tokens starting with 'p'|'r' to be rests
-        const isRest = /^p|^r/i.test(token);
+		// Rest detection: allow tokens starting with 'p'|'r' to be rests
+		const isRest = /^p|^r/i.test(token);
 
-        // Count octave marks (apostrophes up, commas down)
-        const ups = (token.match(/'/g) || []).length;
-        const downs = (token.match(/,/g) || []).length;
-        const octave = BASE_OCTAVE + ups - downs;
-        token = token.replace(/[',]/g, '');
+		// Count octave marks (apostrophes up, commas down)
+		const ups = (token.match(/'/g) || []).length;
+		const downs = (token.match(/,/g) || []).length;
+		const octave = BASE_OCTAVE + ups - downs;
+		token = token.replace(/[',]/g, '');
 
-        // Determine accidental from suffix: 'is' -> sharp, 'es' or trailing 's' (not 'is') -> flat
-        let accidental = null;
-        let base = token.toLowerCase();
-        if (base.endsWith('is')) { accidental = '#'; base = base.slice(0, -2); }
-        else if (base.endsWith('es')) { accidental = 'b'; base = base.slice(0, -2); }
-        else if (base.endsWith('s')) { accidental = 'b'; base = base.slice(0, -1); }
+		// Determine accidental from suffix: 'is' -> sharp, 'es' or trailing 's' (not 'is') -> flat
+		let accidental = null;
+		let base = token.toLowerCase();
+		if (base.endsWith('is')) { accidental = '#'; base = base.slice(0, -2); }
+		else if (base.endsWith('es')) { accidental = 'b'; base = base.slice(0, -2); }
+		else if (base.endsWith('s')) { accidental = 'b'; base = base.slice(0, -1); }
 
-        // Special-case: German notation single 'b' means Bb (B-flat)
-        // If user wrote just 'b' (without 'es'/'is'), default to B with flat accidental
-        let letterName = null;
-        if (base === 'b') {
-            letterName = 'B';
-            if (!accidental) accidental = 'b';
-        } else {
-            letterName = mapEuBase(base);
-        }
+		// Special-case: German notation single 'b' means Bb (B-flat)
+		// If user wrote just 'b' (without 'es'/'is'), default to B with flat accidental
+		let letterName = null;
+		if (base === 'b') {
+			letterName = 'B';
+			if (!accidental) accidental = 'b';
+		} else {
+			letterName = mapEuBase(base);
+		}
 
-        if (!letterName) {
-            // unknown base; treat as rest
-            return { isRest: true, durationCode: mapDurationToVex(durNum, dotted) };
-        }
+		if (!letterName) {
+			// unknown base; treat as rest
+			return { isRest: true, durationCode: mapDurationToVex(durNum, dotted) };
+		}
 
-        const vexKey = `${letterName}/${octave}`; // VexFlow format
-        const durationCode = mapDurationToVex(durNum, dotted);
-        return { isRest, key: vexKey, accidental, durationCode };
-    }
+		const vexKey = `${letterName}/${octave}`; // VexFlow format
+		const durationCode = mapDurationToVex(durNum, dotted);
+		return { isRest, key: vexKey, accidental, durationCode };
+	}
 
-    function mapDurationToVex(num, dotted) {
-        let code;
-        switch (num) {
-            case 1: code = 'w'; break;
-            case 2: code = 'h'; break;
-            case 4: code = 'q'; break;
-            case 8: code = '8'; break;
-            case 16: code = '16'; break;
-            case 32: code = '32'; break;
-            default: code = 'q'; break; // fallback quarter
-        }
-        return dotted ? `${code}.` : code;
-    }
+	function mapDurationToVex(num, dotted) {
+		let code;
+		switch (num) {
+			case 1: code = 'w'; break;
+			case 2: code = 'h'; break;
+			case 4: code = 'q'; break;
+			case 8: code = '8'; break;
+			case 16: code = '16'; break;
+			case 32: code = '32'; break;
+			default: code = 'q'; break; // fallback quarter
+		}
+		return dotted ? `${code}.` : code;
+	}
 
 
-    function durationToQuarterUnits(code) {
-        // Returns how many quarter-notes this duration represents (q=1, h=2, w=4, 8=0.5, etc.), ignoring dots
-        const base = code.replace(/\./g,'');
-        switch (base) {
-            case 'w': return 4;
-            case 'h': return 2;
-            case 'q': return 1;
-            case '8': return 0.5;
-            case '16': return 0.25;
-            case '32': return 0.125;
-            default: return 1;
-        }
-    }
+	function durationToQuarterUnits(code) {
+		// Returns how many quarter-notes this duration represents (q=1, h=2, w=4, 8=0.5, etc.), ignoring dots
+		const base = code.replace(/\./g, '');
+		switch (base) {
+			case 'w': return 4;
+			case 'h': return 2;
+			case 'q': return 1;
+			case '8': return 0.5;
+			case '16': return 0.25;
+			case '32': return 0.125;
+			default: return 1;
+		}
+	}
 
-    function fillRestsToCapacity(notes, remainingQuarters) {
-        // Fill the rest of a measure with rests using largest possible durations
-        if (remainingQuarters <= 0 || !Array.isArray(notes)) return;
-        const units = [4,2,1,0.5,0.25,0.125];
-        const codeMap = { 4:'w', 2:'h', 1:'q', 0.5:'8', 0.25:'16', 0.125:'32' };
-        let rem = remainingQuarters;
-        for (let u of units) {
-            while (rem >= u - 1e-9) {
-                const code = codeMap[u];
-                const rest = createRest(code);
-                if (rest) notes.push(rest);
-                rem -= u;
-            }
-        }
-    }
+	function fillRestsToCapacity(notes, remainingQuarters) {
+		// Fill the rest of a measure with rests using largest possible durations
+		if (remainingQuarters <= 0 || !Array.isArray(notes)) return;
+		const units = [4, 2, 1, 0.5, 0.25, 0.125];
+		const codeMap = { 4: 'w', 2: 'h', 1: 'q', 0.5: '8', 0.25: '16', 0.125: '32' };
+		let rem = remainingQuarters;
+		for (let u of units) {
+			while (rem >= u - 1e-9) {
+				const code = codeMap[u];
+				const rest = createRest(code);
+				if (rest) notes.push(rest);
+				rem -= u;
+			}
+		}
+	}
 
-    /**
-     * Renders notation from a pattern string into an element (non-MIDI path)
-     */
-    function renderPatternString(
-        pattern,
-        ELEMENT_FOR_RENDERING,
-        ELEMENT_FOR_COMMENTS,
-        numerator = 4,
-        denominator = 4,
-        GENERALWIDTH = 1200,
-        HEIGHT = 200,
-        TOPPADDING = 20,
-        BARWIDTH = 250,
-        CLEFZONE = 60,
-        Xmargin = 10
-    ) {
-        try {
-            const notationDiv = document.getElementById(ELEMENT_FOR_RENDERING);
-            const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
-            if (!notationDiv) throw new Error(`Element with id ${ELEMENT_FOR_RENDERING} not found.`);
-            if (commentsDiv) commentsDiv.innerHTML = '';
-            notationDiv.innerHTML = '';
+	/**
+	 * Renders notation from a pattern string into an element (non-MIDI path)
+	 */
+	function renderPatternString(
+		pattern,
+		ELEMENT_FOR_RENDERING,
+		ELEMENT_FOR_COMMENTS,
+		numerator = 4,
+		denominator = 4,
+		GENERALWIDTH = 1200,
+		HEIGHT = 200,
+		TOPPADDING = 20,
+		BARWIDTH = 250,
+		CLEFZONE = 60,
+		Xmargin = 10
+	) {
+		try {
+			const notationDiv = document.getElementById(ELEMENT_FOR_RENDERING);
+			const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
+			if (!notationDiv) throw new Error(`Element with id ${ELEMENT_FOR_RENDERING} not found.`);
+			if (commentsDiv) commentsDiv.innerHTML = '';
+			notationDiv.innerHTML = '';
 
-            const tokens = String(pattern || '')
-                .split('_')
-                .map(t => t.trim())
-                .filter(t => t.length > 0);
-            if (tokens.length === 0) {
-                if (commentsDiv) commentsDiv.innerHTML = 'œÓÓÊÌ≥È ¯‡·ÎÓÌ ÌÓÚ';
-                return;
-            }
+			const tokens = String(pattern || '')
+				.split('_')
+				.map(t => t.trim())
+				.filter(t => t.length > 0);
+			if (tokens.length === 0) {
+				if (commentsDiv) commentsDiv.innerHTML = '–ü–æ—Ä–æ–∂–Ω—ñ–π —à–∞–±–ª–æ–Ω –Ω–æ—Ç';
+				return;
+			}
 
-            // Parse tokens -> items
-            const items = tokens.map(parseToken).filter(Boolean);
+			// Parse tokens -> items
+			const items = tokens.map(parseToken).filter(Boolean);
 
-            // Build measures based on time signature capacity
-            const capacityQuarters = numerator * (4 / denominator); // quarters per bar
-            const measures = [];
-            let current = [];
-            let used = 0;
-            items.forEach(it => {
-                const q = durationToQuarterUnits(it.durationCode);
-                if (used + q > capacityQuarters + 1e-9) {
-                    // close current with rests if needed
-                    fillRestsToCapacity(current, capacityQuarters - used);
-                    measures.push(current);
-                    current = [];
-                    used = 0;
-                }
-                if (it.isRest) {
-                    const rest = createRest(it.durationCode.replace(/\.$/, '')); // rests do not use dotted codes in helper
-                    if (rest) current.push(rest);
-                } else {
-                    const note = processNoteElement(it.durationCode, it.key, it.accidental);
-                    if (note) current.push(note);
-                }
-                used += q;
-            });
-            // push last measure
-            if (current.length > 0 || measures.length === 0) {
-                fillRestsToCapacity(current, capacityQuarters - used);
-                measures.push(current);
-            }
+			// Build measures based on time signature capacity
+			const capacityQuarters = numerator * (4 / denominator); // quarters per bar
+			const measures = [];
+			let current = [];
+			let used = 0;
+			items.forEach(it => {
+				const q = durationToQuarterUnits(it.durationCode);
+				if (used + q > capacityQuarters + 1e-9) {
+					// close current with rests if needed
+					fillRestsToCapacity(current, capacityQuarters - used);
+					measures.push(current);
+					current = [];
+					used = 0;
+				}
+				if (it.isRest) {
+					const rest = createRest(it.durationCode.replace(/\.$/, '')); // rests do not use dotted codes in helper
+					if (rest) current.push(rest);
+				} else {
+					const note = processNoteElement(it.durationCode, it.key, it.accidental);
+					if (note) current.push(note);
+				}
+				used += q;
+			});
+			// push last measure
+			if (current.length > 0 || measures.length === 0) {
+				fillRestsToCapacity(current, capacityQuarters - used);
+				measures.push(current);
+			}
 
-            // Compute width/height similar to MIDI path
-            const MIN_SCORE_WIDTH = Math.max(320, CLEFZONE + BARWIDTH + Xmargin * 2);
-            const containerWidth = (notationDiv && notationDiv.clientWidth) ? notationDiv.clientWidth : 0;
-            const effectiveWidth = Math.max(MIN_SCORE_WIDTH, containerWidth || GENERALWIDTH || 1200);
-            const totalHeight = calculateRequiredHeight(measures, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
+			// Compute width/height
+			const MIN_SCORE_WIDTH = Math.max(320, CLEFZONE + BARWIDTH + Xmargin * 2);
+			const containerWidth = (notationDiv && notationDiv.clientWidth) ? notationDiv.clientWidth : 0;
+			const effectiveWidth = Math.max(MIN_SCORE_WIDTH, containerWidth || GENERALWIDTH || 1200);
 
-            const factory = new Vex.Flow.Factory({
-                renderer: { elementId: ELEMENT_FOR_RENDERING, width: effectiveWidth, height: totalHeight }
-            });
-            const context = factory.getContext();
-            const score = factory.EasyScore();
+			// 1) –Ñ–¥–∏–Ω–∏–π bar width –¥–ª—è –≤—Å—ñ—î—ó —Å–µ—Å—ñ—ó —Ä–µ–Ω–¥–µ—Ä–∞
+			// –ú–Ü–ù–Ü–ú–ê–õ–¨–ù–ê –®–ò–†–ò–ù–ê –¢–ê–ö–¢–£, —â–æ–± –Ω–µ –±—É–ª–∏ –≤—É–∑—å–∫–∏–º–∏
+			const MIN_BARWIDTH = 240; // –Ω–∞–ª–∞—à—Ç–æ–≤—É–≤–∞–Ω–µ –∑–Ω–∞—á–µ–Ω–Ω—è
+			const naiveBarWidth = GetMeanBarWidth(BARWIDTH, measures);
+			const actualBarWidth = Math.max(MIN_BARWIDTH, naiveBarWidth);
 
-            // Render measure by measure similar to renderMeasures
-            let Xposition = Xmargin;
-            let Yposition = TOPPADDING;
-            let isFirstMeasureInRow = true;
+			// 2) –õ–æ–∫–∞–ª—å–Ω–∏–π –ø—ñ–¥—Ä–∞—Ö—É–Ω–æ–∫ –∫—ñ–ª—å–∫–æ—Å—Ç—ñ —Ä—è–¥–∫—ñ–≤ –∑–∞ –≤–∂–µ –æ–±—á–∏—Å–ª–µ–Ω–∏–º actualBarWidth
+			function calcRowsFixedWidth(measuresArr, generalWidth, fixedBarWidth, clefZone, xMargin){
+			  let rows = 1;
+			  let x = xMargin;
+			  for (let i = 0; i < measuresArr.length; i++) {
+			    const isFirstInRow = (x === xMargin);
+			    let staveWidth = fixedBarWidth + (isFirstInRow ? clefZone : 0);
+			    if (x + staveWidth > generalWidth) {
+			      rows++;
+			      x = xMargin;
+			      staveWidth = fixedBarWidth + clefZone;
+			    }
+			    x += staveWidth;
+			  }
+			  return rows;
+			}
 
-            for (let i = 0; i < measures.length; i++) {
-                const previousY = Yposition;
-                ({ Xposition, Yposition } = adjustXYposition(Xposition, effectiveWidth, BARWIDTH, Yposition, HEIGHT, Xmargin, i, 0));
-                if (Yposition !== previousY) {
-                    isFirstMeasureInRow = true;
-                }
+			const rows = calcRowsFixedWidth(measures, effectiveWidth, actualBarWidth, CLEFZONE, Xmargin);
 
-                let STAVE_WIDTH = adjustStaveWidth(BARWIDTH, i, CLEFZONE, isFirstMeasureInRow, false);
-                const stave = setStave(Xposition, Yposition, STAVE_WIDTH, i, numerator, denominator, isFirstMeasureInRow, false, false, null);
-                stave.setContext(context).draw();
+			// –ú—ñ–Ω—ñ–º–∞–ª—å–Ω–∏–π –∑–∞–ø–∞—Å –ø–æ –≤–∏—Å–æ—Ç—ñ: TOPPADDING (–≤–≥–æ—Ä—ñ) + –Ω–µ–≤–µ–ª–∏–∫–∏–π –±—É—Ñ–µ—Ä 10px
+			const extra = Math.max(10, TOPPADDING || 0);
+			const totalHeight = rows * HEIGHT + extra;
 
-                // Draw this measure
-                const ties = [];
-                drawMeasure(measures[i], BARWIDTH, context, stave, ties, i, commentsDiv || { innerHTML: '' }, numerator, denominator, 480);
+			console.log(`patternRenderer: ${measures.length} measures, ${rows} rows, totalHeight=${totalHeight}, effectiveWidth=${effectiveWidth}, actualBarWidth=${actualBarWidth}`);
 
-                Xposition += STAVE_WIDTH;
-                isFirstMeasureInRow = false;
-            }
+			// 3) –ü–µ—Ä–µ–¥–∞—î–º–æ —Ç–æ–π —Å–∞–º–∏–π actualBarWidth —É —Ä–µ–Ω–¥–µ—Ä (—â–æ–± –æ–±—Ç—ñ–∫–∞–Ω–Ω—è –∑–±—ñ–≥–∞–ª–æ—Å—å)
+			const factory = new Vex.Flow.Factory({
+				renderer: { elementId: ELEMENT_FOR_RENDERING, width: effectiveWidth, height: totalHeight }
+			});
+			const context = factory.getContext();
+			const score = factory.EasyScore();
 
-            if (commentsDiv) {
-                commentsDiv.innerHTML += `–ˇ‰ÓÍ ÌÓÚ ÛÒÔ≥¯ÌÓ Á„ÂÌÂÓ‚‡ÌÓ (${measures.length} Ú‡ÍÚ≥‚)`;
-            }
-        } catch (e) {
-            console.error('renderPatternString error:', e);
-            const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
-            if (commentsDiv) commentsDiv.innerHTML = `Error: ${e.message}`;
-        }
-    }
+			// Render measure by measure similar to renderMeasures
+			let Xposition = Xmargin;
+			let Yposition = TOPPADDING;
+			let isFirstMeasureInRow = true;
 
-    // expose API
-    window.renderPatternString = renderPatternString;
+			for (let i = 0; i < measures.length; i++) {
+				const previousY = Yposition;
+				({ Xposition, Yposition } = adjustXYposition(
+					Xposition, effectiveWidth, actualBarWidth, Yposition, HEIGHT, Xmargin, i, 0));
+				if (Yposition !== previousY) {
+					isFirstMeasureInRow = true;
+				}
+
+				let STAVE_WIDTH = adjustStaveWidth(actualBarWidth, i, CLEFZONE, isFirstMeasureInRow, false);
+				const stave = setStave(Xposition, Yposition, STAVE_WIDTH, i, numerator, denominator, isFirstMeasureInRow, false, false, null);
+				stave.setContext(context).draw();
+
+				const ties = [];
+				drawMeasure(measures[i], actualBarWidth, context, stave, ties, i, commentsDiv || { innerHTML: '' }, numerator, denominator, 480);
+
+				Xposition += STAVE_WIDTH;
+				isFirstMeasureInRow = false;
+			}
+
+			// Post‚Äëadjust: –≤–∏—Å–æ—Ç—É –¥–æ–≤–æ–¥–∏–º–æ –¥–æ max(totalHeight, bbox.height + extra)
+			try {
+				const container = document.getElementById(ELEMENT_FOR_RENDERING);
+				const svg = container && container.querySelector('svg');
+				if (svg && typeof svg.getBBox === 'function') {
+					const adjust = () => {
+						const bbox = svg.getBBox();
+						const contentH = Math.max(totalHeight, Math.ceil((bbox ? bbox.height : 0) + extra));
+						if (contentH > 0) {
+							const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
+							const vbW = vb && vb.width ? vb.width : (parseFloat(svg.getAttribute('width')) || effectiveWidth);
+							if (vbW > 0) svg.setAttribute('viewBox', `0 0 ${vbW} ${contentH}`);
+							svg.setAttribute('height', String(contentH));
+							if (svg.style) {
+								svg.style.height = contentH + 'px';
+								svg.style.maxHeight = 'none';
+							}
+							if (container && container.style) {
+								container.style.minHeight = contentH + 'px';
+								container.style.height = contentH + 'px';
+								container.style.maxHeight = 'none';
+								container.style.overflow = 'visible';
+							}
+						}
+					};
+					adjust();
+					if (typeof requestAnimationFrame === 'function') requestAnimationFrame(adjust);
+					setTimeout(adjust, 50);
+				}
+			} catch (e) {
+				console.warn('patternRenderer post-fix svg size failed', e);
+			}
+
+			if (commentsDiv) {
+				commentsDiv.innerHTML += `–†—è–¥–æ–∫ –Ω–æ—Ç —É—Å–ø—ñ—à–Ω–æ –∑–≥–µ–Ω–µ—Ä–æ–≤–∞–Ω–æ (${measures.length} —Ç–∞–∫—Ç—ñ–≤)`;
+			}
+		} catch (e) {
+			console.error('renderPatternString error:', e);
+			const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
+			if (commentsDiv) commentsDiv.innerHTML = `Error: ${e.message}`;
+		}
+	}
+
+
+	// expose API
+	window.renderPatternString = renderPatternString;
 })();

@@ -1525,10 +1525,19 @@ function calculateRequiredHeight(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPA
     // Emulate the same wrapping as in renderMeasures/adjustStaveWidth:
     // - First measure in each row has extra CLEFZONE width
     // - Wrap when current X + next STAVE_WIDTH would exceed GENERALWIDTH
-    let rows = 2;
+    let rows = calculateRows(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10)
+	// Height = top padding + N rows * stave height; add extra padding for last row
+    return Math.ceil(rows * HEIGHT) + TOPPADDING;
+}
+
+function calculateRows(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
+    // Emulate the same wrapping as in renderMeasures/adjustStaveWidth:
+    // - First measure in each row has extra CLEFZONE width
+    // - Wrap when current X + next STAVE_WIDTH would exceed GENERALWIDTH
+    let rows = 1;
     let x = Xmargin;
     var actualBarWidth = GetMeanBarWidth(BARWIDTH, measures);
-	const measuresCount = measures.length;
+    const measuresCount = measures.length;
     for (let i = 0; i < measuresCount; i++) {
         const isFirstInRow = (x === Xmargin);
         let staveWidth = actualBarWidth + (isFirstInRow ? CLEFZONE : 0);
@@ -1541,5 +1550,6 @@ function calculateRequiredHeight(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPA
         x += staveWidth;
     }
     // Height = top padding + N rows * stave height; add extra padding for last row
-    return Math.ceil(rows * HEIGHT);
+    return rows;
 }
+

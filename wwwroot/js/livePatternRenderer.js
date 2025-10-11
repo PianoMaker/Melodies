@@ -22,7 +22,7 @@
         commentsEl.id,
         4, 4,
         undefined,
-        180,
+        120,
         20,
         250,
         60,
