@@ -445,13 +445,13 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     padding: 0;
 }
 
-
+/* головний малюнок сайту тут*/
 .rightcontainer {
     width: 80vh;
-    height: 115%;
+    height: 95%;
     padding: 5px;
     margin-top: 0;
-    background-image: url(../images/elephantplays.png);
+    background-image: url(../images/elephantplays2.png);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
