@@ -1,5 +1,16 @@
 ﻿// midiRenderer.js
 
+const logEvent = (msg) => {
+    try {
+        const stepReadEl = document.getElementById("stepRead");
+        if (stepReadEl) {
+            stepReadEl.innerHTML += msg;
+        }
+    } catch (e) {
+        console.warn('logEvent failed:', e);
+    }
+};
+
 
 
 /**
@@ -383,14 +394,14 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         containerWidth || GENERALWIDTH || 1200
     );
 
-    GENERALHEIGHT = calculateRequiredHeight(effectiveCount, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
+    const rowsHeight = calculateRequiredHeight(effectiveCount, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
     setTimeout(() => {
         const factory = new Vex.Flow.Factory({
             renderer: {
                 elementId: ELEMENT_FOR_RENDERING,
                 width: effectiveWidth,
-                height: GENERALHEIGHT
+                height: rowsHeight
             }
         });
 
@@ -398,6 +409,38 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         const score = factory.EasyScore();
 
         renderMeasures(slicedMap, measuresToRender, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, effectiveWidth, commentsDiv);
+
+        // Post-fix SVG viewBox/height to ensure full content visible. Do multiple passes
+        try {
+            const container = document.getElementById(ELEMENT_FOR_RENDERING);
+            const svg = container && container.querySelector('svg');
+            if (svg && typeof svg.getBBox === 'function') {
+                const adjust = () => {
+                    const bbox = svg.getBBox();
+                    const contentH = Math.max(rowsHeight, Math.ceil((bbox ? bbox.height : 0) + 10));
+                    if (contentH > 0) {
+                        const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
+                        const vbW = vb && vb.width ? vb.width : (parseFloat(svg.getAttribute('width')) || effectiveWidth);
+                        if (vbW > 0) svg.setAttribute('viewBox', `0 0 ${vbW} ${contentH}`);
+                        svg.setAttribute('height', String(contentH));
+                        if (svg.style) {
+                            svg.style.height = contentH + 'px';
+                            svg.style.maxHeight = 'none';
+                        }
+                        if (container && container.style) {
+                            container.style.minHeight = contentH + 'px';
+                            container.style.height = contentH + 'px';
+                            container.style.maxHeight = 'none';
+                            container.style.overflow = 'visible';
+                        }
+                    }
+                };
+                // run multiple times to ensure everything settles
+                adjust();
+                if (typeof requestAnimationFrame === 'function') requestAnimationFrame(adjust);
+                setTimeout(adjust, 50);  // one more time after a short delay
+            }
+        } catch (e) { console.warn('post-fix svg size failed', e); }
     }, 0);
 
     return {
@@ -1066,6 +1109,21 @@ function adjustStaveWidth(BARWIDTH, index, CLEFZONE, isFirstMeasureInRow = false
     return STAVE_WIDTH;
 }
 
+// ----------------------
+// ФУНКЦІЯ ДЛЯ КОРЕКТУВАННЯ ПОЗИЦІЇ X, Y ПРИ РЕНДЕРИНГУ
+// ----------------------
+// Параметри:
+// - Xposition: Поточна позиція X для рендерингу.
+// - GENERALWIDTH: Загальна ширина доступного простору для рендерингу.
+// - BARWIDTH: Ширина одного такту.
+// - Yposition: Поточна позиція Y для рендерингу.
+// - HEIGHT: Висота одного рядка.
+// - Xmargin: Лівий відступ.
+// - index: Індекс поточного такту.
+// - barStartAbsTime: Абсолютний час початку такту (для логів).
+// Повертає: Об'єкт з оновленими Xposition і Yposition.
+// ----------------------
+
 function adjustXYposition(Xposition, GENERALWIDTH, BARWIDTH, Yposition, HEIGHT, Xmargin, index, barStartAbsTime) {
     console.log("FOO: midiRenderer.js - adjustXYposition");
     // Restore wrapping: when remaining width is not enough for another measure, move to next row
@@ -1466,65 +1524,22 @@ function processNoteElement(durationCode, key, accidental) {
 
 
 function calculateRequiredHeight(measuresCount, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
-    console.log("FOO: midiRenderer.js - calculateRequiredHeight");
-    let Xposition = Xmargin;
-    let Yposition = TOPPADDING;
+    // Emulate the same wrapping as in renderMeasures/adjustStaveWidth:
+    // - First measure in each row has extra CLEFZONE width
+    // - Wrap when current X + next STAVE_WIDTH would exceed GENERALWIDTH
     let rows = 1;
+    let x = Xmargin;
     for (let i = 0; i < measuresCount; i++) {
-        let STAVE_WIDTH = BARWIDTH;
-        if (i === 0) STAVE_WIDTH += CLEFZONE;
-        if (Xposition > GENERALWIDTH - BARWIDTH) {
+        const isFirstInRow = (x === Xmargin);
+        let staveWidth = BARWIDTH + (isFirstInRow ? CLEFZONE : 0);
+        // If doesn't fit, move to next row and recompute as first measure in row
+        if (x + staveWidth > GENERALWIDTH) {
             rows++;
-            Xposition = Xmargin;
+            x = Xmargin;
+            staveWidth = BARWIDTH + CLEFZONE; // First in new row gets CLEFZONE
         }
-        Xposition += STAVE_WIDTH;
+        x += staveWidth;
     }
-    return TOPPADDING + HEIGHT * rows;
+    // Height = top padding + N rows * stave height; add extra padding for last row
+    return Math.ceil(TOPPADDING + rows * HEIGHT + 20);
 }
-
-// ----------------------
-// ФУНКЦІЯ ДЛЯ ОТРИМАННЯ ПОЗИЦІЇ X,Y ДЛЯ ПОЧАТКУ НОВОГО ТАКТУ
-// ----------------------
-function getXYposition(Xmargin, TOPPADDING, GENERALWIDTH, BARWIDTH, HEIGHT, index, barStartAbsTime) {
-    console.log("FOO: midiRenderer.js - getXYposition");
-    let Xposition = Xmargin;
-    let Yposition = TOPPADDING;
-    if (Xposition > GENERALWIDTH - BARWIDTH) {
-        Yposition += HEIGHT;
-        Xposition = Xmargin;
-        console.log("Yposition updated:", Yposition);
-    }
-    else {
-        console.log(`General ${GENERALWIDTH} - ${BARWIDTH} vs ${Xposition}`);
-    }
-    console.log(`Processing measure ${index + 1} starting from tick: ${barStartAbsTime} X=${Xposition}  Y=${Yposition}`);
-    return { Xposition, Yposition };
-}
-// ----------------------
-// ФУНКЦІЯ ДЛЯ ОТРИМАННЯ ШИРИНИ ТАКТУ
-// ----------------------
-function getStaveWidth(BARWIDTH, index, CLEFZONE) {
-    console.log("FOO: midiRenderer.js - getStaveWidth");
-    let STAVE_WIDTH = BARWIDTH;
-    if (index === 0) {
-        STAVE_WIDTH += CLEFZONE;
-        console.log("First stave width:", STAVE_WIDTH);
-    }
-    return STAVE_WIDTH;
-}
-
-
-const logEvent = (msg) => {
-    try {
-        const stepReadEl = document.getElementById("stepRead");
-        if (stepReadEl) {
-            stepReadEl.innerHTML += msg;
-        }
-    } catch (e) {
-        console.warn('logEvent failed:', e);
-    }
-};
-
-// expose APIs
-window.drawScore = drawScore;
-window.renderMidiFromUrl = renderMidiFromUrl;
