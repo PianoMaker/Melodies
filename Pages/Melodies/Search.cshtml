@@ -127,8 +127,6 @@
         </div>
         <script type="module" src="~/js/noteTable.js"></script>
 
-        <div>@Model.ErrorWarning</div>
-
         <script>
             console.log("adjusting NoteSearch UI");            
             const saveButton = document.getElementById("createMIDI");            
@@ -384,26 +382,6 @@
     </tbody>
 </table>
 
-
-<!-- АУДІО   -->
-
-<div class="controlcontainer infocontainer">
-
-    <p class="smallfont">@Model.Msg</p>
-    <p>@Model.ErrorWarning</p>
-    @if (TempData["AudioFile"] != null)
-    {
-        <p class="smallfont">@TempData["AudioFile"]</p>
-        <audio id="audioPlayer" controls autoplay style="display: none">
-            <source src="@TempData["AudioFile"]" type="audio/mpeg" />
-            Your browser does not support the audio element.
-        </audio>
-    }
-    else
-    {
-        <p class="smallfont">File is not ready</p>
-    }
-</div>
 
 <script src="~/js/play.js"></script>
 <script src="~/js/searchResults.js"></script>
