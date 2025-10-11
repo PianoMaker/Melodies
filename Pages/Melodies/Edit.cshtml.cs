@@ -47,24 +47,52 @@ namespace Melodies25.Pages.Melodies
         {
             MessageL(COLORS.yellow, "MELODIES/EDIT OnGet");
 
-
             if (id == null)
             {
                 return NotFound();
             }
 
             var melody = await _context.Melody
-                .Include(m => m.Author).
-                FirstOrDefaultAsync(m => m.ID == id);
+                .Include(m => m.Author)
+                .FirstOrDefaultAsync(m => m.ID == id);
+
             if (melody == null)
             {
                 return NotFound();
             }
+
             Melody = melody;
+
+            // Add file existence check and error handling
             if (Melody.FilePath is not null)
             {
                 var midiFilepath = Path.Combine(_environment.WebRootPath, "melodies", Melody.FilePath);
-                Tempo = (int)GetTempofromMidi(midiFilepath);
+                
+                try
+                {
+                    if (!System.IO.File.Exists(midiFilepath))
+                    {
+                        // Log the missing file
+                        MessageL(COLORS.red, $"MIDI file not found: {midiFilepath}");
+                        // Set a warning message that will be displayed to the user
+                        TempData["ErrorWarning"] = "MIDI файл не знайдено на сервері";
+                        // Set default tempo
+                        Tempo = 120; // Default tempo if file is missing
+                    }
+                    else
+                    {
+                        Tempo = (int)GetTempofromMidi(midiFilepath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the error
+                    MessageL(COLORS.red, $"Error reading MIDI file: {ex.Message}");
+                    // Set a user-friendly error message
+                    TempData["ErrorWarning"] = "Помилка читання MIDI файлу";
+                    // Set default tempo
+                    Tempo = 120;
+                }
             }
 
             GrayMessageL($"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}, Tempo = {Tempo}");
@@ -75,7 +103,7 @@ namespace Melodies25.Pages.Melodies
                 "F-dur", "B-dur", "Es-dur", "As-dur", "Des-dur", "Ges-dur", "Ces-dur",
                 "a-moll", "e-moll", "h-moll", "fis-moll", "cis-moll", "gis-moll", "dis-moll", "ais-moll",
                 "d-moll", "g-moll", "c-moll", "f-moll", "b-moll", "es-moll", "as-moll"
-            });            
+            });
 
             return Page();
         }
