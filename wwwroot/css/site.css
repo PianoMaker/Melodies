@@ -6,6 +6,7 @@
 :root {
     --brand-red: #be0000; /* navbar red */
     --brand-green: #34620e; /* dark green used in mobile menu/nav tail */
+    --brand-navigation-strip: #4b4f18;
     --brand-gold: #ffd83d; /* accent */
     --surface: #fffcd1; /* light panel background */
     --text-dark: #1f1f1f;
