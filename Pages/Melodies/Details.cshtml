@@ -73,7 +73,7 @@
     <div class="notescontainer melody-details melody-width">
         <!-- НОТНИЙ ТЕКСТ -->
         <div class="panel-notes">
-            <div id="notation">notation will be shown here</div>
+            <div id="notation" data-midi-url='@Url.Content($"~/melodies/{item.FilePath}")' data-public-domain='@System.Text.Json.JsonSerializer.Serialize(item?.IfPublicDomain ?? false)'>notation will be shown here</div>
             <div id="comments"></div>
             <div id="stepRead" style="display:none"></div>
         </div>
@@ -257,28 +257,4 @@
 <script src="~/lib/midirender/midiparser_ext.js"></script>
 <script src="~/lib/midirender/makeBeams.js"></script>
 <script src="~/lib/midirender/midiRenderer.js"></script>
-<script>
-    const midiUrl = '@Url.Content($"~/melodies/{item.FilePath}")';
-    // derive from the current melody: public domain -> no limit (1000), else 8
-    const isPublicDomain = @System.Text.Json.JsonSerializer.Serialize(item?.IfPublicDomain ?? false);
-    const maxBarsToRender = isPublicDomain ? 1000 : 8;
-
-    function calcGeneralWidth(){
-        const w = window.innerWidth || 1200;
-        return Math.min(1200, Math.max(420, w - 80));
-    }
-    async function renderAdaptive(){
-        const width = calcGeneralWidth();
-        await renderMidiFromUrl(
-            midiUrl, maxBarsToRender,
-            'notation', 'comments',
-            width, 150
-        );
-    }
-    renderAdaptive();
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(renderAdaptive, 300);
-    });
-</script>
+<script src="~/js/MelodyDetails.js" asp-append-version="true"></script>
