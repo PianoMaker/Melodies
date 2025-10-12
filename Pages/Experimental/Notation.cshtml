@@ -10,12 +10,15 @@
             <select id="midifiles" asp-for="SelectedMidiFile">
                 @foreach (var file in Model.MidiFiles)
                 {
-                    <option value="@file">@file</option>
+                    <option value="@file" data-id="@(Model.FileIds.TryGetValue(file!, out var id) ? id : -1)">@file</option>
                 }
             </select>
             <button id="nextMidi" type="button">Next</button>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;">
             <button asp-page-handler="Check" type="submit">Check</button>
             <button asp-page-handler="AddEOF" type="submit">Add EOF</button>
+            <button id="editMidi" type="button">Edit</button>
         </div>
     </form>
     <div style="text-align:center; margin-bottom:8px;">

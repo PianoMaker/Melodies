@@ -9,6 +9,7 @@ function initNotationPage() {
     const keysignDiv = document.getElementById('keysignatures');
     const prevBtn = document.getElementById('prevMidi');
     const nextBtn = document.getElementById('nextMidi');
+    const editBtn = document.getElementById('editMidi');
     console.log('notationFetch.js init');
 
     if (!select || !sheetMusicDiv) {
@@ -68,6 +69,18 @@ function initNotationPage() {
 
     prevBtn?.addEventListener('click', () => selectByIndex(select.selectedIndex - 1));
     nextBtn?.addEventListener('click', () => selectByIndex(select.selectedIndex + 1));
+
+    // Edit: open Melodies/Edit/{id} in new tab (if mapping exists)
+    editBtn?.addEventListener('click', () => {
+        const opt = select.options[select.selectedIndex];
+        const idAttr = opt?.getAttribute('data-id');
+        const id = idAttr ? parseInt(idAttr, 10) : NaN;
+        if (Number.isFinite(id) && id > 0) {
+            window.open(`/Melodies/Edit?id=${id}`, '_blank');
+        } else {
+            alert('Для цього файлу не знайдено запис Melody у базі (немає ID).');
+        }
+    });
 
     // Підвантаження при ручній зміні вибору
     select.addEventListener('change', loadSelectedMidiFile);

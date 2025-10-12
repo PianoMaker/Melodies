@@ -9,20 +9,27 @@ using static Music.Messages;
 using MetaEvent = NAudio.Midi.MetaEvent;
 using MidiEvent = NAudio.Midi.MidiEvent;
 using MidiFile = NAudio.Midi.MidiFile;
+using Melodies25.Data; // added for DbContext
+using Melodies25.Models;
 
 namespace Melodies25.Pages.Account
 {
     public class NotationModel : PageModel
     {
         private readonly IWebHostEnvironment _env;
+        private readonly Melodies25Context _context; // inject DB
         public List<string> MidiFiles { get; set; } = default!;
         public string MidiNotesJson { get; set; } = default!;
 
         public string CheckMessage { get; set; }
 
-        public NotationModel(IWebHostEnvironment env)
+        // Map: filename.mid -> Melody.ID (if exists)
+        public Dictionary<string, int> FileIds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public NotationModel(IWebHostEnvironment env, Melodies25Context context)
         {
             _env = env;
+            _context = context;
         }
 
         [BindProperty]
@@ -41,6 +48,31 @@ namespace Melodies25.Pages.Account
             MidiFiles = Directory.GetFiles(midiDirectory, "*.mid")
                                  .Select(Path.GetFileName)
                                  .ToList();
+
+            try
+            {
+                // Preload mapping from DB: FilePath -> ID
+                if (_context != null && MidiFiles.Count > 0)
+                {
+                    var filesLower = MidiFiles.Select(f => f!).ToList();
+                    var matched = _context.Melody
+                        .Where(m => m.FilePath != null && filesLower.Contains(m.FilePath))
+                        .Select(m => new { m.FilePath, m.ID })
+                        .ToList();
+
+                    FileIds = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var m in matched)
+                    {
+                        if (!string.IsNullOrWhiteSpace(m.FilePath))
+                            FileIds[m.FilePath] = m.ID;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageL(COLORS.red, $"Failed to build file->id map: {ex.Message}");
+                FileIds = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            }
         }
 
         public void OnPostCheck()
