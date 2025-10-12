@@ -92,32 +92,102 @@
 	}
 
 
-	function durationToQuarterUnits(code) {
-  // Returns how many quarter-notes this duration represents (q=1, h=2, w=4, 8=0.5, etc.)
-  // NOW accounts for dots: each dot adds half of the previous value (1.5x, 1.75x, 1.875x, ...)
-  const s = String(code || 'q');
-  const dots = (s.match(/\./g) || []).length;     // supports single/double/triple dots
-  const base = s.replace(/\./g, '');              // strip dots
+	// Place near the other helpers (top of file)
+	const UNITS_PER_QUARTER = 8; // 1 quarter = 8 units (1 unit = 1/32 note)
 
-  let q;
-  switch (base) {
-    case 'w':  q = 4;   break;
-    case 'h':  q = 2;   break;
-    case 'q':  q = 1;   break;
-    case '8':  q = 0.5; break;
-    case '16': q = 0.25;break;
-    case '32': q = 0.125;break;
-    default:   q = 1;   break; // fallback quarter
-  }
+	// Core helper: convert duration code (e.g. 'q', 'h.', '16') to 1/32-based units
+	function durationToUnits(code) {
+		const s = String(code || 'q');
+		const dots = (s.match(/\./g) || []).length;   // supports multiple dots
+		const base = s.replace(/\./g, '');            // strip dots only
 
-  // apply dot expansion: add 1/2 + 1/4 + 1/8 ... of base
-  let add = q / 2;
-  for (let i = 0; i < dots; i++) {
-    q += add;
-    add /= 2;
-  }
-  return q;
-}
+		let units;
+		switch (base) {
+			case 'w':  units = 32; break;  // whole = 4 quarters
+			case 'h':  units = 16; break;  // half  = 2 quarters
+			case 'q':  units = 8;  break;  // quarter
+			case '8':  units = 4;  break;  // eighth
+			case '16': units = 2;  break;  // sixteenth
+			case '32': units = 1;  break;  // thirty-second
+			default:   units = 8;  break;  // fallback to quarter
+		}
+
+		// Apply dot expansion (1.5x, 1.75x, 1.875x, ...)
+		let add = Math.floor(units / 2);
+		for (let i = 0; i < dots; i++) {
+			units += add;
+			add = Math.floor(add / 2);
+		}
+		return units;
+	}
+
+
+	// Greedy decomposition of a units value to Vex duration codes. Prefer dotted codes when allowed
+	function unitsToDurationList(units, allowDotted = true) {
+		const dottedTable = [
+			[48, 'w.'], [32, 'w'],
+			[24, 'h.'], [16, 'h'],
+			[12, 'q.'], [ 8, 'q'],
+			[ 6, '8.'], [ 4, '8'],
+			[ 3, '16.'],[ 2, '16'],
+			[ 1, '32']
+		];
+		const cleanTable = [
+			[32, 'w'], [16, 'h'], [8, 'q'], [4, '8'], [2, '16'], [1, '32']
+		];
+		const table = allowDotted ? dottedTable : cleanTable;
+
+		let u = Math.max(0, Math.round(units));
+		const out = [];
+		for (const [step, code] of table) {
+			while (u >= step) { out.push(code); u -= step; }
+		}
+		return out;
+	}
+
+	// Count dots on a VexFlow StaveNote safely
+	function getDotCount(note) {
+		try {
+			if (!note) return 0;
+			if (typeof note.getDots === 'function') return (note.getDots() || []).length || 0;
+			if (typeof note.getModifiers === 'function') {
+				const mods = note.getModifiers() || [];
+				return mods.filter(m =>
+					(m && (m.getCategory?.() === 'dots' || m.category === 'dots')) ||
+					(typeof Vex !== 'undefined' && Vex.Flow && m instanceof Vex.Flow.Dot)
+				).length;
+			}
+			// fallback: direct property (older VexFlow)
+			if (Array.isArray(note.modifiers)) {
+				return note.modifiers.filter(m => (m && (m.getCategory?.() === 'dots' || m.category === 'dots'))).length;
+			}
+		} catch { /* ignore */ }
+		return 0;
+	}
+
+	// Sum measure length in units (including dotted modifiers)
+	function sumUnits(notes) {
+		if (!Array.isArray(notes)) return 0;
+		let total = 0;
+		for (const n of notes) {
+			if (!n || typeof n.getDuration !== 'function') continue;
+			// Prefer explicitly stored duration code if available (contains '.' for dotted)
+			let codeStr = typeof n.__durationCode === 'string' ? n.__durationCode : String(n.getDuration() || 'q');
+			// Strip rest suffix for base mapping (e.g. 'qr' => 'q')
+			const baseCode = codeStr.replace(/r$/, '');
+			let units = durationToUnits(baseCode);
+
+			// Determine dot count: first from codeStr, else from Vex modifiers
+			let dotCount = (codeStr.match(/\./g) || []).length;
+			if (dotCount === 0) dotCount = getDotCount(n);
+			if (dotCount > 0) {
+				const factor = 2 - Math.pow(0.5, dotCount);
+				units = Math.round(units * factor);
+			}
+			total += units;
+		}
+		return total;
+	}
 
 	function fillRestsToCapacity(notes, remainingQuarters) {
 		// Fill the rest of a measure with rests using largest possible durations
@@ -170,33 +240,66 @@
 			// Parse tokens -> items
 			const items = tokens.map(parseToken).filter(Boolean);
 
-			// Build measures based on time signature capacity
+			// Build measures with cross-bar splitting + ties
 			const capacityQuarters = numerator * (4 / denominator); // quarters per bar
-			const measures = [];
-			let current = [];
-			let used = 0;
-			items.forEach(it => {
-				const q = durationToQuarterUnits(it.durationCode);
-				if (used + q > capacityQuarters + 1e-9) {
-					// close current with rests if needed
-					fillRestsToCapacity(current, capacityQuarters - used);
-					measures.push(current);
-					current = [];
-					used = 0;
+			const capacityUnits = Math.round(capacityQuarters * UNITS_PER_QUARTER);
+			const measures = []; // array of { notes: StaveNote[], ties: StaveTie[] }
+			let cur = { notes: [], ties: [] };
+			let usedUnits = 0;
+			measures.push(cur);
+
+			for (const it of items) {
+				let remaining = durationToUnits(it.durationCode);
+				let prevPieceNote = null; // last piece of the same logical note to tie from
+
+				while (remaining > 0) {
+					if (usedUnits >= capacityUnits) {
+						// start new bar
+						cur = { notes: [], ties: [] };
+						measures.push(cur);
+						usedUnits = 0;
+					}
+
+					const room = capacityUnits - usedUnits;
+					const pieceUnits = Math.min(remaining, room);
+					const pieceCodes = unitsToDurationList(pieceUnits, /*allowDotted*/ true);
+
+					for (let i = 0; i < pieceCodes.length; i++) {
+						const code = pieceCodes[i];
+						if (it.isRest) {
+							const r = createRest(code);
+							if (r) { r.__durationCode = code; cur.notes.push(r); }
+							prevPieceNote = null; // rests break ties
+						} else {
+							const n = processNoteElement(code, it.key, it.accidental);
+							if (n) n.__durationCode = code;
+							cur.notes.push(n);
+							if (prevPieceNote) cur.ties.push(new Vex.Flow.StaveTie({ first_note: prevPieceNote, last_note: n }));
+							prevPieceNote = n;
+						}
+					}
+
+					usedUnits += pieceUnits;
+					remaining -= pieceUnits;
 				}
-				if (it.isRest) {
-					const rest = createRest(it.durationCode.replace(/\.$/, '')); // rests do not use dotted codes in helper
-					if (rest) current.push(rest);
-				} else {
-					const note = processNoteElement(it.durationCode, it.key, it.accidental);
-					if (note) current.push(note);
+			}
+
+			// Drop trailing empty measure if any
+			if (measures.length && measures[measures.length - 1].notes.length === 0) {
+				measures.pop();
+			}
+
+			// Ensure each bar is filled with trailing rests (non‑dotted) to capacity
+			for (const m of measures) {
+				const used = sumUnits(m.notes);
+				const leftUnits = Math.max(0, capacityUnits - used);
+				if (leftUnits > 0) {
+					const restCodes = unitsToDurationList(leftUnits, /*allowDotted*/ false);
+					for (const rc of restCodes) {
+						const r = createRest(rc);
+						if (r) { r.__durationCode = rc; m.notes.push(r); }
+					}
 				}
-				used += q;
-			});
-			// push last measure
-			if (current.length > 0 || measures.length === 0) {
-				fillRestsToCapacity(current, capacityQuarters - used);
-				measures.push(current);
 			}
 
 			// Compute width/height
@@ -207,7 +310,7 @@
 			// 1) Єдиний bar width для всієї сесії рендера
 			// МІНІМАЛЬНА ШИРИНА ТАКТУ, щоб не були вузькими
 			const MIN_BARWIDTH = 240; // налаштовуване значення
-			const naiveBarWidth = GetMeanBarWidth(BARWIDTH, measures);
+			const naiveBarWidth = GetMeanBarWidth(BARWIDTH, measures.map(m => m.notes));
 			const actualBarWidth = Math.max(MIN_BARWIDTH, naiveBarWidth);
 
 			// 2) Локальний підрахунок кількості рядків за вже обчисленим actualBarWidth
@@ -259,8 +362,8 @@
 				const stave = setStave(Xposition, Yposition, STAVE_WIDTH, i, numerator, denominator, isFirstMeasureInRow, false, false, null);
 				stave.setContext(context).draw();
 
-				const ties = [];
-				drawMeasure(measures[i], actualBarWidth, context, stave, ties, i, commentsDiv || { innerHTML: '' }, numerator, denominator, 480);
+				const ties = measures[i].ties || [];
+				drawMeasure(measures[i].notes, actualBarWidth, context, stave, ties, i, commentsDiv || { innerHTML: '' }, numerator, denominator, 480);
 
 				Xposition += STAVE_WIDTH;
 				isFirstMeasureInRow = false;
