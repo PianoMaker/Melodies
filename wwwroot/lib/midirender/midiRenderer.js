@@ -1176,7 +1176,10 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
             
             if (validNotes.length === 0) {
                 console.warn(`Measure ${index + 1} has no valid notes to render.`);
-                return;
+                const ticksPerMeasure = currentNumerator * ticksPerBeat * 4 / currentDenominator;
+                // Add whole measure rest
+                const restDurations = getDurationFromTicks(ticksPerMeasure, ticksPerBeat);
+                validNotes.push(createRest(restDurations[0]));
             }
 
             // Обчислення ребер нот (beams) з обробкою помилок
@@ -1184,23 +1187,45 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
             
             // Створюємо voice з урахуванням поточного розміру такту
             const voice = new Vex.Flow.Voice({
-                num_beats: currentNumerator || 4,
-                beat_value: currentDenominator || 4
+                num_beats: currentNumerator,
+                beat_value: currentDenominator,
+                resolution: Vex.Flow.RESOLUTION
             });
 
-            // Встановлюємо строгий режим у false, щоб уникнути помилок через невідповідність тривалостей
+            // Встановлюємо строгий режим у false для більшої гнучкості при обробці тривалостей
             voice.setStrict(false);
 
             // Додаємо нотні елементи до голосу
             voice.addTickables(validNotes);
+
+            // Додаємо відсутні паузи для заповнення такту
+            const expectedTicks = currentNumerator * ticksPerBeat * 4 / currentDenominator;
+            let actualTicks = validNotes.reduce((sum, note) => {
+                const duration = note.getDuration();
+                const isRest = duration.endsWith('r');
+                const baseDuration = isRest ? duration.slice(0, -1) : duration;
+                return sum + calculateTicksFromDuration(baseDuration, ticksPerBeat);
+            }, 0);
+
+            if (actualTicks < expectedTicks) {
+                const remainingTicks = expectedTicks - actualTicks;
+                const restDurations = getDurationFromTicks(remainingTicks, ticksPerBeat);
+                restDurations.forEach(duration => {
+                    const rest = createRest(duration);
+                    if (rest) {
+                        validNotes.push(rest);
+                        voice.addTickable(rest);
+                    }
+                });
+            }
             
-            // Форматуємо голос. Враховуємо фактичний старт нот після ключа/знаків/розміру такту
+            // Форматуємо голос
             const formatter = new Vex.Flow.Formatter();
             const staveX = (typeof stave.getX === 'function') ? stave.getX() : stave.x || 0;
             const staveW = (typeof stave.getWidth === 'function') ? stave.getWidth() : stave.width || BARWIDTH;
             const noteStartX = (typeof stave.getNoteStartX === 'function') ? stave.getNoteStartX() : (staveX + 10);
             const rightX = staveX + staveW;
-            const rightPadding = 10; // невеликий відступ від тактової риски
+            const rightPadding = 10;
             const availableWidth = Math.max(10, rightX - noteStartX - rightPadding);
 
             formatter.joinVoices([voice]).format([voice], availableWidth);
@@ -1214,12 +1239,27 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
             // Домальовуємо ребра нот (beams) 
             drawBeams(beams, context, index);
             
-            
             // Домальовуємо ліги (ties) 
             drawTies(ties, context, index);
 
         } else {
-            console.warn(`Measure ${index + 1} has no notes to render.`);
+            // Якщо такт порожній - додаємо паузу на весь такт
+            const ticksPerMeasure = currentNumerator * ticksPerBeat * 4 / currentDenominator;
+            const restDurations = getDurationFromTicks(ticksPerMeasure, ticksPerBeat);
+            const wholeRest = createRest(restDurations[0]);
+            if (wholeRest) {
+                const voice = new Vex.Flow.Voice({
+                    num_beats: currentNumerator,
+                    beat_value: currentDenominator,
+                    resolution: Vex.Flow.RESOLUTION
+                });
+                voice.setStrict(false);
+                voice.addTickable(wholeRest);
+                
+                const formatter = new Vex.Flow.Formatter();
+                formatter.joinVoices([voice]).format([voice], stave.getWidth() - 20);
+                voice.draw(context, stave);
+            }
         }
     } catch (error) {
         console.error(`Error rendering measure ${index + 1}: ${error.message}`);
@@ -1341,7 +1381,7 @@ function drawBeams(beams, context, index) {
 // ФУНКЦІЯ ДЛЯ СТВОРЕННЯ ПАУЗИ (REST) З ВИКОРИСТАННЯМ VEXFLOW
 // Параметри:
 // - durationCode: Рядок тривалості паузи (наприклад, "q", "h", "8", "16." тощо).
-// Повертає: Об'єкт Vex.Flow.StaveNote, що являє собою паузу, або null у разі помилки.
+// Повертає: Об'єкт Vex.Flow.StaveNote, що представляє собою паузу, або null у разі помилки.
 // ----------------------
     
 function addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, ticksPerBeat) {
