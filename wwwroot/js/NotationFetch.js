@@ -1,118 +1,87 @@
 ﻿import { formatMidiNotesForDisplay, getVexFlowNoteName, roundDuration, ticksToDuration, ticksToRestDuration, getNoteName2 } from './formatMidiNotesForDisplay.js';
 
-
-document.addEventListener('DOMContentLoaded', function () {
+function initNotationPage() {
     const select = document.getElementById('midifiles');
     const sheetMusicDiv = document.getElementById('SheetMusic');
     const notationDiv = document.getElementById('notation');
     const codeDiv = document.getElementById('code');
     const timesignDiv = document.getElementById('timesignature');
     const keysignDiv = document.getElementById('keysignatures');
-    console.log("notationFetch.js starts ##");
+    const prevBtn = document.getElementById('prevMidi');
+    const nextBtn = document.getElementById('nextMidi');
+    console.log('notationFetch.js init');
+
+    if (!select || !sheetMusicDiv) {
+        console.warn('Notation page elements not found');
+        return;
+    }
 
     async function loadSelectedMidiFile() {
-        const selectedFile = select?.value;
-        console.log(`selectedFile = ${selectedFile}`);
+        const selectedFile = select.value;
+        console.log(`Load file: ${selectedFile}`);
 
-        // Очищаємо попередній нотний запис
+        // Очищення попереднього рендера
         sheetMusicDiv.innerHTML = '<p style="text-align: center">Ноти</p>';
         document.getElementById('comments')?.replaceChildren();
-        codeDiv.innerHTML = '';
-        timesignDiv.innerText = '';
+        if (codeDiv) codeDiv.innerHTML = '';
+        if (timesignDiv) timesignDiv.innerText = '';
         if (keysignDiv) keysignDiv.innerText = '';
 
-        if (!selectedFile) {
-            console.log('No file selected.');
-            return;
-        }
+        if (!selectedFile) return;
 
         try {
             const response = await fetch(`/melodies/${selectedFile}`);
-            if (!response.ok) {
-                throw new Error('Не вдалося завантажити MIDI-файл');
-            }
-            console.log('Response status:', response.status);
+            if (!response.ok) throw new Error('Не вдалося завантажити MIDI-файл');
 
             const arrayBuffer = await response.arrayBuffer();
             const midiData = new Uint8Array(arrayBuffer);
             const midiFile = new MIDIFile(midiData);
             const timeSignatures = getTimeSignatures(midiFile);
-            // pass raw bytes for robust fallback
             const keySignatures = getKeySignatures(midiFile, midiData);
 
-            console.log('MIDI data length:', midiData.length);
-            console.log('MIDI file tracks:', midiFile.tracks);
-
-            // Render score via midiRenderer using URL into SheetMusic container
+            // Рендер партитури
             drawNotation(selectedFile);
 
             const formattedData = formatMidiNotesForDisplay(midiFile);
-            codeDiv.textContent = formattedData;
+            if (codeDiv) codeDiv.textContent = formattedData;
 
-            const timeSignaturesText = timeSignatures.map(signature => `${signature.numerator} / ${signature.denominator}`).join(", ");
-            timesignDiv.innerText = timeSignaturesText;
+            const timeSignaturesText = timeSignatures.map(signature => `${signature.numerator} / ${signature.denominator}`).join(', ');
+            if (timesignDiv) timesignDiv.innerText = timeSignaturesText;
             const keySignaturesText = keySignatures.map(ks => ks.human).join(', ');
             if (keysignDiv) keysignDiv.innerText = keySignaturesText;
         } catch (error) {
             console.error('Помилка завантаження або розбору:', error);
-            codeDiv.textContent = `Помилка: ${error.message}`;
+            if (codeDiv) codeDiv.textContent = `Помилка: ${error.message}`;
         }
     }
 
-    // Викликаємо завантаження одразу при завантаженні сторінки
-    loadSelectedMidiFile();
-
-    // Викликаємо завантаження при зміні вибору
-    select?.addEventListener('change', loadSelectedMidiFile);
-});
-('DOMContentLoaded', function () {
-    const select = document.getElementById('midifiles');
-    const sheetMusicDiv = document.getElementById('SheetMusic');
-    const notationDiv = document.getElementById('notation');
-    const codeDiv = document.getElementById('code');
-    const timesignDiv = document.getElementById('timesignature');
-    const keysignDiv = document.getElementById('keysignatures');
-    console.log("notationFetch.js starts ##");
-
-    select?.addEventListener('change', async function () {
-        const selectedFile = select.value;
-        console.log(`selectedFile = ${selectedFile}`);
-
-        // Очищаємо попередній нотний запис
-        sheetMusicDiv.innerHTML = '<p style="text-align: center">Ноти</p>';
-        codeDiv.innerHTML = '';
-
-        try {
-            const response = await fetch(`/melodies/${selectedFile}`);
-            if (!response.ok) {
-                throw new Error('Не вдалося завантажити MIDI-файл');
-            }
-            console.log('Response status:', response.status);
-
-            const arrayBuffer = await response.arrayBuffer();
-            const midiData = new Uint8Array(arrayBuffer);
-            const midiFile = new MIDIFile(midiData);
-            const timeSignatures = getTimeSignatures(midiFile);
-            // pass raw bytes for robust fallback
-            const keySignatures = getKeySignatures(midiFile, midiData);
-
-            console.log('MIDI data length:', midiData.length);
-            console.log('MIDI file tracks:', midiFile.tracks);
-
-            // Use the URL-based renderer so we pass element IDs (strings)
-            drawNotation(selectedFile);
-            const formattedData = formatMidiNotesForDisplay(midiFile, notationDiv, codeDiv);
-            codeDiv.textContent = formattedData;
-            const timeSignaturesText = timeSignatures.map(signature => `${signature.numerator} / ${signature.denominator}`).join(", ");
-            timesignDiv.innerText = timeSignaturesText;
-            const keySignaturesText = keySignatures.map(ks => ks.human).join(', ');
-            if (keysignDiv) keysignDiv.innerText = keySignaturesText;
-        } catch (error) {
-            console.error('Помилка завантаження або розбору:', error);
-            codeDiv.textContent = `Помилка: ${error.message}`;
+    function selectByIndex(newIndex) {
+        const count = select.options.length;
+        if (count === 0) return;
+        const clamped = Math.max(0, Math.min(count - 1, newIndex));
+        if (select.selectedIndex !== clamped) {
+            select.selectedIndex = clamped;
         }
-    });
-});
+        // Викликаємо рендер напряму для надійності
+        loadSelectedMidiFile();
+    }
+
+    prevBtn?.addEventListener('click', () => selectByIndex(select.selectedIndex - 1));
+    nextBtn?.addEventListener('click', () => selectByIndex(select.selectedIndex + 1));
+
+    // Підвантаження при ручній зміні вибору
+    select.addEventListener('change', loadSelectedMidiFile);
+
+    // Початкове завантаження
+    loadSelectedMidiFile();
+}
+
+// Ініціалізація як для стану loading, так і для вже готового DOM
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNotationPage);
+} else {
+    initNotationPage();
+}
 
 function drawNotation(selectedFile) {
     // Ensure the comments element exists (outside of SheetMusic)
@@ -212,62 +181,41 @@ function mapKeyToHuman(sf, mi) {
     return mi === 0 ? `${majors[idx]}-dur` : `${minors[idx]}-moll`;
 }
 
-
 // Читання нотних подій
-// Музичні ноти без вказівки октави
 const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-//// Функція для визначення октави по номеру ноти
-//function getOctave(noteNumber) {
-//    const octave = Math.floor(noteNumber / 12) - 1; // Октавний діапазон для MIDI (0-127)
-//    console.log(`Note number: ${noteNumber} -> Octave: ${octave}`);
-//    return octave;
-//}
-
-// Функція для перетворення MIDI номера на ноту з урахуванням октави
 function getNoteName(noteNumber) {
     const octave = getOctave(noteNumber);
-    const note = noteNames[noteNumber % 12]; // Визначаємо ноту в межах октави
+    const note = noteNames[noteNumber % 12];
     return `${note}${octave}`;
 }
 
-// Функція для визначення, чи це подія Note On з velocity > 0
 function isNoteOnWithVelocity(event) {
     return event.type === 8 && event.subtype === 9 && event.param2 > 0;
 }
 
-// Функція для визначення, чи це подія Note Off
 function isNoteOff(event) {
     return (event.type === 8 && event.subtype === 8) || (event.type === 8 && event.subtype === 9 && event.param2 === 0);
 }
 
-// Основна функція для обробки MIDI подій
 function processMidiEvent(event, currentTick, activeNotes, notes) {
-    if (isNoteOnWithVelocity(event)) { // Note On з velocity > 0
-        // console.log(`Note On - Note: ${event.param1} +`);
-        handleNoteOn(event, currentTick, activeNotes, notes);
-    } else if (isNoteOff(event)) { // Note Off або Note On з velocity 0
-        //console.log(`Note Off - Note: ${event.param1}, Velocity: ${event.param2}, Delta: ${event.delta}, Current Tick: ${currentTick}`);
-        handleNoteOff(event, currentTick, activeNotes, notes);
-    }
+    if (isNoteOnWithVelocity(event)) { handleNoteOn(event, currentTick, activeNotes, notes); }
+    else if (isNoteOff(event)) { handleNoteOff(event, currentTick, activeNotes, notes); }
 }
 
-// Обробка події Note On
 function handleNoteOn(event, currentTick, activeNotes, notes) {
     activeNotes[event.param1] = { startTick: currentTick };
 }
 
-// Обробка події Note Off
 function handleNoteOff(event, currentTick, activeNotes, notes) {
     if (activeNotes[event.param1]) {
         const note = activeNotes[event.param1];
         const durationTicks = currentTick - note.startTick;
-        const noteName = getNoteName(event.param1); // Отримуємо ім'я ноти з врахуванням октави
+        const noteName = getNoteName(event.param1);
         notes.push({ noteName, noteNumber: event.param1, durationTicks });
         delete activeNotes[event.param1];
     }
 }
-
 
 function getNotesData(midiFile) {
     const notes = [];
@@ -305,26 +253,16 @@ function getNotesData(midiFile) {
         });
     });
 
-    // Сортуємо ноти по часу їх появи
     notes.sort((a, b) => a.startTick - b.startTick);
     return notes;
 }
 
-
-
 function getDurationSymbol(durationTicks, ticksPerBeat) {
     const ratio = durationTicks / ticksPerBeat;
-
-    if (ratio <= 0.25) {
-        return "16";
-    } else if (ratio <= 0.5) {
-        return "8";
-    } else if (ratio <= 1.5) {
-        return "q";
-    } else if (ratio <= 2.5) {
-        return "h";
-    } else {
-        return "w";
-    }
+    if (ratio <= 0.25) return '16';
+    else if (ratio <= 0.5) return '8';
+    else if (ratio <= 1.5) return 'q';
+    else if (ratio <= 2.5) return 'h';
+    else return 'w';
 }
 
