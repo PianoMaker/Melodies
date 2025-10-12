@@ -537,6 +537,8 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         // --- Встановлюємо startTime для активних нот на початку такту ---
         processActiveNotesFromPreviousBar(activeNotes, index, barStartAbsTime);
 
+        // NEW: флаг, чи починався такт зі звучання (ноти, перенесені з попер. такту)
+        const measureStartedWithActive = Object.keys(activeNotes).length > 0;
 
         // Перевіряємо, чи потрібно перейти на новий рядок
         const oldYposition = Yposition;
@@ -644,12 +646,21 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
                     const pitch = event.data[0];
                     if (stepRead) stepRead.innerHTML += ` on ${pitch} <span class="tick">[${event.absTime}]</span>`;
 
-//                     if (isFirstNoteInMeasure && Object.keys(activeNotes).length === 0) {
-                    if (isFirstNoteInMeasure) {
-                        AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime);
+                    // Add starting rest only if the bar did NOT start with sustained notes
+                    if (isFirstNoteInMeasure && !measureStartedWithActive) {
+                        const relTime = event.absTime - barStartAbsTime;
+                        if (relTime > thresholdGap) {
+                            AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime);
+                            // mark timeline filled up to this first note (absolute time)
+                            lastNoteOffTime = event.absTime;
+                        }
+                        isFirstNoteInMeasure = false;
+                    } else if (isFirstNoteInMeasure) {
+                        // bar began with sustained notes -> just flip the flag
                         isFirstNoteInMeasure = false;
                     }
 
+                    // Add rests between previous end and current event (if any)
                     addRestsBetween(lastNoteOffTime, event, ticksPerBeat, thresholdGap, notes);
                     checkConcide(event, lastNoteOnTime);
 
@@ -694,6 +705,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
 
                         }
+                        // lastNoteOffTime is absolute absTime (end of the note we just processed)
                         lastNoteOffTime = event.absTime;
 
                     }
@@ -1081,7 +1093,7 @@ function setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, cu
         }
     }
     
-    // Додаємо розмір такту для першого такту або коли розмір змінюється
+    // Додаємо розмір такту для першого такту або коли розмір зміниється
     if (index === 0 || timeSignatureChanged) {
         stave.addTimeSignature(`${currentNumerator}/${currentDenominator}`);
         console.log(`Adding time signature ${currentNumerator}/${currentDenominator} to measure ${index + 1}, timeSignatureChanged: ${timeSignatureChanged}`);
