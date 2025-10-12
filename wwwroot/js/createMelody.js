@@ -78,36 +78,36 @@ document.addEventListener("DOMContentLoaded", function () {
     let duration = '4';
     const durationbuttons = document.querySelectorAll('.durationbutton');
     const restBtn = document.getElementById('pausebutton');
-    //console.log('restBtn:', restBtn);
+    const dotBtn = document.getElementById('dotbutton'); // NEW
+
     durationbuttons.forEach((button, index) => {
         button.addEventListener('click', () => {
             duration = String(2 ** index); // 2^index дає потрібне значення
-            console.log(duration);
+            console.log('duration:', duration);
         });
     });
 
+    // NEW: toggle крапки + підсвітка
+    if (dotBtn) {
+        dotBtn.addEventListener('click', () => {
+            dotBtn.classList.toggle('highlight');
+        });
+    }
+
+    // Допоміжна: чи активна крапка зараз
+    function isDottedActive() {
+        return document.getElementById('dotbutton')?.classList.contains('highlight') || false;
+    }
 
     // обробник клавіш фортепіано
-    // // (треба буде додати запобіжник для любителів грати в стилі Зеленського)
     buttons.forEach(button => {
         button.addEventListener('click', function () {
-            const key = this.getAttribute('data-key'); // Отримуємо значення клавіші            
-            console.log(`Натиснута клавіша: ${key}`);
-            const audioPath = `/sounds/${key}.mp3`;
-            if (audioPlayer && !audioPlayer.paused) {
-                audioPlayer.pause();
-            }
-            if (audioSource) {
-                audioSource.src = audioPath;
-                if (audioPlayer) {
-                    audioPlayer.load();
-                    audioPlayer.play();
-                    audioPlayer.addEventListener('canplaythrough', function () {
-                        audioPlayer.play();
-                    });
-                }
-            }
-            pianodisplay.value += `${key}${duration}_`;
+            const key = this.getAttribute('data-key');
+            // ... програвання звуку ...
+
+            // Додаємо крапку до тривалості, якщо активна
+            const dotSuffix = isDottedActive() ? '.' : '';
+            pianodisplay.value += `${key}${duration}${dotSuffix}_`;
             if (createMIDIButton) createMIDIButton.style.background = "lightgreen";
             if (playButton) {
                 playButton.style.background = "lightgray";
@@ -118,11 +118,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
-    //обробник паузи
+    // обробник паузи
     if (restBtn) {
         restBtn.addEventListener('click', function () {
-            console.log(`Натиснута клавіша: пауза`);
-            pianodisplay.value += `r${duration}_`;
+            const dotSuffix = isDottedActive() ? '.' : '';
+            pianodisplay.value += `r${duration}${dotSuffix}_`;
             if (createMIDIButton) createMIDIButton.style.background = "lightgreen";
             if (playButton) {
                 playButton.style.background = "lightgray";
@@ -176,9 +176,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // Не відміняємо submit, просто встановлюємо Keys перед відправкою
             if (keysInput_save) keysInput_save.value = pianodisplay.value;
             console.log("Preview submit with Keys:", keysInput_save ? keysInput_save.value : '(no element)');
-            // якщо потрібно, можна вручну сабмітнути, але кнопка type=submit вже зробить це
-            // const melodyForm = document.getElementById('melodyForm');
-            // if (melodyForm) melodyForm.submit();
         });
     }
 
