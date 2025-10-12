@@ -431,7 +431,6 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
                             container.style.minHeight = contentH + 'px';
                             container.style.height = contentH + 'px';
                             container.style.maxHeight = 'none';
-                            container.style.overflow = 'visible';
                         }
                     }
                 };
@@ -740,7 +739,7 @@ function getKeySignatureChanges(measure, currentKeySig) {
 }
 
 // ----------------------
-// Допоміжні функції для рендерингу нотного стану з MIDI файлу
+// Допоміжні функції для рендеринга нотного стану з MIDI файлу
 // Скорочення нот, якщо виходять за межі такту
 // ----------------------
 
@@ -1200,21 +1199,21 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
 
             // Додаємо відсутні паузи для заповнення такту
             const expectedTicks = currentNumerator * ticksPerBeat * 4 / currentDenominator;
-            let actualTicks = validNotes.reduce((sum, note) => {
-                const duration = note.getDuration();
-                const isRest = duration.endsWith('r');
-                const baseDuration = isRest ? duration.slice(0, -1) : duration;
-                return sum + calculateTicksFromDuration(baseDuration, ticksPerBeat);
-            }, 0);
+            let actualTicks = validNotes.reduce((sum, note) => sum + getTotalTicksForNote(note, ticksPerBeat), 0);
+
+            console.log(`Measure ${index + 1}: expected ${expectedTicks} ticks, actual ${actualTicks} ticks`);
 
             if (actualTicks < expectedTicks) {
                 const remainingTicks = expectedTicks - actualTicks;
+                console.log(`Adding rests for remaining ${remainingTicks} ticks`);
                 const restDurations = getDurationFromTicks(remainingTicks, ticksPerBeat);
                 restDurations.forEach(duration => {
                     const rest = createRest(duration);
                     if (rest) {
                         validNotes.push(rest);
                         voice.addTickable(rest);
+                        actualTicks += getTotalTicksForNote(rest, ticksPerBeat);
+                        console.log(`Added rest with duration ${duration}, total ticks now: ${actualTicks}`);
                     }
                 });
             }
@@ -1603,5 +1602,30 @@ function calculateRows(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20
     }
     // Height = top padding + N rows * stave height; add extra padding for last row
     return rows;
+}
+
+// NEW: глобальна функція для розрахунку тривалості з точками
+function getTotalTicksForNote(note, ticksPerBeat) {
+    const duration = note.getDuration();
+    const baseDuration = duration.replace(/[.\d]/g, ''); // видаляємо все крім основної тривалості
+    const dots = (duration.match(/\./g) || []).length; // рахуємо крапки
+
+    // Спочатку отримуємо базову тривалість
+    let baseTicks = calculateTicksFromDuration(baseDuration, ticksPerBeat);
+    
+    // Для кожної крапки додаємо половину від попередньої тривалості
+    // Перша крапка додає 1/2 від базової
+    // Друга крапка додає 1/4 від базової
+    // Третя крапка додає 1/8 від базової і т.д.
+    let totalTicks = baseTicks;
+    let currentAddition = baseTicks;
+    
+    for (let i = 0; i < dots; i++) {
+        currentAddition /= 2;
+        totalTicks += currentAddition;
+    }
+
+    console.log(`Duration ${duration}: base=${baseTicks}, with dots=${totalTicks}`);
+    return totalTicks;
 }
 

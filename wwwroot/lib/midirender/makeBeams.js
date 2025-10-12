@@ -37,12 +37,16 @@ const allowDotted = false;
         let lastRestTicks = 0;            // тривалість останньої паузи (у тiках)
         let lastRestStartOnBeat = false;  // чи починалась пауза з долі
 
+        // NEW: спеціальний прапор для пари 1/8. + 1/16 (закрити групу після наступної ноти)
+        let closeAfterNext16 = false;
+
         measure.notes.forEach((note, idx) => {
             if (!note) {
                 if (currentGroup.notes.length) closeGroup(currentGroup, beamGroups, beams, 'null-note');
                 prevWasRest = false;
                 lastRestTicks = 0;
                 lastRestStartOnBeat = false;
+                closeAfterNext16 = false;
                 return;
             }
 
@@ -71,9 +75,20 @@ const allowDotted = false;
             let splitOnBeat = CheckSplitOnBeat(noteEndBeat, timeSignature);
 
             // 5. Beamable?
-            const beamable = isBeamable(note);
+            let beamable = isBeamable(note);
             const next = measure.notes[idx + 1];
             const nextBeamable = next ? isBeamable(next) : false;
+
+            // СПЕЦІАЛЬНИЙ ВИПАДОК: 1/8. + 1/16 повинні бути однією групою під ребром
+            // дозволяємо бімувати 1/8. лише якщо за нею безпосередньо йде 1/16 (без крапки і не пауза)
+            let specialPairStart = false;
+            if (!beamable && dr.dotted && dr.code === '8' && next) {
+                const dNext = durationResolver(next);
+                if (!dNext.isRest && !dNext.dotted && dNext.code === '16') {
+                    beamable = true; // дозволяємо почати групу на 1/8.
+                    specialPairStart = true;
+                }
+            }
 
             // Якщо це пауза — закриваємо поточну групу і зберігаємо її параметри
             if (isRest) {
@@ -82,6 +97,7 @@ const allowDotted = false;
                 prevWasRest = true;
                 lastRestTicks = noteTicks;
                 lastRestStartOnBeat = startOnBeat;
+                closeAfterNext16 = false; // обриваємо можливу пару
                 return;
             }
 
@@ -91,12 +107,13 @@ const allowDotted = false;
                 prevWasRest = false;
                 lastRestTicks = 0;
                 lastRestStartOnBeat = false;
+                closeAfterNext16 = false;
                 return;
             }
 
             // НОВЕ ПРАВИЛО ПІСЛЯ ПАУЗИ:
             // - Якщо попередня пауза < чверті і ця перша восьма НЕ на долю -> залишаємо хвостик (без ребра)
-            // - Якщо пауза >= чверті і перша восьма на долю -> дозволяємо нормальне групування (під ребро)
+            // - Якщо пауза >= чверті і перша восьма на долю -> дозволяємо стандартне групування (під ребро)
             if (prevWasRest) {
                 const restIsShorterThanQuarter = lastRestTicks < localTicksPerBeat;
                 if (restIsShorterThanQuarter && !startOnBeat) {
@@ -107,10 +124,27 @@ const allowDotted = false;
                     prevWasRest = false;
                     lastRestTicks = 0;
                     lastRestStartOnBeat = false;
+                    closeAfterNext16 = false;
                     return;
                 }
                 // в інших випадках – дозволяємо стандартне групування
             }
+
+            // Якщо нота (восьма з крапкою) починає долю — вона має починати нову групу
+            const isEighthDotted = !isRest && dr.dotted && dr.code === '8';
+            if (startOnBeat && isEighthDotted && currentGroup.notes.length > 0) {
+                closeGroup(currentGroup, beamGroups, beams, 'dotted-8th-on-beat');
+                closeAfterNext16 = false; // скинути, щоб уникнути хибного закриття від попередньої пари
+            }
+
+            // Якщо нота (проста восьма) починає долю — вона має починати нову групу
+            const isEighthPlain = !isRest && !dr.dotted && dr.code === '8';
+            if (startOnBeat && isEighthPlain && currentGroup.notes.length > 0) {
+                closeGroup(currentGroup, beamGroups, beams, 'plain-8th-on-beat');
+                closeAfterNext16 = false; // скинути, щоб уникнути хибного закриття від попередньої пари
+            }
+
+            
 
             // 6. Формування групи
             if (currentGroup.notes.length === 0) {
@@ -119,10 +153,22 @@ const allowDotted = false;
                 addToGroup(currentGroup, note, noteTicks);
             }
 
+            // Якщо це старт спеціальної пари (1/8. + 1/16) — закриємо групу після наступної ноти
+            if (specialPairStart) {
+                closeAfterNext16 = true;
+            }
+
             // 7. Логіка закриття групи
             let mustClose = false;
             if (!nextBeamable) mustClose = true;
             if (!mustClose && splitOnBeat) mustClose = true;
+
+            // Форсоване закриття для другої ноти у парі 1/8. + 1/16
+            if (!mustClose && closeAfterNext16 && !specialPairStart) {
+                mustClose = true;
+                closeAfterNext16 = false;
+            }
+
             if (idx === measure.notes.length - 1) mustClose = true;
             if (mustClose) closeGroup(currentGroup, beamGroups, beams, 'boundary');
 
@@ -157,7 +203,7 @@ const allowDotted = false;
             let isRest = false;
             try { if (typeof vn.isRest === 'function') isRest = !!vn.isRest(); } catch { /* ignore */ }
             if (!isRest) isRest = /r$/.test(code);
-            // dotted: через getDots()/modifiers, бо getDuration() може не містити крапку
+            // dotted: через getDots()/modifiers, бо getDuration() може не містити крапку або містити 'd'
             let dotted = false;
             try { if (typeof vn.getDots === 'function') dotted = (vn.getDots() || []).length > 0; } catch { /* ignore */ }
             if (!dotted && typeof vn.getModifiers === 'function') {
@@ -166,7 +212,8 @@ const allowDotted = false;
                     dotted = mods.some(m => (m.getCategory && m.getCategory() === 'dots') || m.category === 'dots');
                 } catch { /* ignore */ }
             }
-            const base = code.replace(/r$/, '').replace(/\.+$/, '');
+            // Нормалізуємо код тривалості: прибираємо 'r' і суфікси крапок або 'd' (VexFlow іноді повертає '8d')
+            const base = code.replace(/r$/i, '').replace(/[.d]+$/i, '');
             return { code: base, isRest, dotted };
         }
         if (typeof note?.duration === 'number') {
@@ -343,7 +390,17 @@ const allowDotted = false;
             }
         }
         const EPS = 1e-6;
-        return timeSignature.beatStarts.some(bs => Math.abs(bs - noteStartBeat) < EPS);
+        // primary precise check against precomputed starts
+        let onBeat = timeSignature.beatStarts.some(bs => Math.abs(bs - noteStartBeat) < EPS);
+        if (onBeat) return true;
+        // fallback numeric robustness: within 1e-3 of a step multiple
+        const num = timeSignature.num || 4;
+        const den = timeSignature.den || 4;
+        const isCompound = (den === 8) && (num % 3 === 0) && (num >= 3);
+        const step = isCompound ? 3 * (4 / den) : 1;
+        const ratio = noteStartBeat / step;
+        const diff = Math.abs(ratio - Math.round(ratio));
+        return diff < 1e-3;
     }
 
     // --- Triplet detection -------------------------------------------------
