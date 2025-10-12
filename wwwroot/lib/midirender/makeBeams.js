@@ -32,15 +32,17 @@ const allowDotted = false;
         };
 
         let runningTicks = 0; 
-        // Якщо попередній елемент був пауза на сильній долі — наступну ноту не об'єднувати
-        let suppressNextBeamDueToRestOnBeat = false;
-        // Пам'ятаємо, чи попередній елемент був паузою (незалежно від того, звідки стартувала)
+        // Правило (оновлено): зберігаємо інфо про попередню паузу
         let prevWasRest = false;
+        let lastRestTicks = 0;            // тривалість останньої паузи (у тiках)
+        let lastRestStartOnBeat = false;  // чи починалась пауза з долі
 
         measure.notes.forEach((note, idx) => {
             if (!note) {
                 if (currentGroup.notes.length) closeGroup(currentGroup, beamGroups, beams, 'null-note');
                 prevWasRest = false;
+                lastRestTicks = 0;
+                lastRestStartOnBeat = false;
                 return;
             }
 
@@ -64,11 +66,6 @@ const allowDotted = false;
             const isRest = !!dr.isRest;
             const startOnBeat = CheckStartOnBeat(note.startBeat, timeSignature);
 
-            // Якщо це пауза і вона починається на сильній долі — наступну коротку ноту не об'єднуємо (окремо зі штилем)
-            if (isRest && startOnBeat) {
-                suppressNextBeamDueToRestOnBeat = true;
-            }
-
             // 4. Перевірка межі біта у beat-одиницях (чверті)
             const noteEndBeat = note.endBeat;
             let splitOnBeat = CheckSplitOnBeat(noteEndBeat, timeSignature);
@@ -78,11 +75,13 @@ const allowDotted = false;
             const next = measure.notes[idx + 1];
             const nextBeamable = next ? isBeamable(next) : false;
 
-            // Якщо це пауза — закриваємо поточну групу і переходимо далі
+            // Якщо це пауза — закриваємо поточну групу і зберігаємо її параметри
             if (isRest) {
                 if (currentGroup.notes.length) closeGroup(currentGroup, beamGroups, beams, 'rest');
                 runningTicks += noteTicks;
                 prevWasRest = true;
+                lastRestTicks = noteTicks;
+                lastRestStartOnBeat = startOnBeat;
                 return;
             }
 
@@ -90,28 +89,27 @@ const allowDotted = false;
                 if (currentGroup.notes.length) closeGroup(currentGroup, beamGroups, beams, 'non-beamable');
                 runningTicks += noteTicks;
                 prevWasRest = false;
+                lastRestTicks = 0;
+                lastRestStartOnBeat = false;
                 return;
             }
 
-            // 5a. ДОДАТКОВЕ ПРАВИЛО ДЛЯ ВСІХ СИЛЬНИХ ДОЛЕЙ:
-            // - якщо перед поточною нотою була пауза (будь-яка), і поточна нота стартує на сильній долі,
-            //   то вона має бути окремою (зі штилем), без об'єднання з наступними
-            if (prevWasRest && startOnBeat) {
-                startGroup(currentGroup, note, idx, noteTicks);
-                closeGroup(currentGroup, beamGroups, beams, 'note-after-rest-at-strong-beat');
-                runningTicks += noteTicks;
-                prevWasRest = false;
-                return;
-            }
-
-            // 5b. Якщо попереду була пауза, що почалась на сильній долі — не групуємо і цю ноту
-            if (suppressNextBeamDueToRestOnBeat) {
-                startGroup(currentGroup, note, idx, noteTicks);
-                closeGroup(currentGroup, beamGroups, beams, 'after-rest-strong-beat'); // довжина 1 -> без beam
-                runningTicks += noteTicks;
-                suppressNextBeamDueToRestOnBeat = false;
-                prevWasRest = false;
-                return;
+            // НОВЕ ПРАВИЛО ПІСЛЯ ПАУЗИ:
+            // - Якщо попередня пауза < чверті і ця перша восьма НЕ на долю -> залишаємо хвостик (без ребра)
+            // - Якщо пауза >= чверті і перша восьма на долю -> дозволяємо нормальне групування (під ребро)
+            if (prevWasRest) {
+                const restIsShorterThanQuarter = lastRestTicks < localTicksPerBeat;
+                if (restIsShorterThanQuarter && !startOnBeat) {
+                    // ізолюємо ноту: хвостик, без об'єднання
+                    startGroup(currentGroup, note, idx, noteTicks);
+                    closeGroup(currentGroup, beamGroups, beams, 'after-short-rest-offbeat');
+                    runningTicks += noteTicks;
+                    prevWasRest = false;
+                    lastRestTicks = 0;
+                    lastRestStartOnBeat = false;
+                    return;
+                }
+                // в інших випадках – дозволяємо стандартне групування
             }
 
             // 6. Формування групи
@@ -131,6 +129,8 @@ const allowDotted = false;
             // 8. Просуваємо глобальний час (у MIDI ticks)
             runningTicks += noteTicks;
             prevWasRest = false;
+            lastRestTicks = 0;
+            lastRestStartOnBeat = false;
         });
 
         console.log(`MB: return results summary:\n - beamGroups: ${beamGroups.length} groups\n - beams: ${beams.length} beam objects`);
@@ -139,7 +139,7 @@ const allowDotted = false;
             console.log(`MB: beamGroup[${index}]:`, {
                 notesCount: group.notes.length,
                 startIndex: group.startIndex,
-                endIndex: group.endIndex,
+                endIndex: group.startIndex + group.notes.length - 1,
                 reasonEnded: group.reasonEnded
             });
         });
