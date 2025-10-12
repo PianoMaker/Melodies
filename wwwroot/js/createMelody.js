@@ -82,14 +82,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         }
 
-        // Ensure dependencies used by patternRenderer.js are present (same as on Search)
-        const deps = [
-            '/lib/midirender/midiparser_ext.js',
-            '/lib/midirender/makeBeams.js',
-            '/lib/midirender/midiRenderer.js',
-            '/lib/midirender/patternRenderer.js'
-        ];
-
         // Render helpers (mirroring livePatternRenderer.js)
         let lastPattern = null;
         let renderTimer = null;

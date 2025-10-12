@@ -11,8 +11,6 @@ const logEvent = (msg) => {
     }
 };
 
-
-
 /**
  * drawScore
  * ----------
@@ -394,6 +392,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         containerWidth || GENERALWIDTH || 1200
     );
 
+    // calculateRequiredHeight is provided by rendererUtils.js
     const rowsHeight = calculateRequiredHeight(measuresToRender, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
     setTimeout(() => {
@@ -578,16 +577,13 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
             const nextBoundary = measureMap[index + 1];
             const measureEndTick = (nextBoundary !== undefined) ? nextBoundary : barStartAbsTime + ticksPerMeasure; // fallback
             console.log(`AN: bar ${index + 1}, measureEndTick = ${measureEndTick}`)
-            //console.log(`${Object.keys(activeNotes).length} active note(s) still exists in measure ${index + 1}`);
             if (stepRead) stepRead.innerHTML += `<i> act.note</i>`;
-            // UPDATED: передаємо measureAccState для консистентних знаків у межах такту
             drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState);
         }
 
         
         // Якщо остання нота не доходить до кінця такту, додаємо паузу        
         if (Object.keys(activeNotes).length === 0) {
-            //console.log(`check for missing rests in measure ${index + 1}`);
             addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, ticksPerBeat);
         }
 
@@ -747,17 +743,8 @@ function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat) {
     console.log("FOO: midiRenderer.js - correctExtraNotes");
     if (notes.length === 0) return;
     
-    // Обчислюємо загальну тривалість всіх нот у тіках
-    let totalTicks = 0;
-    notes.forEach(note => {
-        // Отримуємо тривалість ноти/Паузи
-        const duration = note.getDuration();
-        const isRest = duration.endsWith('r');
-        const baseDuration = isRest ? duration.slice(0, -1) : duration;
-        const dotted = /\./.test(duration);
-        const noteTicks = calculateTicksFromDuration(baseDuration, ticksPerBeat);
-        totalTicks += noteTicks;
-    });
+    // Обчислюємо загальну тривалість всіх нот у тіках з урахуванням крапок
+    let totalTicks = notes.reduce((sum, note) => sum + getTotalTicksForNote(note, ticksPerBeat), 0);
     
     console.log(`AN: Total measure ticks: ${totalTicks}, allowed: ${ticksPerMeasure}`);
     
@@ -766,9 +753,9 @@ function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat) {
         const lastNote = notes[notes.length - 1];
         const lastNoteDuration = lastNote.getDuration();
         const isRest = lastNoteDuration.endsWith('r');
-        const baseDuration = isRest ? lastNoteDuration.slice(0, -1) : lastNoteDuration;
-        const dotted = /\./.test(lastNoteDuration);
-        const lastNoteTicks = calculateTicksFromDuration(baseDuration, ticksPerBeat);
+        
+        // Обчислюємо фактичну тривалість останньої ноти з урахуванням крапок
+        const lastNoteTicks = getTotalTicksForNote(lastNote, ticksPerBeat);
         
         // Обчислюємо скільки тіків залишається для останньої ноти
         const excessTicks = totalTicks - ticksPerMeasure;
@@ -1049,7 +1036,6 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig) {
     }
 
     // МІНОР: IV, VI і VII підвищуються; I не понижується
-    // Нормалізація режиму: деякі MIDI дають mi=255 -> вважаємо як minor (truthy)
     const isMinor = !!(currentKeySig && (currentKeySig.mi === 1 || (typeof currentKeySig.mi === 'number' && currentKeySig.mi !== 0)));
     if (isMinor) {
         const tonicPc = getMinorTonicPc(currentKeySig);
@@ -1134,7 +1120,6 @@ function adjustStaveWidth(BARWIDTH, index, CLEFZONE, isFirstMeasureInRow = false
 // - barStartAbsTime: Абсолютний час початку такту (для логів).
 // Повертає: Об'єкт з оновленими Xposition і Yposition.
 // ----------------------
-
 function adjustXYposition(Xposition, GENERALWIDTH, BARWIDTH, Yposition, HEIGHT, Xmargin, index, barStartAbsTime) {
     console.log("FOO: midiRenderer.js - adjustXYposition");
     // Restore wrapping: when remaining width is not enough for another measure, move to next row
@@ -1176,7 +1161,6 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
             if (validNotes.length === 0) {
                 console.warn(`Measure ${index + 1} has no valid notes to render.`);
                 const ticksPerMeasure = currentNumerator * ticksPerBeat * 4 / currentDenominator;
-                // Add whole measure rest
                 const restDurations = getDurationFromTicks(ticksPerMeasure, ticksPerBeat);
                 validNotes.push(createRest(restDurations[0]));
             }
@@ -1237,7 +1221,6 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
 
             // Домальовуємо ребра нот (beams) 
             drawBeams(beams, context, index);
-            
             // Домальовуємо ліги (ties) 
             drawTies(ties, context, index);
 
@@ -1375,7 +1358,7 @@ function drawBeams(beams, context, index) {
         console.log(`MR:No beams to draw for measure ${index + 1}`);
     }
 }
-
+    
 // ----------------------
 // ФУНКЦІЯ ДЛЯ СТВОРЕННЯ ПАУЗИ (REST) З ВИКОРИСТАННЯМ VEXFLOW
 // Параметри:
@@ -1398,7 +1381,7 @@ function addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, 
         console.log(`MR:adding a rest done, time added = ${timeadded}, update lastNoteOffTime: ${lastNoteOffTime}`);
     }
 }
-// ----------------------
+// //----------------------
 // ФУНКЦІЯ ДЛЯ ОНОВЛЕННЯ РОЗМІРУ ТАКТУ ЗА ПОДІЯМИ TIME SIGNATURE
 // шукає подію TimeSignature в такті
 // повертає оновлені currentNumerator і currentDenominator
@@ -1543,89 +1526,18 @@ function AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime)
 // ФУНКЦІЯ ДЛЯ СТВОРЕННЯ НОТИ З ВИКОРИСТАННЯМ VEXFLOW
 // Параметри:
 // - durationCode: Код тривалості ноти (наприклад, 'q', 'h', '8', '16r' для паузи).
-// - key: Висота ноти у форматі VexFlow (наприклад, 'C/4', 'D#/5').
-// - accidental: Знак альтерації ('#', 'b', 'n') або null.
+//// - key: Висота ноти у форматі VexFlow (наприклад, 'C/4', 'D#/5').
+//// - accidental: Знак альтерації ('#', 'b', 'n') або null.
 // Повертає: Об'єкт Vex.Flow.StaveNote або null у разі помилки.
 // ----------------------
 function processNoteElement(durationCode, key, accidental) {
     console.log("FOO: midiRenderer.js - processNoteElement");
-    key = key.replace('/', ''); // випиляти зайве /
+    key = key.replace('/', '');
     const note = createNote(key, durationCode);
     if (note && accidental) {
         note.addAccidental(0, new Vex.Flow.Accidental(accidental));
     }
-    // APPLY AUTO STEM for every newly processed note
     applyAutoStem(note, durationCode);
     return note;
-}
-
-// ----------------------
-// ФУНКЦІЯ ДЛЯ РОЗРАХУНКУ ПОТРІБНОЇ ВИСОТИ НОТНОГО РЯДКУ В КАНВАСІ
-// Параметри:
-// - measuresCount: Кількість тактів.
-// - GENERALWIDTH: Загальна ширина канвасу.
-// - BARWIDTH: Ширина одного такту.
-// - HEIGHT: Висота одного рядка нотного стану.
-// - TOPPADDING: Верхній відступ (за замовчуванням 20).
-// - CLEFZONE: Додаткова ширина для першого такту в рядку (за замовчуванням 60).
-// - Xmargin: Лівий відступ (за замовчуванням 10).
-// Повертає: Загальну висоту канвасу, необхідну для розміщення всіх тактів.
-// ----------------------
-
-function calculateRequiredHeight(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
-    // Emulate the same wrapping as in renderMeasures/adjustStaveWidth:
-    // - First measure in each row has extra CLEFZONE width
-    // - Wrap when current X + next STAVE_WIDTH would exceed GENERALWIDTH
-    let rows = calculateRows(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10)
-	// Height = top padding + N rows * stave height; add extra padding for last row
-    return Math.ceil(rows * HEIGHT) + TOPPADDING;
-}
-
-function calculateRows(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
-    // Emulate the same wrapping as in renderMeasures/adjustStaveWidth:
-    // - First measure in each row has extra CLEFZONE width
-    // - Wrap when current X + next STAVE_WIDTH would exceed GENERALWIDTH
-    let rows = 1;
-    let x = Xmargin;
-    var actualBarWidth = GetMeanBarWidth(BARWIDTH, measures);
-    const measuresCount = measures.length;
-    for (let i = 0; i < measuresCount; i++) {
-        const isFirstInRow = (x === Xmargin);
-        let staveWidth = actualBarWidth + (isFirstInRow ? CLEFZONE : 0);
-        // If doesn't fit, move to next row and recompute as first measure in row
-        if (x + staveWidth > GENERALWIDTH) {
-            rows++;
-            x = Xmargin;
-            staveWidth = actualBarWidth + CLEFZONE; // First in new row gets CLEFZONE
-        }
-        x += staveWidth;
-    }
-    // Height = top padding + N rows * stave height; add extra padding for last row
-    return rows;
-}
-
-// NEW: глобальна функція для розрахунку тривалості з точками
-function getTotalTicksForNote(note, ticksPerBeat) {
-    const duration = note.getDuration();
-    const baseDuration = duration.replace(/[.\d]/g, ''); // видаляємо все крім основної тривалості
-    const dots = (duration.match(/\./g) || []).length; // рахуємо крапки
-
-    // Спочатку отримуємо базову тривалість
-    let baseTicks = calculateTicksFromDuration(baseDuration, ticksPerBeat);
-    
-    // Для кожної крапки додаємо половину від попередньої тривалості
-    // Перша крапка додає 1/2 від базової
-    // Друга крапка додає 1/4 від базової
-    // Третя крапка додає 1/8 від базової і т.д.
-    let totalTicks = baseTicks;
-    let currentAddition = baseTicks;
-    
-    for (let i = 0; i < dots; i++) {
-        currentAddition /= 2;
-        totalTicks += currentAddition;
-    }
-
-    console.log(`Duration ${duration}: base=${baseTicks}, with dots=${totalTicks}`);
-    return totalTicks;
 }
 
