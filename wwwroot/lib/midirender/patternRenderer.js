@@ -93,18 +93,31 @@
 
 
 	function durationToQuarterUnits(code) {
-		// Returns how many quarter-notes this duration represents (q=1, h=2, w=4, 8=0.5, etc.), ignoring dots
-		const base = code.replace(/\./g, '');
-		switch (base) {
-			case 'w': return 4;
-			case 'h': return 2;
-			case 'q': return 1;
-			case '8': return 0.5;
-			case '16': return 0.25;
-			case '32': return 0.125;
-			default: return 1;
-		}
-	}
+  // Returns how many quarter-notes this duration represents (q=1, h=2, w=4, 8=0.5, etc.)
+  // NOW accounts for dots: each dot adds half of the previous value (1.5x, 1.75x, 1.875x, ...)
+  const s = String(code || 'q');
+  const dots = (s.match(/\./g) || []).length;     // supports single/double/triple dots
+  const base = s.replace(/\./g, '');              // strip dots
+
+  let q;
+  switch (base) {
+    case 'w':  q = 4;   break;
+    case 'h':  q = 2;   break;
+    case 'q':  q = 1;   break;
+    case '8':  q = 0.5; break;
+    case '16': q = 0.25;break;
+    case '32': q = 0.125;break;
+    default:   q = 1;   break; // fallback quarter
+  }
+
+  // apply dot expansion: add 1/2 + 1/4 + 1/8 ... of base
+  let add = q / 2;
+  for (let i = 0; i < dots; i++) {
+    q += add;
+    add /= 2;
+  }
+  return q;
+}
 
 	function fillRestsToCapacity(notes, remainingQuarters) {
 		// Fill the rest of a measure with rests using largest possible durations
