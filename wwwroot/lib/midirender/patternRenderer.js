@@ -313,24 +313,24 @@
 			const naiveBarWidth = GetMeanBarWidth(BARWIDTH, measures.map(m => m.notes));
 			const actualBarWidth = Math.max(MIN_BARWIDTH, naiveBarWidth);
 
-			// 2) Локальний підрахунок кількості рядків за вже обчисленим actualBarWidth
-			function calcRowsFixedWidth(measuresArr, generalWidth, fixedBarWidth, clefZone, xMargin){
-			  let rows = 1;
-			  let x = xMargin;
-			  for (let i = 0; i < measuresArr.length; i++) {
-			    const isFirstInRow = (x === xMargin);
-			    let staveWidth = fixedBarWidth + (isFirstInRow ? clefZone : 0);
-			    if (x + staveWidth > generalWidth) {
-			      rows++;
-			      x = xMargin;
-			      staveWidth = fixedBarWidth + clefZone;
-			    }
-			    x += staveWidth;
-			  }
-			  return rows;
-			}
-
-			const rows = calcRowsFixedWidth(measures, effectiveWidth, actualBarWidth, CLEFZONE, Xmargin);
+			// 2) Локальний підрахунок кількості рядків за вже обчисленим actualBarWidth (спільна утиліта)
+			const rows = (typeof window.calculateRowsFixedWidth === 'function')
+				? window.calculateRowsFixedWidth(measures, effectiveWidth, actualBarWidth, CLEFZONE, Xmargin)
+				: (function fallbackCalc(measuresArr, generalWidth, fixedBarWidth, clefZone, xMargin){
+					let rows = 1;
+					let x = xMargin;
+					for (let i = 0; i < measuresArr.length; i++) {
+						const isFirstInRow = (x === xMargin);
+						let staveWidth = fixedBarWidth + (isFirstInRow ? clefZone : 0);
+						if (x + staveWidth > generalWidth) {
+							rows++;
+							x = xMargin;
+							staveWidth = fixedBarWidth + clefZone;
+						}
+						x += staveWidth;
+					}
+					return rows;
+				})(measures, effectiveWidth, actualBarWidth, CLEFZONE, Xmargin);
 
 			// Мінімальний запас по висоті: TOPPADDING (вгорі) + невеликий буфер 10px
 			const extra = Math.max(10, TOPPADDING || 0);

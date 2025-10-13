@@ -65,6 +65,32 @@
     }
   }
 
+  // ----------------------
+  // Fixed-width rows calculation (shared with patternRenderer)
+  // Given a fixed bar width (already computed), calculate how many rows are needed
+  // ----------------------
+  function calculateRowsFixedWidth(measuresArr, generalWidth, fixedBarWidth, clefZone = 60, xMargin = 10){
+    try {
+      let rows = 1;
+      let x = xMargin;
+      const count = Array.isArray(measuresArr) ? measuresArr.length : 0;
+      for (let i = 0; i < count; i++) {
+        const isFirstInRow = (x === xMargin);
+        let staveWidth = fixedBarWidth + (isFirstInRow ? clefZone : 0);
+        if (x + staveWidth > generalWidth) {
+          rows++;
+          x = xMargin;
+          staveWidth = fixedBarWidth + clefZone;
+        }
+        x += staveWidth;
+      }
+      return rows;
+    } catch (e) {
+      console.warn('calculateRowsFixedWidth failed:', e);
+      return 1;
+    }
+  }
+
 
   function calculateRequiredHeight(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
     const rows = calculateRows(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
@@ -73,5 +99,6 @@
 
   ensureGlobal('getTotalTicksForNote', getTotalTicksForNote);
   ensureGlobal('calculateRows', calculateRows);
+  ensureGlobal('calculateRowsFixedWidth', calculateRowsFixedWidth);
   ensureGlobal('calculateRequiredHeight', calculateRequiredHeight);
 })();
