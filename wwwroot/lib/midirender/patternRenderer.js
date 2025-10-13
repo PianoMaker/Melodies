@@ -167,26 +167,31 @@
 
 	// Sum measure length in units (including dotted modifiers)
 	function sumUnits(notes) {
-		if (!Array.isArray(notes)) return 0;
-		let total = 0;
-		for (const n of notes) {
-			if (!n || typeof n.getDuration !== 'function') continue;
-			// Prefer explicitly stored duration code if available (contains '.' for dotted)
-			let codeStr = typeof n.__durationCode === 'string' ? n.__durationCode : String(n.getDuration() || 'q');
-			// Strip rest suffix for base mapping (e.g. 'qr' => 'q')
-			const baseCode = codeStr.replace(/r$/, '');
-			let units = durationToUnits(baseCode);
+  console.log("PR: sumUnits is runiing")
+  if (!Array.isArray(notes)) return 0;
+  let total = 0;
+  for (const n of notes) {
+    if (!n || typeof n.getDuration !== 'function') continue;
 
-			// Determine dot count: first from codeStr, else from Vex modifiers
-			let dotCount = (codeStr.match(/\./g) || []).length;
-			if (dotCount === 0) dotCount = getDotCount(n);
-			if (dotCount > 0) {
-				const factor = 2 - Math.pow(0.5, dotCount);
-				units = Math.round(units * factor);
-			}
-			total += units;
-		}
-		return total;
+    let codeStr = typeof n.__durationCode === 'string' ? n.__durationCode : String(n.getDuration() || 'q');
+    // Strip rest suffix for base mapping (e.g. 'qr' => 'q')
+    const baseCode = codeStr.replace(/r$/, '');
+
+    // durationToUnits вже врахує крапки, якщо вони є в baseCode
+    let units = durationToUnits(baseCode);
+
+    // Додавати крапки лише якщо їх немає в коді, але VexFlow додав модифікатори
+    if (!baseCode.includes('.')) {
+      const dotCount = getDotCount(n);
+      if (dotCount > 0) {
+        const factor = 2 - Math.pow(0.5, dotCount);
+        units = Math.round(units * factor);
+      }
+    }
+
+    total += units;
+  }
+  return total;
 	}
 
 	function fillRestsToCapacity(notes, remainingQuarters) {
@@ -291,14 +296,14 @@
 
 			// Ensure each bar is filled with trailing rests (non‑dotted) to capacity
 			for (const m of measures) {
+				console.info('PR: calling sumUnits for fill check');
 				const used = sumUnits(m.notes);
 				const leftUnits = Math.max(0, capacityUnits - used);
-				if (leftUnits > 0) {
-					const restCodes = unitsToDurationList(leftUnits, /*allowDotted*/ false);
-					for (const rc of restCodes) {
-						const r = createRest(rc);
-						if (r) { r.__durationCode = rc; m.notes.push(r); }
-					}
+				console.info('PR: leftUnits', leftUnits, 'capacityUnits', capacityUnits, 'used', used);
+				const restCodes = unitsToDurationList(leftUnits, /*allowDotted*/ false);
+				for (const rc of restCodes) {
+					const r = createRest(rc);
+					if (r) { r.__durationCode = rc; m.notes.push(r); }
 				}
 			}
 
@@ -415,4 +420,5 @@
 
 	// expose API
 	window.renderPatternString = renderPatternString;
+	console.info('PR build loaded @', new Date().toISOString());
 })();

@@ -193,7 +193,7 @@ const allowDotted = false;
     }
 
     function defaultDurationResolver(note) {
-        console.log(`FOO: MB: defaultDurationResolver`);
+        //console.log(`FOO: MB: defaultDurationResolver`);
         // Надійніше зчитування параметрів із VexFlow StaveNote
         if (note && note.vexNote) {
             const vn = note.vexNote;

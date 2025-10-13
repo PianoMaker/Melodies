@@ -82,6 +82,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         }
 
+        // Deps in correct order (rendererUtils must be before midiRenderer)
+        const deps = [
+            '/lib/midirender/midiparser_ext.js',
+            '/lib/midirender/makeBeams.js',
+            '/lib/midirender/rendererUtils.js',
+            '/lib/midirender/midiRenderer.js',
+            '/lib/midirender/patternRenderer.js'
+        ];
+
         // Render helpers (mirroring livePatternRenderer.js)
         let lastPattern = null;
         let renderTimer = null;
@@ -139,6 +148,23 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         function startPolling(){ setInterval(renderFromTextarea, 200); }
         function renderOnLoad(){ renderFromTextarea(); }
+
+        // If libs already present (e.g., Search has static includes), skip dynamic loading
+        const depsAlreadyPresent =
+            (window.Vex && window.Vex.Flow) &&
+            (typeof window.renderPatternString === 'function') &&
+            (typeof window.createRest === 'function') &&      // from midiparser_ext
+            (typeof window.getTotalTicksForNote === 'function'); // from rendererUtils
+
+        if (depsAlreadyPresent) {
+            hookPianoButtons();
+            hookRestButton();
+            hookTextareaInput();
+            startPolling();
+            renderOnLoad();
+            window.__scheduleLiveNotationRender = scheduleRender;
+            return;
+        }
 
         // Load Vex first, then deps, then bind and render
         Promise.resolve()
