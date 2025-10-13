@@ -330,6 +330,9 @@ function hasNoteOn(measure) {
 // - BARWIDTH: Ширина кожного такту в пікселях.
 // - CLEFZONE: Ширина зони для ключа та розміру такту в пікселях.
 // - Xmargin: Лівий відступ нотного стану в пікселях.
+// - commentsDiv: HTML елемент для виведення статусу або помилок.
+// - maxBarsToRender: Максимальна кількість тактів для рендерингу (1000 - повний рендеринг).
+// - startAtMeasureIndex: Індекс такту, з якого починати рендеринг (вирівняний до кратного 4).
 // Повертає: void
 // ----------------------
 // Використовує SetEventsAbsoluteTime, createmeasureMap, groupEventsByMeasure та інші допоміжні функції.
@@ -352,22 +355,23 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
     const measureMap = createMeasureMap(allEvents, ticksPerBeat);
     const measures = groupEventsByMeasure(allEvents, measureMap);
 
-    // Compute slice start (snap to lower multiple of 4)
+	// обчислюємо індекс початкового такту, вирівняного до кратного 4
     let startIdx = parseInt(startAtMeasureIndex, 10);
     if (!isFinite(startIdx) || startIdx < 0) startIdx = 0;
     startIdx = startIdx - (startIdx % 4);
     if (startIdx > measures.length - 1) startIdx = Math.max(0, measures.length - 1);
 
-    // Compute how many measures to render
+	// обчислюємо скільки тактів залишилось від startIdx до кінця
     const remaining = Math.max(0, measures.length - startIdx);
     const renderCount = (typeof maxBarsToRender === 'number' && isFinite(maxBarsToRender) && maxBarsToRender !== 1000)
         ? Math.min(remaining, maxBarsToRender)
         : remaining;
 
-    // Slice desired window
+    // Витягуємо вікно тактів для рендерингу
+	// починаючи з startIdx, довжиною renderCount
     const measuresWindow = measures.slice(startIdx, startIdx + renderCount);
 
-    // IMPORTANT: Trim trailing empty measures (without Note On) to avoid extra vertical space
+    // Тримаємо лише ті такти, які містять Note On події
     const measuresToRender = [...measuresWindow];
     while (measuresToRender.length > 0 && !hasNoteOn(measuresToRender[measuresToRender.length - 1])) {
         console.log("Pruning trailing empty measure without Note On events (pre-height)");
@@ -375,7 +379,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
     }
     const effectiveCount = measuresToRender.length;
 
-    // Build a sliced measureMap aligned to the trimmed measures (including sentinel)
+	// створюємо новий measureMap для заданого діапазону
     const slicedMap = {};
     for (let i = 0; i <= effectiveCount; i++) {
         slicedMap[i] = measureMap[startIdx + i];
@@ -392,7 +396,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         containerWidth || GENERALWIDTH || 1200
     );
 
-    // calculateRequiredHeight is provided by rendererUtils.js
+    // rendererUtils.js
     const rowsHeight = calculateRequiredHeight(measuresToRender, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
     setTimeout(() => {
@@ -407,9 +411,14 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         const context = factory.getContext();
         const score = factory.EasyScore();
 
+        // РЕНДЕРИНГ ТАКТІВ
+        // ----------------------
         renderMeasures(slicedMap, measuresToRender, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, effectiveWidth, commentsDiv);
 
-        // Post-fix SVG viewBox/height to ensure full content visible. Do multiple passes
+        // ----------------------
+        // ПІСЛЯ-ОБРОБКА SVG
+        // ----------------------
+		// Динамічно підганяє висоту SVG під фактичний вміст, щоб уникнути зайвих відступів.
         try {
             const container = document.getElementById(ELEMENT_FOR_RENDERING);
             const svg = container && container.querySelector('svg');
@@ -466,6 +475,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
 // - CLEFZONE: Ширина зони для ключа та розміру такту в пікселях.
 // - HEIGHT: Висота кожного рядка нотного стану в пікселях.
 // - GENERALWIDTH: Загальна ширина нотного стану в пікселях.
+// - commentsDiv: HTML елемент для виведення статусу або помилок.
 // Повертає: void
 // ----------------------
 
@@ -529,7 +539,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         // Перевіряємо, чи змінився розмір такту
         const timeSignatureChanged = (currentNumerator !== previousNumerator || currentDenominator !== previousDenominator);
 
-        // Use precise start from measureMap if present, else fallback
+		// Отримуємо абсолютний час початку такту з measureMap
         const barStartAbsTime = (measureMap[index] !== undefined) ? measureMap[index] : index * ticksPerMeasure;
 
         // --- Встановлюємо startTime для активних нот на початку такту ---
@@ -565,10 +575,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         // NEW: поточний стан показаних альтерацій у межах такту (letter+octave -> '#','b','n')
         const measureAccState = {};
        
-        // почергово обробляємо всі події в такті
-        //console.log(`Processing events in measure ${index + 1}`);
-
-        // Формує масив notes[] та ties[] для поточного такту
+		// Обробляємо кожну подію в такті
         renderMeasure();
 
 
@@ -1159,7 +1166,8 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
         if (notes.length > 0) {
             // Фільтруємо некоректні ноти
             const validNotes = notes.filter(note => note !== null && note !== undefined);
-            
+
+			//якщо жодної валідної ноти - додаємо паузу на весь такт
             if (validNotes.length === 0) {
                 console.warn(`Measure ${index + 1} has no valid notes to render.`);
                 const ticksPerMeasure = currentNumerator * ticksPerBeat * 4 / currentDenominator;
@@ -1183,26 +1191,7 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
             // Додаємо нотні елементи до голосу
             voice.addTickables(validNotes);
 
-            // Додаємо відсутні паузи для заповнення такту
-            const expectedTicks = currentNumerator * ticksPerBeat * 4 / currentDenominator;
-            let actualTicks = validNotes.reduce((sum, note) => sum + getTotalTicksForNote(note, ticksPerBeat), 0);
-
-            console.log(`Measure ${index + 1}: expected ${expectedTicks} ticks, actual ${actualTicks} ticks`);
-
-            if (actualTicks < expectedTicks) {
-                const remainingTicks = expectedTicks - actualTicks;
-                const restDurations = (typeof ticksToCleanDurations === 'function')
-                    ? ticksToCleanDurations(remainingTicks, ticksPerBeat)
-                    : getDurationFromTicks(remainingTicks, ticksPerBeat);
-                restDurations.forEach(duration => {
-                    const rest = createRest(duration);
-                    if (rest) {
-                        validNotes.push(rest);
-                        voice.addTickable(rest);
-                        actualTicks += getTotalTicksForNote(rest, ticksPerBeat);
-                    }
-                });
-            }
+            
             
             // Форматуємо голос
             const formatter = new Vex.Flow.Formatter();
@@ -1371,21 +1360,35 @@ function drawBeams(beams, context, index) {
 // ----------------------
     
 function addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, ticksPerBeat) {
-    console.log("FOO: midiRenderer.js - addMissingRests");
-    while (lastNoteOffTime < ticksPerMeasure - thresholdGap) {
-        const remainingTicks = ticksPerMeasure - lastNoteOffTime;
-        console.log(`MR:add Missing Rest is running: remaining: ${remainingTicks}`);
-        const restDurations = (typeof ticksToCleanDurations === 'function')
-            ? ticksToCleanDurations(remainingTicks, ticksPerBeat)
-            : getDurationFromTicks(remainingTicks, ticksPerBeat);
-        let timeadded = 0;
-        restDurations.forEach((restDuration) => {
-            notes.push(createRest(restDuration));
-            timeadded += calculateTicksFromDuration(restDuration, ticksPerBeat);
-        });
-        lastNoteOffTime += timeadded;
-        console.log(`MR:adding a rest done, time added = ${timeadded}, update lastNoteOffTime: ${lastNoteOffTime}`);
+    // Захист від некоректних значень
+    if (lastNoteOffTime >= ticksPerMeasure) {
+        console.log('Util: lastNoteOffTime >= measure, no rests needed');
+        return;
     }
+
+    const remainingTicks = ticksPerMeasure - lastNoteOffTime;
+    if (remainingTicks <= thresholdGap) {
+        console.log('Utils: remaining ticks too small, skipping');
+        return;
+    }
+
+    console.log(`Utils: need rest for ${remainingTicks} ticks`);
+    const restDurations = (typeof ticksToCleanDurations === 'function')
+        ? ticksToCleanDurations(remainingTicks, ticksPerBeat)
+        : getDurationFromTicks(remainingTicks, ticksPerBeat);
+
+    console.log(`Utils: got durations: ${restDurations.join(',')}`);
+
+    let timeadded = 0;
+    restDurations.forEach((restDuration) => {
+        notes.push(createRest(restDuration));
+        const ticks = calculateTicksFromDuration(restDuration, ticksPerBeat);
+        timeadded += ticks;
+        console.log(`Utils: added rest ${restDuration} (${ticks} ticks)`);
+    });
+
+    lastNoteOffTime += timeadded;
+    console.log(`Utils: total added ${timeadded} ticks, lastNoteOffTime=${lastNoteOffTime}`);
 }
 // //----------------------
 // ФУНКЦІЯ ДЛЯ ОНОВЛЕННЯ РОЗМІРУ ТАКТУ ЗА ПОДІЯМИ TIME SIGNATURE

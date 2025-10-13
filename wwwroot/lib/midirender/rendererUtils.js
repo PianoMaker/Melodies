@@ -12,13 +12,9 @@
   // Safe dot counter that checks both duration string and VexFlow modifiers
   function safeDotCount(note, durationStr) {
     try {
-      // 1) dots in string (e.g. 'q.')
       let dots = (String(durationStr || '').match(/\./g) || []).length;
-
       if (dots === 0 && note) {
-        // 2) VexFlow API
         if (typeof note.getDots === 'function') return (note.getDots() || []).length || 0;
-
         if (typeof note.getModifiers === 'function') {
           const mods = note.getModifiers() || [];
           return mods.filter(m =>
@@ -26,7 +22,6 @@
             (typeof Vex !== 'undefined' && Vex.Flow && m instanceof Vex.Flow.Dot)
           ).length;
         }
-        // 3) legacy property
         if (Array.isArray(note.modifiers)) {
           return note.modifiers.filter(m => (m && (m.getCategory?.() === 'dots' || m.category === 'dots'))).length;
         }
@@ -40,21 +35,21 @@
     try {
       if (!note || !ticksPerBeat) return 0;
 
-      // Prefer explicit duration code if available (has '.'/'t' and no 'r' problems)
+        
+
       let codeStr = typeof note.__durationCode === 'string'
         ? note.__durationCode
         : String(typeof note.getDuration === 'function' ? note.getDuration() : (note.duration || 'q'));
 
-      // Strip rest suffix for base mapping (e.g. 'qr' => 'q')
+        console.log(`utils: input: ${note.getDuration()}`);
+
       codeStr = codeStr.replace(/r$/, '');
 
-      // Base ticks using our MIDI helpers (handles '.'/'t' when present)
       let baseTicks = 0;
       if (typeof calculateTicksFromDuration === 'function') {
         baseTicks = calculateTicksFromDuration(codeStr, ticksPerBeat);
       }
 
-      // If explicit code had no dot and no triplet, but the note carries dot modifiers, apply dot expansion
       const hasDotInCode = /\./.test(codeStr);
       const isTriplet = /t$/.test(codeStr);
       if (!hasDotInCode && !isTriplet) {
@@ -62,63 +57,73 @@
         if (dots > 0) {
           let totalTicks = baseTicks;
           let add = Math.floor(baseTicks / 2);
-          for (let i = 0; i < dots; i++) { totalTicks += add; add = Math.floor(add / 2); }
+            for (let i = 0; i < dots; i++) { totalTicks += add; add = Math.floor(add / 2); }
+            console.log(`Utils: getTotalTicksForNote: ${codeStr} -> ${totalTicks}`);
           return totalTicks;
         }
       }
-
+        console.log(`Utils: getTotalTicksForNote: ${codeStr} -> ${baseTicks}`);
       return baseTicks;
     } catch (e) {
       console.warn('getTotalTicksForNote failed:', e);
       return 0;
     }
-    }
+  }
 
-    function ticksToCleanDurations(ticks, ticksPerBeat) {
-        try {
-            if (!(ticks > 0) || !(ticksPerBeat > 0)) return [];
-            console.log("PR: tickToCleanDurions")
-            const table = [
-                [ticksPerBeat * 4, 'w'],
-                [ticksPerBeat * 2, 'h'],
-                [ticksPerBeat * 1, 'q'],
-                [ticksPerBeat * 0.5, '8'],
-                [ticksPerBeat * 0.25, '16'],
-                [ticksPerBeat * 0.125, '32'],
-                [ticksPerBeat * 0.0625, '64']
-            ];
-            const tol = ticksPerBeat / 32; // допуск на округлення
-            let rem = ticks;
-            const out = [];
-            while (rem > tol) {
-                let picked = false;
-                for (const [step, code] of table) {
-                    if (rem >= step - tol) {
-                        out.push(code);
-                        rem -= step;
-                        picked = true;
-                        break;
-                    }
+  // Узагальнений конвертер тіксів у список тривалостей
+  // allowDotted=true дозволяє крапковані тривалості (w., h., q., 8., 16., 32., 64.)
+  function ticksToDurationList(ticks, ticksPerBeat, allowDotted = false) {
+    try {
+        if (!(ticks > 0) || !(ticksPerBeat > 0)) return [];
+        console.log(`Utils: ticksToDurationList input: ticks=${ticks}, tpb=${ticksPerBeat}, dots=${allowDotted}`);
+
+        const q = ticksPerBeat;
+        const cleanTable = [
+            [4*q, 'w'], [2*q, 'h'], [1*q, 'q'],
+            [0.5*q, '8'], [0.25*q, '16'], [0.125*q, '32'], [0.0625*q, '64']
+        ];
+        const dottedTable = [
+            [6*q, 'w.'], [4*q, 'w'],
+            [3*q, 'h.'], [2*q, 'h'],
+            [1.5*q, 'q.'], [1*q, 'q'],
+            [0.75*q, '8.'], [0.5*q, '8'],
+            [0.375*q, '16.'], [0.25*q, '16'],
+            [0.1875*q, '32.'], [0.125*q, '32'],
+            [0.09375*q, '64.'], [0.0625*q, '64']
+        ];
+        const table = allowDotted ? dottedTable : cleanTable;
+        console.log(`Utils: using ${allowDotted ? 'dotted' : 'clean'} table`);
+
+        const tol = q / 32; // допуск
+        let rem = ticks;
+        const out = [];
+        while (rem > tol) {
+            let picked = false;
+            for (const [step, code] of table) {
+                if (rem >= step - tol) {
+                    out.push(code);
+                    rem -= step;
+                    picked = true;
+                    console.log(`Utils: picked ${code}, remaining=${rem}`);
+                    break;
                 }
-                if (!picked) break; // захист від зависання на дуже малих залишках
             }
-            return out;
-        } catch { return []; }
+            if (!picked) break;
+        }
+        console.log(`Utils: final result=${out.join(',')}`);
+        return out;
+    } catch (err) { 
+        console.warn('ticksToDurationList failed:', err);
+        return []; 
     }
+  }
 
+  // Зворотносумісна "чиста" версія (без крапок)
+  function ticksToCleanDurations(ticks, ticksPerBeat) {
+    return ticksToDurationList(ticks, ticksPerBeat, false);
+  }
 
-    // ----------------------
-    // ФУНКЦІЯ ДЛЯ РОЗРАХУНКУ ПОТРІБНОЇ ВИСОТИ НОТНОГО РЯДКУ В КАНВАСІ
-    // Параметри:
-    // - measuresCount: Кількість тактів.
-    // - GENERALWIDTH: Загальна ширина канвасу.
-    // - BARWIDTH: Ширина одного такту.
-    // - HEIGHT: Висота одного рядка нотного стану.
-    // - TOPPADDING: Верхній відступ (за замовчуванням 20).
-    // - CLEFZONE: Додаткова ширина для першого такту в рядку (за замовчуванням 60).
-    // - Xmargin: Лівий відступ (за замовчуванням 10).
-    // Повертає: Загальну висоту канвасу, необхідну для розміщення всіх тактів.
-    // ----------------------
+  // ---------------------- розмітка рядків/висоти (без змін) ----------------------
   function calculateRows(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
     try {
       let rows = 1;
@@ -168,17 +173,15 @@
     }
   }
 
-
   function calculateRequiredHeight(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
     const rows = calculateRows(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
     return Math.ceil(rows * HEIGHT) + TOPPADDING;
   }
 
-  // Greedy-декомпозиція в "чисті" тривалості без крапок/тріолей
-  
   ensureGlobal('getTotalTicksForNote', getTotalTicksForNote);
   ensureGlobal('calculateRows', calculateRows);
   ensureGlobal('calculateRowsFixedWidth', calculateRowsFixedWidth);
   ensureGlobal('calculateRequiredHeight', calculateRequiredHeight);
+  ensureGlobal('ticksToDurationList', ticksToDurationList);
   ensureGlobal('ticksToCleanDurations', ticksToCleanDurations);
 })();
