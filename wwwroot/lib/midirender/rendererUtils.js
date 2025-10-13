@@ -72,7 +72,40 @@
       console.warn('getTotalTicksForNote failed:', e);
       return 0;
     }
-  }
+    }
+
+    function ticksToCleanDurations(ticks, ticksPerBeat) {
+        try {
+            if (!(ticks > 0) || !(ticksPerBeat > 0)) return [];
+            console.log("PR: tickToCleanDurions")
+            const table = [
+                [ticksPerBeat * 4, 'w'],
+                [ticksPerBeat * 2, 'h'],
+                [ticksPerBeat * 1, 'q'],
+                [ticksPerBeat * 0.5, '8'],
+                [ticksPerBeat * 0.25, '16'],
+                [ticksPerBeat * 0.125, '32'],
+                [ticksPerBeat * 0.0625, '64']
+            ];
+            const tol = ticksPerBeat / 32; // допуск на округлення
+            let rem = ticks;
+            const out = [];
+            while (rem > tol) {
+                let picked = false;
+                for (const [step, code] of table) {
+                    if (rem >= step - tol) {
+                        out.push(code);
+                        rem -= step;
+                        picked = true;
+                        break;
+                    }
+                }
+                if (!picked) break; // захист від зависання на дуже малих залишках
+            }
+            return out;
+        } catch { return []; }
+    }
+
 
     // ----------------------
     // ФУНКЦІЯ ДЛЯ РОЗРАХУНКУ ПОТРІБНОЇ ВИСОТИ НОТНОГО РЯДКУ В КАНВАСІ
@@ -141,8 +174,11 @@
     return Math.ceil(rows * HEIGHT) + TOPPADDING;
   }
 
+  // Greedy-декомпозиція в "чисті" тривалості без крапок/тріолей
+  
   ensureGlobal('getTotalTicksForNote', getTotalTicksForNote);
   ensureGlobal('calculateRows', calculateRows);
   ensureGlobal('calculateRowsFixedWidth', calculateRowsFixedWidth);
   ensureGlobal('calculateRequiredHeight', calculateRequiredHeight);
+  ensureGlobal('ticksToCleanDurations', ticksToCleanDurations);
 })();

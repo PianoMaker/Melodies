@@ -765,7 +765,9 @@ function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat) {
         
         if (remainingTicks > 0) {
             // Знаходимо найближчу підходящу тривалість для залишкових тіків
-            const newDurations = getDurationFromTicks(remainingTicks, ticksPerBeat);
+            const newDurations = (typeof ticksToCleanDurations === 'function')
+                ? ticksToCleanDurations(remainingTicks, ticksPerBeat)
+                : getDurationFromTicks(remainingTicks, ticksPerBeat);
             if (newDurations.length > 0) {
                 const newDuration = newDurations[0]; // Беремо першу (найбільшу) тривалість
                 const finalDuration = isRest ? newDuration + 'r' : newDuration;
@@ -1189,15 +1191,15 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
 
             if (actualTicks < expectedTicks) {
                 const remainingTicks = expectedTicks - actualTicks;
-                console.log(`Adding rests for remaining ${remainingTicks} ticks`);
-                const restDurations = getDurationFromTicks(remainingTicks, ticksPerBeat);
+                const restDurations = (typeof ticksToCleanDurations === 'function')
+                    ? ticksToCleanDurations(remainingTicks, ticksPerBeat)
+                    : getDurationFromTicks(remainingTicks, ticksPerBeat);
                 restDurations.forEach(duration => {
                     const rest = createRest(duration);
                     if (rest) {
                         validNotes.push(rest);
                         voice.addTickable(rest);
                         actualTicks += getTotalTicksForNote(rest, ticksPerBeat);
-                        console.log(`Added rest with duration ${duration}, total ticks now: ${actualTicks}`);
                     }
                 });
             }
@@ -1227,7 +1229,9 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
         } else {
             // Якщо такт порожній - додаємо паузу на весь такт
             const ticksPerMeasure = currentNumerator * ticksPerBeat * 4 / currentDenominator;
-            const restDurations = getDurationFromTicks(ticksPerMeasure, ticksPerBeat);
+            const restDurations = (typeof ticksToCleanDurations === 'function')
+                ? ticksToCleanDurations(ticksPerMeasure, ticksPerBeat)
+                : getDurationFromTicks(ticksPerMeasure, ticksPerBeat);
             const wholeRest = createRest(restDurations[0]);
             if (wholeRest) {
                 const voice = new Vex.Flow.Voice({
@@ -1371,7 +1375,9 @@ function addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, 
     while (lastNoteOffTime < ticksPerMeasure - thresholdGap) {
         const remainingTicks = ticksPerMeasure - lastNoteOffTime;
         console.log(`MR:add Missing Rest is running: remaining: ${remainingTicks}`);
-        const restDurations = getDurationFromTicks(remainingTicks, ticksPerBeat);
+        const restDurations = (typeof ticksToCleanDurations === 'function')
+            ? ticksToCleanDurations(remainingTicks, ticksPerBeat)
+            : getDurationFromTicks(remainingTicks, ticksPerBeat);
         let timeadded = 0;
         restDurations.forEach((restDuration) => {
             notes.push(createRest(restDuration));
@@ -1485,7 +1491,9 @@ function addRestsBetween(lastNoteOffTime, event, ticksPerBeat, thresholdGap, not
     console.log("FOO: midiRenderer.js - addRestsBetween");
     if (lastNoteOffTime > 0 && event.absTime > lastNoteOffTime) {
         const gapTicks = event.absTime - lastNoteOffTime;
-        const restDurations = getDurationFromTicks(gapTicks, ticksPerBeat);
+        const restDurations = (typeof ticksToCleanDurations === 'function')
+            ? ticksToCleanDurations(gapTicks, ticksPerBeat)
+            : getDurationFromTicks(gapTicks, ticksPerBeat);
         if (gapTicks > thresholdGap) {
             restDurations.forEach((restDuration) => {
                 console.log(`current event abs time ${event.absTime} vs lastNoteOffTime: ${lastNoteOffTime}: rest is needed: ${restDuration}`);
@@ -1510,7 +1518,9 @@ function AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime)
     console.log("FOO: midiRenderer.js - AddStartRest");
     const relTime = event.absTime - barStartAbsTime;
     if (relTime > 0) {
-        const restDurations = getDurationFromTicks(relTime, ticksPerBeat);
+        const restDurations = (typeof ticksToCleanDurations === 'function')
+            ? ticksToCleanDurations(relTime, ticksPerBeat)
+            : getDurationFromTicks(relTime, ticksPerBeat);
         if (relTime > thresholdGap) {
             console.log(`adding a starting rest ${relTime}`);
             restDurations.forEach((restDuration) => {
