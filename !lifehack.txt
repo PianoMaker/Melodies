@@ -13,3 +13,6 @@ git restore --source=master E:\Programming\Melodies\Services\
 git restore --source=twoDatabases E:\Programming\Melodies\lifehack.txt
 
 git restore --source=master E:\Programming\Melodies\wwwroot\js
+
+        string adminEmail = "admin@example.com";
+        string adminPassword = "Admin123!";
