@@ -11,3 +11,7 @@ git restore --source=twoDatabases E:\Programming\Melodies\Pages\Melodies\Create.
 git restore --source=possible-production-config E:\Programming\Melodies\wwwroot\js
 git restore --source=possible-production-config E:\Programming\Melodies\Pages\Account
 git restore --source=possible-production-config E:\Programming\Melodies\wwwroot\css
+git restore --source=master E:\Programming\Melodies\wwwroot\js
+
+        string adminEmail = "admin@example.com";
+        string adminPassword = "Admin123!";
