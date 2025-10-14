@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let pianodisplay = document.getElementById("pianodisplay");
     const keysInput_save = document.getElementById("keysInput-save")
     const keysInput_search = document.getElementById("keysInput-search")
+    const searchAlgorithmInput = document.getElementById("searchAlgorithmInput");
     const createMIDIButton = document.getElementById('createMIDI');//кнопка "зберегти"
     const searchButton = document.getElementById('searchBtn');//кнопка "зберегти"
     const playButton = document.getElementById('melodyPlayBtn');
@@ -28,7 +29,168 @@ document.addEventListener("DOMContentLoaded", function () {
         return; // без нотного поля немає сенсу виконувати далі
     }
 
-    if (saver) pianodisplay.value = saver.innerText;
+    // ===== LIVE NOTATION (Create page) using patternRenderer.js =====
+    // Load renderer deps only once and setup live render like on Search page
+    (function setupLiveNotationOnCreate(){
+        // Inject live notation containers if missing (same ids as on Search)
+        const container = document.getElementById('innerNotesContainer');
+        if (container) {
+            if (!document.getElementById('liveNotation')) {
+                const live = document.createElement('div');
+                live.id = 'liveNotation';
+                live.className = 'mb-3';
+                container.prepend(live);
+            }
+            if (!document.getElementById('patternComments')) {
+                const comments = document.createElement('div');
+                comments.id = 'patternComments';
+                comments.style.display = 'none';
+                container.insertBefore(comments, container.children[1] || null);
+            }
+        }
+
+        // Dynamic loader for js files
+        function loadScriptOnce(src){
+            if (!src) return Promise.resolve();
+            const key = `__loaded_${src}`;
+            if (window[key]) return window[key];
+            window[key] = new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = () => resolve();
+                s.onerror = (e) => reject(e);
+                document.body.appendChild(s);
+            });
+            return window[key];
+        }
+
+        // Ensure VexFlow is available (try the same path as on Search page first)
+        function ensureVexFlow(){
+            if (window.Vex && window.Vex.Flow) return Promise.resolve();
+            // Try correct path used by Search page
+            return loadScriptOnce('/lib/midirender/vexflow.js')
+                .catch(() => Promise.resolve())
+                .then(() => {
+                    if (window.Vex && window.Vex.Flow) return;
+                    // Fallback to layout path, in case it's present there
+                    return loadScriptOnce('/lib/vexflow.js').catch(() => {/* ignore */});
+                })
+                .then(() => {
+                    if (!(window.Vex && window.Vex.Flow)) {
+                        console.warn('VexFlow could not be loaded');
+                    }
+                });
+        }
+
+        // Deps in correct order (rendererUtils must be before midiRenderer)
+        const deps = [
+            '/lib/midirender/midiparser_ext.js',
+            '/lib/midirender/makeBeams.js',
+            '/lib/midirender/rendererUtils.js',
+            '/lib/midirender/midiRenderer.js',
+            '/lib/midirender/patternRenderer.js'
+        ];
+
+        // Render helpers (mirroring livePatternRenderer.js)
+        let lastPattern = null;
+        let renderTimer = null;
+        function scheduleRender(){
+            if (renderTimer) clearTimeout(renderTimer);
+            renderTimer = setTimeout(renderFromTextarea, 50);
+        }
+        function safeRender(pattern){
+            try {
+                if (typeof window.renderPatternString !== 'function') return;
+                const renderEl = document.getElementById('liveNotation');
+                const commentsEl = document.getElementById('patternComments');
+                if (!renderEl || !commentsEl) return;
+                window.renderPatternString(
+                    pattern || '',
+                    renderEl.id,
+                    commentsEl.id,
+                    4, 4,
+                    undefined,
+                    120,
+                    20,
+                    250,
+                    60,
+                    10
+                );
+            } catch(e){ console.warn('safeRender failed', e); }
+        }
+        function getPattern(){ return pianodisplay ? pianodisplay.value : ''; }
+        function renderFromTextarea(){
+            const current = getPattern();
+            if (current === lastPattern) return;
+            lastPattern = current;
+            const noMsg = document.getElementById('noNotesMsg');
+            if (noMsg) {
+                if (current && current.trim().length > 0) noMsg.style.display = 'none';
+                else noMsg.style.display = '';
+            }
+            safeRender(current);
+        }
+        function hookPianoButtons(){
+            const piano = document.getElementById('pianoroll');
+            if (!piano) return;
+            piano.addEventListener('click', () => setTimeout(scheduleRender, 0));
+        }
+        function hookRestButton(){
+            const restBtn = document.getElementById('pausebutton');
+            if (!restBtn) return; 
+            restBtn.addEventListener('click', () => setTimeout(scheduleRender, 0));
+        }
+        function hookTextareaInput(){
+            if (!pianodisplay) return;
+            pianodisplay.addEventListener('input', scheduleRender);
+            pianodisplay.addEventListener('keyup', scheduleRender);
+            pianodisplay.addEventListener('change', scheduleRender);
+        }
+        function startPolling(){ setInterval(renderFromTextarea, 200); }
+        function renderOnLoad(){ renderFromTextarea(); }
+
+        // If libs already present (e.g., Search has static includes), skip dynamic loading
+        const depsAlreadyPresent =
+            (window.Vex && window.Vex.Flow) &&
+            (typeof window.renderPatternString === 'function') &&
+            (typeof window.createRest === 'function') &&      // from midiparser_ext
+            (typeof window.getTotalTicksForNote === 'function'); // from rendererUtils
+
+        if (depsAlreadyPresent) {
+            hookPianoButtons();
+            hookRestButton();
+            hookTextareaInput();
+            startPolling();
+            renderOnLoad();
+            window.__scheduleLiveNotationRender = scheduleRender;
+            return;
+        }
+
+        // Load Vex first, then deps, then bind and render
+        Promise.resolve()
+            .then(() => ensureVexFlow())
+            .then(() => deps.reduce((p, src) => p.then(() => loadScriptOnce(src)), Promise.resolve()))
+            .then(() => {
+                hookPianoButtons();
+                hookRestButton();
+                hookTextareaInput();
+                startPolling();
+                renderOnLoad();
+            })
+            .catch(err => console.warn('Failed to init live notation on Create:', err));
+
+        // Expose scheduleRender to other handlers below
+        window.__scheduleLiveNotationRender = scheduleRender;
+    })();
+    // ===== END LIVE NOTATION =====
+
+    // Відновлення значення з saver тільки якщо воно не порожнє
+    if (saver) {
+        const saved = (saver.innerText || '').trim();
+        if (saved.length > 0) {
+            pianodisplay.value = saved;
+        }
+    }
     const savedTitle = sessionStorage.getItem("savedTitle");
     const savedAuthorId = sessionStorage.getItem("selectedAuthorId");
     
@@ -71,57 +233,61 @@ document.addEventListener("DOMContentLoaded", function () {
     let duration = '4';
     const durationbuttons = document.querySelectorAll('.durationbutton');
     const restBtn = document.getElementById('pausebutton');
-    //console.log('restBtn:', restBtn);
+    const dotBtn = document.getElementById('dotbutton'); // NEW
+
     durationbuttons.forEach((button, index) => {
         button.addEventListener('click', () => {
             duration = String(2 ** index); // 2^index дає потрібне значення
-            console.log(duration);
+            console.log('duration:', duration);
         });
     });
 
+    // NEW: toggle крапки + підсвітка
+    if (dotBtn) {
+        dotBtn.addEventListener('click', () => {
+            dotBtn.classList.toggle('highlight');
+            // no immediate change to textarea, but schedule render to keep UI in sync
+            if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
+        });
+    }
+
+    // Допоміжна: чи активна крапка зараз
+    function isDottedActive() {
+        return document.getElementById('dotbutton')?.classList.contains('highlight') || false;
+    }
 
     // обробник клавіш фортепіано
-    // // (треба буде додати запобіжник для любителів грати в стилі Зеленського)
     buttons.forEach(button => {
         button.addEventListener('click', function () {
-            const key = this.getAttribute('data-key'); // Отримуємо значення клавіші            
-            console.log(`Натиснута клавіша: ${key}`);
-            const audioPath = `/sounds/${key}.mp3`;
-            if (audioPlayer && !audioPlayer.paused) {
-                audioPlayer.pause();
-            }
-            if (audioSource) {
-                audioSource.src = audioPath;
-                if (audioPlayer) {
-                    audioPlayer.load();
-                    audioPlayer.play();
-                    audioPlayer.addEventListener('canplaythrough', function () {
-                        audioPlayer.play();
-                    });
-                }
-            }
-            pianodisplay.value += `${key}${duration}_`;
+            const key = this.getAttribute('data-key');
+            // ... програвання звуку ...
+
+            // Додаємо крапку до тривалості, якщо активна
+            const dotSuffix = isDottedActive() ? '.' : '';
+            pianodisplay.value += `${key}${duration}${dotSuffix}_`;
             if (createMIDIButton) createMIDIButton.style.background = "lightgreen";
             if (playButton) {
                 playButton.style.background = "lightgray";
                 const playIcon = document.querySelector('.fas.fa-play');
                 if (playIcon) playIcon.style.color = "gray";
             }
+            if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
         });
 
     });
 
-    //обробник паузи
+    // обробник паузи
     if (restBtn) {
         restBtn.addEventListener('click', function () {
-            console.log(`Натиснута клавіша: пауза`);
-            pianodisplay.value += `r${duration}_`;
+            const dotSuffix = isDottedActive() ? '.' : '';
+            pianodisplay.value += `r${duration}${dotSuffix}_`;
             if (createMIDIButton) createMIDIButton.style.background = "lightgreen";
             if (playButton) {
                 playButton.style.background = "lightgray";
                 const playIcon = document.querySelector('.fas.fa-play');
                 if (playIcon) playIcon.style.color = "gray";
             }
+            if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
         })
     }
 
@@ -144,8 +310,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    //кнопка "Зберегти" (лише коли є відповідні елементи)
+    //кнопка "Зберегти" (Create) або "попередній перегляд" (Search)
     if (createMIDIButton && titleInput && selectAuthor && submitMelodyBtn) {
+        // Create page behavior
         createMIDIButton.addEventListener('click', function (event) {
             event.preventDefault();
             var unique = checkIfunique();
@@ -162,6 +329,13 @@ document.addEventListener("DOMContentLoaded", function () {
             else alert("Мелодія даного автора з такою назвою вже існує");
 
         });
+    } else if (createMIDIButton) {
+        // Fallback для сторінок без title/author (наприклад, Search)
+        createMIDIButton.addEventListener('click', function (event) {
+            // Не відміняємо submit, просто встановлюємо Keys перед відправкою
+            if (keysInput_save) keysInput_save.value = pianodisplay.value;
+            console.log("Preview submit with Keys:", keysInput_save ? keysInput_save.value : '(no element)');
+        });
     }
 
     //кнопка "Пошук"
@@ -170,6 +344,14 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault();
             if (keysInput_search) keysInput_search.value = pianodisplay.value
             console.log("Відправка форми з Keys:", keysInput_search ? keysInput_search.value : '(no element)');
+
+            // синхронізувати вибраний алгоритм пошуку
+            const selectedAlg = document.querySelector('input[name="SearchAlgorithm"]:checked');
+            if (selectedAlg && searchAlgorithmInput) {
+                searchAlgorithmInput.value = selectedAlg.value;
+                console.log("Selected algorithm:", selectedAlg.value);
+            }
+
             // Відправка форми
             const searchForm = document.getElementById('notesearchForm');
             if (searchForm) searchForm.submit();

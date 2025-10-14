@@ -4,49 +4,57 @@
 @{
     ViewData["Title"] = "Мелодія - вилучити";
 }
+@section Styles {
+    <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
+}
+<div class="melody-shell">
+    <div class="infocontainer melody-width">
+        <h3>Чи впевнені, що хочете вилучити?</h3>
+        <div>
+            <h4>Мелодія</h4>
+            <hr />
+            <dl class="row">
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Melody.FilePath)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Melody.FilePath)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Melody.Title)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Melody.Title)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Melody.Year)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Melody.Year)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Melody.Description)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Melody.Description)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Melody.Author)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Melody.Author.ID)
+                </dd>
+            </dl>
+        </div>
+    </div>
 
-<h1>Вилучення</h1>
-
-<h3>Чи впевнені, що хочете вилучити?</h3>
-<div>
-    <h4>Мелодія</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Melody.FilePath)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Melody.FilePath)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Melody.Title)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Melody.Title)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Melody.Year)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Melody.Year)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Melody.Description)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Melody.Description)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Melody.Author)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Melody.Author.ID)
-        </dd>
-    </dl>
-    
-    <form method="post">
-        <input type="hidden" asp-for="Melody.ID" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-page="./Index">Назад до списку</a>
-    </form>
+    <div class="infocontainer actions-container melody-width">
+        <div class="actions-row">
+            <form method="post" style="display:inline">
+                <input type="hidden" asp-for="Melody.ID" />
+                <button type="submit" class="btn btn-danger">Вилучити</button>
+            </form>
+            <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку</a>
+        </div>
+    </div>
 </div>

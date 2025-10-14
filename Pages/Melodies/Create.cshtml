@@ -9,6 +9,10 @@
 
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/notes.css" asp-append-version="true" />
+}
+
 <h1>Додати пісню</h1>
 
 <hr />
@@ -149,7 +153,7 @@
             }
             else
             {
-                <p>no notes have been entered</p>
+                <p>жодної ноти не введено</p>
             }
         </div>
         <script type="module" src="~/js/noteTable.js"></script>
@@ -177,6 +181,7 @@
     }
     <script src="~/js/duplicate.js"></script>
     <script src="~/js/newAuthor.js"></script>
+    <script src="~/lib/midirender/rendererUtils.js"></script> <!-- added; must come before any script using its helpers -->
     <script src="~/js/createMelody.js"></script>
     <script src="~/js/play.js"></script>
     <script src="~/js/openpiano.js"></script>

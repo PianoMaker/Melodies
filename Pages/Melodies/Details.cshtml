@@ -71,16 +71,16 @@
 
     <!-- НОТИ І СТАТИСТИКА -->
     <div class="notescontainer melody-details melody-width">
-        <!-- НОТНИЙ ТЕКСТ (wrapper added) -->
+        <!-- НОТНИЙ ТЕКСТ -->
         <div class="panel-notes">
-            <div id="notation">notation will be shown here</div>
+            <div id="notation" data-midi-url='@Url.Content($"~/melodies/{item.FilePath}")' data-public-domain='@System.Text.Json.JsonSerializer.Serialize(item?.IfPublicDomain ?? false)'>notation will be shown here</div>
             <div id="comments"></div>
             <div id="stepRead" style="display:none"></div>
         </div>
 
         <hr class="section-divider" />
 
-        <!-- СТАТИСТИКА (wrapper added) -->
+        <!-- СТАТИСТИКА  -->
         <div class="panel-analysis">
             @if (@item.MidiMelody is null)
             {
@@ -256,25 +256,6 @@
 <script src="~/lib/midirender/midiparser.js"></script>
 <script src="~/lib/midirender/midiparser_ext.js"></script>
 <script src="~/lib/midirender/makeBeams.js"></script>
+<script src="~/lib/midirender/rendererUtils.js"></script>
 <script src="~/lib/midirender/midiRenderer.js"></script>
-<script>
-    const midiUrl = '@Url.Content($"~/melodies/{item.FilePath}")';
-    function calcGeneralWidth(){
-        // залишаємо трохи відступів з країв
-        const w = window.innerWidth || 1200;
-        return Math.min(1200, Math.max(420, w - 80));
-    }
-    async function renderAdaptive(){
-        const width = calcGeneralWidth();
-        // інші параметри залишаємо за замовчуванням
-        await renderMidiFromUrl(midiUrl, 'notation', 'comments', width, 150);
-    }
-    // первинний рендер
-    renderAdaptive();
-    // debounce на resize
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(renderAdaptive, 300);
-    });
-</script>
+<script src="~/js/MelodyDetails.js" asp-append-version="true"></script>

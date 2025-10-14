@@ -2,34 +2,48 @@
 @model Melodies25.Pages.Account.NotationModel
 @{
 }
-
-<h2>Оберіть Midi-файл для відображення</h2>
-<form method="post">
-    <select id="midifiles" asp-for="SelectedMidiFile">
-        @foreach (var file in Model.MidiFiles)
-        {
-            <option value="@file">@file</option>
-        }
-    </select>
-    <button asp-page-handler="Check" type="submit">Check</button>
-    <button asp-page-handler="AddEOF" type="submit">Add EOF</button>
-</form>
-<p> @Model.CheckMessage</p>
-
-
-<div style="display:flex; width:100%; margin-top:20px; align-items:flex-start;">
-    <!-- НОТИ -->
-    <div id="SheetMusic" style="flex:0 0 80%; background-color: rgb(255,255,230)">
-        <p style="text-align: center">Ноти</p>
-        <div id="notation"></div>
-        <div id="result"></div>
+<div class="infocontainer">
+    <h2>Оберіть Midi-файл для відображення</h2>
+    <form method="post">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button id="prevMidi" type="button">Previous</button>
+            <select id="midifiles" asp-for="SelectedMidiFile">
+                @foreach (var file in Model.MidiFiles)
+                {
+                    <option value="@file" data-id="@(Model.FileIds.TryGetValue(file!, out var id) ? id : -1)">@file</option>
+                }
+            </select>
+            <button id="nextMidi" type="button">Next</button>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap;">
+            <button asp-page-handler="Check" type="submit">Check</button>
+            <button asp-page-handler="AddEOF" type="submit">Add EOF</button>
+            <button id="editMidi" type="button">Edit</button>
+        </div>
+    </form>
+    <div style="text-align:center; margin-bottom:8px;">
+        <input type="file" id="midiLocalFile" accept=".mid,.midi" />
     </div>
-    <!-- ПАНЕЛЬ ПРАВОРУЧ -->
-    <div class="NotesList" style="flex:0 0 20%;">
-        <p style="text-align: center">Музичний розмір:</br> <span id="timesignature"></span></p>
-        <p style="text-align: center">Список нот</p>
-        <div id="code" style="padding-left: 15px;"></div>
+
+    <p> @Model.CheckMessage</p>
+
+
+    <div style="display:flex; width:100%; margin-top:20px; align-items:flex-start;">
+        <!-- НОТИ -->
+        <div id="SheetMusic" style="flex:0 0 80%; background-color: rgb(255,255,230)">
+            <p style="text-align: center">Ноти</p>
+            <div id="notation"></div>
+            <div id="result"></div>
+        </div>
+        <!-- ПАНЕЛЬ ПРАВОРУЧ -->
+        <div class="NotesList" style="flex:0 0 20%;">
+            <p style="text-align: center">Музичний розмір:</br> <span id="timesignature"></span></p>
+            <p style="text-align: center">Тональність:</br> <span id="keysignatures"></span></p>
+            <p style="text-align: center">Список нот</p>
+            <div id="code" style="padding-left: 15px;"></div>
+        </div>
     </div>
+    <div id="comments"></div>
 </div>
 <script src="~/lib/midifile/midifile.bundle.js"></script> <!-- MIDI -->
 <script type="module" src="~/js/formatMidiNotesForDisplay.js"></script> <!-- MIDI -->
@@ -38,6 +52,7 @@
 <script src="~/lib/midirender/midiparser.js"></script>
 <script src="~/lib/midirender/midiparser_ext.js"></script>
 <script src="~/lib/midirender/makeBeams.js"></script>
+<script src="~/lib/midirender/rendererUtils.js"></script>
 <script src="~/lib/midirender/midiRenderer.js"></script>
 <script type="module" src="~/js/NotationFetch.js"></script>
 

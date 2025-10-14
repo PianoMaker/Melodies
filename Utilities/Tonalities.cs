@@ -8,6 +8,7 @@ using static Music.Engine;
 using static Music.Messages;
 using static Music.Globals;
 using static System.Console;
+using NAudio.Midi;
 
 namespace Music
 {
@@ -38,6 +39,71 @@ namespace Music
             this.mode = mode;
         }
 
+        public Tonalities(int sharpflat, int majorminor)
+        {
+            MODE mode = (MODE)majorminor;
+            GetTonalityFromKeySignature(sharpflat, mode);
+        }
+
+        public Tonalities(KeySignatureEvent ks)
+        {
+            int sharpflat = (int)ks.SharpsFlats;
+            MODE mode = (MODE)ks.MajorMinor;
+            GetTonalityFromKeySignature(sharpflat, mode);
+        }
+
+        private void GetTonalityFromKeySignature(int sharpflat, MODE mode)
+        {
+            if (mode == MODE.dur)
+            {
+                this.mode = MODE.dur;
+                this.alter = ALTER.NATURAL;
+                switch (sharpflat)
+                {
+
+                    case 0: this.step = NOTES.DO; break;
+                    case 1: this.step = NOTES.SOL; break;
+                    case 2: this.step = NOTES.RE; break;
+                    case 3: this.step = NOTES.LA; break;
+                    case 4: this.step = NOTES.MI; break;
+                    case 5: this.step = NOTES.SI; break;
+                    case 6: this.step = NOTES.FA; this.Alter = ALTER.SHARP; break;
+                    case 7: this.step = NOTES.DO; this.Alter = ALTER.SHARP; break;
+                    case -1: this.step = NOTES.FA; break;
+                    case -2: this.step = NOTES.SI; alter = ALTER.FLAT; break;
+                    case -3: this.step = NOTES.MI; alter = ALTER.FLAT; break;
+                    case -4: this.step = NOTES.LA; alter = ALTER.FLAT; break;
+                    case -5: this.step = NOTES.RE; alter = ALTER.FLAT; break;
+                    case -6: this.step = NOTES.SOL; alter = ALTER.FLAT; break;
+                    case -7: this.step = NOTES.DO; alter = ALTER.FLAT; break;
+                }
+            }
+            else if (mode == MODE.moll)
+            {
+                this.mode = MODE.moll;
+                this.alter = ALTER.NATURAL;
+                switch (sharpflat)
+                {
+
+                    case 0: this.step = NOTES.LA; break;
+                    case 1: this.step = NOTES.MI; break;
+                    case 2: this.step = NOTES.SI; break;
+                    case 3: this.step = NOTES.FA; this.Alter = ALTER.SHARP; break;
+                    case 4: this.step = NOTES.DO; this.Alter = ALTER.SHARP; break;
+                    case 5: this.step = NOTES.SOL; this.Alter = ALTER.SHARP; break;
+                    case 6: this.step = NOTES.RE; this.Alter = ALTER.SHARP; break;
+                    case 7: this.step = NOTES.LA; this.Alter = ALTER.SHARP; break;
+                    case -1: this.step = NOTES.RE; break;
+                    case -2: this.step = NOTES.SOL; break;
+                    case -3: this.step = NOTES.DO; break;
+                    case -4: this.step = NOTES.FA; break;
+                    case -5: this.step = NOTES.SI; alter = ALTER.FLAT; break;
+                    case -6: this.step = NOTES.MI; alter = ALTER.FLAT; break;
+                    case -7: this.step = NOTES.LA; alter = ALTER.FLAT; break;
+                }
+            }
+        }
+
         public Tonalities(int step, int pitch, MODE mode)
         {
             this.step = (NOTES)step;
@@ -51,14 +117,14 @@ namespace Music
         {
 
             string name = EnterTonalityName(input);
-            string[] tokens = name.Split('-', ' '); // Розбиваємо рядок на токени за допомогою роздільників '-'' та ' '
-            string key = tokens[0]; // Отримуємо перший токен як ключ
-            string tempmode = tokens.Length > 1 ? tokens[1] : "dur"; // Отримуємо другий токен як лад, якщо відсутній - використовуємо мажор
+            string[] tokens = name.Split('-', ' '); 
+            string key = tokens[0]; 
+            string tempmode = tokens.Length > 1 ? tokens[1] : "dur"; 
 
-            step = (NOTES)key_to_step(key); // Отримуємо крок
-            int pitch = key_to_pitch(key); // Отримуємо висоту тона
-            alter = (ALTER)pitch_to_alter(step, pitch); // Отримуємо альтерацію якщо є
-            mode = (tempmode == "dur") ? MODE.dur : MODE.moll; // Визначаємо, чи мінорний лад
+            step = (NOTES)key_to_step(key); 
+            int pitch = key_to_pitch(key); 
+            alter = (ALTER)pitch_to_alter(step, pitch); 
+            mode = (tempmode == "dur") ? MODE.dur : MODE.moll; 
 
         }
 
@@ -86,37 +152,42 @@ namespace Music
         {
             if (tonality.Length < 4)
                 throw new IncorrectNote("impossible to determint input: " + tonality);
+
+            // Завжди парсимо тональності у європейській нотації (es/is, H/B)
+            notation = Notation.eu;
+
+            // Нормалізація тире (en/em/minus) і пробілів перед зниженням регістру
+            tonality = tonality.Trim()
+                .Replace('\u2013', '-') // en-dash
+                .Replace('\u2014', '-') // em-dash
+                .Replace('\u2212', '-') // minus sign
+                .Replace('–', '-')      // safety
+                .Replace('—', '-')      // safety
+                .Replace('−', '-')      // safety
+                .Replace("  ", " ");
+
+            // до нижнього регістру
             string temp = "";
             for (int i = 0; i < tonality.Length; i++)
-            {
-                temp += char.ToLower(tonality[i]);
-            }
+                temp += char.ToLowerInvariant(tonality[i]);
             tonality = temp;
 
             if (!tonality.EndsWith("dur") && !tonality.EndsWith("moll"))
-            {
                 throw new IncorrectNote("impossible to determint input: " + tonality);
-            }
 
             if (tonality.EndsWith("dur") && tonality.Substring(tonality.Length - 4, 1) != "-")
-            {
                 tonality = tonality.Insert(tonality.Length - 3, "-");
-            }
 
             if (tonality.EndsWith("moll") && tonality.Substring(tonality.Length - 5, 1) != "-")
-            {
                 tonality = tonality.Insert(tonality.Length - 4, "-");
-            }
 
             if (tonality[2] == '-' && tonality[3] == '-')
-            {
                 tonality = tonality.Remove(3, 1);
-            }
 
             if (tonality[3] == '-' && tonality[4] == '-')
-            {
                 tonality = tonality.Remove(3, 1);
-            }
+
+            // Більше не перетворюємо 'as' -> 'aes': Engine.key_to_pitch підтримує 's' у європейській нотації
 
             if (key_to_step(tonality.Substring(0, 1)) == -100 &&
                 key_to_step(tonality.Substring(0, 2)) == -100 &&
@@ -124,6 +195,7 @@ namespace Music
             {
                 throw new IncorrectNote("impossible to determint input: " + tonality);
             }
+
             return tonality;
         }
 
@@ -416,8 +488,29 @@ namespace Music
             return dictionary;
         }
 
+        public static Tonalities? GetTonalitiesFromMidi(MidiFile midifile)
+        {
 
+            Tonalities? tonalities = null;
+            
+            foreach (var midievent in midifile.Events)
+            {
+                
+                    if (midievent is KeySignatureEvent kse)
+                    {
+                        int sharpflat = (int)kse.SharpsFlats;
+                        MODE mode = (MODE)kse.MajorMinor;                        
+                        tonalities.GetTonalityFromKeySignature(sharpflat, mode);                        
+                    }
+                
+            }
+            return tonalities;
+        }
 
+        public int GetSharpFlats()
+        {
+            return Keysignatures();
+        }
 
 
         public object Clone()

@@ -6,12 +6,16 @@
     var melody = @Model.Melody;
 }
 
-<h1>@melody.Author.Name  @melody.Author.Name  - @melody.Title</h1>
+@section Styles {
+    <link rel="stylesheet" href="~/css/notes.css" asp-append-version="true" />
+}
+<div class="row infocontainer">
+<h1>@melody.Author.Name - @melody.Title</h1>
 
 <h4></h4>
 <hr />
-<div class="row infocontainer">
-    <div class="col-md-4">
+
+    <div class="halfpagecontainer">
         <form method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Melody.ID" />
@@ -26,7 +30,7 @@
             }
             else
             {
-                <p>Поточний файл - @Model.Melody.FilePath</p>
+                <p class="fileinfo">Поточний файл - @Model.Melody.FilePath</p>
 
                 <button type="submit" class="btn btn-danger" asp-page-handler="DeleteFile">
                     Видалити файл
@@ -34,7 +38,7 @@
             }
             @if (@Model.Melody.Mp3Filepath is not null)
             {
-                <p>Поточний mp3 файл - @Model.Melody.Mp3Filepath</p>
+                <p class="fileinfo">Поточний mp3 файл - @Model.Melody.Mp3Filepath</p>
 
                 
                 <button type="submit" asp-page-handler="update" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background">
@@ -42,6 +46,7 @@
                 </button>
                 
             }
+            <!--ТОНАЛЬНІСТЬ-->
             <div class="form-group">
                 <label asp-for="Melody.Tonality" class="control-label">Тональність (MIDI-файлу)</label>
                 <select asp-for="Melody.Tonality" class="form-control" asp-items="ViewBag.Tonalities" >
@@ -49,6 +54,11 @@
                 </select>
                 <span asp-validation-for="Melody.Tonality" class="text-danger"></span>
             </div>
+            <div style="display:flex; gap:8px; align-items:center">
+                <button id="getTonality" type="button" class="btn btn-outline-dark light-background">Визначити<span class="ifnarrowscreen"> за MIDI-файлом</span></button>
+            <button id="paralellTonality" type="button" class="btn btn-outline-dark light-background">Паралельна</button>            
+            </div>
+            <!--ТЕМП-->
             <div class="form-group">
                 <label asp-for="Melody.MidiMelody.Tempo" class="control-label">Темп</label>
                 <input id="tempoChange" asp-for="@Model.Tempo" class="form-control" />
@@ -82,7 +92,7 @@
             <div class="form-group">
                 <input type="hidden" asp-for="Melody.ID" />
                 <input type="hidden" asp-for="Melody.FilePath" />
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Зберегти" class="btn btn-primary" />
             </div>
            
         </form>
@@ -91,12 +101,11 @@
 
 
 <div>
-    <a asp-page="./Index">Назад до списку</a>
-    <a asp-page="./Details" asp-route-id="@Model.Melody.ID">Детальна інформація</a>
+    <a asp-page="./Index" class="btn btn-dark btn-outline-dark light-background">Назад до списку</a>
+    <a asp-page="./Details" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background">Детальна інформація</a>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="~/js/editMelody.js"></script>
 }
-<script src="~/js/editMelody.js">
-</script>

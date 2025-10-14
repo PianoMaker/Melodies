@@ -4,25 +4,33 @@
 @{
     ViewData["Title"] = "Мелодія - вилучити країну";
 }
+@section Styles {
+    <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
+}
+<div class="melody-shell">
+    <div class="infocontainer melody-width">
+            <h3>Чи впевнені, що хочете вилучити?</h3>
+        <div>
+            <h4>Країни</h4>
+            <hr />
+            <dl class="row">
+                <dt class="col-sm-2">
+                    Країна
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Country.Name)
+                </dd>
+            </dl>
+        </div>
+    </div>
 
-<h1>Вилучення</h1>
-
-<h3>Чи впевнені, що хочете вилучити?</h3>
-<div>
-    <h4>Країни</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            Країна
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Country.Name)
-        </dd>
-    </dl>
-    
-    <form method="post">
-        <input type="hidden" asp-for="Country.ID" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-page="./Index">Назад до списку</a>
-    </form>
+    <div class="infocontainer actions-container melody-width">
+        <div class="actions-row">
+            <form method="post" style="display:inline">
+                <input type="hidden" asp-for="Country.ID" />
+                <button type="submit" class="btn btn-danger">Вилучити</button>
+            </form>
+            <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку</a>
+        </div>
+    </div>
 </div>

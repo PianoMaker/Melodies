@@ -20,8 +20,6 @@ const allowDotted = false;
             return { beamGroups: [], beams: [] };
         }
 
-        console.log('MB: makeBeams called with measure:', measure, 'ticksPerBeat:', ticksPerBeat);
-
         const localTicksPerBeat = ticksPerBeat || 480;
         const beamGroups = [];
         const beams = [];
@@ -34,18 +32,26 @@ const allowDotted = false;
         };
 
         let runningTicks = 0; 
+        // Правило (оновлено): зберігаємо інфо про попередню паузу
+        let prevWasRest = false;
+        let lastRestTicks = 0;            // тривалість останньої паузи (у тiках)
+        let lastRestStartOnBeat = false;  // чи починалась пауза з долі
+
+        // NEW: спеціальний прапор для пари 1/8. + 1/16 (закрити групу після наступної ноти)
+        let closeAfterNext16 = false;
 
         measure.notes.forEach((note, idx) => {
-            console.log(`MB: analysing note idx=${idx} (raw=${note}) currentGroupLen=${currentGroup.notes.length}`);
-
             if (!note) {
                 if (currentGroup.notes.length) closeGroup(currentGroup, beamGroups, beams, 'null-note');
+                prevWasRest = false;
+                lastRestTicks = 0;
+                lastRestStartOnBeat = false;
+                closeAfterNext16 = false;
                 return;
             }
 
             // 1. Тривалість ноти у MIDI ticks (залежно від ticksPerBeat з MIDI файлу)
             const noteTicks = getNoteMidiTicks(note, localTicksPerBeat);
-            
 
             // 2. Старт у MIDI ticks
             if (note.startTick == null) {
@@ -59,20 +65,86 @@ const allowDotted = false;
 
             console.log(`MB: startTick=${note.startTick}, ticks=${noteTicks}, endTick=${note.endTick} (beats start=${note.startBeat}, end=${note.endBeat})`);
 
+            // 3a. Властивості елемента та сильні долі
+            const dr = durationResolver(note);
+            const isRest = !!dr.isRest;
+            const startOnBeat = CheckStartOnBeat(note.startBeat, timeSignature);
+
             // 4. Перевірка межі біта у beat-одиницях (чверті)
             const noteEndBeat = note.endBeat;
             let splitOnBeat = CheckSplitOnBeat(noteEndBeat, timeSignature);
 
             // 5. Beamable?
-            const beamable = isBeamable(note);
+            let beamable = isBeamable(note);
             const next = measure.notes[idx + 1];
             const nextBeamable = next ? isBeamable(next) : false;
+
+            // СПЕЦІАЛЬНИЙ ВИПАДОК: 1/8. + 1/16 повинні бути однією групою під ребром
+            // дозволяємо бімувати 1/8. лише якщо за нею безпосередньо йде 1/16 (без крапки і не пауза)
+            let specialPairStart = false;
+            if (!beamable && dr.dotted && dr.code === '8' && next) {
+                const dNext = durationResolver(next);
+                if (!dNext.isRest && !dNext.dotted && dNext.code === '16') {
+                    beamable = true; // дозволяємо почати групу на 1/8.
+                    specialPairStart = true;
+                }
+            }
+
+            // Якщо це пауза — закриваємо поточну групу і зберігаємо її параметри
+            if (isRest) {
+                if (currentGroup.notes.length) closeGroup(currentGroup, beamGroups, beams, 'rest');
+                runningTicks += noteTicks;
+                prevWasRest = true;
+                lastRestTicks = noteTicks;
+                lastRestStartOnBeat = startOnBeat;
+                closeAfterNext16 = false; // обриваємо можливу пару
+                return;
+            }
 
             if (!beamable) {
                 if (currentGroup.notes.length) closeGroup(currentGroup, beamGroups, beams, 'non-beamable');
                 runningTicks += noteTicks;
+                prevWasRest = false;
+                lastRestTicks = 0;
+                lastRestStartOnBeat = false;
+                closeAfterNext16 = false;
                 return;
             }
+
+            // НОВЕ ПРАВИЛО ПІСЛЯ ПАУЗИ:
+            // - Якщо попередня пауза < чверті і ця перша восьма НЕ на долю -> залишаємо хвостик (без ребра)
+            // - Якщо пауза >= чверті і перша восьма на долю -> дозволяємо стандартне групування (під ребро)
+            if (prevWasRest) {
+                const restIsShorterThanQuarter = lastRestTicks < localTicksPerBeat;
+                if (restIsShorterThanQuarter && !startOnBeat) {
+                    // ізолюємо ноту: хвостик, без об'єднання
+                    startGroup(currentGroup, note, idx, noteTicks);
+                    closeGroup(currentGroup, beamGroups, beams, 'after-short-rest-offbeat');
+                    runningTicks += noteTicks;
+                    prevWasRest = false;
+                    lastRestTicks = 0;
+                    lastRestStartOnBeat = false;
+                    closeAfterNext16 = false;
+                    return;
+                }
+                // в інших випадках – дозволяємо стандартне групування
+            }
+
+            // Якщо нота (восьма з крапкою) починає долю — вона має починати нову групу
+            const isEighthDotted = !isRest && dr.dotted && dr.code === '8';
+            if (startOnBeat && isEighthDotted && currentGroup.notes.length > 0) {
+                closeGroup(currentGroup, beamGroups, beams, 'dotted-8th-on-beat');
+                closeAfterNext16 = false; // скинути, щоб уникнути хибного закриття від попередньої пари
+            }
+
+            // Якщо нота (проста восьма) починає долю — вона має починати нову групу
+            const isEighthPlain = !isRest && !dr.dotted && dr.code === '8';
+            if (startOnBeat && isEighthPlain && currentGroup.notes.length > 0) {
+                closeGroup(currentGroup, beamGroups, beams, 'plain-8th-on-beat');
+                closeAfterNext16 = false; // скинути, щоб уникнути хибного закриття від попередньої пари
+            }
+
+            
 
             // 6. Формування групи
             if (currentGroup.notes.length === 0) {
@@ -81,32 +153,39 @@ const allowDotted = false;
                 addToGroup(currentGroup, note, noteTicks);
             }
 
+            // Якщо це старт спеціальної пари (1/8. + 1/16) — закриємо групу після наступної ноти
+            if (specialPairStart) {
+                closeAfterNext16 = true;
+            }
+
             // 7. Логіка закриття групи
             let mustClose = false;
             if (!nextBeamable) mustClose = true;
-            if (!mustClose && splitOnBeat) {
+            if (!mustClose && splitOnBeat) mustClose = true;
+
+            // Форсоване закриття для другої ноти у парі 1/8. + 1/16
+            if (!mustClose && closeAfterNext16 && !specialPairStart) {
                 mustClose = true;
+                closeAfterNext16 = false;
             }
-            if (idx === measure.notes.length - 1) {
-                mustClose = true;
-            }
-            if (mustClose) {
-                closeGroup(currentGroup, beamGroups, beams, 'boundary');
-            }
+
+            if (idx === measure.notes.length - 1) mustClose = true;
+            if (mustClose) closeGroup(currentGroup, beamGroups, beams, 'boundary');
 
             // 8. Просуваємо глобальний час (у MIDI ticks)
             runningTicks += noteTicks;
+            prevWasRest = false;
+            lastRestTicks = 0;
+            lastRestStartOnBeat = false;
         });
 
-        console.log(`MB: return results summary:
- - beamGroups: ${beamGroups.length} groups
- - beams: ${beams.length} beam objects`);
+        console.log(`MB: return results summary:\n - beamGroups: ${beamGroups.length} groups\n - beams: ${beams.length} beam objects`);
 
         beamGroups.forEach((group, index) => {
             console.log(`MB: beamGroup[${index}]:`, {
                 notesCount: group.notes.length,
                 startIndex: group.startIndex,
-                endIndex: group.endIndex,
+                endIndex: group.startIndex + group.notes.length - 1,
                 reasonEnded: group.reasonEnded
             });
         });
@@ -114,15 +193,30 @@ const allowDotted = false;
     }
 
     function defaultDurationResolver(note) {
-        console.log(`FOO: MB: defaultDurationResolver`);
-        if (note && note.vexNote && typeof note.vexNote.getDuration === 'function') {
-            let d = note.vexNote.getDuration(); // напр. '8', '16', '8r', 'q', '8.'
-            const isRest = d.endsWith('r');
-            const base = d.replace(/r$/, '').replace(/\.+$/, '');
-            const dotted = /\./.test(d);
+        //console.log(`FOO: MB: defaultDurationResolver`);
+        // Надійніше зчитування параметрів із VexFlow StaveNote
+        if (note && note.vexNote) {
+            const vn = note.vexNote;
+            let code = 'q';
+            try { code = String(vn.getDuration ? vn.getDuration() : 'q'); } catch { /* ignore */ }
+            // isRest: використати API, або fallback по суфіксу 'r'
+            let isRest = false;
+            try { if (typeof vn.isRest === 'function') isRest = !!vn.isRest(); } catch { /* ignore */ }
+            if (!isRest) isRest = /r$/.test(code);
+            // dotted: через getDots()/modifiers, бо getDuration() може не містити крапку або містити 'd'
+            let dotted = false;
+            try { if (typeof vn.getDots === 'function') dotted = (vn.getDots() || []).length > 0; } catch { /* ignore */ }
+            if (!dotted && typeof vn.getModifiers === 'function') {
+                try {
+                    const mods = vn.getModifiers() || [];
+                    dotted = mods.some(m => (m.getCategory && m.getCategory() === 'dots') || m.category === 'dots');
+                } catch { /* ignore */ }
+            }
+            // Нормалізуємо код тривалості: прибираємо 'r' і суфікси крапок або 'd' (VexFlow іноді повертає '8d')
+            const base = code.replace(/r$/i, '').replace(/[.d]+$/i, '');
             return { code: base, isRest, dotted };
         }
-        if (typeof note.duration === 'number') {
+        if (typeof note?.duration === 'number') {
             return { code: String(note.duration), isRest: !!note.isRest, dotted: false };
         }
         return { code: '', isRest: true, dotted: false };
@@ -150,45 +244,36 @@ const allowDotted = false;
     }
 
     // --- STEM NORMALIZATION (added) ---------------------------------------
-    // Узгоджує напрямок штилів усередині групи коли є лише один «відступ»
-    // або пара з двох нот з протилежними напрямками, щоб уникнути розриву beam.
     function unifyBeamGroupDirections(currentGroup) {
         try {
             if (!currentGroup || !currentGroup.notes || currentGroup.notes.length < 2) return;
             const notes = currentGroup.notes.map(n => n.vexNote || n).filter(Boolean);
             if (notes.length < 2) return;
+
             let upCount = 0, downCount = 0, sumLines = 0, totalHeads = 0;
-            const dirs = [];
             notes.forEach(vn => {
                 if (typeof vn.getStemDirection === 'function') {
                     const dir = vn.getStemDirection();
-                    if (dir === 1) upCount++; else if (dir === -1) downCount++;
-                    dirs.push(dir);
+                    if (dir === 1 || (typeof Vex!=='undefined' && Vex.Flow && dir === Vex.Flow.Stem.UP)) upCount++;
+                    else if (dir === -1 || (typeof Vex!=='undefined' && Vex.Flow && dir === Vex.Flow.Stem.DOWN)) downCount++;
                 }
                 if (typeof vn.getKeyProps === 'function') {
                     const kp = vn.getKeyProps();
                     kp.forEach(k => { sumLines += k.line; totalHeads++; });
                 }
             });
-            if (!(upCount && downCount)) return; // вже однорідно
-            // Визначаємо чи є ситуація для уніфікації
-            const minority = Math.min(upCount, downCount);
-            const needUnify = (minority === 1) || (upCount === downCount && notes.length === 2);
-            if (!needUnify) return; // складний контур – залишаємо
-            const avgLine = totalHeads ? (sumLines / totalHeads) : 3;
-            let majorityDir;
-            if (upCount === downCount) {
-                // Tie -> використовуємо середню лінію (>=3 -> вниз)
-                majorityDir = (avgLine >= 3) ? Vex.Flow.Stem.DOWN : Vex.Flow.Stem.UP;
+            if (!(upCount && downCount)) return;
+            let targetDir;
+            if (upCount !== downCount) {
+                targetDir = (upCount > downCount) ? (Vex.Flow ? Vex.Flow.Stem.UP : 1) : (Vex.Flow ? Vex.Flow.Stem.DOWN : -1);
             } else {
-                majorityDir = (upCount > downCount) ? Vex.Flow.Stem.UP : Vex.Flow.Stem.DOWN;
+                const avgLine = totalHeads ? (sumLines / totalHeads) : 3;
+                targetDir = (avgLine >= 3) ? (Vex.Flow ? Vex.Flow.Stem.DOWN : -1) : (Vex.Flow ? Vex.Flow.Stem.UP : 1);
             }
             notes.forEach(vn => {
                 if (typeof vn.setStemDirection === 'function') {
-                    vn.setStemDirection(majorityDir);
-                    if (typeof vn.reset === 'function') {
-                        try { vn.reset(); } catch { /* ignore */ }
-                    }
+                    vn.setStemDirection(targetDir);
+                    if (typeof vn.reset === 'function') { try { vn.reset(); } catch { /* ignore */ } }
                 }
             });
         } catch (e) {
@@ -216,7 +301,15 @@ const allowDotted = false;
                 try {
                     // НОВЕ: перед створенням beam – уніфікуємо напрямки за потреби
                     unifyBeamGroupDirections(current);
-                    beams.push(new Vex.Flow.Beam(current.notes.map(n => n.vexNote || n)));
+                    // Safety: тільки реальні ноти (не паузи)
+                    const vexNotes = current.notes
+                        .map(n => n.vexNote || n)
+                        .filter(vn => {
+                            try { return !(typeof vn.isRest === 'function' ? vn.isRest() : /r$/.test(vn.getDuration?.()||'')); }
+                            catch { return true; }
+                        });
+                    if (vexNotes.length >= minGroupSize)
+                        beams.push(new Vex.Flow.Beam(vexNotes));
                 } catch (e) {
                     console.warn('Beam creation failed:', e);
                 }
@@ -278,22 +371,48 @@ const allowDotted = false;
             }
             console.log(`MB: computed beatPositions: [${timeSignature.beatPositions.join(', ')}]`);
         }
-        // Порівнюємо з точністю до 1e-9 (floating safety)
-        return timeSignature.beatPositions.some(bp => Math.abs(bp - noteEndBeat) < 1e-9);
+        const EPS = 1e-6; // більш поблажлива точність
+        return timeSignature.beatPositions.some(bp => Math.abs(bp - noteEndBeat) < EPS);
+    }
+
+    // NEW: перевірка, що початок ноти/паузи припадає на початок біта (сильну долю)
+    function CheckStartOnBeat(noteStartBeat, timeSignature) {
+        if (!timeSignature || noteStartBeat == null) return false;
+        if (!Array.isArray(timeSignature.beatStarts)) {
+            const num = timeSignature.num || 4;
+            const den = timeSignature.den || 4;
+            const barBeats = num * 4 / den;
+            timeSignature.beatStarts = [];
+            const isCompound = (den === 8) && (num % 3 === 0) && (num >= 3);
+            const step = isCompound ? 3 * (4 / den) : 1;
+            for (let p = 0; p <= barBeats + 1e-9; p += step) {
+                timeSignature.beatStarts.push(Number(p.toFixed(9)));
+            }
+        }
+        const EPS = 1e-6;
+        // primary precise check against precomputed starts
+        let onBeat = timeSignature.beatStarts.some(bs => Math.abs(bs - noteStartBeat) < EPS);
+        if (onBeat) return true;
+        // fallback numeric robustness: within 1e-3 of a step multiple
+        const num = timeSignature.num || 4;
+        const den = timeSignature.den || 4;
+        const isCompound = (den === 8) && (num % 3 === 0) && (num >= 3);
+        const step = isCompound ? 3 * (4 / den) : 1;
+        const ratio = noteStartBeat / step;
+        const diff = Math.abs(ratio - Math.round(ratio));
+        return diff < 1e-3;
     }
 
     // --- Triplet detection -------------------------------------------------
     function approx(a, b, eps) { return Math.abs(a - b) <= eps; }
 
     function getSrcTicksOrFallback(note, localTicksPerBeat) {
-        // Якщо ми прикріпили __srcTicks у рендері — використовуємо, інакше оцінюємо за кодом тривалості
         const vn = note.vexNote || note;
         if (vn && typeof vn.__srcTicks === 'number') return vn.__srcTicks;
         return getNoteMidiTicks(note, localTicksPerBeat);
     }
 
-    // Розпізнання тріолей (8-мих, 16-тих і чвертних)
-    function detectTuplets(measure, ticksPerBeat, timeSignature) {
+    function detectTuplets(measure, ticksPerBeat) {
         if (!measure || !Array.isArray(measure.notes) || measure.notes.length < 3) return [];
         const local = ticksPerBeat || 480;
         const tuplets = [];
@@ -307,7 +426,6 @@ const allowDotted = false;
             const a = measure.notes[i], b = measure.notes[i + 1], c = measure.notes[i + 2];
             const va = a && (a.vexNote || a), vb = b && (b.vexNote || b), vc = c && (c.vexNote || c);
 
-            // Швидкий шлях: усі три мають маркер __isTriplet та однакову базу
             const fastTriplet =
                 va && vb && vc &&
                 va.__isTriplet && vb.__isTriplet && vc.__isTriplet &&
@@ -381,11 +499,39 @@ const allowDotted = false;
         return tuplets;
     }
 
+
     // Експортуємо для виклику з midiRenderer.js
     if (typeof window !== 'undefined') {
         window.detectTuplets = detectTuplets;
     } else if (typeof globalThis !== 'undefined') {
         globalThis.detectTuplets = detectTuplets;
+    }
+
+    /**
+ * (AUTO-STEM HELPER)
+ * -------------------------------------------------
+ * Added helper to optionally apply VexFlow auto stem logic to every created note
+ * without modifying or removing existing functions or comments. Rest durations
+ * (codes ending with 'r') are skipped. Safe to call multiple times.
+ */
+    function applyAutoStem(note, durationCode) {
+        try {
+            if (!note) return;
+            console.log('applyAutoStem is working');
+            if (typeof durationCode === 'string' && /r$/.test(durationCode)) return; // skip rests
+            if (typeof note.autoStem === 'function') {
+                note.autoStem();
+            }
+        } catch (e) {
+            console.warn('applyAutoStem failed:', e);
+        }
+    }
+
+    // Експортуємо для виклику з midiRenderer.js
+    if (typeof window !== 'undefined') {
+        window.applyAutoStem = applyAutoStem;
+    } else if (typeof globalThis !== 'undefined') {
+        globalThis.applyAutoStem = applyAutoStem;
     }
 
 })();

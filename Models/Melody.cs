@@ -22,7 +22,10 @@ namespace Melodies25.Models
         public string? Description { get; set; }  
 
         public int AuthorID { get; set; }  
-        public Author? Author { get; set; }  // Автор пісні
+        public Author? Author { get; set; }
+
+        [NotMapped] // TODO!!!!!!!!!!!!!!!
+        public DateTime CreatedAt { get; set; } = DateTime.Now; // Дата створення запису
 
         public bool IfPublicDomain 
         { 
