@@ -34,6 +34,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\melodies\" />
+    <Folder Include="wwwroot\temporary\" />
   </ItemGroup>
 
   <ItemGroup>
