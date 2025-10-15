@@ -118,8 +118,7 @@ const allowDotted = false;
                 const restIsShorterThanQuarter = lastRestTicks < localTicksPerBeat;
                 if (restIsShorterThanQuarter && !startOnBeat) {
                     // ізолюємо ноту: хвостик, без об'єднання
-                    startGroup(currentGroup, note, idx, noteTicks);
-                    closeGroup(currentGroup, beamGroups, beams, 'after-short-rest-offbeat');
+                    startGroup(currentGroup, note, idx, noteTicks);                    
                     runningTicks += noteTicks;
                     prevWasRest = false;
                     lastRestTicks = 0;
@@ -138,13 +137,18 @@ const allowDotted = false;
             }
 
             // Якщо нота (проста восьма) починає долю — вона має починати нову групу
-            const isEighthPlain = !isRest && !dr.dotted && dr.code === '8';
+            const isEighthPlain = !isRest && dr.code === '8';
             if (startOnBeat && isEighthPlain && currentGroup.notes.length > 0) {
                 closeGroup(currentGroup, beamGroups, beams, 'plain-8th-on-beat');
                 closeAfterNext16 = false; // скинути, щоб уникнути хибного закриття від попередньої пари
             }
 
-            
+            // Якщо нота (шістнадцята) починає долю — вона має починати нову групу
+            const isSixteenth = !isRest && dr.code === '16';
+            if (startOnBeat && isSixteenth && currentGroup.notes.length > 0) {
+                closeGroup(currentGroup, beamGroups, beams, 'sixteenth-on-beat');
+                closeAfterNext16 = false; // скинути, щоб уникнути хибного закриття від попередньої пари
+            }
 
             // 6. Формування групи
             if (currentGroup.notes.length === 0) {
