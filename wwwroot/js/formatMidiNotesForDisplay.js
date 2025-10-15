@@ -8,6 +8,12 @@ export function formatMidiNotesForDisplay(midiFile) {
     const ticksPerBeat = midiFile.header.getTicksPerBeat();
     const MIN_REST_DURATION = 10; // Не відображати паузи менше 10 ticks
 
+    // Отримати перший знайдений музичний розмір (або 4/4 за замовчуванням)
+    const firstTs = getFirstTimeSignature(midiFile);
+    const tsNum = firstTs?.numerator ?? 4;
+    const tsDen = firstTs?.denominator ?? 4;
+    const ticksPerMeasure = Math.round(ticksPerBeat * (tsNum * 4 / tsDen));
+
     midiFile.tracks.forEach((track, index) => {
         const events = midiFile.getTrackEvents(index);
         events.forEach(event => {
@@ -29,10 +35,16 @@ export function formatMidiNotesForDisplay(midiFile) {
             else if ((event.type === 8 && event.subtype === 8) ||
                 (event.type === 8 && event.subtype === 9 && event.param2 === 0)) {
                 if (activeNotes[event.param1] !== undefined) {
-                    let durationTicks = currentTick - activeNotes[event.param1];
+                    const startTick = activeNotes[event.param1];
+                    let durationTicks = currentTick - startTick;
                     // Округлюємо тривалість, якщо вона на 10 ticks менша від наступного рівня
                     durationTicks = roundDuration(durationTicks, ticksPerBeat);
-                    output += `${ticksToDuration(durationTicks / 2, ticksPerBeat)}   ${getVexFlowNoteName(event.param1)}  [${event.param1} : ${Math.round(durationTicks)}]\n`;
+
+                    // Обчислюємо позицію початку у форматі такт:тіки
+                    const barIndex = ticksPerMeasure > 0 ? (Math.floor(startTick / ticksPerMeasure) + 1) : 1; // 1-базований такт
+                    const tickInBar = ticksPerMeasure > 0 ? Math.round(startTick % ticksPerMeasure) : startTick;
+
+                    output += `${ticksToDuration(durationTicks / 2, ticksPerBeat)}   ${getVexFlowNoteName(event.param1)}  [${event.param1} : ${Math.round(durationTicks)}]   ${barIndex}:${tickInBar}\n`;
                     lastNoteEndTick = currentTick;
                     lastEventWasNoteOff = true;
                     delete activeNotes[event.param1];
@@ -44,6 +56,30 @@ export function formatMidiNotesForDisplay(midiFile) {
     return output;
 }
 ;
+
+// Пошук першого музичного розміру у файлі (перший трак з подією 0x58). Якщо не знайдено — 4/4
+function getFirstTimeSignature(midiFile) {
+    try {
+        for (let ti = 0; ti < midiFile.tracks.length; ti++) {
+            const events = midiFile.getTrackEvents(ti);
+            for (const ev of events) {
+                if (ev.subtype === 0x58) {
+                    const numerator = ev.data?.[0] ?? 4;
+                    const denominator = ev.data?.[1] ? Math.pow(2, ev.data[1]) : 4;
+                    return { numerator, denominator };
+                }
+                // Деякі збірки MIDIFile можуть кодувати як meta
+                if (ev.type === 0xFF && ev.metaType === 0x58 && Array.isArray(ev.data)) {
+                    const numerator = ev.data?.[0] ?? 4;
+                    const denominator = ev.data?.[1] ? Math.pow(2, ev.data[1]) : 4;
+                    return { numerator, denominator };
+                }
+            }
+        }
+    } catch { /* ignore, повернемо 4/4 */ }
+    return { numerator: 4, denominator: 4 };
+}
+
 // Функція для округлення тривалості
 export function roundDuration(durationTicks, ticksPerBeat) {
     const standardDurations = [

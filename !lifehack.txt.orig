@@ -1,0 +1,20 @@
+для синхронізації файлів 
+
+git restore --source=twoDatabases E:\Programming\Melodies\Pages\Melodies\Index.cshtml.cs
+git restore --source=twoDatabases E:\Programming\Melodies\Pages\Authors\Index.cshtml.cs
+git restore --source=twoDatabases E:\Programming\Melodies\wwwroot\css
+git restore --source=twoDatabases E:\Programming\Melodies\wwwroot\js
+git restore --source=twoDatabases E:\Programming\Melodies\!lifehack.txt
+git restore --source=twoDatabases E:\Programming\Melodies\Pages\Melodies\Create.cshtml.cs
+
+<<<<<<< HEAD
+
+git restore --source=possible-production-config E:\Programming\Melodies\wwwroot\js
+git restore --source=possible-production-config E:\Programming\Melodies\Pages\Account
+git restore --source=possible-production-config E:\Programming\Melodies\wwwroot\css
+=======
+git restore --source=master E:\Programming\Melodies\wwwroot\js
+
+        string adminEmail = "admin@example.com";
+        string adminPassword = "Admin123!";
+>>>>>>> 15ab864 (small ch)
