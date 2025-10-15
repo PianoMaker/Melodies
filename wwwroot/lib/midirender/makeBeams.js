@@ -70,9 +70,8 @@ const allowDotted = false;
             const isRest = !!dr.isRest;
             const startOnBeat = CheckStartOnBeat(note.startBeat, timeSignature);
 
-            // 4. Перевірка межі біта у beat-одиницях (чверті)
-            const noteEndBeat = note.endBeat;
-            let splitOnBeat = CheckSplitOnBeat(noteEndBeat, timeSignature);
+            // 4. Перевірка межі біта у beat-одиницях (чверті)            
+            let splitOnBeat = CheckSplitOnBeat(note, timeSignature);
 
             // 5. Beamable?
             let beamable = isBeamable(note);
@@ -351,8 +350,10 @@ const allowDotted = false;
         console.log(`MB: makeBeams function is loaded and available as globalThis.makeBeams`);
     }
 
-    function CheckSplitOnBeat(noteEndBeat, timeSignature) {
-        console.log(`MB: CheckSplitOnBeat method starts, noteEndBeat=${noteEndBeat}, time sign=${JSON.stringify(timeSignature)}`);
+    function CheckSplitOnBeat(note, timeSignature) {
+        //console.log(`MB: CheckSplitOnBeat method starts, noteEndBeat=${noteEndBeat}, time sign=${JSON.stringify(timeSignature)}`);
+        const noteStartBeat = note.startBeat;
+        const noteEndBeat = note.endBeat;
         if (!timeSignature || noteEndBeat == null) return false;
 
         if (!Array.isArray(timeSignature.beatPositions)) {
@@ -373,14 +374,30 @@ const allowDotted = false;
                 // Прості метри: межі на кожну чверть
                 for (let b = 1; b <= barBeats; b++) timeSignature.beatPositions.push(b);
             }
-            console.log(`MB: computed beatPositions: [${timeSignature.beatPositions.join(', ')}]`);
-        }
+            //console.log(`MB: computed beatPositions: [${timeSignature.beatPositions.join(', ')}]`);
+
+        }      
+
+
         const EPS = 1e-6; // більш поблажлива точність
-        return timeSignature.beatPositions.some(bp => Math.abs(bp - noteEndBeat) < EPS);
+        var result = timeSignature.beatPositions.some(bp => Math.abs(bp - noteEndBeat) < EPS);
+
+        try {
+            console.log(
+                `MB: CheckSplitOnBeat | idx=${note.idx}, pitch=${note.pitch || note.name || '?'}, dur=${note.duration || '?'}, ` +
+                `endTick=${note.endTick}, endBeat=${noteEndBeat}, beatPositions=[${timeSignature.beatPositions.join(', ')}] => ${result}`
+            );
+        } catch (e) {
+            console.log(`MB: CheckSplitOnBeat | logging failed: ${e}`);
+        }
+
+
+		return result;
     }
 
     // NEW: перевірка, що початок ноти/паузи припадає на початок біта (сильну долю)
-    function CheckStartOnBeat(noteStartBeat, timeSignature) {
+    function CheckStartOnBeat(note, timeSignature) {
+        const noteStartBeat = note.startBeat;
         if (!timeSignature || noteStartBeat == null) return false;
         if (!Array.isArray(timeSignature.beatStarts)) {
             const num = timeSignature.num || 4;
@@ -394,10 +411,8 @@ const allowDotted = false;
             }
         }
         const EPS = 1e-6;
-        // primary precise check against precomputed starts
         let onBeat = timeSignature.beatStarts.some(bs => Math.abs(bs - noteStartBeat) < EPS);
         if (onBeat) return true;
-        // fallback numeric robustness: within 1e-3 of a step multiple
         const num = timeSignature.num || 4;
         const den = timeSignature.den || 4;
         const isCompound = (den === 8) && (num % 3 === 0) && (num >= 3);
