@@ -52,6 +52,7 @@
         </div>
     </div>
 </div>
+<div class="table-responsive-custom">
 <table class="table">
     <thead>
         <tr>
@@ -96,7 +97,7 @@
                         var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
                         var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
                         <div style="display:inline-flex">
-                            <a href="@midifilepath" download class="btn-melody">
+                            <a href="@midifilepath" download class="btn-melody hide-mobile">
                                 <i class="fas fa-download"></i>
                             </a>
                             @if (@item.IsFileEligible is null)
@@ -148,7 +149,7 @@
         }
     </tbody>
 </table>
-
+</div>
 <div class="infocontainer actions-container melody-width">
     <div class="actions-row">
         <form method="post" class="m-0">

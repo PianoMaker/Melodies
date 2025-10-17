@@ -579,6 +579,10 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     box-shadow: darkgray 0px 1px 10px 5px;
 }
 
+.infocontainer, .table {
+    box-sizing: border-box;
+}
+
 .controlcontainer {
     display: inline-block;
     border: 0px solid grey;
@@ -870,5 +874,16 @@ p {
     }
     #operationbuttons .btn-melody {
         margin: 0 !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .hide-mobile {
+        display: none !important;nt;
+    }
+    .table {
+        width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
     }
 }
