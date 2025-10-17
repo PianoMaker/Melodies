@@ -15,6 +15,13 @@
     max-height: var(--nav-height);
     width: auto;
     display: block;
+    max-width: 100%;
+}
+
+.imgcontainer {
+    display: flex;
+    align-items: center;
+    flex-shrink: 1;
 }
 
 /*смуга на горі */
@@ -24,9 +31,12 @@
     z-index: 1;
 }
 
- 
+
 
 .imgcontainer {
+    display: flex;
+    align-items: center;
+    flex-shrink: 1;
     min-width: 300px;
     max-width: 390px;
     display: flex;
