@@ -16,19 +16,23 @@
 }
 <div class="infocontainer">
     <h1>Мелодій у базі даних - @Model.Melody.Count</h1>
-    <div class="d-flex">
-        <a asp-page="search" class="btn btn-outline-dark light-background border-dark m-2 btn-compact-40 align-self-start">Розширений пошук</a>
-        <a asp-page="Create" class="btn btn-outline-dark light-background border-dark m-2 btn-compact-40 align-self-start">Додати мелодію</a>
-        <div class="d-flex flex-column">
+    <div class="d-flex flex-row melody-index-flex">
+        <!-- Left column: search/add buttons -->
+        <div id="operationbuttons" class="d-flex flex-column me-4">
+            <a asp-page="search" class="btn-melody m-2 btn-compact-40 align-self-start">Розширений пошук</a>
+            <a asp-page="Create" class="btn-melody m-2 btn-compact-40 align-self-start">Додати мелодію</a>
+        </div>
+        <!-- Right column: letter filter buttons -->
+        <div id="lettersbutton" class="d-flex flex-column">
             <div class="d-flex flex-wrap gap-1 mb-2 letters-row">
                 @foreach (var letter in Enumerable.Range('A', 26).Select(i => ((char)i).ToString()))
                 {
                     <form asp-page-handler="FilterByLetter" asp-route-letter="@letter" method="post">
-                        <button type="submit" class="letter btn-outline-dark light-background border-dark">@letter</button>
+                        <button type="submit" class="letter btn-melody">@letter</button>
                     </form>
                 }
                 <form asp-page-handler="FilterByLetter" asp-route-letter="" method="post">
-                    <button type="submit" class="letter btn-outline-dark light-background border-dark">cancel</button>
+                    <button type="submit" class="letter btn-melody">cancel</button>
                 </form>
             </div>
             <div class="d-flex flex-wrap gap-1 mb-2 letters-row">
@@ -38,11 +42,11 @@
                 @foreach (var letter in ukrLetters)
                 {
                     <form asp-page-handler="FilterByLetter" asp-route-letter="@letter" method="post">
-                        <button type="submit" class="letter btn-outline-dark light-background border-dark">@letter</button>
+                        <button type="submit" class="letter btn-melody">@letter</button>
                     </form>
                 }
                 <form asp-page-handler="FilterByLetter" asp-route-letter="" method="post">
-                    <button type="submit" class="letter btn-outline-dark light-background border-dark">cancel</button>
+                    <button type="submit" class="letter btn-melody">cancel</button>
                 </form>
             </div>
         </div>
@@ -92,28 +96,28 @@
                         var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
                         var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
                         <div style="display:inline-flex">
-                            <a href="@midifilepath" download class="btn btn-outline-dark light-background">
+                            <a href="@midifilepath" download class="btn-melody">
                                 <i class="fas fa-download"></i>
                             </a>
                             @if (@item.IsFileEligible is null)
                             {
-                                <button class="btn btn-outline-dark light-background playbutton"
+                                <button class="btn-melody playbutton"
                                         data-filepath="@item.FilePath" id="playButton_@item.FilePath">
                                     <i class="fas fa-play">?</i>
                                 </button>
                                 <button id="stopButton_@item.FilePath" disabled="disabled"
-                                        class="stopButton btn btn-outline-dark light-background">
+                                        class="stopButton btn-melody">
                                     <i class="fas fa-stop">?</i>
                                 </button>
                             }
                             else if (@item.IsFileEligible is true)
                             {
-                                <button class="btn btn-outline-dark light-background playbutton"
+                                <button class="btn-melody playbutton"
                                         data-filepath="@item.FilePath" id="playButton_@item.FilePath">
                                     <i class="fas fa-play"></i>
                                 </button>
                                 <button id="stopButton_@item.FilePath" disabled="disabled"
-                                        class="stopButton btn btn-outline-dark light-background">
+                                        class="stopButton btn-melody">
                                     <i class="fas fa-stop"></i>
                                 </button>
                             }
@@ -148,10 +152,10 @@
 <div class="infocontainer actions-container melody-width">
     <div class="actions-row">
         <form method="post" class="m-0">
-            <button type="submit" class="btn btn-outline-dark light-background link-dark">Оновити</button>
+            <button type="submit" class="btn-melody link-dark">Оновити</button>
         </form>
         <form asp-page-handler="killdupes" method="post" class="m-0">
-            <button type="submit" class="btn btn-outline-dark light-background link-dark">Вилучити Дублікати</button>
+            <button type="submit" class="btn-melody link-dark">Вилучити Дублікати</button>
         </form>
     </div>
 </div>

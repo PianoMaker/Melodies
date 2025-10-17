@@ -87,7 +87,7 @@
         <!-- ДОДАТИ АВТОРА -->
         <form method="post">
             <div class="form-group" style="margin-top: 10px">
-                <button id="createAuthorBtn" asp-page-handler="addform" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light">Додати автора</button>
+                <button id="createAuthorBtn" asp-page-handler="addform" value="Додати автора" class="btn btn-outline-dark light-background border-dark m-2 btn-compact-40 align-self-start">Додати автора</button>
             </div>
             @if (Model.ShowAuthor)
             {
@@ -97,12 +97,11 @@
                 </div>
                 <p id="authorWarning"></p>
                 <div class="form-group mt-3">
-                    <button type="submit" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light">Додати</button>
-
+                    <button type="submit" value="Додати автора" class="btn btn-outline-dark light-background border-dark m-2 btn-compact-40 align-self-start">Додати</button>
                 </div>
             }
         </form>
-        <a asp-page="Index" class="btn btn-primary btn-outline-dark bg-light mt-3">Назад до списку</a>
+        <a asp-page="Index" class="btn btn-outline-dark light-background border-dark m-2 btn-compact-40 align-self-start">Назад до списку</a>
     </div>
     <!--ПРАВОРУЧ-->
 
