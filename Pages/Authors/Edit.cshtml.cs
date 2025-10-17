@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using Melodies25.Utilities;
 
 namespace Melodies25.Pages.Authors
 {
+    [Authorize(Roles = "Admin, Moderator")]
     public class EditModel : PageModel
     {
         private readonly Melodies25.Data.Melodies25Context _context;

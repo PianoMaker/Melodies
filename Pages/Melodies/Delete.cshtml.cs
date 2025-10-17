@@ -13,7 +13,7 @@ using System.IO;
 
 namespace Melodies25.Pages.Melodies
 {
-    //[Authorize(Roles = "Admin")] - це повне вимкнення
+    [Authorize(Roles = "Admin, Moderator")]
     public class DeleteModel : PageModel
     {
         private readonly Melodies25.Data.Melodies25Context _context;

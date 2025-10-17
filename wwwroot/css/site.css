@@ -300,6 +300,11 @@ label, .form-label, .col-form-label {
             color: var(--brand-maincolor) !important;
         }
 
+.selected-letter {
+    background-color: var(--brand-gold) !important;
+    color: #212529 !important;
+}
+
 th, td {
     border: 1px solid #ddd;
     padding: 10px;
@@ -621,6 +626,7 @@ p {
     .searchleftcontainer {
         width: 100%;
     }
+
 }
 
 /* ДЛЯ МОБІЛЬНИХ ЕКРАНІВ */

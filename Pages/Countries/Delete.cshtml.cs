@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Melodies25.Data;
 using Melodies25.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Melodies25.Pages.Countries
 {
+    [Authorize(Roles = "Admin, Moderator")]
     public class DeleteModel : PageModel
     {
         private readonly Melodies25.Data.Melodies25Context _context;

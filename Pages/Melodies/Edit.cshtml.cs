@@ -20,6 +20,7 @@ using System.Diagnostics;
 
 namespace Melodies25.Pages.Melodies
 {
+    [Authorize(Roles = "Admin, Moderator")]
     public class EditModel : PageModel
     {
         private readonly Melodies25.Data.Melodies25Context _context;
