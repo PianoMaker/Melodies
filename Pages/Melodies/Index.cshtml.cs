@@ -33,7 +33,7 @@ namespace Melodies25.Pages.Melodies
         public string AuthorSort { get; set; } = default!;
         public string CurrentSort { get; set; } = default!;
 
-
+        public string? SelectedLetter { get; set; }
 
         public IndexModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
         {
@@ -160,6 +160,7 @@ namespace Melodies25.Pages.Melodies
 
         public async Task<IActionResult> OnPostFilterByLetter(string letter)
         {
+            SelectedLetter = letter;
             if (string.IsNullOrEmpty(letter) || letter.Length != 1 || !char.IsLetter(letter[0]))
             {
                 Melody = await _context.Melody.Include(m => m.Author).ToListAsync();
