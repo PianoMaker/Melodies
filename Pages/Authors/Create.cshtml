@@ -5,11 +5,10 @@
     ViewData["Title"] = "Додати автора";
     var SelectedMode  = @Model.SelectedMode;
 }
-
-<h1>Додати автора</h1>
-
-<hr />
-<div class="row addcontainer">
+<div class="infocontainer melody-width">
+    <h1>Додати автора</h1>
+</div>
+<div class="row addcontainer melody-width">
     <div class="container-fluid">
         <form method="post" id="modeForm">
             <label>
@@ -86,14 +85,14 @@
                 <span asp-validation-for="Author.Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Додати" class="btn-melody" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-page="Index">До списку авторів</a>
+    <a asp-page="Index" class="btn-melody">До списку авторів</a>
 </div>
 
 @section Scripts {

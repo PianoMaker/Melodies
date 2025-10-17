@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Melodies25.Models;
@@ -13,6 +14,7 @@ using Melody = Melodies25.Models.Melody;
 
 namespace Melodies25.Pages.Melodies
 {
+    [Authorize]
     public class CreateModel : PageModel
     {
         private readonly Melodies25.Data.Melodies25Context _context;
@@ -308,7 +310,7 @@ namespace Melodies25.Pages.Melodies
                     var autoTonality = MidiKeySignatureDetector.TryDetectTonality(midifilePath);
                     if (!string.IsNullOrWhiteSpace(autoTonality))
                     {
-                        Melody.Tonality = autoTonality; // якщо у вас є Tonality4, замініть на Melody.Tonality4
+                        Melody.Tonality = autoTonality; // якщо у вас є Tonality4, замініть на Melody.Tonality
                     }
                 }
 
