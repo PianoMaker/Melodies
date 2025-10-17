@@ -1,10 +1,6 @@
 ﻿// Відображення списком
 export function formatMidiNotesForDisplay(midiFile) {
     let output = "MIDI Notes:\n";
-    let activeNotes = {};
-    let currentTick = 0;
-    let lastEventWasNoteOff = false;
-    let lastNoteEndTick = 0;
     const ticksPerBeat = midiFile.header.getTicksPerBeat();
     const MIN_REST_DURATION = 10; // Не відображати паузи менше 10 ticks
 
@@ -16,35 +12,46 @@ export function formatMidiNotesForDisplay(midiFile) {
 
     midiFile.tracks.forEach((track, index) => {
         const events = midiFile.getTrackEvents(index);
+
+        let currentTick = 0;
+        let activeNotes = {};
+        let lastEventWasNoteOff = false;
+        let lastNoteEndTick = 0;
+
         events.forEach(event => {
             currentTick += event.delta || 0;
 
+            // NoteOn (velocity > 0)
             if (event.type === 8 && event.subtype === 9 && event.param2 > 0) {
                 if (lastEventWasNoteOff && currentTick > lastNoteEndTick) {
                     const restTicks = currentTick - lastNoteEndTick;
                     if (restTicks >= MIN_REST_DURATION) {
                         output += `${ticksToRestDuration(restTicks / 2, ticksPerBeat)}   [${Math.round(restTicks)}]\n`;
                     } else {
-                        // Корегуємо початок наступної ноти, ігноруючи коротку паузу
                         activeNotes[event.param1] = lastNoteEndTick;
                     }
                 }
                 activeNotes[event.param1] = currentTick;
                 lastEventWasNoteOff = false;
             }
+            // NoteOff (або NoteOn з velocity === 0)
             else if ((event.type === 8 && event.subtype === 8) ||
-                (event.type === 8 && event.subtype === 9 && event.param2 === 0)) {
+                     (event.type === 8 && event.subtype === 9 && event.param2 === 0)) {
                 if (activeNotes[event.param1] !== undefined) {
                     const startTick = activeNotes[event.param1];
                     let durationTicks = currentTick - startTick;
-                    // Округлюємо тривалість, якщо вона на 10 ticks менша від наступного рівня
                     durationTicks = roundDuration(durationTicks, ticksPerBeat);
 
-                    // Обчислюємо позицію початку у форматі такт:тіки
-                    const barIndex = ticksPerMeasure > 0 ? (Math.floor(startTick / ticksPerMeasure) + 1) : 1; // 1-базований такт
+                    const barIndex = ticksPerMeasure > 0 ? (Math.floor(startTick / ticksPerMeasure) + 1) : 1;
                     const tickInBar = ticksPerMeasure > 0 ? Math.round(startTick % ticksPerMeasure) : startTick;
 
+                    // Додаємо лог тільки для Experimental/Notation
+                    if (typeof window !== 'undefined' && window.location.pathname.includes("Experimental/Notation")) {
+                        console.log(`NoteAnalizer: track=${index}, startTick=${startTick}, barIndex=${barIndex}, tickInBar=${tickInBar}, note=${event.param1}`);
+                    }
+
                     output += `${ticksToDuration(durationTicks / 2, ticksPerBeat)}   ${getVexFlowNoteName(event.param1)}  [${event.param1} : ${Math.round(durationTicks)}]   ${barIndex}:${tickInBar}\n`;
+
                     lastNoteEndTick = currentTick;
                     lastEventWasNoteOff = true;
                     delete activeNotes[event.param1];
