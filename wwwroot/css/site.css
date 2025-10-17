@@ -887,3 +887,9 @@ p {
         border-radius: 0 !important;
     }
 }
+
+@media (max-width: 600px) {
+    .col-actions {
+        display: none !important;
+    }
+}

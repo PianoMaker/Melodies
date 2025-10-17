@@ -70,7 +70,7 @@
                 Файл
             </th>
 
-            <th>Редагувати/Вилучити</th>
+            <th class="col-actions">Редагувати/Вилучити</th>
         </tr>
     </thead>
     <tbody>
@@ -86,7 +86,17 @@
                 <td>
                     @if (item.Author is not null)
                     {
-                        <span>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</span>
+                        if (item.Author.Surname == "Українська народна пісня")
+                        {
+                            <span class="song-title" data-full="Українська народна пісня" data-short="укр. нар. пісня">
+                                Українська народна пісня
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="author-name">@item.Author.Name</span>
+                            <span> @Html.DisplayFor(modelItem => item.Author.Surname)</span>
+                        }
                     }
                 </td>
 
@@ -137,13 +147,11 @@
                         <span>Файл не доступний</span>
                     }
                 </td>
+                <!-- ОПЕРАЦІЇ -->
 
-
-                <td>
+                <td class="col-actions">
                     <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
                     <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
-
-
                 </td>
             </tr>
         }
@@ -168,6 +176,5 @@
 
 </div>
 
-<script src="~/js/play.js">
-
-</script>
+<script src="~/js/play.js"></script>
+<script src="~/js/melody-index.js"></script>
