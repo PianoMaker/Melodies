@@ -1074,9 +1074,8 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig) {
             const raisedVII = (tonicPc + 11) % 12; // VII# (ввідний тон)
             const raisedIV  = (tonicPc + 6)  % 12; // IV#
 
-            if (pc === raisedVI || pc === raisedVII || pc === raisedIV) {
-                // Prefer spelling as a raised degree (e.g., B# instead of C in C# minor)
-                // If the naive sharp name doesn't contain '#', try to spell as previous natural + '#'
+            if ((pc === raisedVI || pc === raisedVII || pc === raisedIV) && pc !== 11) {
+				console.log(`MR: Minor key alteration: pc=${pc}, tonicPc=${tonicPc}`);
                 const naive = sharpNames[pc];
                 if (!naive.includes('#')) {
                     const prevMap = { 'C':'B','D':'C','E':'D','F':'E','G':'F','A':'G','B':'A' };
