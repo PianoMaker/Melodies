@@ -518,31 +518,26 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
     meanBarWidth = GetMeanBarWidth(BARWIDTH, measures);
 
+    // --- NEW: determine global clef from the first non-empty measure and keep it for whole melody
+    let globalClefChoice = "treble";
+    try {
+        const firstWithNotes = (Array.isArray(measures) && measures.length) ? measures.find(m => hasNoteOn(m)) : null;
+        const basisMeasure = firstWithNotes || (measures && measures[0]) || [];
+        globalClefChoice = decideClefForMeasure(basisMeasure) || "treble";
+    } catch (e) {
+        console.warn("MR: Failed to determine global clef, fallback to treble", e);
+        globalClefChoice = "treble";
+    }
+    console.log(`MR: Global clef for melody determined from first measure => ${globalClefChoice}`);
 
     // Перебирає усі такти
-    // ----------------------
-    // Для кожного такту:
-    // - Оновлює розмір такту, якщо є відповідна подія.
-    // - Визначає початковий час такту з measureMap.
-    // - Встановлює початковий час для активних нот з попереднього такту.
-    // - Налаштовує позицію X та Y для нотного стану.
-    // - Створює нотний стан (stave) з ключем та розміром такту.
-    // - Обробляє кожну подію в такті:
-    //   - Для Note On: додає ноту, обробляє паузи між нотами, перевіряє наявність активних нот.
-    //   - Для Note Off: завершує ноту, додає лігатури, видаляє ноту з активних.
-    // - Якщо є активні ноти в кінці такту, домалюємо їх до кінця такту.
-    // - Якщо немає активних нот, перевіряє наявність пропущених пауз і додає їх.
-    // - Рендерить такт у нотний стан.
-    // - Оновлює позицію X для наступного такту.
-    // ----------------------
     measures.forEach((measure, index) => {
         measure = normalizeMetaEvents(measure);
-                       
+
         let keySignatureChanged;
         let keySigName;
         ({ keySignatureChanged, keySigName, currentKeySig } = getKeySignatureChanges(measure, currentKeySig));
 
-        
         const stepRead = document.getElementById("stepRead");
         logEvent(`<br/>LE: Processing measure ${index + 1}`);
         logMeasureEvents(measure);
@@ -557,7 +552,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         // Перевіряємо, чи змінився розмір такту
         const timeSignatureChanged = (currentNumerator !== previousNumerator || currentDenominator !== previousDenominator);
 
-		// Отримуємо абсолютний час початку такту з measureMap
+        // Отримуємо абсолютний час початку такту з measureMap
         const barStartAbsTime = (measureMap[index] !== undefined) ? measureMap[index] : index * ticksPerMeasure;
 
         // --- Встановлюємо startTime для активних нот на початку такту ---
@@ -568,8 +563,8 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
         // Перевіряємо, чи потрібно перейти на новий рядок
         const oldYposition = Yposition;
-        ({ Xposition, Yposition } = adjustXYposition(Xposition, GENERALWIDTH, meanBarWidth, Yposition, HEIGHT, Xmargin, index, barStartAbsTime));   
-        
+        ({ Xposition, Yposition } = adjustXYposition(Xposition, GENERALWIDTH, meanBarWidth, Yposition, HEIGHT, Xmargin, index, barStartAbsTime));
+
         // Якщо Y позиція змінилась, значить почався новий рядок
         if (Yposition !== oldYposition) {
             isFirstMeasureInRow = true;
@@ -578,11 +573,10 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
         let STAVE_WIDTH = adjustStaveWidth(meanBarWidth, index, CLEFZONE, isFirstMeasureInRow, timeSignatureChanged);
 
-        // Визначити потрібний ключ (clef) для цього такту на основі висот нот
-        const clefChoice = decideClefForMeasure(measure);
+        // Use global clefChoice determined from the first measure — do NOT change clef inside melody
+        const clefChoice = globalClefChoice;
 
         // Створюємо нотний стан (stave)
-        // Додаємо ключ та розмір такту, якщо потрібно (тепер також і key signature)
         const stave = setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, currentDenominator, isFirstMeasureInRow, timeSignatureChanged, keySignatureChanged, keySigName, clefChoice);
 
         // Малюємо нотний стан
@@ -595,10 +589,9 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
         // NEW: поточний стан показаних альтерацій у межах такту (letter+octave -> '#','b','n')
         const measureAccState = {};
-       
-		// Обробляємо кожну подію в такті
-        renderMeasure();
 
+        // Обробляємо кожну подію в такті
+        renderMeasure();
 
         // Якщо є "активні" ноти (activeNotes), домалюємо їх до кінця такту
         if (Object.keys(activeNotes).length > 0) {
@@ -609,8 +602,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
             drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState, clefChoice);
         }
 
-        
-        // Якщо остання нота не доходить до кінця такту, додаємо паузу        
+        // Якщо остання нота не доходить до кінця такту, додаємо паузу
         if (Object.keys(activeNotes).length === 0) {
             addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, ticksPerBeat);
         }
@@ -624,7 +616,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         drawMeasure(notes, meanBarWidth, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat);
 
         Xposition += STAVE_WIDTH;
-        
+
         // Скидаємо флаг після обробки першого такту в рядку
         isFirstMeasureInRow = false;
 
