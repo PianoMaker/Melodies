@@ -8,7 +8,7 @@ namespace Melodies25.Utilities
     {
         public static (int length, int startIndex) LongestCommonSubstring(int[] arr1, int[] arr2)
         {
-            Console.WriteLine("LongestCommonSubstring starts");
+            //Console.WriteLine("LongestCommonSubstring starts");
             if (arr1.Length == 0 || arr2.Length == 0)
                 return (0, -1);
 
@@ -59,7 +59,7 @@ namespace Melodies25.Utilities
         // НЕ класична: спроба дозволити «дірки», залишимо як є для зворотної сумісності
         public static int LongestCommonSubsequence(int[] arr1, int[] arr2, int maxGap)
         {
-            Console.WriteLine("LongestCommonSubsequence starts");
+            //Console.WriteLine("LongestCommonSubsequence starts");
             int m = arr1.Length;
             int n = arr2.Length;
             int[,] dp = new int[m + 1, n + 1];
@@ -90,7 +90,7 @@ namespace Melodies25.Utilities
 
         public static int LongestStartSubsequence(int[] arr1, int[] arr2, int maxGap)
         {
-            Console.WriteLine("LongestStartSubsequence starts");
+            //Console.WriteLine("LongestStartSubsequence starts");
             int count = 0;
             int gaps = 0;
             int minLength = Math.Min(arr1.Length, arr2.Length);
@@ -120,7 +120,7 @@ namespace Melodies25.Utilities
         // Повертає довжину та індекси збігів у другій послідовності
         public static (int length, List<int> indicesInSecond) LongestCommonSubsequenceIndices(int[] arr1, int[] arr2)
         {
-            Console.WriteLine("LongestCommonSubsequence Indices starts");
+            //Console.WriteLine("LongestCommonSubsequence Indices starts");
 
             int m = arr1.Length;
             int n = arr2.Length;

@@ -382,6 +382,7 @@ namespace Melodies25.Pages.Melodies
                 ErrorMessageL("fileupload is null");
             }
 
+            /* Збереження змін до бази даних */
 
             _context.Melody.Add(Melody);
             await _context.SaveChangesAsync();
@@ -448,11 +449,15 @@ namespace Melodies25.Pages.Melodies
 
                 _context.Author.Add(newAuthor);
 
+                /* Збереження змін до бази даних */
+
                 await _context.SaveChangesAsync();
+
+                /* Пошук доданого автора для отримання його ID */
 
                 var tryaddauthor = await _context.Author.FirstOrDefaultAsync(a => a.Surname == tempSurname && a.Name == tempName);
 
-                Console.WriteLine("current title is " + Melody.Title);
+
 
                 if (tryaddauthor is not null)
                 {

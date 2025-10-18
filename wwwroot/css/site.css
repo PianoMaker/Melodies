@@ -379,6 +379,16 @@ table, th, td {
 .table tbody tr:nth-child(even) td { background-color: rgba(250,250,250,0.96); }
 .table tbody tr:hover td { background-color: #f6f6f6; }
 
+/* Highlight entire selected table row */
+.selected-row td {
+    background-color: lightyellow !important;
+}
+
+/* ensure selected row hover keeps the same background */
+.selected-row:hover td {
+    background-color: lightyellow !important;
+}
+
 /* Sticky header for easier scanning */
 .table thead th {
   position: sticky;
@@ -952,6 +962,14 @@ p {
     @media (max-width: 600px) {
         .col-actions {
             display: none !important;
+        }
+
+        .song-title {
+            display: inline-block;
+            max-width: 10rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     }
 

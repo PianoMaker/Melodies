@@ -2,6 +2,29 @@
 // відображає детальний аналіз мелодії, яку обираємо по кліку миші
 
 document.addEventListener("DOMContentLoaded", function () {
+    // Responsive: shorten song-title on narrow screens
+    function adjustSongTitles() {
+        const breakpoint = 600; // px
+        const useShort = window.innerWidth <= breakpoint;
+        document.querySelectorAll('.song-title').forEach(el => {
+            const full = el.dataset.full ?? el.textContent ?? '';
+            const short = el.dataset.short ?? full;
+            el.textContent = useShort ? short : full;
+        });
+    }
+
+    // debounce helper
+    function debounce(fn, wait) {
+        let t = null;
+        return function () {
+            clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, arguments), wait);
+        };
+    }
+
+    adjustSongTitles();
+    window.addEventListener('resize', debounce(adjustSongTitles, 120));
+
     // Отримуємо всі рядки таблиці та всі контейнери аналізу мелодій
     let rows = document.querySelectorAll("table tbody tr");
     let melodies = document.querySelectorAll("div[id^='melody']");
@@ -42,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 commentsElId,
                 900,  // GENERALWIDTH
                 130,  // HEIGHT for row
-                10,   // TOPPADDING
+                10,   // TOPPADING
                 250,  // BARWIDTH
                 60,   // CLEFZONE
                 10,   // Xmargin
@@ -54,29 +77,35 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // helper: select melody by index (shared by row click and nav buttons)
+    function selectMelodyByIndex(index) {
+        if (!melodies || melodies.length === 0) return;
+        index = Math.max(0, Math.min(index, melodies.length - 1));
+
+        // hide all
+        melodies.forEach(m => m.style.display = 'none');
+        // show selected
+        const selected = document.getElementById(`melody${index}`);
+        if (selected) {
+            selected.style.display = 'block';
+            renderNotationForMelodyContainer(selected);
+        }
+
+        // update row highlight using CSS class to override td backgrounds
+        rows.forEach(r => r.classList.remove('selected-row'));
+        if (rows[index]) rows[index].classList.add('selected-row');
+    }
+
     // Відображаємо першу знайдену мелодію (якщо є) і рендеримо її нотацію
     if (melodies.length > 0) {
-        melodies[0].style.display = "block";
-        rows[0]?.style && (rows[0].style.backgroundColor = "lightyellow");
-        renderNotationForMelodyContainer(melodies[0]);
+        selectMelodyByIndex(0);
     }
 
     // Додаємо обробник подій для кожного рядка
     rows.forEach((row, index) => {
         row.addEventListener("click", function () {
             console.log(`displaying melody ${index}`);
-            // Ховаємо всі мелодії
-            melodies.forEach(melody => melody.style.display = "none");
-
-            // Відображаємо обрану мелодію
-            let selectedMelody = document.getElementById(`melody${index}`);
-            if (selectedMelody) {
-                selectedMelody.style.display = "block";
-                renderNotationForMelodyContainer(selectedMelody);
-            }
-
-            rows.forEach(r => r.style.backgroundColor = "");
-            row.style.backgroundColor = "lightyellow";
+            selectMelodyByIndex(index);
         });
     });
 
@@ -89,6 +118,20 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         container.addEventListener('click', function(e){
             const melodyBlock = e.target.closest('.melody-block');
+            // navigation buttons handling: prev / next
+            const navBtn = e.target.closest('.song-nav');
+            if (navBtn && container.contains(navBtn)) {
+                e.preventDefault();
+                // find current visible index
+                const currentIndex = Array.from(melodies).findIndex(m => m.style.display && m.style.display !== 'none');
+                if (navBtn.classList.contains('prev')) {
+                    selectMelodyByIndex((currentIndex === -1 ? 0 : currentIndex) - 1);
+                } else if (navBtn.classList.contains('next')) {
+                    selectMelodyByIndex((currentIndex === -1 ? 0 : currentIndex) + 1);
+                }
+                return;
+            }
+
             if (!melodyBlock || !container.contains(melodyBlock)) return;
             const notationDiv = melodyBlock.querySelector('[id^="notation_match_"]');
             if (!notationDiv) return;

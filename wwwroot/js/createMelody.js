@@ -23,11 +23,30 @@ document.addEventListener("DOMContentLoaded", function () {
     const copyBtn = document.getElementById("copyBtn");
     const submitMelodyBtn = document.getElementById("submitMelodyBtn")
     const melodyFileInput = document.getElementById('melodyFileInput');
+    const denominatorInput = document.getElementById('TimeSignatureDenominator');
+	const numeratorInput = document.getElementById('TimeSignatureNumerator');
 
     if (!pianodisplay) {
-        console.warn('pianodisplay element not found – aborting createMelody.js initialization');
+        console.warn('[createMelody]: pianodisplay element not found – aborting createMelody.js initialization');
         return; // без нотного поля немає сенсу виконувати далі
     }
+
+
+   
+    
+	//========================
+    // Відновлення значень музичного розміру з sessionStorage
+	//========================
+
+    if (sessionStorage.getItem("savedDenominator")) {
+        denominatorInput.value = sessionStorage.getItem("savedDenominator");
+        console.log(`[createMelody]: Restored denominator: ${denominatorInput.value}`);
+    }
+    if (sessionStorage.getItem("savedNumerator")) {
+        numeratorInput.value = sessionStorage.getItem("savedNumerator");
+        console.log(`[createMelody]: Restored numerator: ${numeratorInput.value}`);
+    }
+
 
     // ===== LIVE NOTATION (Create page) using patternRenderer.js =====
     // Load renderer deps only once and setup live render like on Search page
@@ -49,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        // Dynamic loader for js files
+		// завантажує скрипт лише один раз
         function loadScriptOnce(src){
             if (!src) return Promise.resolve();
             const key = `__loaded_${src}`;
@@ -64,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return window[key];
         }
 
-        // Ensure VexFlow is available (try the same path as on Search page first)
+		// функція для завантаження VexFlow з можливими шляхами
         function ensureVexFlow(){
             if (window.Vex && window.Vex.Flow) return Promise.resolve();
             // Try correct path used by Search page
@@ -82,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         }
 
-        // Deps in correct order (rendererUtils must be before midiRenderer)
+		// Залежності midirender
         const deps = [
             '/lib/midirender/midiparser_ext.js',
             '/lib/midirender/makeBeams.js',
@@ -100,6 +119,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const { num, den } = getSearchTimeSignature();
+
+		// Рендеру введеної користувачем нотної послідовності
         function safeRender(pattern){
             try {
 				console.log('live notation render:', { pattern, num, den });
@@ -121,10 +142,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             } catch(e){ console.warn('safeRender failed', e); }
         }
+		// Отримує поточний нотний рядок з textarea
         function getPattern() { return pianodisplay ? pianodisplay.value : ''; }
 
 
-
+        // Перевіряє зміни в textarea і викликає рендер при зміні
 
         function renderFromTextarea(){
             const current = getPattern();
@@ -203,20 +225,20 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
     if (titleInput && savedTitle) {
-        console.log(`restoring saved title: ${savedTitle}`)
+        console.log(`[createMelody]: restoring saved title: ${savedTitle}`)
         const savedTitleDiv = document.getElementById("savedTitle");
         if (savedTitleDiv) savedTitleDiv.textContent = `savedtitle = ${savedTitle}`;
         titleInput.value = savedTitle;
     }
     else if (titleInput) {
-        console.log(`saved title is null`);
+        console.log(`[createMelody]: saved title is null`);
     }
     if (selectAuthor && savedAuthorId) {
-        console.log(`restoring saved authorId: ${savedAuthorId}`)
+        console.log(`[createMelody]: restoring saved authorId: ${savedAuthorId}`)
         selectAuthor.value = savedAuthorId;
     }
     else if (selectAuthor) {
-        console.log(`saved authorId is null`);  
+        console.log(`[createMelody]: saved authorId is null`);  
     }
         
     if (saver) saver.style.display = 'none';    
@@ -245,11 +267,11 @@ document.addEventListener("DOMContentLoaded", function () {
     durationbuttons.forEach((button, index) => {
         button.addEventListener('click', () => {
             duration = String(2 ** index); // 2^index дає потрібне значення
-            console.log('duration:', duration);
+            console.log(`[createMelody]: duration: ${duration}`);
         });
     });
 
-    // NEW: toggle крапки + підсвітка
+	// якщо є кнопка крапки, додаємо обробник
     if (dotBtn) {
         dotBtn.addEventListener('click', () => {
             dotBtn.classList.toggle('highlight');
@@ -283,6 +305,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
+    // =====================
+    // ОБРОБНИКИ
+    // ======================
+
+    // обробник зміни музичного розміру
+    if (denominatorInput && numeratorInput) {
+        denominatorInput.addEventListener('change', function () {
+            sessionStorage.setItem("savedDenominator", denominatorInput.value);
+            console.log(`[createMelody]: Saved denominator: ${denominatorInput.value}`);
+        });
+
+        numeratorInput.addEventListener('change', function () {
+            sessionStorage.setItem("savedNumerator", numeratorInput.value);
+            console.log(`[createMelody]: Saved numerator: ${numeratorInput.value}`);
+        });
+    }
+    else {
+        console.warn('[createMelody]: denominatorInput or numeratorInput not found');
+    }
+
     // обробник паузи
     if (restBtn) {
         restBtn.addEventListener('click', function () {
@@ -296,6 +338,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
         })
+    }
+    else {
+        console.warn('restBtn not found');
     }
 
     //кнопка "Відтворення"
@@ -400,7 +445,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
-//копіювальник назви
+// ======================
+// КОПІЮВАННЯ НАЗВИ З ФАЙЛУ
+// ======================
 function copytitle(event) {
     event.preventDefault();
     console.log("copytitle function is running");

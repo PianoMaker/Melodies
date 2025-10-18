@@ -37,8 +37,10 @@ namespace Melodies25.Pages.Melodies
         // „и в≥дображати результати пошуку за нотами
         public bool NoteSearch { get; set; }
 
-        public int? TimeSignatureNumerator { get; set; } = 4;
-        public int? TimeSignatureDenominator { get; set; } = 4;
+        [BindProperty]
+        public int? TimeSignatureNumerator { get; set; }
+        [BindProperty]
+        public int? TimeSignatureDenominator { get; set; }
         public string Msg { get; set; }
 
         public string ErrorWarning { get; set; }
@@ -329,7 +331,31 @@ namespace Melodies25.Pages.Melodies
         // ѕќЎ” 
         public async Task OnPostNotesearch()
         {
-            MessageL(COLORS.yellow, $"SEARCH - OnPostNotesearch method, Keys = {Keys}");
+            // Diagnostics: log incoming form, bound properties and ModelState
+            try
+            {
+                Console.WriteLine("---- OnPostNotesearch diagnostics ----");
+                Console.WriteLine("Request.Method: " + Request.Method);
+                Console.WriteLine("Request.Path: " + Request.Path);
+                Console.WriteLine("Request.Form keys: " + string.Join(", ", Request.Form.Keys));
+                Console.WriteLine($"Request.Form[TimeSignatureNumerator] = '{Request.Form["TimeSignatureNumerator"]}'");
+                Console.WriteLine($"Request.Form[TimeSignatureDenominator] = '{Request.Form["TimeSignatureDenominator"]}'");
+                Console.WriteLine($"Bound props before work: TimeSignatureNumerator={TimeSignatureNumerator}, TimeSignatureDenominator={TimeSignatureDenominator}");
+                Console.WriteLine($"ModelState.IsValid = {ModelState.IsValid}");
+                foreach (var kv in ModelState)
+                {
+                    var attempted = kv.Value?.AttemptedValue ?? "(null)";
+                    var errors = (kv.Value?.Errors != null && kv.Value.Errors.Count > 0) ? string.Join(" | ", kv.Value.Errors.Select(e => e.ErrorMessage + (e.Exception != null ? (" (ex: " + e.Exception.Message + ")") : ""))) : "";
+                    Console.WriteLine($"ModelState['{kv.Key}'] attempted='{attempted}' errors='{errors}'");
+                }
+                Console.WriteLine("---- end diagnostics ----");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Diagnostics failed: " + ex);
+            }
+
+            MessageL(COLORS.yellow, $"SEARCH - OnPostNotesearch method, Keys = {Keys}, TimeSin={TimeSignatureNumerator}/{TimeSignatureDenominator}");
 
             /*включаЇмо в≥дображенн€ за нотним пошуком*/
             NoteSearch = true;
@@ -343,7 +369,12 @@ namespace Melodies25.Pages.Melodies
             Music.Melody MelodyPattern = new();
             Globals.notation = Notation.eu;
             Globals.lng = LNG.uk;
-            TempData["Keys"] = Keys;
+            TempData["Keys"] = Keys;            
+            TempData["Numerator"] = TimeSignatureNumerator;
+            TempData["Denominator"] = TimeSignatureDenominator;
+
+
+
 
             if (Keys is not null)
             {
@@ -359,12 +390,12 @@ namespace Melodies25.Pages.Melodies
                 }
 
                 /* Ћќ√”¬јЌЌя */
-                MessageL(COLORS.olive, "melodies to compare with pattern:");
-                foreach (var melody in Melody)
-                    GrayMessageL(melody.Title);
-                MessageL(COLORS.olive, "notes in patten:");
-                foreach (var note in MelodyPattern)
-                    GrayMessageL(note.Name);
+                //MessageL(COLORS.olive, "melodies to compare with pattern:");
+                //foreach (var melody in Melody)
+                //    GrayMessageL(melody.Title);
+                //MessageL(COLORS.olive, "notes in patten:");
+                //foreach (var note in MelodyPattern)
+                //    GrayMessageL(note.Name);
 
                 /*ауд≥о*/
                 try
@@ -439,7 +470,7 @@ namespace Melodies25.Pages.Melodies
         // ѕќ–≤¬ЌяЌЌя 
         private void CompareMelodies(Music.Melody MelodyPattern)
         {
-            MessageL(COLORS.olive, "CompareMelodies method");
+            MessageL(COLORS.olive, $"CompareMelodies method {SearchAlgorithm?.ToLowerInvariant()}");
             var sw = new Stopwatch();
             sw.Start();
 
