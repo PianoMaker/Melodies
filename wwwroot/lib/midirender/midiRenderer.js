@@ -578,9 +578,12 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
         let STAVE_WIDTH = adjustStaveWidth(meanBarWidth, index, CLEFZONE, isFirstMeasureInRow, timeSignatureChanged);
 
+        // Визначити потрібний ключ (clef) для цього такту на основі висот нот
+        const clefChoice = decideClefForMeasure(measure);
+
         // Створюємо нотний стан (stave)
         // Додаємо ключ та розмір такту, якщо потрібно (тепер також і key signature)
-        const stave = setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, currentDenominator, isFirstMeasureInRow, timeSignatureChanged, keySignatureChanged, keySigName);
+        const stave = setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, currentDenominator, isFirstMeasureInRow, timeSignatureChanged, keySignatureChanged, keySigName, clefChoice);
 
         // Малюємо нотний стан
         stave.setContext(context).draw();
@@ -1096,14 +1099,21 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig) {
     return { key: `${chosen.replace(/[#b]/, '')}/${outOctave}`, accidental };
 }
 
-function setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, currentDenominator, isFirstMeasureInRow = false, timeSignatureChanged = false, keySignatureChanged = false, keySigName = null) {
+// --- updated setStave to accept clef parameter ---
+function setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, currentDenominator, isFirstMeasureInRow = false, timeSignatureChanged = false, keySignatureChanged = false, keySigName = null, clef = "treble") {
     console.log("FOO: midiRenderer.js - setStave");
     const stave = new Vex.Flow.Stave(Xposition, Yposition, STAVE_WIDTH);
+
+    try {
+        stave.clef = clef;
+    } catch (e) {
+		console.warn("MR: Could not set stave.clef directly:", e);
+    }
     
     // Додаємо ключ для першого такту взагалі або для першого такту в кожному рядку
     if (index === 0 || isFirstMeasureInRow) {
-        stave.addClef("treble");
-        console.log(`Adding clef to measure ${index + 1}, isFirstMeasureInRow: ${isFirstMeasureInRow}`);
+        stave.addClef(clef);
+        console.log(`Adding clef '${clef}' to measure ${index + 1}, isFirstMeasureInRow: ${isFirstMeasureInRow}`);
     }
     
     // Додаємо знаки при ключі (key signature) якщо доступні і це перший такт, або перший у рядку, або вона змінилась
@@ -1117,7 +1127,7 @@ function setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, cu
         }
     }
     
-    // Додаємо розмір такту для першого такту або коли розмір зміниється
+    // Додаємо розмір такту для першого такту або коли розмір змінився
     if (index === 0 || timeSignatureChanged) {
         stave.addTimeSignature(`${currentNumerator}/${currentDenominator}`);
         console.log(`Adding time signature ${currentNumerator}/${currentDenominator} to measure ${index + 1}, timeSignatureChanged: ${timeSignatureChanged}`);
@@ -1221,9 +1231,21 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
             // Додаємо нотні елементи до голосу
             voice.addTickables(validNotes);
 
-            
-            
-            // Форматуємо голос
+            // Ensure each note is associated with the current stave so VexFlow uses the stave clef/metrics
+            validNotes.forEach((vn, idx) => {
+                try {
+                    if (vn && typeof vn.setStave === 'function') {
+                        vn.setStave(stave);
+                    }
+                    // Log for quick diagnostics
+                    const keys = (typeof vn.getKeys === 'function') ? vn.getKeys() : [];
+                    console.log(`MR: note[${idx}] keys=${JSON.stringify(keys)}, stave.clef=${stave.clef || '(unknown)'}`);
+                } catch (err) {
+                    console.warn(`MR: Failed to setStave on note[${idx}]`, err);
+                }
+            });
+
+            // --- restored formatter + availableWidth calculation (fixes "formatter is not defined") ---
             const formatter = new Vex.Flow.Formatter();
             const staveX = (typeof stave.getX === 'function') ? stave.getX() : stave.x || 0;
             const staveW = (typeof stave.getWidth === 'function') ? stave.getWidth() : stave.width || BARWIDTH;
@@ -1583,5 +1605,38 @@ function processNoteElement(durationCode, key, accidental) {
     }
     applyAutoStem(note, durationCode);
     return note;
+}
+
+// Decide clef for a measure based on pitch range.
+// Returns "bass" or "treble".
+function decideClefForMeasure(measure) {
+    console.log("FOO: midiRenderer.js - decideClefForMeasure");
+    const bassThreshold = 60; // MIDI pitch threshold under which we prefer bass clef
+    let maxPitch = -1;
+    let minPitch = 128;
+
+    if (!Array.isArray(measure) || measure.length === 0) {
+        return "treble";
+    }
+
+    for (const ev of measure) {
+        if (ev && ev.type === 0x9 && Array.isArray(ev.data)) {
+            const pitch = ev.data[0];
+            if (typeof pitch === 'number') {
+                if (pitch < minPitch) minPitch = pitch;
+                if (pitch > maxPitch) maxPitch = pitch;
+            }
+        }
+    }
+
+    console.log(`Measure pitch range: min ${minPitch}, max ${maxPitch}`);
+
+    // Choose bass if any note is below threshold (you can tweak logic)
+    if (minPitch < bassThreshold) {
+        console.log("Choosing bass clef");
+        return "bass";
+    }
+    console.log("Choosing treble clef");
+    return "treble";
 }
 
