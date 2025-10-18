@@ -6,8 +6,8 @@
     // Pull data prepared in the PageModel for display blocks below
     var melodyPattern = ViewData["melodypattern"] as IEnumerable<string>;
     var matchedMelodiesCount = ViewData["matchedMelodiesCount"] as int? ?? 0;
-    int numerator = Model.TimeSignatureNumerator;
-    int denominator = Model.TimeSignatureDenominator;
+    int? numerator = Model.TimeSignatureNumerator;
+    int? denominator = Model.TimeSignatureDenominator;
     int currentSum = 0;
 }
 

@@ -98,8 +98,11 @@ document.addEventListener("DOMContentLoaded", function () {
             if (renderTimer) clearTimeout(renderTimer);
             renderTimer = setTimeout(renderFromTextarea, 50);
         }
+
+        const { num, den } = getSearchTimeSignature();
         function safeRender(pattern){
             try {
+				console.log('live notation render:', { pattern, num, den });
                 if (typeof window.renderPatternString !== 'function') return;
                 const renderEl = document.getElementById('liveNotation');
                 const commentsEl = document.getElementById('patternComments');
@@ -108,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     pattern || '',
                     renderEl.id,
                     commentsEl.id,
-                    4, 4,
+                    num, den,
                     undefined,
                     120,
                     20,
@@ -118,7 +121,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             } catch(e){ console.warn('safeRender failed', e); }
         }
-        function getPattern(){ return pianodisplay ? pianodisplay.value : ''; }
+        function getPattern() { return pianodisplay ? pianodisplay.value : ''; }
+
+
+
+
         function renderFromTextarea(){
             const current = getPattern();
             if (current === lastPattern) return;
@@ -409,4 +416,10 @@ function copytitle(event) {
     } else {
         alert("Файл не вибрано");
     }
+}
+
+function getSearchTimeSignature() {
+    const num = parseInt(document.getElementById('TimeSignatureNumerator')?.value) || 4;
+    const den = parseInt(document.getElementById('TimeSignatureDenominator')?.value) || 4;
+    return { num, den };
 }

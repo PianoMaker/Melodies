@@ -33,9 +33,9 @@
     <div id="timesignature">
         <label class="form-label mb-1">Музичний розмір</label>
         <div class="settimesignature">
-            <input type="number" name="TimeSignatureNumerator" min="1" value="@Model.TimeSignatureNumerator" class="form-control" style="width:60px" />
+            <input type="number" id="TimeSignatureNumerator" name="TimeSignatureNumerator" min="1" value="@Model.TimeSignatureNumerator" class="form-control" style="width:60px" />
             <span class="fs-5">/</span>
-            <select name="TimeSignatureDenominator" class="form-select" style="width:70px">
+            <select name="TimeSignatureDenominator" id="TimeSignatureDenominator" class="form-select" style="width:70px">
                 @foreach (var d in new[] { 2, 4, 8, 16 })
                 {
                     if (Model.TimeSignatureDenominator == d)
