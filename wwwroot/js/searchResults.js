@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 commentsElId,
                 900,  // GENERALWIDTH
                 130,  // HEIGHT for row
-                10,   // TOPPADING
+                10,   // TOPPADDING
                 250,  // BARWIDTH
                 60,   // CLEFZONE
                 10,   // Xmargin

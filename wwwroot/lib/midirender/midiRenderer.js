@@ -1072,8 +1072,20 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig) {
             const raisedIV  = (tonicPc + 6)  % 12; // IV#
 
             if (pc === raisedVI || pc === raisedVII || pc === raisedIV) {
-                chosen = sharpNames[pc];
-                outOctave = octaveRaw;
+                // Prefer spelling as a raised degree (e.g., B# instead of C in C# minor)
+                // If the naive sharp name doesn't contain '#', try to spell as previous natural + '#'
+                const naive = sharpNames[pc];
+                if (!naive.includes('#')) {
+                    const prevMap = { 'C':'B','D':'C','E':'D','F':'E','G':'F','A':'G','B':'A' };
+                    const prev = prevMap[naive] || naive;
+                    const special = prev + '#';
+                    chosen = special;
+                    // Adjust octave for wrapped case: B# corresponds to previous octave
+                    outOctave = (prev === 'B') ? octaveRaw - 1 : octaveRaw;
+                } else {
+                    chosen = sharpNames[pc];
+                    outOctave = octaveRaw;
+                }
             }
         }
     }
