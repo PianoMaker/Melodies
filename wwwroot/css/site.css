@@ -959,10 +959,16 @@ p {
         }
     }
 
-    @media (max-width: 600px) {
-        .col-actions {
+    @media (max-width: 720px) {
+        .col-actions,
+        .table th.col-actions,
+        .table td.col-actions {
             display: none !important;
+            visibility: collapse !important;
         }
+
+        /* reset last-child fixed width inside the small screen breakpoint */
+        .table td:last-child, .table th:last-child { width: auto !important; white-space: normal !important; }
 
         .song-title {
             display: inline-block;

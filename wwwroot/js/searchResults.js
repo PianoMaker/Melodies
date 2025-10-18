@@ -4,7 +4,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     // Responsive: shorten song-title on narrow screens
     function adjustSongTitles() {
-        const breakpoint = 600; // px
+        const breakpoint = 720; // px
         const useShort = window.innerWidth <= breakpoint;
         document.querySelectorAll('.song-title').forEach(el => {
             const full = el.dataset.full ?? el.textContent ?? '';

@@ -133,11 +133,13 @@ namespace Melodies25.Pages.Melodies
 
             Melody = _context.Melody.Include(m => m.Author).ToList();
 
-            Music.Globals.notation = Notation.eu;           
+            Music.Globals.notation = Notation.eu;
 
             int numberoffileschecked = 0;
             var sw = new Stopwatch();
             sw.Start();
+
+            var missingFiles = new List<string>();
 
             //Підготовка файлів
             foreach (var melody in Melody)
@@ -155,20 +157,18 @@ namespace Melodies25.Pages.Melodies
                         if (!System.IO.File.Exists(path))
                         {
                             MessageL(COLORS.red, $"{path} does not exist");
-                            return;
+                            missingFiles.Add(path);
+                            // don't abort whole initialization, just skip this melody
+                            continue;
                         }
-                        
 
                         var midifile = GetMidiFile(path);
 
                         melody.MidiMelody = await GetMelodyFromMidiAsync(midifile);
 
                         melody.MidiMelody.Enharmonize();
-                                               
 
                         numberoffileschecked++;
-                        
-
                     }
                     else if (melody.FilePath is null)
                     {
@@ -179,18 +179,21 @@ namespace Melodies25.Pages.Melodies
                         MessageL(COLORS.yellow, $"{melody.MidiMelody} already exists");
                     }
                 }
-
                 catch (Exception ex)
                 {
-                    ErrorMessage(ex.Message);
+                    ErrorMessage($"Exception processing file for melody '{melody?.Title}' (FilePath='{melody?.FilePath}'): {ex.Message}");
+                    Console.WriteLine($"NotesSearchInitialize: parse error for '{melody?.Title}' file='{melody?.FilePath}' => {ex}");
+                    // continue with other melodies
                 }
-
             }
 
-            sw.Stop();            
+            sw.Stop();
             MessageL(COLORS.standart, $"{numberoffileschecked} file analyzed, {sw.ElapsedMilliseconds} ms spent");
+            if (missingFiles.Count > 0)
+            {
+                MessageL(COLORS.red, $"Missing {missingFiles.Count} midi files (skipped). Example: {missingFiles.First()}");
+            }
             MessageL(COLORS.cyan, "NotesSearchInitialize finished");
-
         }
 
 
@@ -360,7 +363,7 @@ namespace Melodies25.Pages.Melodies
             /*включаємо відображення за нотним пошуком*/
             NoteSearch = true;
 
-                        
+
             /*ІНІЦІАЛІЗАЦІЯ БАЗИ*/
             await NotesSearchInitialize();
 
@@ -369,10 +372,9 @@ namespace Melodies25.Pages.Melodies
             Music.Melody MelodyPattern = new();
             Globals.notation = Notation.eu;
             Globals.lng = LNG.uk;
-            TempData["Keys"] = Keys;            
+            TempData["Keys"] = Keys;
             TempData["Numerator"] = TimeSignatureNumerator;
             TempData["Denominator"] = TimeSignatureDenominator;
-
 
 
 
@@ -533,7 +535,7 @@ namespace Melodies25.Pages.Melodies
                 var relativePath = "/mp3/" + Path.GetFileName(mp3Path);
                 TempData["AudioFile"] = relativePath;
                 MessageL(COLORS.green, relativePath);
-                
+
             }
             catch (Exception ex)
             {
@@ -590,6 +592,6 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
-       
+
     }
 }
