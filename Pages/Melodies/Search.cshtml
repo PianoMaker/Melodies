@@ -6,6 +6,9 @@
     // Pull data prepared in the PageModel for display blocks below
     var melodyPattern = ViewData["melodypattern"] as IEnumerable<string>;
     var matchedMelodiesCount = ViewData["matchedMelodiesCount"] as int? ?? 0;
+    int numerator = Model.TimeSignatureNumerator;
+    int denominator = Model.TimeSignatureDenominator;
+    int currentSum = 0;
 }
 
 @section Styles {
@@ -49,13 +52,13 @@
                 <option value="ais">ля♯ / сі♭</option>
                 <option value="h">сі</option>
             </select>
-            <button type="submit" class="btn btn-primary">Пошук</button>
+            <button type="submit" class="btn btn-melody">Пошук</button>
         </form>
 
     </div>
 
     <!--ПРАВОРУЧ-->
-    <div class="searchrightcontainer">
+    <div class="поляsearchrightcontainer">
         <!--КНОПКИ УПРАВЛІННЯ І Нотний рядок-->
         @await Html.PartialAsync("_pianoDisplay")
 

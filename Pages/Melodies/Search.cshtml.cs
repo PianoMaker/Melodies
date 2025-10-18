@@ -36,6 +36,9 @@ namespace Melodies25.Pages.Melodies
         public List<(Melody melody, int commonLength, int position)> MatchedMelodies { get; set; } = new();
         // Чи відображати результати пошуку за нотами
         public bool NoteSearch { get; set; }
+
+        public int? TimeSignatureNumerator { get; set; } = 4;
+        public int? TimeSignatureDenominator { get; set; } = 4;
         public string Msg { get; set; }
 
         public string ErrorWarning { get; set; }
@@ -85,10 +88,14 @@ namespace Melodies25.Pages.Melodies
 
         private static readonly char[] separator = new char[] { ' ', '_' };
 
-        public void OnGetAsync(string search)
+        public void OnGetAsync(string search, int? numerator, int? denominator)
         {
 
             MessageL(COLORS.yellow, "SEARCH - OnGetAsync method");
+
+            TimeSignatureNumerator = numerator ?? 4;
+            TimeSignatureDenominator = denominator ?? 4;
+
             if (!string.IsNullOrEmpty(search))
             {
                 Console.WriteLine($"Received search: {search}");

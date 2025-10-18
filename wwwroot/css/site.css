@@ -115,6 +115,38 @@ a.link-light:hover {
     height: var(--btnheight);
 }
 
+/* більшсть кнопок сайту */
+
+.btn-melody {
+    display: inline-block;
+    font-weight: 400;
+    color: #212529;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+    background-color: #d3d3d3; 
+    border: 1px solid #212529;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.375rem;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    background-clip: padding-box;
+}
+
+    .btn-melody:hover, .btn-melody:focus {
+        color: var(--brand-gold);
+        background-color: var(--brand-maincolor);
+        border-color: #212529;
+        text-decoration: none;
+    }
+
+    .btn-melody:active {
+        color: #fff;
+        background-color: #1a1e21;
+        border-color: #1a1e21;
+    }
+
 /* Make outline-dark buttons hover in dark red (match navbar) */
 .btn-outline-dark.light-background:hover,
 .btn-outline-dark.light-background:focus {
@@ -147,8 +179,25 @@ a.link-light:hover {
         outline-offset: 2px;
     }
 
+/* кнопки для входу на сайт */
+.btn-logo {
+    background-color: #fffbe6;
+    color: #212529;
+    border: 1px solid #bfa600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 0.5rem 1.2rem;
+    opacity: 0.65;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
 
-
+    .btn-logo:hover, .btn-logo:focus {
+        background-color: var(--brand-gold, #ffd83d);
+        color: #212529;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.13);
+        text-decoration: none;
+    }
 
 /* підсвічує меню   */
 .highlight {
@@ -606,7 +655,7 @@ p {
 
 
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
 
     .searchcontainer {
         display: block;
@@ -616,7 +665,11 @@ p {
         width: 100%;
     }
 
-}
+    
+        .searchrightcontainer {
+            width: 100%;
+        }
+    }
 
 @media (max-width: 768px) {
 
@@ -761,142 +814,188 @@ p {
 
 }
 
-/* Half-page responsive container: 100% below 992px, 50% from 992px up */
-.halfpagecontainer {
-    flex: 0 0 auto;
-    width: 100%;
-}
-
-@media (min-width: 992px) {
-    .halfpagecontainer {
-        flex: 0 0 auto;
-        width: 50%;
-    }
-}
-
-@media (max-width: 480px) {
-    .ifnarrowscreen {
-        display: none;
-    }
-}
-
-/* File info text size: slightly smaller on tablets and phones */
-.fileinfo {
-    font-size: 1rem; /* базово */
-}
-
-@media (max-width: 768px) {
-    .fileinfo { font-size: 0.95rem; }
-}
-
-@media (max-width: 576px) {
-    .fileinfo { font-size: 0.9rem; }
-}
-
-/* Keep letter pickers horizontal and wrapping on all screen sizes */
-.letters-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .25rem;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-/* Each letter form should size to content, not stretch */
-.letters-row form {
-    flex: 0 0 auto;
-}
-
-/* Override the global mobile .d-flex column rule for letters */
-@media (max-width: 768px) {
-    .letters-row { 
-        flex-direction: row !important;
-    }
-}
-
-/* Responsive layout for Notation page */
-.notation-layout 
-{ 
-    display: flex; 
-    width: 100%; 
-    margin-top: 20px; 
-    align-items: flex-start; 
-    gap: 12px; 
-
-}
-#SheetMusic 
-{ 
-  flex: 0 0 80%; 
-  background-color: rgb(255,255,230); 
-}
-.NotesList { flex: 0 0 20%; }
 
 @media (max-width: 992px) {
-    
-    .notation-layout { flex-direction: column; }
-    #SheetMusic { flex: 0 0 100% !important; width: 100% !important; }
-    .NotesList { width: 100% !important; display: block; margin-top: 8px; }
-}
-
-.btn-melody {
-    display: inline-block;
-    font-weight: 400;
-    color: #212529;
-    text-align: center;
-    vertical-align: middle;
-    user-select: none;
-    background-color: #d3d3d3; /* darkened from #f8f9fa to match .light-background */
-    border: 1px solid #212529;
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    border-radius: 0.375rem;
-    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    background-clip: padding-box;
-}
-
-.btn-melody:hover, .btn-melody:focus {
-    color: var(--brand-gold);
-    background-color: var(--brand-maincolor);
-    border-color: #212529;
-    text-decoration: none;
-}
-
-.btn-melody:active {
-    color: #fff;
-    background-color: #1a1e21;
-    border-color: #1a1e21;
-}
-
-/* Melodies/Index adaptive layout for operationbuttons and lettersbutton */
-@media (max-width: 768px) {
-    .melody-index-flex {
-        flex-direction: column !important;
-    }
-    #operationbuttons {
-        flex-direction: row !important;
-        align-items: flex-start !important;
-        margin-bottom: 1rem;
-        gap: 0.5rem;
-    }
-    #operationbuttons .btn-melody {
-        margin: 0 !important;
-    }
-}
-
-@media (max-width: 900px) {
-    .hide-mobile {
-        display: none !important;nt;
-    }
-    .table {
+    .container {
+        max-width: 100% !important;
         width: 100% !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
     }
+
+    /* Half-page responsive container: 100% below 992px, 50% from 992px up */
+    .halfpagecontainer {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+
+    @media (min-width: 992px) {
+        .halfpagecontainer {
+            flex: 0 0 auto;
+            width: 50%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .ifnarrowscreen {
+            display: none;
+        }
+    }
+
+    /* File info text size: slightly smaller on tablets and phones */
+    .fileinfo {
+        font-size: 1rem; /* базово */
+    }
+
+    @media (max-width: 768px) {
+        .fileinfo {
+            font-size: 0.95rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .fileinfo {
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Keep letter pickers horizontal and wrapping on all screen sizes */
+    .letters-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .25rem;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+        /* Each letter form should size to content, not stretch */
+        .letters-row form {
+            flex: 0 0 auto;
+        }
+
+    /* Override the global mobile .d-flex column rule for letters */
+    @media (max-width: 768px) {
+        .letters-row {
+            flex-direction: row !important;
+        }
+    }
+
+    /* Responsive layout for Notation page */
+    .notation-layout {
+        display: flex;
+        width: 100%;
+        margin-top: 20px;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    #SheetMusic {
+        flex: 0 0 80%;
+        background-color: rgb(255,255,230);
+    }
+
+    .NotesList {
+        flex: 0 0 20%;
+    }
+
+    @media (max-width: 992px) {
+
+        .notation-layout {
+            flex-direction: column;
+        }
+
+        #SheetMusic {
+            flex: 0 0 100% !important;
+            width: 100% !important;
+        }
+
+        .NotesList {
+            width: 100% !important;
+            display: block;
+            margin-top: 8px;
+        }
+    }
+
+
+
+
+
+    /* Melodies/Index adaptive layout for operationbuttons and lettersbutton */
+    @media (max-width: 768px) {
+        .melody-index-flex {
+            flex-direction: column !important;
+        }
+
+        #operationbuttons {
+            flex-direction: row !important;
+            align-items: flex-start !important;
+            margin-bottom: 1rem;
+            gap: 0.5rem;
+        }
+
+            #operationbuttons .btn-melody {
+                margin: 0 !important;
+            }
+    }
+
+    @media (max-width: 900px) {
+        .hide-mobile {
+            display: none !important;
+            nt;
+        }
+
+        .table {
+            width: 100% !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .col-actions {
+            display: none !important;
+        }
+    }
+
+    #durationspanel {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 24px;
+        flex-wrap: nowrap;
+    }
+
+    #durationbuttons {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    #timesignature {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    @media (max-width: 900px) {
+        #durationspanel {
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+        }
+    }
+
+.settimesignature {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-@media (max-width: 600px) {
-    .col-actions {
-        display: none !important;
-    }
+.settimesignature input,
+.settimesignature select,
+.settimesignature span {
+    display: inline-block !important;
+    width: auto;
+    margin: 0 2px;
+    vertical-align: middle;
+    box-sizing: border-box;
 }

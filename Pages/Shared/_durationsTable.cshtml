@@ -4,29 +4,50 @@
 @{
 }
 <div id="durationspanel" class="pianodisplay notesinfo">
-    <button class="durationbutton durbtn">
-        <img src="~/images/whole_note.png" alt="Whole Note" />
-    </button>
-    <button class="durationbutton durbtn">
-        <img src="~/images/half_note.png" alt="Half Note" />
-    </button>
-    <button class="durationbutton durbtn">
-        <img src="~/images/quarter_note.png" alt="Quarter Note" />
-    </button>
-    <button class="durationbutton durbtn">
-        <img src="~/images/eighth_note.png" alt="Eighth Note" />
-    </button>
-    <button class="durationbutton durbtn">
-        <img src="~/images/sixteenth_note.png" alt="Sixteenth Note" />
-    </button>
-    <button class="durationbutton durbtn">
-        <img src="~/images/32nd_note.png" alt="Thirty-Second Note" />
-    </button>
-    <button id="dotbutton" class="durbtn">
-        <p>.</p>
-    </button>
-    <button id="pausebutton" class="durbtn" style="width:80px">
-        <p><i>/pause/</i></p>
-    </button>
-    <script src="~/js/switchDurations.js" asp-append-version="true"></script>
+    <div id="durationbuttons" style="display: flex;">
+        <button class="durationbutton durbtn">
+        </button>
+        <button class="durationbutton durbtn">
+            <img src="~/images/half_note.png" alt="Half Note" />
+        </button>
+        <button class="durationbutton durbtn">
+            <img src="~/images/quarter_note.png" alt="Quarter Note" />
+        </button>
+        <button class="durationbutton durbtn">
+            <img src="~/images/eighth_note.png" alt="Eighth Note" />
+        </button>
+        <button class="durationbutton durbtn">
+            <img src="~/images/sixteenth_note.png" alt="Sixteenth Note" />
+        </button>
+        <button class="durationbutton durbtn">
+            <img src="~/images/32nd_note.png" alt="Thirty-Second Note" />
+        </button>
+        <button id="dotbutton" class="durbtn">
+            <p>.</p>
+        </button>
+        <button id="pausebutton" class="durbtn" style="width:80px">
+            <p><i>/pause/</i></p>
+        </button>
+        <script src="~/js/switchDurations.js" asp-append-version="true"></script>
+    </div>
+    <div id="timesignature">
+        <label class="form-label mb-1">Музичний розмір</label>
+        <div class="settimesignature">
+            <input type="number" name="TimeSignatureNumerator" min="1" value="@Model.TimeSignatureNumerator" class="form-control" style="width:60px" />
+            <span class="fs-5">/</span>
+            <select name="TimeSignatureDenominator" class="form-select" style="width:70px">
+                @foreach (var d in new[] { 2, 4, 8, 16 })
+                {
+                    if (Model.TimeSignatureDenominator == d)
+                    {
+                        <option value="@d" selected>@d</option>
+                    }
+                    else
+                    {
+                        <option value="@d">@d</option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
 </div>

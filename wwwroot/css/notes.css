@@ -1,4 +1,3 @@
-
 /* ‘Œ–“≈œ≤¿ÕÕ¿  À¿¬≤¿“”–¿ */
 /*  ÓÌÚÂÈÌÂ ‰Îˇ ÌÓÚ */
 .notescontainer {
@@ -110,24 +109,44 @@
     font-size: 0.8em !important;
 }
 
+/* Timesignature styles */
+#timesignature .d-flex {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
+#timesignature input,
+#timesignature select {
+    display: inline-block;
+    width: 60px; /* or your preferred width */
+    margin: 0;
+    text-align: center;
+    /* Remove any min-width or width: 100% from Bootstrap */
+}
 
-@media (max-width: 1024px) {
+#timesignature span {
+    display: inline-block;
+    width: auto;
+    margin: 0 2px;
+}
+
+@media (max-width: 900px) {
   .searchcontainer { display: block; }
   .searchleftcontainer { width: 100%; }
-  .notesinfo { width: 65vh; }
+  .notesinfo { width: 73vh; }
   .whitepianobutton { width: 45px; }
-  .blackpianobutton { width: 40px; }
+  .blackpianobutton { width: 37px; }
   .cis1 { top: 0px; left: 35px; }
-  .dis1 { top: 0px; left: 90px; }
-  .fis1 { top: 0px; left: 180px; }
-  .gis1 { top: 0px; left: 235px; }
-  .b1  { top: 0px; left: 290px; }
-  .cis2 { top: 0px; left: 385px; }
-  .dis2 { top: 0px; left: 440px; }
-  .fis2 { top: 0px; left: 530px; }
-  .gis2 { top: 0px; left: 585px; }
-  .b2  { top: 0px; left: 640px; }
+  .dis1 { top: 0px; left: 85px; }
+  .fis1 { top: 0px; left: 170px; }
+  .gis1 { top: 0px; left: 220px; }
+  .b1  { top: 0px; left: 265px; }
+  .cis2 { top: 0px; left: 355px; }
+  .dis2 { top: 0px; left: 400px; }
+  .fis2 { top: 0px; left: 490px; }
+  .gis2 { top: 0px; left: 535px; }
+  .b2  { top: 0px; left: 580px; }
 }
 
 @media (max-width: 768px) {
@@ -135,15 +154,15 @@
   .searchleftcontainer { width: 100%; }
   .notesinfo { width: 65vh; }
   .whitepianobutton { width: 45px; }
-  .blackpianobutton { width: 40px; }
-  .cis1 { top: 0px; left: 35px; }
-  .dis1 { top: 0px; left: 90px; }
-  .fis1 { top: 0px; left: 180px; }
-  .gis1 { top: 0px; left: 235px; }
-  .b1  { top: 0px; left: 290px; }
-  .cis2 { top: 0px; left: 385px; }
-  .dis2 { top: 0px; left: 440px; }
-  .fis2 { top: 0px; left: 530px; }
-  .gis2 { top: 0px; left: 585px; }
-  .b2  { top: 0px; left: 640px; }
+  .blackpianobutton { width: 37px; }
+  .c3 { display:none; }
+}
+
+@media (max-width: 712px) {
+    .highnote {
+        display: none;
+    }
+    .notesinfo {
+        width: 100%;
+    }
 }
