@@ -606,7 +606,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
             const measureEndTick = (nextBoundary !== undefined) ? nextBoundary : barStartAbsTime + ticksPerMeasure; // fallback
             console.log(`AN: bar ${index + 1}, measureEndTick = ${measureEndTick}`)
             if (stepRead) stepRead.innerHTML += `<i> act.note</i>`;
-            drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState);
+            drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState, clefChoice);
         }
 
         
@@ -616,7 +616,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         }
 
         // Перевіряємо, чи потрібно скоротити останню ноту/паузу, якщо вона виходить за межі такту
-        correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat);
+        correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat, clefChoice);
 
         console.log(`start to draw measure ${index + 1}`);
 
@@ -711,8 +711,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
                             let previousNote = null;
                             durationsCode.forEach((durationCode, pieceIdx) => {
                                 const accToDraw = decideAccidentalForNote(vexKey, accidental, currentKeySig, measureAccState, pieceIdx);
-                                const note = processNoteElement(durationCode, vexKey, accToDraw);
-                                // APPLY AUTO STEM for each note piece
+                                const note = processNoteElement(durationCode, vexKey, accToDraw, clefChoice);
                                 applyAutoStem(note, durationCode);
 
                                 const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
@@ -767,7 +766,7 @@ function getKeySignatureChanges(measure, currentKeySig) {
 // Скорочення нот, якщо виходять за межі такту
 // ----------------------
 
-function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat) {
+function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat, clef) {
     console.log("FOO: midiRenderer.js - correctExtraNotes");
     if (notes.length === 0) return;
     
@@ -810,7 +809,8 @@ function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat) {
                 } else {
                     // Для нот потрібно зберегти висоту та знаки альтерації
                     const keys = lastNote.getKeys();
-                    const newNote = processNoteElement(newDuration, keys[0], null);
+                    // При створенні укоротженої ноти передаємо clef
+                    const newNote = processNoteElement(newDuration, keys[0], null, clef);
                     if (newNote) {
                         // Копіюємо знаки альтерації з оригінальної ноти
                         const modifiers = lastNote.getModifiers();
@@ -846,7 +846,7 @@ function processActiveNotesFromPreviousBar(activeNotes, index, barStartAbsTime) 
     }
 }
 
-function drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState) {
+function drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState, clef = 'treble') {
     console.log("FOO: midiRenderer.js - drawActiveNotes");
         // Домалювати всі ноти, які залишилися активними до кінця такту
     Object.keys(activeNotes).forEach(pitch => {
@@ -864,9 +864,8 @@ function drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties,
 
             let previousNote = null;
             durationsCode.forEach((durationCode, pieceIdx) => {
-                // UPDATED: measure-aware accidental logic for split pieces of a sustained note
                 const accToDraw = decideAccidentalForNote(key, accidental, currentKeySig, measureAccState, pieceIdx);
-                const note = processNoteElement(durationCode, key, accToDraw);
+                const note = processNoteElement(durationCode, key, accToDraw, clef);
                 applyAutoStem(note, durationCode);
 
                 const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
@@ -1595,10 +1594,14 @@ function AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime)
 //// - accidental: Знак альтерації ('#', 'b', 'n') або null.
 // Повертає: Об'єкт Vex.Flow.StaveNote або null у разі помилки.
 // ----------------------
-function processNoteElement(durationCode, key, accidental) {
+function processNoteElement(durationCode, key, accidental, clef = 'treble') {
     console.log("FOO: midiRenderer.js - processNoteElement");
-    key = key.replace('/', '');
-    const note = createNote(key, durationCode);
+    // key може бути в форматі "C/4" або "C4" — normalize до формату, який очікує createNote (наприклад "c4")
+    let normalized = (typeof key === 'string') ? key.replace('/', '') : key;
+    normalized = (typeof normalized === 'string') ? normalized.toLowerCase() : normalized;
+
+    // Передаємо clef у createNote, щоб StaveNote отримав правильний clef властивість
+    const note = createNote(normalized, durationCode, clef);
     if (note && accidental) {
         note.addAccidental(0, new Vex.Flow.Accidental(accidental));
     }
@@ -1638,4 +1641,51 @@ function decideClefForMeasure(measure) {
     console.log("Choosing treble clef");
     return "treble";
 }
+
+function createNote(noteKey, duration, clef = 'treble') {
+    console.log("FOO: midiparser_ext.js - createNote");
+    const noteMatch = noteKey.match(/^([a-gA-G])(b|#)?(\d)?$/);
+    if (!noteMatch) {
+        console.error(`Invalid note key: ${noteKey}`);
+        return null;
+    }
+
+    const [, letter, accidental, octaveRaw] = noteMatch;
+    const octave = octaveRaw || '4'; // Default to octave 4
+    const key = `${letter.toLowerCase()}${accidental || ''}/${octave}`;
+    const isTriplet = duration.endsWith('t');
+    const isDotted = duration.endsWith('.');
+    const baseDuration = (isTriplet || isDotted) ? duration.slice(0, -1) : duration;
+
+    try {
+        // Передаємо clef у опціях StaveNote — це дозволяє VexFlow позиціонувати ноту відносно потрібного ключа
+        const staveNote = new Vex.Flow.StaveNote({
+            keys: [key],
+            duration: baseDuration,
+            clef: clef || 'treble'
+        });
+
+        if (accidental) {
+            staveNote.addAccidental(0, new Vex.Flow.Accidental(accidental));
+        }
+
+        if (isDotted && !isTriplet) {
+            staveNote.addDot(0); // Add dot if dotted
+        }
+        if (typeof staveNote.autoStem === 'function') {
+            staveNote.autoStem(); 
+        }
+
+        if (isTriplet) {
+            // Помітимо ноту як тріольну для швидкого складання Tuplet
+            staveNote.__isTriplet = true;
+            staveNote.__tripletBase = baseDuration; // 'q','8','16','32'
+            staveNote.__durationCode = duration;    // 'qt','8t','16t','32t'
+        }
+        return staveNote;
+    } catch (error) {
+        console.error(`Failed to create note with key: ${noteKey} and duration: ${duration}`, error);
+        return null; // Return null if creation fails
+    }
+};
 
