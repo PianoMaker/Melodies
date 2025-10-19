@@ -24,6 +24,7 @@ namespace Melodies25.Pages.Melodies
         private readonly Melodies25.Data.Melodies25Context _context;
         private readonly IWebHostEnvironment _environment;
 
+        
         public IList<Melody> Melody { get; set; } = default!;
 
         // —писок знайдених мелод≥й з довжиною зб≥гу та позиц≥Їю
@@ -411,6 +412,7 @@ namespace Melodies25.Pages.Melodies
                     ErrorMessageL($"impossible to create mp3: {e.Message}");
                 }
 
+
                 /* будуЇмо список ви€влених зб≥г≥в MathedMelodies */
                 CompareMelodies(MelodyPattern);
 
@@ -472,28 +474,32 @@ namespace Melodies25.Pages.Melodies
         // ѕќ–≤¬ЌяЌЌя 
         private void CompareMelodies(Music.Melody MelodyPattern)
         {
-            MessageL(COLORS.olive, $"CompareMelodies method {SearchAlgorithm?.ToLowerInvariant()}");
+            MessageL(COLORS.olive, $"CompareMelodies method {SearchAlgorithm?.ToLowerInvariant()}, maxgap = {MaxGap}");
             var sw = new Stopwatch();
             sw.Start();
 
             int[] patternShape = MelodyPattern.IntervalList.ToArray();
+            int[] patternNotes = MelodyPattern.GetPitches().ToArray();
             MatchedMelodies.Clear();
 
             foreach (var melody in Melody)
             {
+                var title = melody.Title;
                 if (melody.MidiMelody is null) continue;
 
                 var melodyshape = melody.MidiMelody.IntervalList.ToArray();
+                var melodinotes = melody.MidiMelody.GetPitches().ToArray();
 
                 int length = 0;
                 int position = -1;
 
                 switch (SearchAlgorithm?.ToLowerInvariant())
                 {
+                    /*LongestCommonSubsequenceLimitedSkips*/
                     case "subsequence":
                         {
                             int clamped = Math.Clamp(MaxGap, 1, 3);
-                            var (lcsLen, indices) = LongestCommonSubsequenceLimitedSkips(patternShape, melodyshape, clamped);
+                            var (lcsLen, indices) = LongestCommonSubsequenceLimitedSkips(patternNotes, melodinotes, clamped, title);
                             length = lcsLen;
                             position = indices.Count > 0 ? indices[0] : -1;
                             break;
@@ -509,8 +515,9 @@ namespace Melodies25.Pages.Melodies
 
                 if (length >= minimummatch)
                 {
-                    length++; // ≥нтервал≥в + 1 нота
+                    
                     MatchedMelodies.Add((melody, length, position));
+                    MessageL(COLORS.cyan, $"Found match in '{title}': length={length}, position={position}");
                 }
             }
             sw.Stop();

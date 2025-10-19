@@ -56,38 +56,7 @@ namespace Melodies25.Utilities
             return count;
         }
 
-        // НЕ класична: спроба дозволити «дірки», залишимо як є для зворотної сумісності
-        public static int LongestCommonSubsequence(int[] arr1, int[] arr2, int maxGap)
-        {
-            //Console.WriteLine("LongestCommonSubsequence starts");
-            int m = arr1.Length;
-            int n = arr2.Length;
-            int[,] dp = new int[m + 1, n + 1];
-
-            for (int i = 1; i <= m; i++)
-            {
-                for (int j = 1; j <= n; j++)
-                {
-                    if (arr1[i - 1] == arr2[j - 1])
-                    {
-                        dp[i, j] = dp[i - 1, j - 1] + 1;
-                    }
-                    else
-                    {
-                        dp[i, j] = Math.Max(dp[i - 1, j], dp[i, j - 1]);
-
-                        for (int gap = 1; gap <= maxGap; gap++)
-                        {
-                            if (i - gap >= 0) dp[i, j] = Math.Max(dp[i, j], dp[i - gap, j]);
-                            if (j - gap >= 0) dp[i, j] = Math.Max(dp[i, j], dp[i, j - gap]);
-                        }
-                    }
-                }
-            }
-
-            return dp[m, n];
-        }
-
+        
         public static int LongestStartSubsequence(int[] arr1, int[] arr2, int maxGap)
         {
             //Console.WriteLine("LongestStartSubsequence starts");
@@ -118,7 +87,7 @@ namespace Melodies25.Utilities
 
         // КЛАСИЧНИЙ LCS: Найдовша спільна підпослідовність (дозволяє пропуски)
         // Повертає довжину та індекси збігів у другій послідовності
-        public static (int length, List<int> indicesInSecond) LongestCommonSubsequenceIndices(int[] arr1, int[] arr2)
+        public static (int length, List<int> indicesInSecond) LongestCommonSubsequence(int[] arr1, int[] arr2)
         {
             //Console.WriteLine("LongestCommonSubsequence Indices starts");
 
@@ -164,20 +133,23 @@ namespace Melodies25.Utilities
         }
 
         // LCS з обмеженням на максимальний розрив між сусідніми збігами у другій послідовності
-        public static (int length, List<int> indicesInSecond) LongestCommonSubsequenceLimitedSkips(int[] arr1, int[] arr2, int maxSkipBetweenMatches)
+        public static (int length, List<int> indicesInSecond) LongestCommonSubsequenceLimitedSkips(int[] arr1, int[] arr2, int maxSkipBetweenMatches, string title = "noname")
         {
-            var (len, idx) = LongestCommonSubsequenceIndices(arr1, arr2);
-            if (idx.Count <= 1 || maxSkipBetweenMatches <= 0)
+            var (len, idx) = LongestCommonSubsequence(arr1, arr2);
+            if (idx.Count <= 2 || maxSkipBetweenMatches <= 0)
                 return (len, idx);
 
             var filtered = new List<int> { idx[0] };
+            Console.Write($"indexes coincide for {title}: ");
             for (int k = 1; k < idx.Count; k++)
             {
                 if (idx[k] - filtered[^1] - 1 <= maxSkipBetweenMatches)
                 {
                     filtered.Add(idx[k]);
+                    Console.Write($"{idx[k]} ");
                 }
             }
+            Console.WriteLine();
             return (filtered.Count, filtered);
         }
     }
