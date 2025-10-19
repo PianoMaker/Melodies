@@ -1,12 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Melodies25.Data;
-using Microsoft.AspNetCore.Identity;
+﻿using Melodies25.Data;
 using Melodies25.Models;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging; // Для логування
-using Microsoft.Extensions.Localization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging; // Для логування
+using Microsoft.Extensions.Options;
+using System.Text;
 
 namespace Melodies25
 {
@@ -14,6 +15,19 @@ namespace Melodies25
     {
         public static void Main(string[] args)
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            // Prefer UTF-8 console encoding so Ukrainian characters print/read correctly
+            try
+            {
+                Console.OutputEncoding = Encoding.UTF8;
+                Console.InputEncoding = Encoding.UTF8;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Warning: cannot set console encoding to UTF-8: {ex.Message}");
+            }
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Створюємо логер для відлагодження
