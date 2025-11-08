@@ -11,6 +11,7 @@ using static Melodies25.Utilities.PrepareFiles;
 using static Melodies25.Utilities.WaveConverter;
 using Microsoft.EntityFrameworkCore;
 using Melody = Melodies25.Models.Melody;
+using System.Text.Json;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -248,7 +249,7 @@ namespace Melodies25.Pages.Melodies
 
             MessageL(COLORS.yellow, "MELODIES/CREATE OnPostAsync");
 
-
+            // тест на валідність моделі
             if (!ModelState.IsValid)
             {
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
@@ -271,7 +272,7 @@ namespace Melodies25.Pages.Melodies
             }
 
 
-            var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies");
+            var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies", "incoming");
 
 
             // Створюємо папку, якщо її немає
@@ -367,6 +368,8 @@ namespace Melodies25.Pages.Melodies
                     ViewData["Message"] = "Файл успішно завантажено!";
                     Melody.FilePath = newfilename;
                     GrayMessageL($"файл завантажено!");
+
+                    // СПОІВЩЕННЯ НА ТЕЛЕГРАМ 
                     await NotifyTelegram(newfilename);
 
                 }
@@ -384,25 +387,115 @@ namespace Melodies25.Pages.Melodies
 
             /* Збереження змін до бази даних */
 
-            _context.Melody.Add(Melody);
-            await _context.SaveChangesAsync();
-            var recentmelody = await _context.Melody.FirstOrDefaultAsync(m => m.Title == Melody.Title && m.Author == Melody.Author);
 
-            MessageL(COLORS.cyan, "OnPostAsync finished");
+            bool isPrivileged = User?.Identity?.IsAuthenticated == true
+                                && (User.IsInRole("Admin") || User.IsInRole("Moderator"));
 
-            return RedirectToPage("./Details", new { id = recentmelody?.ID });
+            if (isPrivileged)
+            {
+                // ЗБЕРЕЖЕННЯ У БД ДЛЯ АДМІНІВ ТА МОДЕРАТОРІВ
+                _context.Melody.Add(Melody);
+                await _context.SaveChangesAsync();
+                var recentmelody = await _context.Melody.FirstOrDefaultAsync(m => m.Title == Melody.Title && m.Author == Melody.Author);
+
+                MessageL(COLORS.cyan, "OnPostAsync finished (saved to DB)");
+
+                                
+                return RedirectToPage("./Details", new { id = recentmelody?.ID });
+            }
+            else
+            {
+                // ЗБЕРЕЖЕННЯ ЛИШЕ JSON ДЛЯ ПЕРЕВІРКИ МОДЕРАТОРОМ
+                MessageL(COLORS.cyan, "OnPostAsync finished (saved as JSON only)");
+                try
+                {
+                    var addedBy = User?.Identity?.Name ?? "anonymous";
+                    await SaveMelodyJsonAsync(Melody, addedBy);
+                    TempData["Message"] = "Мелодію збережено для перевірки (JSON). Очікуйте модерації.";
+                }
+                catch (Exception ex)
+                {
+                    ErrorMessageL($"Failed to save melody JSON: {ex.Message}");
+                    TempData["ErrorWarning"] = "Не вдалося зберегти заявку. Спробуйте пізніше.";
+                }
+
+                // Return to Create page so user can see message
+                GetAuthorsData();
+                GetTonalitiesData();
+                return Page();
+            }
+        }
+
+        // Save melody metadata and extracted note data as JSON file under wwwroot/json/melodies
+        private async Task SaveMelodyJsonAsync(Melody melody, string addedBy)
+        {
+            if (melody == null) return;
+
+            var midifileDir = Path.Combine(_environment.WebRootPath, "melodies"); 
+            if (!Directory.Exists(midifileDir)) Directory.CreateDirectory(midifileDir);
+            var incomingDir = Path.Combine(_environment.WebRootPath, "melodies", "incoming");
+            if (!Directory.Exists(incomingDir)) Directory.CreateDirectory(incomingDir);
+
+            // Attempt to load music.Melody from saved midi file if available (now in incoming)
+            List<string>? notes = null;
+            List<int>? intervals = null;
+            List<int>? pitches = null;
+            try
+            {
+                if (!string.IsNullOrEmpty(melody.FilePath))
+                {
+                    var midipath = Path.Combine(midifileDir, melody.FilePath);
+                    if (System.IO.File.Exists(midipath))
+                    {
+                        var mf = GetMidiFile(midipath);
+                        var musicMel = await GetMelodyFromMidiAsync(mf);
+                        if (musicMel is not null)
+                        {
+                            notes = musicMel.NotesList;
+                            intervals = musicMel.IntervalList;
+                            pitches = musicMel.PitchesList;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                // ignore parse errors, still save basic metadata
+                GrayMessageL($"Failed to extract MIDI details for JSON: {e.Message}");
+            }
+
+            var dto = new
+            {
+                Id = melody.ID,
+                Title = melody.Title,
+                Author = melody.Author is not null ? new { melody.Author.Name, melody.Author.Surname } : null,
+                FilePath = melody.FilePath,
+                Tonality = melody.Tonality,
+                Tempo = melody.MidiMelody?.Tempo ?? 0,
+                Description = melody.Description,
+                AddedBy = addedBy,
+                AddedAt = DateTime.UtcNow.ToString("o")
+            };
+
+            var opts = new JsonSerializerOptions { WriteIndented = true };
+            var json = JsonSerializer.Serialize(dto, opts);
+
+            var safeTitle = Translit.Transliterate(melody.Title ?? "untitled");
+            var safeAuthor = Translit.Transliterate(melody.Author?.Surname ?? "unknown");
+            var fileName = $"{DateTime.UtcNow:yyyyMMddHHmmss}_{safeAuthor}_{safeTitle}_{melody.ID}.json";
+            var filePath = Path.Combine(incomingDir, fileName);
+
+            await System.IO.File.WriteAllTextAsync(filePath, json);
+            GrayMessageL($"Saved melody JSON: {filePath}");
         }
 
         private static async Task NotifyTelegram(string newfilename)
         {
-
             // СПОІВЩЕННЯ НА ТЕЛЕГРАМ 
             try
             {
-
                 var telegramService = new TelegramService();
                 await telegramService.SendNotificationAsync($"{DateTime.Now} - на нашому сайті оновлення: завантажено файл {newfilename}");
-
             }
             catch (Exception e)
             {

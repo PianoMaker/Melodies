@@ -1,0 +1,27 @@
+﻿@page
+@model Melodies25.Pages.Experimental.IncomingModel
+@{
+    var message = TempData["Message"] as string;
+    var incoming = Model.IncomingMelodies;
+}
+<div class="infocontainer">
+    @if (incoming != null && incoming.Any())
+    {
+        <ul>
+            @foreach (var (melody, info, index, addedAt) in incoming)
+            {
+                <li>
+                    @index. <strong>@melody.Title</strong> - @info at: @addedAt
+                </li>
+            }
+        </ul>
+        <form method="post">
+            <button type="submit" asp-page-handler="Save" asp-route-id="@incoming.First().Item3">Save</button>
+            <button type="submit" asp-page-handler="Delete" asp-route-id="@incoming.First().Item3">Delete</button>
+        </form>
+    }
+    else
+    {
+        <p>No incoming melodies found.</p>
+    }
+</div>
