@@ -16,8 +16,8 @@
             }
         </ul>
         <form method="post">
-            <button type="submit" asp-page-handler="Save" asp-route-id="@incoming.First().Item3">Save</button>
-            <button type="submit" asp-page-handler="Delete" asp-route-id="@incoming.First().Item3">Delete</button>
+            <button type="submit" asp-page-handler="Save" asp-route-id="@incoming.First().Item3" class="btn">Save</button>
+            <button type="submit" asp-page-handler="Delete" asp-route-id="@incoming.First().Item3" class="btn btn-melody">Delete</button>
         </form>
     }
     else

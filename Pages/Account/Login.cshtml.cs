@@ -116,5 +116,13 @@ namespace Melodies25.Pages.Account
 
             return RedirectToPage("/Account/RecoverPasswordConfirmation");
         }
+
+        public async Task<IActionResult> OnPostSignIn()
+        {
+            return RedirectToPage($"/Account/Register");
+
+        }
+
+
     }
 }

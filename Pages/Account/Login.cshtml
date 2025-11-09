@@ -17,12 +17,16 @@
         <input asp-for="Input.Password" class="form-control" type="password" />
         <span asp-validation-for="Input.Password" class="text-danger"></span>
     </div>
-    <button type="submit" class="btn btn-primary">Login</button>
+    <button type="submit" class="btn btn-primary">Увійти</button>
 </form>
 
 <form method="post" asp-page-handler="RecoverPassword" id="recoverForm" class="mt-2">
     <input type="hidden" id="recoverEmail" name="Input.Email" />
-    <button type="submit" class="btn btn-link p-0">Нагадати пароль</button>
+    <button type="submit" class="btn btn-melody">Нагадати пароль</button>
+</form>
+
+<form method="post" asp-page-handler="SignIn" id="signInForm" class="mt-2">
+    <button type="submit" class="btn btn-outline-dark light-background">Зареєструватись</button>
 </form>
 
 <partial name="_ValidationScriptsPartial" />
