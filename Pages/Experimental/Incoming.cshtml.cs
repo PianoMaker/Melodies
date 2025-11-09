@@ -132,7 +132,7 @@ namespace Melodies25.Pages.Experimental
         {
             
             Console.WriteLine($"Save requested for incoming melody ID: {id}");
-            var melodyToSave = IncomingMelodies.FirstOrDefault(item => item.Item1.ID == id);
+            var melodyToSave = IncomingMelodies[id];
             if (melodyToSave.Item1 != null)
             {
                 _context.Melody.Add(melodyToSave.Item1);

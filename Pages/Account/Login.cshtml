@@ -17,7 +17,7 @@
         <input asp-for="Input.Password" class="form-control" type="password" />
         <span asp-validation-for="Input.Password" class="text-danger"></span>
     </div>
-    <button type="submit" class="btn btn-primary">Увійти</button>
+    <button type="submit" class="btn btn-melody">Увійти</button>
 </form>
 
 <form method="post" asp-page-handler="RecoverPassword" id="recoverForm" class="mt-2">
@@ -26,7 +26,7 @@
 </form>
 
 <form method="post" asp-page-handler="SignIn" id="signInForm" class="mt-2">
-    <button type="submit" class="btn btn-outline-dark light-background">Зареєструватись</button>
+    <button type="submit" class="btn btn-melody">Зареєструватись</button>
 </form>
 
 <partial name="_ValidationScriptsPartial" />

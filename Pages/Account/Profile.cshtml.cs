@@ -17,12 +17,20 @@ namespace Melodies25.Pages.Account
 
         public string Email { get; set; }
         public string UserName { get; set; }
+        public string Role { get; set; }
 
         public async Task OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
-            Email = user?.Email;
-            UserName = user?.UserName;
+            if (user != null)
+            {
+                Email = user.Email;
+                UserName = user.UserName;
+
+                var roles = await _userManager.GetRolesAsync(user);
+
+                Role = roles.Count > 0 ? string.Join(", ", roles) : "Немає ролі";
+            }
         }
     }
 }
