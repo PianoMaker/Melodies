@@ -52,10 +52,14 @@ namespace Melodies25.Pages.Melodies
 
         private static readonly char[] separator = new char[] { ' ', '_' };
 
+        private bool isPrivileged;
+
         public CreateModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
         {
             _context = context;
             _environment = environment;
+            isPrivileged = User?.Identity?.IsAuthenticated == true
+                                && (User.IsInRole("Admin") || User.IsInRole("Moderator"));
         }
 
         public IActionResult OnGet(int selectedAuthorId)
@@ -243,7 +247,7 @@ namespace Melodies25.Pages.Melodies
             return new JsonResult(exists);
         }
 
-        /* ЗАПИС НОВОЇ МЕЛОДІЇ НА СЕРВЕР */
+        /* ЗАПИС НОВОЇ МЕЛОДІЇ НА СЕРВЕР АБО В JSON */
         public async Task<IActionResult> OnPostCreateAsync(IFormFile? fileupload)
         {
 
@@ -272,19 +276,12 @@ namespace Melodies25.Pages.Melodies
             }
 
 
-            var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies", "incoming");
+            // Define both folders once
+            var incomingDir = Path.Combine(_environment.WebRootPath, "melodies", "incoming");
+            var publishedDir = Path.Combine(_environment.WebRootPath, "melodies");
 
-
-            // Створюємо папку, якщо її немає
-            if (!Directory.Exists(uploadsPath))
-            {
-                Directory.CreateDirectory(uploadsPath);
-                Console.WriteLine($"{uploadsPath} created");
-            }
-            else
-            {
-                Console.WriteLine($"{uploadsPath} exists");
-            }
+            Directory.CreateDirectory(incomingDir);
+            Directory.CreateDirectory(publishedDir);
 
 
             //ЯКЩО ФАЙЛ ЗАВАНТАЖЕНО ЧЕРЕЗ ФОРМУ
@@ -299,7 +296,7 @@ namespace Melodies25.Pages.Melodies
 
 
                 // Записуємо файл з uploadPath на сервер
-                var midifilePath = Path.Combine(uploadsPath, newfilename);
+                var midifilePath = Path.Combine(incomingDir, newfilename);
                 using (var stream = new FileStream(midifilePath, FileMode.Create))
                 {
                     await fileupload.CopyToAsync(stream);
@@ -315,7 +312,7 @@ namespace Melodies25.Pages.Melodies
                     }
                 }
 
-                // перевірка на поліфоню 
+                // перевірка на поліфонію 
                 var ifeligible = IfMonody(midifilePath);
 
                 // створює mp3 на основі MIDI та завантажує на сервер якщо не поліфонічний (існуючий перезаписує)
@@ -350,7 +347,11 @@ namespace Melodies25.Pages.Melodies
             {
 
                 string newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
-                var midifilePath = Path.Combine(uploadsPath, newfilename);
+
+                string midifilePath = Path.Combine(incomingDir, publishedDir);
+                if (!isPrivileged) midifilePath = Path.Combine(incomingDir, newfilename);
+
+                
                 int i = 0;
                 while (System.IO.File.Exists(midifilePath))
                 {
@@ -385,15 +386,12 @@ namespace Melodies25.Pages.Melodies
                 ErrorMessageL("fileupload is null");
             }
 
-            /* Збереження змін до бази даних */
 
+            MessageL(COLORS.cyan, "OnPostAsync finished (saved to DB)");
 
-            bool isPrivileged = User?.Identity?.IsAuthenticated == true
-                                && (User.IsInRole("Admin") || User.IsInRole("Moderator"));
-
+            // ЗБЕРЕЖЕННЯ У БД ДЛЯ АДМІНІВ ТА МОДЕРАТОРІВ
             if (isPrivileged)
-            {
-                // ЗБЕРЕЖЕННЯ У БД ДЛЯ АДМІНІВ ТА МОДЕРАТОРІВ
+            {                
                 _context.Melody.Add(Melody);
                 await _context.SaveChangesAsync();
                 var recentmelody = await _context.Melody.FirstOrDefaultAsync(m => m.Title == Melody.Title && m.Author == Melody.Author);
@@ -403,15 +401,17 @@ namespace Melodies25.Pages.Melodies
                                 
                 return RedirectToPage("./Details", new { id = recentmelody?.ID });
             }
+            // ЗБЕРЕЖЕННЯ ЛИШЕ JSON ДЛЯ ПЕРЕВІРКИ МОДЕРАТОРОМ
             else
             {
-                // ЗБЕРЕЖЕННЯ ЛИШЕ JSON ДЛЯ ПЕРЕВІРКИ МОДЕРАТОРОМ
+                
                 MessageL(COLORS.cyan, "OnPostAsync finished (saved as JSON only)");
                 try
                 {
                     var addedBy = User?.Identity?.Name ?? "anonymous";
                     await SaveMelodyJsonAsync(Melody, addedBy);
                     TempData["Message"] = "Мелодію збережено для перевірки (JSON). Очікуйте модерації.";
+                    return RedirectToPage("./Create");
                 }
                 catch (Exception ex)
                 {
@@ -567,8 +567,6 @@ namespace Melodies25.Pages.Melodies
             }
 
             else return Page();
-
-
         }
 
 
@@ -644,5 +642,8 @@ namespace Melodies25.Pages.Melodies
 
     }
 }
+
+
+
 
 

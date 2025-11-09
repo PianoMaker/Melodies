@@ -17,16 +17,15 @@ namespace Melodies25.Pages.Experimental
         private readonly Melodies25.Data.Melodies25Context _context;
 
 
-        public IncomingModel(IWebHostEnvironment environment)
+        public IncomingModel(IWebHostEnvironment environment, Melodies25.Data.Melodies25Context context)
         {
             _environment = environment;
+            _context = context;
         }
 
         public void OnGet()
         {
             Console.WriteLine("Incoming page accessed");
-
-            // Simulate fetching incoming melodies
             IncomingMelodies = GetIncomingMelodies();
         }
 
@@ -128,23 +127,146 @@ namespace Melodies25.Pages.Experimental
         }
 
         // Збереження мелодії до бази даних
-        public async Task OnPostSaveAsync(int id)
+        public async Task<IActionResult> OnPostSaveAsync(int id)
         {
-            
-            Console.WriteLine($"Save requested for incoming melody ID: {id}");
-            var melodyToSave = IncomingMelodies[id];
-            if (melodyToSave.Item1 != null)
+            IncomingMelodies = GetIncomingMelodies();
+            Console.WriteLine($"Save requested for incoming melody ID: {id}. Incoming melodies count = {IncomingMelodies.Count}");                       
+
+            try
             {
-                _context.Melody.Add(melodyToSave.Item1);
+                var melodyToSave = IncomingMelodies[id];
+
+                var incomingMelody = melodyToSave.Item1;
+
+
+                if (incomingMelody is null)
+                {
+                    Console.WriteLine("Incoming melody not found");
+                    TempData["Message"] = "Мелодію не знайдено";
+                    return Page();
+                }
+
+
+                bool exists = _context.Melody.Any(m => m.Title == incomingMelody.Title);
+                if (exists)
+                {
+                    Console.WriteLine("Melody already exists in DB");
+                    TempData["Message"] = "Мелодія вже існує в базі";
+                    DeleteFileFromWebDirectory(id); // опціонально
+                    return RedirectToPage();
+                }
+
+                var entity = new Melody
+                {
+                    Title = incomingMelody.Title,
+                    Description = incomingMelody.Description,
+                    Tonality = incomingMelody.Tonality
+                };
+
+                if (incomingMelody.Author is not null && !string.IsNullOrWhiteSpace(incomingMelody.Author.Surname))
+                {
+                    var existingAuthor = _context.Author.FirstOrDefault(a => a.Surname == incomingMelody.Author.Surname);
+                    if (existingAuthor is not null)
+                    {
+                        entity.AuthorID = existingAuthor.ID;
+                    }
+                    else
+                    {
+                        // або створити нового автора (обережно з дублями)
+                        var newAuthor = new Author
+                        {
+                            Surname = incomingMelody.Author.Surname,
+                            Name = incomingMelody.Author.Name
+                        };
+                        _context.Author.Add(newAuthor);
+                        await _context.SaveChangesAsync();
+                        entity.AuthorID = newAuthor.ID;
+                    }
+                }
+                _context.Melody.Add(entity);
+                
                 await _context.SaveChangesAsync();
 
-                Console.WriteLine($"Saving melody: {melodyToSave.Item1.Title}");
+                // Фалй MIDI переміщуємо після збереження сутності
+                MoveMidiFile(incomingMelody, entity);
+
+                Console.WriteLine($"Saving melody: {entity.Title}");
+                TempData["Message"] = $"Мелодію '{entity.Title}' збережено";
+
+                DeleteFileFromWebDirectory(id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to save melody: {ex.Message}");
+                TempData["Message"] = $"Помилка збереження: {ex.Message}";
+                return Page();
             }
 
-            DeleteFileFromWebDirectory(id);
+            //DeleteFileFromWebDirectory(id);
 
             IncomingMelodies = GetIncomingMelodies();
-            Page();
+            return Page();
+        }
+
+        private void MoveMidiFile(Melody incomingMelody, Melody entity)
+        {
+            try
+            {
+                var webRoot = _environment.WebRootPath ?? string.Empty;
+                var incomingFolder = Path.Combine(webRoot, "melodies", "incoming");
+                var targetFolder = Path.Combine(webRoot, "melodies");
+                Directory.CreateDirectory(targetFolder);
+
+                // Get the file name from the web-relative path we built when listing incoming files
+                var fileName = Path.GetFileName(incomingMelody.FilePath ?? string.Empty);
+
+                if (!string.IsNullOrWhiteSpace(fileName))
+                {
+                                       
+                    var sourcePath = Path.Combine(incomingFolder, fileName);
+                    if (!System.IO.File.Exists(sourcePath))
+                    {
+                        // Fallback: try force .mid
+                        var baseName = Path.GetFileNameWithoutExtension(fileName);
+                        var altSource = Path.Combine(incomingFolder, $"{baseName}.mid");
+                        if (System.IO.File.Exists(altSource))
+                        {
+                            sourcePath = altSource;
+                            fileName = $"{baseName}.mid";
+                        }
+                    }
+
+                    if (System.IO.File.Exists(sourcePath))
+                    {
+                        var destPath = Path.Combine(targetFolder, fileName);
+
+                        // If destination exists, make a unique file name
+                        if (System.IO.File.Exists(destPath))
+                        {
+                            var uniqueFile = $"{Path.GetFileNameWithoutExtension(fileName)}_{DateTime.UtcNow:yyyyMMddHHmmss}{Path.GetExtension(fileName)}";
+                            destPath = Path.Combine(targetFolder, uniqueFile);
+                            fileName = uniqueFile;
+                        }
+
+                        System.IO.File.Move(sourcePath, destPath);
+
+                        Console.WriteLine($"MIDI moved to: {destPath}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"MIDI source file not found. Expected at: {sourcePath}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Incoming melody FilePath missing; cannot move MIDI.");
+                }
+            }
+            catch (Exception moveEx)
+            {
+                Console.WriteLine($"Failed to move MIDI file: {moveEx.Message}");
+                // Continue; melody is already saved. We keep JSON cleanup to avoid reprocessing.
+            }
         }
 
         // Видалення вхідної мелодії
@@ -160,37 +282,30 @@ namespace Melodies25.Pages.Experimental
             Page();
         }
 
-        
+
 
         private void DeleteFileFromWebDirectory(int id)
         {
-            Directory.GetFiles(Path.Combine(_environment.WebRootPath ?? string.Empty, "melodies", "incoming"), "*.json")
-                            .Where(jsonPath =>
-                            {
-                                try
-                                {
-                                    var json = System.IO.File.ReadAllText(jsonPath);
-                                    var dto = JsonSerializer.Deserialize<IncomingDto>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                                    return dto != null && dto.Id == id;
-                                }
-                                catch
-                                {
-                                    return false;
-                                }
-                            })
-                            .ToList()
-                            .ForEach(jsonPath =>
-                            {
-                                try
-                                {
-                                    System.IO.File.Delete(jsonPath);
-                                    Console.WriteLine($"Deleted incoming JSON file: {jsonPath}");
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine($"Failed to delete incoming JSON file '{jsonPath}': {ex.Message}");
-                                }
-                            });
+            int counter = 0;    
+            Console.WriteLine($"Deleting files for incoming melody ID: {id}");
+            var allfiles = Directory.GetFiles(Path.Combine(_environment.WebRootPath ?? string.Empty, "melodies", "incoming"));
+            var file = allfiles[id];
+
+            Console.WriteLine($"Deleting file {file}");
+
+
+            try
+            {
+                System.IO.File.Delete(file);
+                counter++;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to delete file '{file}': {ex.Message}");
+            }
+
+
+            Console.WriteLine($"Deletion process completed for incoming melody ID: {id}, {counter} files deleted");
         }
 
 

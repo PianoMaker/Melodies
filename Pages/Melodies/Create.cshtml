@@ -17,12 +17,12 @@
 
 <hr />
 
-@if (ViewData["Message"] != null)
+@{
+    var message = TempData["Message"] as string;
+}
+@if (!string.IsNullOrEmpty(message))
 {
-    <div class="alert alert-info">
-        @ViewData["Message"]
-    </div>
-
+    <div class="alert alert-info">@message</div>
 }
 
 <div class="searchcontainer h-100">

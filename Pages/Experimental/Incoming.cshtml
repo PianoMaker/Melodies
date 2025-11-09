@@ -11,11 +11,11 @@
             @foreach (var (melody, info, index, addedAt) in incoming)
             {
                 <li>
-                    @index. <strong>@melody.Title</strong> - @info ; час додавання: @addedAt
+                    @index <strong>@melody.Title</strong> - @info ; час додавання: @addedAt
                 </li>
                 <form method="post">
-                    <button type="submit" asp-page-handler="Save" asp-route-id="@incoming.First().Item3" class="btn btn-melody">Save</button>
-                    <button type="submit" asp-page-handler="Delete" asp-route-id="@incoming.First().Item3" class="btn btn-melody">Delete</button>
+                    <button type="submit" asp-page-handler="Save" asp-route-id="@index" class="btn btn-melody">Save</button>
+                    <button type="submit" asp-page-handler="Delete" asp-route-id="@index" class="btn btn-danger">Delete</button>
                 </form>
             }
         </ul>
