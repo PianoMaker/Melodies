@@ -4,7 +4,7 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     console.log("createMelody.js starts.");
-    
+    let fileIsReady = false; 
 
     const buttons = document.querySelectorAll('#pianoroll button');
     const audioPlayer = document.getElementById('audioPlayer'); // аудіоплеєр
@@ -13,18 +13,28 @@ document.addEventListener("DOMContentLoaded", function () {
     const keysInput_save = document.getElementById("keysInput-save")
     const keysInput_search = document.getElementById("keysInput-search")
     const searchAlgorithmInput = document.getElementById("searchAlgorithmInput");
-    const createMIDIButton = document.getElementById('createMIDI');//кнопка "зберегти"
+
+	// кнопки та елементи сторінки
+    const createMIDIButton = document.getElementById('createMIDI');//кнопка "Зберегти" (зберігає MIDI із введених нот)
+    const resetBtn = document.getElementById('resetBtn'); // кнопка "Скинути"
     const searchButton = document.getElementById('searchBtn');//кнопка "зберегти"
     const playButton = document.getElementById('melodyPlayBtn');
     const saver = document.getElementById("saver");//тимчасове збереження мелодії
     const authorSaver = document.getElementById("authorSaver");//тимчасове збереження автора    
     const titleInput = document.getElementById("titleInput");
     const selectAuthor = document.getElementById("selectAuthor");
-    const copyBtn = document.getElementById("copyBtn");
-    const submitMelodyBtn = document.getElementById("submitMelodyBtn")
-    const melodyFileInput = document.getElementById('melodyFileInput');
-    const denominatorInput = document.getElementById('TimeSignatureDenominator');
-	const numeratorInput = document.getElementById('TimeSignatureNumerator');
+    const copyBtn = document.getElementById("copyBtn");	
+    const submitMelodyBtn = document.getElementById("submitMelodyBtn") //кнопка "Створити" (зберігає мелодію в БД)
+    
+	const melodyFileInput = document.getElementById('melodyFileInput'); // завантажувач файлів MIDI
+	// елементи вибору музичного розміру
+    const denominatorInput = document.getElementById('TimeSignatureDenominator'); 
+    const numeratorInput = document.getElementById('TimeSignatureNumerator'); 
+	// елементи, що відображають готовності MIDI-файлу
+    const midiIsReady = document.getElementById('midiIsReady');
+    const midiIsNotReady = document.getElementById('midiIsNotReady');
+	
+
 
     if (!pianodisplay) {
         console.warn('[createMelody]: pianodisplay element not found – aborting createMelody.js initialization');
@@ -46,8 +56,11 @@ document.addEventListener("DOMContentLoaded", function () {
         numeratorInput.value = sessionStorage.getItem("savedNumerator");
         console.log(`[createMelody]: Restored numerator: ${numeratorInput.value}`);
     }
-
-
+    if (sessionStorage.getItem("fileIsReady") === "true"){
+        fileIsReady = true;
+        midiIsReady.style.display = "inline";
+        midiIsNotReady.style.display = "none";
+       }
     // ===== LIVE NOTATION (Create page) using patternRenderer.js =====
     // Load renderer deps only once and setup live render like on Search page
     (function setupLiveNotationOnCreate(){
@@ -120,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const { num, den } = getSearchTimeSignature();
 
-		// Рендеру введеної користувачем нотної послідовності
+		// Рендер введеної користувачем нотної послідовності
         function safeRender(pattern){
             try {
 				console.log('live notation render:', { pattern, num, den });
@@ -246,6 +259,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (titleInput && selectAuthor && submitMelodyBtn && savedTitle && savedAuthorId)
         submitMelodyBtn.style.display = 'block';
 
+
+
     //обробник завантажувача файлів (присутній лише на сторінці Create)
     if (melodyFileInput) {
         melodyFileInput.addEventListener('change', function () {
@@ -253,6 +268,14 @@ document.addEventListener("DOMContentLoaded", function () {
             if (fileInput.files.length > 0) {
                 const copyBtnLocal = document.getElementById('copyBtn');
                 if (copyBtnLocal) copyBtnLocal.style.display = 'inline-block';
+                // 
+                if (midiIsReady) midiIsReady.style.display = "inline";
+                if (midiIsNotReady) midiIsNotReady.style.display = "none";
+                fileIsReady = "true";
+				sessionStorage.setItem("fileIsReady", "true");
+            } else {
+                if (midiIsReady) midiIsReady.style.display = "none";
+                if (midiIsNotReady) midiIsNotReady.style.display = "inline";
             }
         });
     }
@@ -377,6 +400,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Викликає OnPostMelody()
                 const melodyForm = document.getElementById('melodyForm');
                 if (melodyForm) melodyForm.submit();
+                midiIsReady.style.display = "inline";
+                midiIsNotReady.style.display = "none";
+                fileIsReady = "true";
+                sessionStorage.setItem("fileIsReady", "true");
             }
             else alert("Мелодія даного автора з такою назвою вже існує");
 
@@ -442,6 +469,44 @@ document.addEventListener("DOMContentLoaded", function () {
             else submitMelodyBtn.style.display = 'none';
         });
     }
+
+// Кнопка "Скинути" - очищає нотний рядок та скидає всі налаштування
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            // Очищення нотного рядка
+            if (pianodisplay) pianodisplay.value = '';
+
+            // Скидання музичного розміру до значень за замовчуванням
+            denominatorInput.value = '4';
+            numeratorInput.value = '4';
+
+            // Приховати повідомлення про готовність MIDI
+            midiIsReady.style.display = "none";
+            midiIsNotReady.style.display = "inline";
+
+            // Скидання стилів кнопок
+            if (createMIDIButton) createMIDIButton.style.background = "";
+            if (playButton) playButton.style.background = "";
+
+            // Очистка тимчасового збереження
+            saver.innerHTML = '';
+            authorSaver.innerHTML = '';
+
+            // Приховати кнопку "Додати мелодію"
+            submitMelodyBtn.style.display = 'none';
+
+            // Скидання значень у sessionStorage
+            sessionStorage.removeItem("savedTitle");
+            sessionStorage.removeItem("selectedAuthorId");
+            sessionStorage.removeItem("fileIsReady");
+            sessionStorage.removeItem("savedDenominator");
+            sessionStorage.removeItem("savedNumerator");
+
+            console.log("Налаштування скинуто до значень за замовчуванням.");
+        });
+    }
+
+
 
 });
 

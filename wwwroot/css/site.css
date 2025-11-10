@@ -968,7 +968,10 @@ p {
         }
 
         /* reset last-child fixed width inside the small screen breakpoint */
-        .table td:last-child, .table th:last-child { width: auto !important; white-space: normal !important; }
+        .table td:last-child, .table th:last-child {
+            width: auto !important;
+            white-space: normal !important;
+        }
 
         .song-title {
             display: inline-block;
@@ -1007,19 +1010,29 @@ p {
         }
     }
 
-.settimesignature {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center;
-    gap: 0.5rem;
+    .settimesignature {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .settimesignature input,
+        .settimesignature select,
+        .settimesignature span {
+            display: inline-block !important;
+            width: auto;
+            margin: 0 2px;
+            vertical-align: middle;
+            box-sizing: border-box;
+        }
+}
+#midiIsReady {
+    color: green;
+    font-weight: bold;
 }
 
-.settimesignature input,
-.settimesignature select,
-.settimesignature span {
-    display: inline-block !important;
-    width: auto;
-    margin: 0 2px;
-    vertical-align: middle;
-    box-sizing: border-box;
+#midiIsNotReady {
+    color: red;
+    font-weight: bold;
 }

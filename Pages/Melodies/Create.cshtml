@@ -13,9 +13,11 @@
     <link rel="stylesheet" href="~/css/notes.css" asp-append-version="true" />
 }
 
-<h1>Додати пісню</h1>
+<div class="searchcontainer h-100">
+<h1>Додати мелодію</h1>
 
 <hr />
+</div>
 
 @{
     var message = TempData["Message"] as string;
@@ -24,8 +26,8 @@
 {
     <div class="alert alert-info">@message</div>
 }
+    <div class="searchcontainer h-100">
 
-<div class="searchcontainer h-100">
 
     <!--ЛІВОРУЧ-->
     <div class="searchleftcontainer">        
@@ -82,6 +84,8 @@
         <!-- СТВОРИТИ -->
             <div id="submitMelodyBtn" class="form-group" style="display:none; margin-top: 10px">
                 <input type="submit" value="Створити" class="btn btn-primary btn-outline-dark bg-yellow">
+                <p id="midiIsNotReady">MIDI-файл не готовий</p>
+                <p id="midiIsReady" style="display:none">MIDI-файл готовий</p>
             </div>
         </form>
         <!-- ДОДАТИ АВТОРА -->
