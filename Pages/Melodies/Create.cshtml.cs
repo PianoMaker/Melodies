@@ -604,7 +604,7 @@ namespace Melodies25.Pages.Melodies
             else
             {
                 MessageL(COLORS.yellow, $"CREATE - OnPostPiano method, no key, return");
-                TempData["ErrorWarning"] = "Жодної ноти не введено";
+                TempData["ErrorWarning"] = "";
                 return Page();
             }
             var note = new Note(key);
