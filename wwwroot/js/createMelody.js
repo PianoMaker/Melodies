@@ -6,10 +6,10 @@ document.addEventListener("DOMContentLoaded", function () {
 	console.log("createMelody.js starts.");
 
 
-	const buttons = document.querySelectorAll('#pianoroll button');
-	const audioPlayer = document.getElementById('audioPlayer'); // аудіоплеєр
-	const audioSource = document.getElementById('audioSource'); // джерело для аудіофайлу     
-	let pianodisplay = document.getElementById("pianodisplay");
+	const buttons = document.querySelectorAll('#pianoroll button');		// клавіші фортепіано
+	const audioPlayer = document.getElementById('audioPlayer');			// аудіоплеєр
+	const audioSource = document.getElementById('audioSource');			// джерело для аудіофайлу     
+	let pianodisplay = document.getElementById("pianodisplay");			// 
 	const keysInput_save = document.getElementById("keysInput-save")
 	const keysInput_search = document.getElementById("keysInput-search")//прихований input для збереження нотного рядку перед відправкою форми
 
@@ -18,23 +18,29 @@ document.addEventListener("DOMContentLoaded", function () {
 	// сторінка Створення файлів
 	//------------------------
 
-	const authorSaver = document.getElementById("authorSaver");//тимчасове збереження автора    
-	const titleInput = document.getElementById("titleInput");
-	const selectAuthor = document.getElementById("selectAuthor");
-	const copyBtn = document.getElementById("copyBtn");
-	const submitMelodyBtn = document.getElementById("submitMelodyBtn") //кнопка "Створити" (зберігає мелодію в БД)   
-	const melodyFileInput = document.getElementById('melodyFileInput'); // завантажувач файлів MIDI
+	const authorSaver = document.getElementById("authorSaver");			//тимчасове збереження автора    
+	const titleInput = document.getElementById("titleInput");			//введення назви
+	const selectAuthor = document.getElementById("selectAuthor");		//вибір автора
+	let inputAuthor = document.getElementById("inputAuthor");			//введення нового автора
+	let warningField = document.getElementById("authorWarning");		//поле для попередження можливого дублікату автора
+	const copyBtn = document.getElementById("copyBtn");					//кнопка копіювання назви твору з назви файлу
+	const submitMelodyBtn = document.getElementById("submitMelodyBtn");	//кнопка "Створити" (зберігає мелодію в БД)   
+	const melodyFileInput = document.getElementById('melodyFileInput');	// завантажувач файлів MIDI
+	let createAuthorBtn = document.getElementById("createAuthorBtn");	//кнопка додати автора    
 
 	//-------------------
 	//Елементи введення нотного тексту
 	//--------------------
-	const createMIDIButton = document.getElementById('createMIDI');//кнопка "Зберегти" (зберігає MIDI із введених нот)
-	const resetBtn = document.getElementById('resetBtn'); // кнопка "Скинути"        
-	const playButton = document.getElementById('melodyPlayBtn');
-	const saver = document.getElementById("saver");//тимчасове збереження мелоді
+	const createMIDIButton = document.getElementById('createMIDI');	//кнопка "Зберегти" (зберігає MIDI із введених нот)
+	const resetBtn = document.getElementById('resetBtn');			// кнопка "Скинути"        
+	const playButton = document.getElementById('melodyPlayBtn');	// кнопка відтворення
+	const saver = document.getElementById("saver");					//тимчасове збереження мелодії
+
 	// елементи вибору музичного розміру
 	const denominatorInput = document.getElementById('TimeSignatureDenominator');
 	const numeratorInput = document.getElementById('TimeSignatureNumerator');
+
+	//кількість введених нот
 	const outerNoteBoxCount = document.querySelectorAll('.outerNoteBox').length;
 
 	// елементи повідомлення про готовність MIDI
@@ -45,8 +51,8 @@ document.addEventListener("DOMContentLoaded", function () {
 	//------------------------
 	//сторінка Пошуку файлів
 	//------------------------
-	const searchButton = document.getElementById('searchBtn');//кнопка "зберегти"
-	const searchAlgorithmInput = document.getElementById("searchAlgorithmInput");
+	const searchButton = document.getElementById('searchBtn');						//кнопка "зберегти"
+	const searchAlgorithmInput = document.getElementById("searchAlgorithmInput");	//вибір алгоритму пошуку
 
 	if (!pianodisplay) {
 		console.warn('[createMelody]: pianodisplay element not found – aborting createMelody.js initialization');
@@ -59,6 +65,14 @@ document.addEventListener("DOMContentLoaded", function () {
 	//========================
 	let fileIsReady = outerNoteBoxCount > 0 || (melodyFileInput && melodyFileInput.files.length > 0);
 	console.log('[createMelody]: initial fileIsReady =', fileIsReady);
+
+	updateButtons();
+	searchAuthor();
+
+
+
+	if (selectAuthor) selectAuthor.addEventListener("change", updateButtons);
+	if (createAuthorBtn) createAuthorBtn.addEventListener("click", hideSelectBtn);
 
 
 	//========================
@@ -74,14 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		console.log(`[createMelody]: Restored numerator: ${numeratorInput.value}`);
 	}
 
-
-
-	//if (sessionStorage.getItem("fileIsReady") === "true"){
-	//    fileIsReady = true;
-	//    midiIsReady.style.display = "inline";
-	//    midiIsNotReady.style.display = "none";
-	//}
-
+	if (!fileIsReady) hideSubmitBtn();
 
 	// ===== LIVE NOTATION (Create page) using patternRenderer.js =====
 	// Load renderer deps only once and setup live render like on Search page
@@ -213,6 +220,16 @@ document.addEventListener("DOMContentLoaded", function () {
 		function startPolling() { setInterval(renderFromTextarea, 200); }
 		function renderOnLoad() { renderFromTextarea(); }
 
+
+		//==========================
+		// Парсинг музичного розміру
+		//==========================
+		function getSearchTimeSignature() {
+			const num = parseInt(document.getElementById('TimeSignatureNumerator')?.value) || 4;
+			const den = parseInt(document.getElementById('TimeSignatureDenominator')?.value) || 4;
+			return { num, den };
+		}
+
 		// If libs already present (e.g., Search has static includes), skip dynamic loading
 		const depsAlreadyPresent =
 			(window.Vex && window.Vex.Flow) &&
@@ -300,21 +317,22 @@ document.addEventListener("DOMContentLoaded", function () {
 	// СПІЛЬНІ ДЛЯ СТОРІНОК CREATE І SEARCH
 	//------------------------
 
-
-	//обробник кнопок з тривалістю
+	//----------------------------------
+	//обробник кнопок тривалостей
+	//----------------------------------
 	let duration = '4';
 	const durationbuttons = document.querySelectorAll('.durationbutton');
 	const restBtn = document.getElementById('pausebutton');
-	const dotBtn = document.getElementById('dotbutton'); // NEW
+	const dotBtn = document.getElementById('dotbutton');
 
 	durationbuttons.forEach((button, index) => {
 		button.addEventListener('click', () => {
-			duration = String(2 ** index); // 2^index дає потрібне значення
+			duration = String(2 ** index);
 			console.log(`[createMelody]: duration: ${duration}`);
 		});
 	});
 
-	// якщо є кнопка крапки, додаємо обробник
+	// обробник нот з крапками
 	if (dotBtn) {
 		dotBtn.addEventListener('click', () => {
 			dotBtn.classList.toggle('highlight');
@@ -328,7 +346,9 @@ document.addEventListener("DOMContentLoaded", function () {
 		return document.getElementById('dotbutton')?.classList.contains('highlight') || false;
 	}
 
-	// обробник клавіш фортепіано
+	//----------------------------------
+	// обробники клавіш фортепіано
+	//----------------------------------
 	buttons.forEach(button => {
 		button.addEventListener('click', function () {
 			const key = this.getAttribute('data-key');
@@ -350,8 +370,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	});
 
-
+	//----------------------------------
 	// обробник зміни музичного розміру
+	//----------------------------------
 	if (denominatorInput && numeratorInput) {
 		denominatorInput.addEventListener('change', function () {
 			sessionStorage.setItem("savedDenominator", denominatorInput.value);
@@ -367,7 +388,9 @@ document.addEventListener("DOMContentLoaded", function () {
 		console.warn('[createMelody]: denominatorInput or numeratorInput not found');
 	}
 
+	//----------------------------------
 	// обробник паузи
+	//----------------------------------
 	if (restBtn) {
 		restBtn.addEventListener('click', function () {
 			const dotSuffix = isDottedActive() ? '.' : '';
@@ -385,7 +408,9 @@ document.addEventListener("DOMContentLoaded", function () {
 		console.warn('restBtn not found');
 	}
 
-	//кнопка "Відтворення"
+	//----------------------------------
+	//Обробник кнопки "Відтворення"
+	//----------------------------------
 	if (playButton) {
 		playButton.addEventListener('click', function (e) {
 
@@ -403,8 +428,9 @@ document.addEventListener("DOMContentLoaded", function () {
 			});
 		});
 	}
-
-	//кнопка "Зберегти" (Create) або "попередній перегляд" (Search)
+	//------------------------------
+	//Обробник кнопки "Зберегти" (Create) або "попередній перегляд" (Search)
+	//------------------------------
 	if (createMIDIButton && titleInput && selectAuthor && submitMelodyBtn) {
 		// Create page behavior
 		createMIDIButton.addEventListener('click', function (event) {
@@ -437,7 +463,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 	// ==========================
-	// Кнопка "Скинути" - очищає нотний рядок та скидає всі налаштування
+	// Обробник кнопки "Скинути" - очищає нотний рядок та скидає всі налаштування
 	// ==========================
 	if (resetBtn) {
 		resetBtn.addEventListener('click', function () {
@@ -477,7 +503,9 @@ document.addEventListener("DOMContentLoaded", function () {
 	//ДЛЯ СТОРІНКИ CREATE
 	//-------------------------
 
+	//----------------------------------
 	//обробник завантажувача файлів (присутній лише на сторінці Create)
+	//----------------------------------
 	if (melodyFileInput) {
 		melodyFileInput.addEventListener('change', function () {
 			console.log("melodyFileInput change event triggered");
@@ -497,9 +525,18 @@ document.addEventListener("DOMContentLoaded", function () {
 			}
 		});
 	}
+	//----------------------------------
+	// обробник кнопки "Копіювати з назви"
+	//----------------------------------
 
+	if (copyBtn) {
 
-	// відображення кнопки ДОДАТИ МЕЛОДІЮ
+		copyBtn.addEventListener("click", copytitle);
+	}
+
+	//----------------------------------
+	// обробник поля "Назва" (Title)
+	//----------------------------------
 	if (titleInput && selectAuthor && submitMelodyBtn) {
 		titleInput.addEventListener("input", function () {
 
@@ -510,7 +547,36 @@ document.addEventListener("DOMContentLoaded", function () {
 			else submitMelodyBtn.style.display = 'none';
 		});
 	}
+	//----------------------------------
+	// обробник поля введення нового автора
+	//----------------------------------
 
+	if (inputAuthor) {
+		hideSelectBtn();
+		inputAuthor.addEventListener("input", async function () {
+			let author = inputAuthor.value.trim();
+			console.log(`search author for duplicates ${author}`);
+			if (author.length > 4) {
+				try {
+					let response = await fetch(`/Melodies/Create?handler=CheckAuthor&author=${encodeURIComponent(author)}`);
+					let result = await response.json();
+					console.log(result.exists);
+					if (result.exists) {
+						warningField.innerHTML = "❗ Можливо, такий автор вже існує!";
+						warningField.style.color = "red";
+					} else {
+						warningField.innerHTML = "";
+					}
+				} catch (error) {
+					console.error("Помилка перевірки автора:", error);
+				}
+			} else {
+				warningField.innerHTML = "";
+				warningField.style.color = "";
+			}
+		});
+		showSubmitBtn();
+	}
 
 	function updateButtons() {
 
@@ -546,10 +612,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	function searchAuthor() {
 		console.log("try to search author");
-		let inputAuthor = document.getElementById("inputAuthor");
-		let warningField = document.getElementById("authorWarning");
 		if (!warningField)
-			console.log("no warning Field!");
+			console.warn("no warning Field!");
 
 		if (inputAuthor) {
 			hideSelectBtn();
@@ -596,50 +660,9 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 
-	document.addEventListener("DOMContentLoaded", function () {
-		console.log("newAuthor.js is running");
-
-		updateButtons();
-		searchAuthor();
-
-		let selectAuthor = document.getElementById("selectAuthor");//поле обрати автора
-		let createAuthorBtn = document.getElementById("createAuthorBtn");//кнопка додати автора    
-
-		if (selectAuthor) selectAuthor.addEventListener("change", updateButtons);
-		if (createAuthorBtn) createAuthorBtn.addEventListener("click", hideSelectBtn);
-	});
-
-
-	//=========================
-	//ДЛЯ СТОРІНКИ SEARCH
-	//=========================
-
-	//кнопка "Пошук"
-	if (searchButton) {
-		searchButton.addEventListener('click', function (event) {
-			event.preventDefault();
-			if (keysInput_search) keysInput_search.value = pianodisplay.value
-			console.log("Відправка форми з Keys:", keysInput_search ? keysInput_search.value : '(no element)');
-
-			// синхронізувати вибраний алгоритм пошуку
-			const selectedAlg = document.querySelector('input[name="SearchAlgorithm"]:checked');
-			if (selectedAlg && searchAlgorithmInput) {
-				searchAlgorithmInput.value = selectedAlg.value;
-				console.log("Selected algorithm:", selectedAlg.value);
-			}
-
-			// Відправка форми
-			const searchForm = document.getElementById('notesearchForm');
-			if (searchForm) searchForm.submit();
-
-		});
-	}
-
-
-
-
-
-	//перевіряє унікальність назви+композитора
+	//----------------------------
+	//перевіряє унікальність назви + композитора
+	//---------------------------
 	async function checkIfunique() {
 		if (!titleInput || !selectAuthor) return false;
 		var title = titleInput.value;
@@ -670,33 +693,61 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 	}
 
+
+	function hideSubmitBtn() {
+		if (!fileIsReady)
+			submitMelodyBtn.style.display = 'none';
+	}
+
+	//=========================
+	//ДЛЯ СТОРІНКИ SEARCH
+	//=========================
+
+	//-----------
+	//обрпобник кнопки "Пошук"
+	//-----------
+	if (searchButton) {
+		searchButton.addEventListener('click', function (event) {
+			event.preventDefault();
+			if (keysInput_search) keysInput_search.value = pianodisplay.value
+			console.log("Відправка форми з Keys:", keysInput_search ? keysInput_search.value : '(no element)');
+
+			// синхронізувати вибраний алгоритм пошуку
+			const selectedAlg = document.querySelector('input[name="SearchAlgorithm"]:checked');
+			if (selectedAlg && searchAlgorithmInput) {
+				searchAlgorithmInput.value = selectedAlg.value;
+				console.log("Selected algorithm:", selectedAlg.value);
+			}
+
+			// Відправка форми
+			const searchForm = document.getElementById('notesearchForm');
+			if (searchForm) searchForm.submit();
+
+		});
+	}
+
+
+
+	// ======================
+	// КОПІЮВАННЯ НАЗВИ З ФАЙЛУ
+	// ======================
+	function copytitle(event) {
+		event.preventDefault();
+		console.log("copytitle function is running");
+		const fileInput = document.getElementById("melodyFileInput");
+		const titleInput = document.getElementById("titleInput"); // стандартний id для asp-for="Melody.Title"
+
+		if (fileInput && fileInput.files.length > 0 && titleInput) {
+			const filename = fileInput.files[0].name;
+			let nameWithoutExtension = filename.replace(/\.[^/.]+$/, "");
+			let nameCapitalized = nameWithoutExtension.charAt(0).toUpperCase() + nameWithoutExtension.slice(1);
+			titleInput.value = nameCapitalized;
+			titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+		} else {
+			alert("Файл не вибрано");
+		}
+	}
+
 });
 
-
-
-// ======================
-// КОПІЮВАННЯ НАЗВИ З ФАЙЛУ
-// ======================
-function copytitle(event) {
-	event.preventDefault();
-	console.log("copytitle function is running");
-	const fileInput = document.getElementById("melodyFileInput");
-	const titleInput = document.getElementById("titleInput"); // стандартний id для asp-for="Melody.Title"
-
-	if (fileInput && fileInput.files.length > 0 && titleInput) {
-		const filename = fileInput.files[0].name;
-		let nameWithoutExtension = filename.replace(/\.[^/.]+$/, "");
-		let nameCapitalized = nameWithoutExtension.charAt(0).toUpperCase() + nameWithoutExtension.slice(1);
-		titleInput.value = nameCapitalized;
-		titleInput.dispatchEvent(new Event("input", { bubbles: true }));
-	} else {
-		alert("Файл не вибрано");
-	}
-}
-
-function getSearchTimeSignature() {
-	const num = parseInt(document.getElementById('TimeSignatureNumerator')?.value) || 4;
-	const den = parseInt(document.getElementById('TimeSignatureDenominator')?.value) || 4;
-	return { num, den };
-}
 
