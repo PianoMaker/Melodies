@@ -133,6 +133,11 @@ namespace Melodies25.Utilities
         }
 
         // LCS з обмеженням на максимальний розрив між сусідніми збігами у другій послідовності
+        // Повертає довжину та індекси збігів у другій послідовності
+        // Якщо розрив більший за maxSkipBetweenMatches, такий збіг ігнорується
+        // title - назва для виводу в консоль
+        // Використовується для аналізу мелодій з обмеженням на пропуски нот
+        //
         public static (int length, List<int> indicesInSecond) LongestCommonSubsequenceLimitedSkips(int[] arr1, int[] arr2, int maxSkipBetweenMatches, string title = "noname")
         {
             var (len, idx) = LongestCommonSubsequence(arr1, arr2);

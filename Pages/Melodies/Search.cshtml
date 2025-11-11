@@ -433,7 +433,12 @@
 <script src="~/lib/midirender/midiparser.js"></script>
 <script src="~/lib/midirender/midiparser_ext.js"></script>
 <script src="~/lib/midirender/makeBeams.js"></script>
-<script src="~/lib/midirender/rendererUtils.js"></script> <!-- add this -->
+<script src="~/lib/midirender/rendererUtils.js"></script>
 <script src="~/lib/midirender/midiRenderer.js"></script>
 <script src="~/lib/midirender/patternRenderer.js"></script>
+
+<!-- new: shared setup (must load before wrapper) -->
+<script src="~/lib/midirender/setupLiveNotationCreate.js"></script>
+
+<!-- thin wrapper that calls setupLiveNotationOnCreate -->
 <script src="~/js/livePatternRenderer.js" asp-append-version="true"></script>

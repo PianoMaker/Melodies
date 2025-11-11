@@ -487,8 +487,8 @@ namespace Melodies25.Pages.Melodies
                 var title = melody.Title;
                 if (melody.MidiMelody is null) continue;
 
-                var melodyshape = melody.MidiMelody.IntervalList.ToArray();
-                var melodinotes = melody.MidiMelody.GetPitches().ToArray();
+                var melodyshape = melody.MidiMelody.IntervalList.ToArray(); //послідовність інтервалів
+                var melodinotes = melody.MidiMelody.GetPitches().ToArray(); //послідовність нот
 
                 int length = 0;
                 int position = -1;
@@ -499,15 +499,41 @@ namespace Melodies25.Pages.Melodies
                     case "subsequence":
                         {
                             int clamped = Math.Clamp(MaxGap, 1, 3);
-                            var (lcsLen, indices) = LongestCommonSubsequenceLimitedSkips(patternNotes, melodinotes, clamped, title);
-                            length = lcsLen;
-                            position = indices.Count > 0 ? indices[0] : -1;
+
+                            int bestLen = 0;
+                            int bestPos = -1;
+                            int bestShift = 0;
+
+                            // Перебираємо усі 12 транспозицій (півтонів)
+                            for (int shift = 0; shift < Globals.NotesInOctave; shift++)
+                            {
+                                // Транспонуємо мелодію по півтонах у межах октави
+                                var transposed = melodinotes
+                                    .Select(p => (p + shift) % Globals.NotesInOctave)
+                                    .ToArray();
+
+                                var (lcsLen, indices) = LongestCommonSubsequenceLimitedSkips(patternNotes, transposed, clamped, title);
+
+                                if (lcsLen > bestLen)
+                                {
+                                    bestLen = lcsLen;
+                                    bestPos = indices.Count > 0 ? indices[0] : -1;
+                                    bestShift = shift;
+                                    // якщо знайшли ідеальне повне співпадіння за довжиною шаблону — можна вийти раніше
+                                    if (bestLen >= patternNotes.Length) break;
+                                }
+                            }
+
+                            length = bestLen;
+                            position = bestPos;
+                            // За бажанням можна логувати bestShift для діагностики:
+                            MessageL(COLORS.gray, $"best shift for '{title}' = {bestShift}");
                             break;
                         }
 
                     case "substring":
                     default:
-                        var (subLen, startPos) = LongestCommonSubstring(patternShape, melodyshape);
+                        var (subLen, startPos) = LongestCommonSubstring(patternShape, melodyshape); //послідовність інтервалів
                         length = subLen;
                         position = startPos;
                         break;
