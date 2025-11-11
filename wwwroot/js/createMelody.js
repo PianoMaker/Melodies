@@ -522,16 +522,17 @@ document.addEventListener("DOMContentLoaded", function () {
 	//----------------------------
 	function showSubmitBtn() {
 		if (fileIsReady) {
-			submitMelodyBtn.style.display = 'inline-block';
-			midiIsNotReady.style.display = "none";
-			midiIsReady.style.display = "inline";
+			safeStyleDisplay(submitMelodyBtn, 'inline-block');
+			safeStyleDisplay(midiIsNotReady, 'none');
+			safeStyleDisplay(midiIsReady, 'inline');
 		}
 	}
 
-
 	function hideSubmitBtn() {
-		if (!fileIsReady)
-			submitMelodyBtn.style.display = 'none';
+		// Only hide when submit button exists and file is not ready
+		if (!fileIsReady) {
+			safeStyleDisplay(submitMelodyBtn, 'none');
+		}
 	}
 
 	//=========================
@@ -600,5 +601,35 @@ if (typeof window.setupLiveNotationOnCreate === 'function') {
     console.warn('[createMelody]: setupLiveNotationOnCreate is not loaded. Ensure /lib/midirender/setupLiveNotationCreate.js is included before createMelody.js.');
 }
 });
+
+//----------------------------
+// safe helper to set element.style.display if element exists
+//----------------------------
+function safeStyleDisplay(el, display) {
+    if (!el) return;
+    try {
+        el.style.display = display;
+    } catch (e) {
+        console.warn('[createMelody] safeStyleDisplay failed', e);
+    }
+}
+
+//----------------------------
+// показує кнопку "Додати мелодію", якщо файл готовий   
+//----------------------------
+function showSubmitBtn() {
+    if (fileIsReady) {
+        safeStyleDisplay(submitMelodyBtn, 'inline-block');
+        safeStyleDisplay(midiIsNotReady, 'none');
+        safeStyleDisplay(midiIsReady, 'inline');
+    }
+}
+
+function hideSubmitBtn() {
+    // Only hide when submit button exists and file is not ready
+    if (!fileIsReady) {
+        safeStyleDisplay(submitMelodyBtn, 'none');
+    }
+}
 
 
