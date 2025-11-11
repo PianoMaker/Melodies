@@ -586,7 +586,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	// ===== LIVE NOTATION (Create page) using patternRenderer.js =====
 	// Load renderer deps only once and setup live render like on Search page
-	(function setupLiveNotationOnCreate() {
+	function setupLiveNotationOnCreate() {
 		// Inject live notation containers if missing (same ids as on Search)
 		const container = document.getElementById('innerNotesContainer');
 		if (container) {
@@ -755,9 +755,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		// Expose scheduleRender to other handlers below
 		window.__scheduleLiveNotationRender = scheduleRender;
-	})();
+	};
 	// ===== END LIVE NOTATION =====
 	// Відновлення значення з saver тільки якщо воно не порожнє
+	setupLiveNotationOnCreate();
 });
 
 
