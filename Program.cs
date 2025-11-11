@@ -8,6 +8,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging; // Для логування
 using Microsoft.Extensions.Options;
 using System.Text;
+using Melodies25.Services; // Додано для використання сервісів очистки
 
 namespace Melodies25
 {
@@ -80,6 +81,11 @@ namespace Melodies25
             builder.Services.AddRazorPages();
 
             builder.Services.AddSingleton<IEmailSender, DummyEmailSender>();
+
+            // Налаштування сервісу для очищення тимчасових файлів
+            builder.Services.Configure<Melodies25.Services.TemporaryFilesCleanupOptions>(
+                builder.Configuration.GetSection("TemporaryFilesCleanup"));
+            builder.Services.AddHostedService<Melodies25.Services.TemporaryFilesCleanupService>();
 
             var app = builder.Build();
 
