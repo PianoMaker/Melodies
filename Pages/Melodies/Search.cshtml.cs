@@ -128,6 +128,9 @@ namespace Melodies25.Pages.Melodies
 
         }
 
+        //--------------------------------
+        // ІНІЦІАЛІЗАЦІЯ БАЗИ ДАНИХ ДЛЯ ПОШУКУ ЗА НОТАМИ
+        //--------------------------------
         private async Task NotesSearchInitialize()
         {
             MessageL(COLORS.yellow, "NotesSearchInitialize Method");
@@ -197,7 +200,10 @@ namespace Melodies25.Pages.Melodies
             MessageL(COLORS.cyan, "NotesSearchInitialize finished");
         }
 
-
+        //--------------------------------
+        // ПОШУК МЕЛОДІЇ ЗА МЕТАДАНИМИ
+        // викликається кнопкою "Пошук" (id="metaSearchForm")
+        //--------------------------------
         public async Task OnPostSearchAsync()
         {
             NoteSearch = false;
@@ -278,6 +284,11 @@ namespace Melodies25.Pages.Melodies
 
         }
 
+        //--------------------------------
+        // ДОДАВАННЯ НОТИ ЧЕРЕЗ ПІАНІНО
+        // викликається кнопкою на піаніно
+        // параметр key - назва ноти
+        //--------------------------------
         public void OnPostAsync(string key)
         {
 
@@ -287,6 +298,7 @@ namespace Melodies25.Pages.Melodies
 
 
         }
+
 
         public IActionResult OnPostPiano(string key)
         {
@@ -324,15 +336,21 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
-        // СКИДАННЯ МЕЛОДІЇ
+        //--------------------------------
+        // СКИДАННЯ МЕЛОДІЇ ПОШУКУ
+        // викликається кнопкою "Скинути"
+        // параметр key - назва ноти
+        //--------------------------------
         public void OnPostReset()
         {
             MessageL(COLORS.yellow, $"SEARCH - OnPostReset method");
             Keys = string.Empty;
             Page();
         }
-
-        // ПОШУК
+        //--------------------------------
+        // ПОШУК МЕЛОДІЇ ЗА НОТАМИ
+        // викликається кнопкою "Пошук" (id="searchBtn")
+        //--------------------------------
         public async Task OnPostNotesearch()
         {
             // Diagnostics: log incoming form, bound properties and ModelState
@@ -440,211 +458,10 @@ namespace Melodies25.Pages.Melodies
             MessageL(COLORS.cyan, $"finishing SEARCH method");
         }
 
-        private void CreatingPatternsView()
-        {
-            for (int i = 0; i < MatchedMelodies.Count; i++)
-            {
-                ViewData[$"songpattern{i}"] = MatchedMelodies[i].Melody.MidiMelody?.NotesList;
-                // For subsequence highlighting we provide the melody indices that actually matched
-                var matchedIndices = MatchedMelodies[i].Pairs?.Select(p => p.i1).ToList() ?? new List<int>();
-                ViewData[$"songmatched{i}"] = matchedIndices;
-                GrayMessageL($"adding song pattern {i}, {MatchedMelodies[i].Melody.MidiMelody?.NotesList.Count} notes, matched count {matchedIndices.Count}");
-            }
-            ViewData["matchedMelodiesCount"] = MatchedMelodies.Count;
-            GrayMessageL($"patterns are ready");
-        }
-
-        private void BuildPattern(Music.Melody MelodyPattern)
-        {
-            MessageL(COLORS.olive, $"Building patern, keys = {Keys}");
-
-            var pattern = Keys.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var key in pattern)
-            {
-                try
-                {
-                    var note = new Note(key);
-                    MelodyPattern.AddNote(note);
-                    GrayMessage($"{note.Name} - ");
-                }
-                catch
-                {
-                    ErrorMessage($"impossible to read note {key}\n");
-                }
-                GrayMessageL("building is finished");
-            }
-        }
-        // ПОРІВНЯННЯ 
-        private void CompareMelodies(Music.Melody MelodyPattern)
-        {
-            MessageL(COLORS.olive, $"CompareMelodies method {SearchAlgorithm?.ToLowerInvariant()}, maxgap = {MaxGap}");
-            var sw = new Stopwatch();
-            sw.Start();
-
-            int[] patternShape = MelodyPattern.IntervalList.ToArray();
-            int[] patternNotes = MelodyPattern.GetPitches().ToArray();
-            var algorithm = SearchAlgorithm?.ToLowerInvariant() ?? "substring";
-            MatchedMelodies.Clear();
-
-            foreach (var melody in Melody)
-            {
-                var title = melody.Title;
-                if (melody.MidiMelody is null) continue;
-
-                var melodyshape = melody.MidiMelody.IntervalList.ToArray(); //послідовність інтервалів
-                var melodinotes = melody.MidiMelody.GetPitches().ToArray(); //послідовність нот
-
-                int length = 0;
-                int position = -1;
-
-                // This will hold the final best pairs for the subsequence case (arr1Index, arr2Index)
-                List<(int i1, int i2)> finalBestPairs = new();
-
-                
-                switch (algorithm)
-                {
-                    /*LongestCommonSubsequenceLimitedSkips*/
-                    case "subsequence":
-                        {                                                      
-                            int clamped = Math.Clamp(MaxGap, 1, 3);
-                            int bestLen = 0;
-                            int bestPos = -1;
-                            int bestShift = 0;
-                            List<(int i1, int i2)> bestPairsForMelody = new();
-
-                            Message(COLORS.green, $"\nanalyzing melody {title}: ");
-                            for (int i = 0; i < melodinotes.Length; i++)
-                            { Message(COLORS.gray, $"{melodinotes[i].ToString()} "); }
-
-                            // Перебираємо усі 12 транспозицій (півтонів)
-                            for (int shift = 0; shift < Globals.NotesInOctave; shift++)
-                            {
-                                // Транспонуємо мелодію по півтонах у межах октави
-                                var transposedPattern = patternNotes
-                                    .Select(p => (p + shift) % Globals.NotesInOctave)
-                                    .ToArray();
-
-                                Message(COLORS.green, $"\npattern shift = {shift}: ");
-                                for (int i = 0; i < transposedPattern.Length; i++)
-                                { Message(COLORS.gray, $"{transposedPattern[i].ToString()} "); }
-
-                                // Get full LCS with indices in both arrays
-                                var (lcsTotalLen, idxFirstAll, idxSecondAll) = LongestCommonSubsequence(melodinotes, transposedPattern);
-
-                                if (idxSecondAll == null || idxSecondAll.Count == 0)
-                                    continue;
-
-                                // Filter matches by max skip on arr2 (pattern) - same logic as LimitedSkips
-                                var filteredFirst = new List<int> { idxFirstAll[0] };
-                                var filteredSecond = new List<int> { idxSecondAll[0] };
-
-                                for (int k = 1; k < idxSecondAll.Count; k++)
-                                {
-                                    int gapSecond = idxSecondAll[k] - filteredSecond[^1] - 1;
-                                    int gapFirst = idxFirstAll[k] - filteredFirst[^1] - 1;
-
-                                    // require both gaps to be <= clamped
-                                    if (gapSecond <= clamped && gapFirst <= clamped)
-                                    {
-                                        filteredSecond.Add(idxSecondAll[k]);
-                                        filteredFirst.Add(idxFirstAll[k]);
-                                    }
-                                    else
-                                    {
-                                        // stop cluster at violation (keeps the contiguous prefix)
-                                        break;
-                                    }
-                                }
-
-                                int filteredCount = filteredFirst.Count;
-
-                                if (filteredCount > bestLen)
-                                {
-                                    bestLen = filteredCount;
-                                    bestPos = filteredFirst.Count > 0 ? filteredFirst[0] : -1;
-                                    bestShift = shift;
-
-                                    // store pair list
-                                    bestPairsForMelody = new List<(int i1, int i2)>();
-                                    for (int k = 0; k < filteredFirst.Count; k++)
-                                        bestPairsForMelody.Add((filteredFirst[k], filteredSecond[k]));
-
-                                    // if full match of pattern length found, break early
-                                    if (bestLen >= patternNotes.Length) break;
-                                }
-                            }
-
-                            length = bestLen;
-                            position = bestPos;
-                            finalBestPairs = bestPairsForMelody;
-                            MessageL(COLORS.gray, $"best shift for '{title}' = {bestShift}");
-                            break;
-                        }
-
-                    case "substring":
-                        {
-                            // Use Algorythm.LongestCommonSubstring which returns (length, startIndex)
-                            (length, position) = LongestCommonSubstring(patternShape, melodyshape);
-                            // Build pairs (melodyIndex, patternIndex) for the contiguous substring match
-                            finalBestPairs = new List<(int i1, int i2)>();
-                            if (length > 0 && position >= 0)
-                            {
-                                for (int k = 0; k < length; k++)
-                                {
-                                    finalBestPairs.Add((position + k, k));
-                                }
-                            }
-                            break;
-                        }
-
-                    default:
-                        var (subLen, startPos) = LongestCommonSubstring(patternShape, melodyshape); //послідовність інтервалів
-                        length = subLen;
-                        position = startPos;
-                        break;
-                }
-                if (length >= minimummatch)
-                {
-                    MatchedMelodies.Add(new MatchedMelody
-                    {
-                        Melody = melody,
-                        CommonLength = length,
-                        Position = position,
-                        Pairs = finalBestPairs
-                    });
-                    //логування результатів
-                    LogResult(title, length, position, finalBestPairs);
-                }
-            }
-            sw.Stop();
-            MessageL(COLORS.yellow, $"{sw.ElapsedMilliseconds} ms spent for {algorithm} search");
-
-            void LogResult(string title, int length, int position, List<(int i1, int i2)> finalBestPairs)
-            {
-                if (SearchAlgorithm?.ToLower() == "substring")
-                {
-                    MessageL(COLORS.cyan, $"Found match in '{title}': length={length}, position={position}");
-                }
-                else if (SearchAlgorithm?.ToLower() == "subsequence")
-                {
-                    // Print the stored pairs as "arr1Index:arr2Index"
-                    if (finalBestPairs != null && finalBestPairs.Count > 0)
-                    {
-                        var sb = new System.Text.StringBuilder();
-                        foreach (var p in finalBestPairs)
-                        {
-                            sb.Append($"{p.i1}:{p.i2} ");
-                        }
-                        MessageL(COLORS.cyan, $"Found matches in '{title}': {sb.ToString().Trim()}");
-                    }
-                    else
-                    {
-                        MessageL(COLORS.cyan, $"Found matches in '{title}': (no paired indices available)");
-                    }
-                }
-            }
-        }
-
+        //--------------------------------
+        // ВІДТВОРЕННЯ МЕЛОДІЇ
+        // викликається кнопкою "Прослухати"
+        //--------------------------------
         public IActionResult OnPostPlay(string midiPath)
         {
 
@@ -673,8 +490,11 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
+        //--------------------------------
         // СТВОРЕННЯ МЕЛОДІЇ ВРУЧНУ НА СТОРІНЦІ ПОШУКУ
         // зберігає у тимчасовий midi та генерує mp3 для попереднього прослуховування
+        // викликається кнопкою "Згенерувати мелодію"
+        //--------------------------------
         public async Task<IActionResult> OnPostMelody()
         {
             MessageL(COLORS.yellow, $"MELODIES/SEARCH - OnPostMelody method, keys = {Keys}");
@@ -720,7 +540,228 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
+        //================================
+        // ДОПОМІЖНІ ФУНКЦІЇ 
+        //================================
 
+        //--------------------------------
+        // СТВОРЕННЯ ВІДОБРАЖЕННЯ ЗНАЙДЕНИХ ПАТЕРНІВ
+        //--------------------------------
+        private void CreatingPatternsView()
+        {
+            for (int i = 0; i < MatchedMelodies.Count; i++)
+            {
+                ViewData[$"songpattern{i}"] = MatchedMelodies[i].Melody.MidiMelody?.NotesList;
+                // For subsequence highlighting we provide the melody indices that actually matched
+                var matchedIndices = MatchedMelodies[i].Pairs?.Select(p => p.i1).ToList() ?? new List<int>();
+                ViewData[$"songmatched{i}"] = matchedIndices;
+                GrayMessageL($"adding song pattern {i}, {MatchedMelodies[i].Melody.MidiMelody?.NotesList.Count} notes, matched count {matchedIndices.Count}");
+            }
+            ViewData["matchedMelodiesCount"] = MatchedMelodies.Count;
+            GrayMessageL($"patterns are ready");
+        }
+
+        //--------------------------------
+        // ПОБУДОВА МЕЛОДІЇ З ВВЕДЕНИХ НОТ
+        //  викликається в OnPostNotesearch
+        //--------------------------------
+        private void BuildPattern(Music.Melody MelodyPattern)
+        {
+            MessageL(COLORS.olive, $"Building patern, keys = {Keys}");
+
+            var pattern = Keys.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var key in pattern)
+            {
+                try
+                {
+                    var note = new Note(key);
+                    MelodyPattern.AddNote(note);
+                    GrayMessage($"{note.Name} - ");
+                }
+                catch
+                {
+                    ErrorMessage($"impossible to read note {key}\n");
+                }
+                GrayMessageL("building is finished");
+            }
+        }
+        //--------------------------------
+        // ПОРІВНЯННЯ МЕЛОДІЙ
+        // викликається в OnPostNotesearch
+        //--------------------------------
+        private void CompareMelodies(Music.Melody MelodyPattern)
+        {
+            MessageL(COLORS.olive, $"CompareMelodies method {SearchAlgorithm?.ToLowerInvariant()}, maxgap = {MaxGap}");
+            var sw = new Stopwatch();
+            sw.Start();
+
+            int[] patternShape = MelodyPattern.IntervalList.ToArray();
+            int[] patternNotes = MelodyPattern.GetPitches().ToArray();
+            var algorithm = SearchAlgorithm?.ToLowerInvariant() ?? "substring";
+            MatchedMelodies.Clear();
+
+            foreach (var melody in Melody)
+            {
+                var title = melody.Title;
+                if (melody.MidiMelody is null) continue;
+
+                var melodyshape = melody.MidiMelody.IntervalList.ToArray(); //послідовність інтервалів
+                var melodinotes = melody.MidiMelody.GetPitches().ToArray(); //послідовність нот
+
+                int length = 0;
+                int position = -1;
+
+                // This will hold the final best pairs for the subsequence case (arr1Index, arr2Index)
+                List<(int i1, int i2)> finalBestPairs = new();
+
+                switch (algorithm)
+                {
+                    case "subsequence":
+                    {
+                        var (len, pos, pairs, bestShift) = FindBestSubsequenceMatch(melodinotes, patternNotes, MaxGap);
+                        length = len;
+                        position = pos;
+                        finalBestPairs = pairs ?? new List<(int i1, int i2)>();
+                        MessageL(COLORS.gray, $"best shift for '{title}' = {bestShift}");
+                        break;
+                    }
+
+                    case "substring":
+                    {
+                        var (len, pos, pairs) = FindLongestSubstringMatch(patternShape, melodyshape);
+                        length = len;
+                        position = pos;
+                        finalBestPairs = pairs ?? new List<(int i1, int i2)>();
+                        break;
+                    }
+
+                    default:
+                    {
+                        var (len, pos, pairs) = FindLongestSubstringMatch(patternShape, melodyshape);
+                        length = len;
+                        position = pos;
+                        finalBestPairs = pairs ?? new List<(int i1, int i2)>();
+                        break;
+                    }
+                }
+
+                if (length >= minimummatch)
+                {
+                    MatchedMelodies.Add(new MatchedMelody
+                    {
+                        Melody = melody,
+                        CommonLength = length,
+                        Position = position,
+                        Pairs = finalBestPairs
+                    });
+
+                    // centralized logging
+                    LogFoundMatch(title, length, position, finalBestPairs);
+                }
+            }
+
+            sw.Stop();
+            MessageL(COLORS.yellow, $"{sw.ElapsedMilliseconds} ms spent for {algorithm} search");
+
+            // local helper kept for minimal change - logs according to current SearchAlgorithm
+            void LogFoundMatch(string title, int length, int position, List<(int i1, int i2)> pairs)
+            {
+                if (SearchAlgorithm?.ToLower() == "substring")
+                {
+                    MessageL(COLORS.cyan, $"Found match in '{title}': length={length}, position={position}");
+                }
+                else if (SearchAlgorithm?.ToLower() == "subsequence")
+                {
+                    if (pairs != null && pairs.Count > 0)
+                    {
+                        var sb = new System.Text.StringBuilder();
+                        foreach (var p in pairs) sb.Append($"{p.i1}:{p.i2} ");
+                        MessageL(COLORS.cyan, $"Found matches in '{title}': {sb.ToString().Trim()}");
+                    }
+                    else
+                    {
+                        MessageL(COLORS.cyan, $"Found matches in '{title}': (no paired indices available)");
+                    }
+                }
+            }
+        }
+
+        //--------------------------------
+        //ДОПОМОЖНІ МЕТОДИ ДЛЯ ПОШУКУ
+        //викликаються в CompareMelodies
+        //--------------------------------
+        // Знаходить найкращий збіг melodyNotes та patternNotes з maxGap=0  (substring)
+        private (int length, int position, List<(int i1, int i2)> pairs) FindLongestSubstringMatch(int[] patternShape, int[] melodyShape)
+        {
+            // Use Algorythm.LongestCommonSubstring which returns (length, startIndex)
+            (int length, int position) = LongestCommonSubstring(patternShape, melodyShape);
+            var pairs = new List<(int i1, int i2)>();
+            if (length > 0 && position >= 0)
+            {
+                for (int k = 0; k < length; k++)
+                    pairs.Add((position + k, k));
+            }
+            return (length, position, pairs);
+        }
+
+        // Знаходить найкращий збіг melodyNotes та patternNotes з урахуванням maxGap (subsequence)
+        private (int length, int position, List<(int i1, int i2)> pairs, int bestShift) FindBestSubsequenceMatch(int[] melodyNotes, int[] patternNotes, int maxGap)
+        {
+            int clamped = Math.Clamp(maxGap, 1, 3);
+            int bestLen = 0;
+            int bestPos = -1;
+            int bestShift = 0;
+            List<(int i1, int i2)> bestPairsForMelody = new();
+
+            // Перебираємо усі 12 транспозицій (півтонів)
+            for (int shift = 0; shift < Globals.NotesInOctave; shift++)
+            {
+                var transposedPattern = patternNotes.Select(p => (p + shift) % Globals.NotesInOctave).ToArray();
+
+                var (lcsTotalLen, idxFirstAll, idxSecondAll) = LongestCommonSubsequence(melodyNotes, transposedPattern);
+
+                if (idxSecondAll == null || idxSecondAll.Count == 0) continue;
+
+                // Filter matches by max skip on arr2 (pattern) - keep prefix cluster as previous logic
+                var filteredFirst = new List<int> { idxFirstAll[0] };
+                var filteredSecond = new List<int> { idxSecondAll[0] };
+
+                for (int k = 1; k < idxSecondAll.Count; k++)
+                {
+                    int gapSecond = idxSecondAll[k] - filteredSecond[^1] - 1;
+                    int gapFirst = idxFirstAll[k] - filteredFirst[^1] - 1;
+
+                    if (gapSecond <= clamped && gapFirst <= clamped)
+                    {
+                        filteredSecond.Add(idxSecondAll[k]);
+                        filteredFirst.Add(idxFirstAll[k]);
+                    }
+                    else
+                    {
+                        // stop cluster at violation (keeps the contiguous prefix)
+                        break;
+                    }
+                }
+
+                int filteredCount = filteredFirst.Count;
+
+                if (filteredCount > bestLen)
+                {
+                    bestLen = filteredCount;
+                    bestPos = filteredFirst.Count > 0 ? filteredFirst[0] : -1;
+                    bestShift = shift;
+
+                    bestPairsForMelody = new List<(int i1, int i2)>();
+                    for (int k = 0; k < filteredFirst.Count; k++)
+                        bestPairsForMelody.Add((filteredFirst[k], filteredSecond[k]));
+
+                    if (bestLen >= patternNotes.Length) break;
+                }
+            }
+
+            return (bestLen, bestPos, bestPairsForMelody, bestShift);
+        }
+              
     }
     public class MatchedMelody
     {
