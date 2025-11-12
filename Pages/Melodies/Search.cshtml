@@ -194,12 +194,16 @@
         @for (int i = 0; i < matchedMelodiesCount; i++)
         {
             var songPattern = ViewData[$"songpattern{i}"] as List<string>;
-            var title = Model.MatchedMelodies[i].melody.Title;//назва мелодії
-            var startposition = Model.MatchedMelodies[i].position;//позиція початку збігу
-            var length = Model.MatchedMelodies[i].commonLength;//довжина збігу
+            var title = Model.MatchedMelodies[i].Melody.Title;//назва мелодії
+            var startposition = Model.MatchedMelodies[i].Position;//позиція початку збігу
+            var length = Model.MatchedMelodies[i].CommonLength;//довжина збігу
             var endposition = startposition + length;
-            var filePath = Model.MatchedMelodies[i].melody.FilePath;
+            var filePath = Model.MatchedMelodies[i].Melody.FilePath;
             var midiUrl = string.IsNullOrEmpty(filePath) ? null : Url.Content($"~/melodies/{filePath}");
+
+            // matched indices for subsequence highlighting
+            var matchedIndices = ViewData[$"songmatched{i}"] as List<int> ?? new List<int>();
+            bool isSubseq = Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true;
 
             if (songPattern != null)
             {
@@ -219,16 +223,31 @@
                     </div>
 
                     <!--ПЕРЕЛІК НОТ-->
-                    <p>
+                    <p id="noteslist">
                         @for (int j = 0; j < songPattern.Count; j++)
                         {
-                            if (j >= startposition && j < endposition)
+                            if (isSubseq)
                             {
-                                <span style="color:darkmagenta">@songPattern[j]</span>
+                                if (matchedIndices.Contains(j))
+                                {
+                                    <span style="color:darkmagenta">@songPattern[j]</span>
+                                }
+                                else
+                                {
+                                    <text>@songPattern[j] </text>
+                                }
                             }
                             else
                             {
-                                <text>@songPattern[j] </text>
+                                // substring or default: keep contiguous highlight behavior
+                                if (j >= startposition && j < endposition)
+                                {
+                                    <span style="color:darkmagenta">@songPattern[j]</span>
+                                }
+                                else
+                                {
+                                    <text>@songPattern[j] </text>
+                                }
                             }
                         }
                     </p>
@@ -280,8 +299,12 @@
             @if (Model.MatchedMelodies is not null && Model.MatchedMelodies.Count > 0 && Model.NoteSearch is true)
             {
                 <!--якщо пошук за нотами-->
-                @foreach (var (item, matchLength, position) in Model.MatchedMelodies)
+                @foreach (var mm in Model.MatchedMelodies)
                 {
+                    var item = mm.Melody;
+                    var matchLength = mm.CommonLength;
+                    var position = mm.Position;
+                    var pairs = mm.Pairs;
                     <tr>
                         <td>
                             <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
