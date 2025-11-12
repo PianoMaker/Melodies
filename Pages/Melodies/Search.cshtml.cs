@@ -63,7 +63,6 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public string Title { get; set; }
 
-        // Повний збіг (false) чи частковий (true)
         [BindProperty]
         public bool IfPartly { get; set; }
 
@@ -493,6 +492,9 @@ namespace Melodies25.Pages.Melodies
                 int length = 0;
                 int position = -1;
 
+                // This will hold the final best pairs for the subsequence case (arr1Index, arr2Index)
+                List<(int i1, int i2)> finalBestPairs = new();
+
                 switch (SearchAlgorithm?.ToLowerInvariant())
                 {
                     /*LongestCommonSubsequenceLimitedSkips*/
@@ -503,30 +505,73 @@ namespace Melodies25.Pages.Melodies
                             int bestLen = 0;
                             int bestPos = -1;
                             int bestShift = 0;
+                            List<(int i1, int i2)> bestPairsForMelody = new();
+
+                            Message(COLORS.green, $"\nanalyzing melody {title}: ");
+                            for (int i = 0; i < melodinotes.Length; i++)
+                            { Message(COLORS.gray, $"{melodinotes[i].ToString()} "); }
 
                             // Перебираємо усі 12 транспозицій (півтонів)
                             for (int shift = 0; shift < Globals.NotesInOctave; shift++)
                             {
                                 // Транспонуємо мелодію по півтонах у межах октави
-                                var transposed = melodinotes
+                                var transposedPattern = patternNotes
                                     .Select(p => (p + shift) % Globals.NotesInOctave)
                                     .ToArray();
 
-                                var (lcsLen, indices) = LongestCommonSubsequenceLimitedSkips(patternNotes, transposed, clamped, title);
+                                Message(COLORS.green, $"\npattern shift = {shift}: ");
+                                for (int i = 0; i < transposedPattern.Length; i++)
+                                { Message(COLORS.gray, $"{transposedPattern[i].ToString()} "); }
 
-                                if (lcsLen > bestLen)
+                                // Get full LCS with indices in both arrays
+                                var (lcsTotalLen, idxFirstAll, idxSecondAll) = LongestCommonSubsequence(melodinotes, transposedPattern);
+
+                                if (idxSecondAll == null || idxSecondAll.Count == 0)
+                                    continue;
+
+                                // Filter matches by max skip on arr2 (pattern) - same logic as LimitedSkips
+                                var filteredFirst = new List<int> { idxFirstAll[0] };
+                                var filteredSecond = new List<int> { idxSecondAll[0] };
+
+                                for (int k = 1; k < idxSecondAll.Count; k++)
                                 {
-                                    bestLen = lcsLen;
-                                    bestPos = indices.Count > 0 ? indices[0] : -1;
+                                    int gapSecond = idxSecondAll[k] - filteredSecond[^1] - 1;
+                                    int gapFirst  = idxFirstAll[k]  - filteredFirst[^1]  - 1;
+
+                                    // require both gaps to be <= clamped
+                                    if (gapSecond <= clamped && gapFirst <= clamped)
+                                    {
+                                        filteredSecond.Add(idxSecondAll[k]);
+                                        filteredFirst.Add(idxFirstAll[k]);
+                                    }
+                                    else
+                                    {
+                                        // stop cluster at violation (keeps the contiguous prefix)
+                                        break;
+                                    }
+                                }
+
+                                int filteredCount = filteredFirst.Count;
+
+                                if (filteredCount > bestLen)
+                                {
+                                    bestLen = filteredCount;
+                                    bestPos = filteredFirst.Count > 0 ? filteredFirst[0] : -1;
                                     bestShift = shift;
-                                    // якщо знайшли ідеальне повне співпадіння за довжиною шаблону — можна вийти раніше
+
+                                    // store pair list
+                                    bestPairsForMelody = new List<(int i1, int i2)>();
+                                    for (int k = 0; k < filteredFirst.Count; k++)
+                                        bestPairsForMelody.Add((filteredFirst[k], filteredSecond[k]));
+
+                                    // if full match of pattern length found, break early
                                     if (bestLen >= patternNotes.Length) break;
                                 }
                             }
 
                             length = bestLen;
                             position = bestPos;
-                            // За бажанням можна логувати bestShift для діагностики:
+                            finalBestPairs = bestPairsForMelody;
                             MessageL(COLORS.gray, $"best shift for '{title}' = {bestShift}");
                             break;
                         }
@@ -541,9 +586,29 @@ namespace Melodies25.Pages.Melodies
 
                 if (length >= minimummatch)
                 {
-                    
                     MatchedMelodies.Add((melody, length, position));
-                    MessageL(COLORS.cyan, $"Found match in '{title}': length={length}, position={position}");
+
+                    if (SearchAlgorithm?.ToLower() == "substring")
+                    {
+                        MessageL(COLORS.cyan, $"Found match in '{title}': length={length}, position={position}");
+                    }
+                    else if (SearchAlgorithm?.ToLower() == "subsequence")
+                    {
+                        // Print the stored pairs as "arr1Index:arr2Index"
+                        if (finalBestPairs != null && finalBestPairs.Count > 0)
+                        {
+                            var sb = new System.Text.StringBuilder();
+                            foreach (var p in finalBestPairs)
+                            {
+                                sb.Append($"{p.i1}:{p.i2} ");
+                            }
+                            MessageL(COLORS.cyan, $"Found matches in '{title}': {sb.ToString().Trim()}");
+                        }
+                        else
+                        {
+                            MessageL(COLORS.cyan, $"Found matches in '{title}': (no paired indices available)");
+                        }
+                    }
                 }
             }
             sw.Stop();
