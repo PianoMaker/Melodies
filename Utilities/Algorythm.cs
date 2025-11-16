@@ -1,6 +1,7 @@
 ﻿using Music;
 using System;
 using System.Collections.Generic;
+using static Music.Messages;
 
 namespace Melodies25.Utilities
 {
@@ -8,44 +9,53 @@ namespace Melodies25.Utilities
     {
         public static (int length, int startIndex) LongestCommonSubstring(int[] arr1, int[] arr2)
         {
-            //Console.WriteLine("LongestCommonSubstring starts");
-            if (arr1.Length == 0 || arr2.Length == 0)
+            
+            MessageL(7, " arr1: " + string.Join(", ", arr1) + ",\narr2: " + string.Join(", ", arr2));
+            if (arr1.Length ==0 || arr2.Length ==0)
                 return (0, -1);
 
-            int[,] dp = new int[arr1.Length + 1, arr2.Length + 1];
-            int maxLength = 0;
+            int[,] dp = new int[arr1.Length +1, arr2.Length +1];
+            int maxLength =0;
             int endIndex = -1; // Індекс останнього елемента підрядка у другій послідовності
 
-            for (int i = 1; i <= arr1.Length; i++)
+            for (int i =1; i <= arr1.Length; i++)
             {
-                for (int j = 1; j <= arr2.Length; j++)
+                for (int j =1; j <= arr2.Length; j++)
                 {
-                    if (arr1[i - 1] == arr2[j - 1])
+                    if (arr1[i -1] == arr2[j -1])
                     {
-                        dp[i, j] = dp[i - 1, j - 1] + 1;
+                        dp[i, j] = dp[i -1, j -1] +1;
                         if (dp[i, j] > maxLength)
                         {
                             maxLength = dp[i, j];
-                            endIndex = j - 1; // Останній збіг у `arr2`
+                            endIndex = j -1; // Останній збіг у `arr2`
                         }
                     }
                     else
                     {
-                        dp[i, j] = 0;
+                        dp[i, j] =0;
                     }
                 }
             }
 
-            int startIndex = (maxLength > 0) ? (endIndex - maxLength + 1) : -1;
-            return (maxLength, startIndex);
+            int startIndex = (maxLength >0) ? (endIndex - maxLength +1) : -1;
+
+            // NOTE:
+            // arr1/arr2 are arrays of intervals (length = notes-1). The number of matching notes
+            // corresponding to maxLength matching intervals is maxLength +1. Return length in
+            // terms of notes (not intervals) so callers and UI highlighting operate on note counts.
+            int notesCount = (maxLength >0) ? (maxLength +1) :0;
+
+            
+            return (notesCount, startIndex);
         }
 
         public static int LongestCommonsStart(int[] arr1, int[] arr2)
         {
-            int count = 0;
+            int count =0;
             int minLength = Math.Min(arr1.Length, arr2.Length);
 
-            for (int i = 0; i < minLength; i++)
+            for (int i =0; i < minLength; i++)
             {
                 if (arr1[i] == arr2[i])
                     count++;
@@ -60,16 +70,16 @@ namespace Melodies25.Utilities
         public static int LongestStartSubsequence(int[] arr1, int[] arr2, int maxGap)
         {
             //Console.WriteLine("LongestStartSubsequence starts");
-            int count = 0;
-            int gaps = 0;
+            int count =0;
+            int gaps =0;
             int minLength = Math.Min(arr1.Length, arr2.Length);
 
-            for (int i = 0, j = 0; i < minLength && j < minLength;)
+            for (int i =0, j =0; i < minLength && j < minLength;)
             {
                 if (arr1[i] == arr2[j])
                 {
                     count++;
-                    gaps = 0; // Скидаємо лічильник пропусків
+                    gaps =0; // Скидаємо лічильник пропусків
                 }
                 else
                 {
@@ -92,36 +102,36 @@ namespace Melodies25.Utilities
         {
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("LongestCommonSubsequence Indices starts:");
-            for (int i = 0; i < arr1.Length; i++) Console.Write(arr1[i] + " ");
+            for (int i =0; i < arr1.Length; i++) Console.Write(arr1[i] + " ");
             Console.Write(" vs ");
-            for (int i = 0; i < arr2.Length; i++) Console.Write(arr2[i] + " ");
+            for (int i =0; i < arr2.Length; i++) Console.Write(arr2[i] + " ");
 
             int m = arr1.Length;
             int n = arr2.Length;
-            int[,] dp = new int[m + 1, n + 1];
+            int[,] dp = new int[m +1, n +1];
 
-            for (int i = 1; i <= m; i++)
+            for (int i =1; i <= m; i++)
             {
-                for (int j = 1; j <= n; j++)
+                for (int j =1; j <= n; j++)
                 {
-                    if (arr1[i - 1] == arr2[j - 1])
-                        dp[i, j] = dp[i - 1, j - 1] + 1;
+                    if (arr1[i -1] == arr2[j -1])
+                        dp[i, j] = dp[i -1, j -1] +1;
                     else
-                        dp[i, j] = Math.Max(dp[i - 1, j], dp[i, j - 1]);
+                        dp[i, j] = Math.Max(dp[i -1, j], dp[i, j -1]);
                 }
             }
 
             // Збираємо пари під час backtracking: (indexInArr1, indexInArr2, valueFromArr1, valueFromArr2)
             var matches = new List<(int i1, int i2, int v1, int v2)>();
             int ii = m, jj = n;
-            while (ii > 0 && jj > 0)
+            while (ii >0 && jj >0)
             {
-                if (arr1[ii - 1] == arr2[jj - 1])
+                if (arr1[ii -1] == arr2[jj -1])
                 {
-                    matches.Add((ii - 1, jj - 1, arr1[ii - 1], arr2[jj - 1]));
+                    matches.Add((ii -1, jj -1, arr1[ii -1], arr2[jj -1]));
                     ii--; jj--;
                 }
-                else if (dp[ii - 1, jj] >= dp[ii, jj - 1])
+                else if (dp[ii -1, jj] >= dp[ii, jj -1])
                     ii--;
                 else
                     jj--;
@@ -143,7 +153,7 @@ namespace Melodies25.Utilities
             Console.ForegroundColor = ConsoleColor.White;
             foreach (var mch in matches)
             {
-                Console.Write($"{mch.i1}:{mch.i2} {mch.v1}/{mch.v2}  ");
+                Console.Write($"{mch.i1}:{mch.i2} {mch.v1}/{mch.v2} ");
             }
             Console.WriteLine();
 
@@ -157,7 +167,7 @@ namespace Melodies25.Utilities
         public static (int length, List<int> indicesInFirst) LongestCommonSubsequenceLimitedSkips(int[] arr1, int[] arr2, int maxSkipBetweenMatches, string title = "noname")
         {
             var (len, idxFirst, idxSecond) = LongestCommonSubsequence(arr1, arr2);
-            if (idxFirst.Count == 0 || idxSecond.Count == 0 || maxSkipBetweenMatches <= 0)
+            if (idxFirst.Count ==0 || idxSecond.Count ==0 || maxSkipBetweenMatches <=0)
                 return (len, idxFirst);
 
             var filteredFirst = new List<int> { idxFirst[0] };
@@ -166,10 +176,10 @@ namespace Melodies25.Utilities
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.Write($"indexes coincide for {title}: ");
 
-            for (int k = 1; k < idxSecond.Count; k++)
+            for (int k =1; k < idxSecond.Count; k++)
             {
-                int gapSecond = idxSecond[k] - filteredSecond[^1] - 1;
-                int gapFirst = idxFirst[k] - filteredFirst[^1] - 1;
+                int gapSecond = idxSecond[k] - filteredSecond[^1] -1;
+                int gapFirst = idxFirst[k] - filteredFirst[^1] -1;
 
                 // require both gaps to be <= maxSkipBetweenMatches
                 if (gapSecond <= maxSkipBetweenMatches && gapFirst <= maxSkipBetweenMatches)

@@ -617,42 +617,54 @@ namespace Melodies25.Pages.Melodies
                 switch (algorithm)
                 {
                     case "subsequence":
-                    {
-                        var (len, pos, pairs, bestShift) = FindBestSubsequenceMatch(melodinotes, patternNotes, MaxGap);
-                        length = len;
-                        position = pos;
-                        finalBestPairs = pairs ?? new List<(int i1, int i2)>();
-                        MessageL(COLORS.gray, $"best shift for '{title}' = {bestShift}");
-                        break;
-                    }
+                        {
+                            MessageL(14, $"comparing subsequence for {title}");
+                            var (len, pos, pairs, bestShift) = FindBestSubsequenceMatch(melodinotes, patternNotes, MaxGap);
+                            length = len;
+                            position = pos;
+                            finalBestPairs = pairs ?? new List<(int i1, int i2)>();
+                            MessageL(COLORS.gray, $"best shift for '{title}' = {bestShift}");
+                            // when adding matched melody below we will store bestShift
+                            break;
+                        }
 
                     case "substring":
-                    {
-                        var (len, pos, pairs) = FindLongestSubstringMatch(patternShape, melodyshape);
-                        length = len;
-                        position = pos;
-                        finalBestPairs = pairs ?? new List<(int i1, int i2)>();
-                        break;
-                    }
+                        {
+                            MessageL(14, $"comparing substring for {title}");
+                            var (len, pos, pairs) = FindLongestSubstringMatch(patternShape, melodyshape);
+                            length = len;
+                            position = pos;
+                            finalBestPairs = pairs ?? new List<(int i1, int i2)>();
+                            break;
+                        }
 
                     default:
-                    {
-                        var (len, pos, pairs) = FindLongestSubstringMatch(patternShape, melodyshape);
-                        length = len;
-                        position = pos;
-                        finalBestPairs = pairs ?? new List<(int i1, int i2)>();
-                        break;
-                    }
+                        {
+                            var (len, pos, pairs) = FindLongestSubstringMatch(patternShape, melodyshape);
+                            length = len;
+                            position = pos;
+                            finalBestPairs = pairs ?? new List<(int i1, int i2)>();
+                            break;
+                        }
                 }
 
                 if (length >= minimummatch)
                 {
+                    // If algorithm was subsequence we previously computed bestShift; recompute to capture it here
+                    int bestShiftForThis = 0;
+                    if (algorithm == "subsequence")
+                    {
+                        var (_, _, _, bestShift) = FindBestSubsequenceMatch(melodinotes, patternNotes, MaxGap);
+                        bestShiftForThis = bestShift;
+                    }
+
                     MatchedMelodies.Add(new MatchedMelody
                     {
                         Melody = melody,
                         CommonLength = length,
                         Position = position,
-                        Pairs = finalBestPairs
+                        Pairs = finalBestPairs,
+                        BestShift = bestShiftForThis
                     });
 
                     // centralized logging
@@ -761,7 +773,7 @@ namespace Melodies25.Pages.Melodies
 
             return (bestLen, bestPos, bestPairsForMelody, bestShift);
         }
-              
+
     }
     public class MatchedMelody
     {
@@ -769,5 +781,7 @@ namespace Melodies25.Pages.Melodies
         public int CommonLength { get; set; }
         public int Position { get; set; }
         public List<(int i1, int i2)> Pairs { get; set; } = new();
+        // NEW: store optimal shift (in semitones) found for subsequence matching
+        public int BestShift { get; set; } = 0;
     }
 }

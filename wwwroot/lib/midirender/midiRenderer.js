@@ -384,7 +384,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
     }
     let midiData = MidiParser.Uint8(uint8);
     let ticksPerBeat = Array.isArray(midiData.timeDivision) ? 480 : midiData.timeDivision;
-    let allEvents = SetEventsAbsoluteTime(midiData);
+    let allEvents = SetEventsAbsoluteTime(midiData) || [];
 
     // Перевірка наявності EndTrack
     ensureEndEvent(allEvents);
@@ -392,21 +392,24 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
     const measureMap = createMeasureMap(allEvents, ticksPerBeat);
     const measures = groupEventsByMeasure(allEvents, measureMap);
 
-	// обчислюємо індекс початкового такту, вирівняного до кратного 4
+    // Diagnostics: log counts so we can see why measures may be empty
+    console.info(`renderMidiFileToNotation: allEvents=${allEvents.length}, measureMap_keys=${Object.keys(measureMap).length}, measures=${measures.length}, ticksPerBeat=${ticksPerBeat}`);
+
+    // обчислюємо індекс початкового такту, вирівняного до кратного 4
     let startIdx = parseInt(startAtMeasureIndex, 10);
     if (!isFinite(startIdx) || startIdx < 0) startIdx = 0;
     startIdx = startIdx - (startIdx % 4);
     if (startIdx > measures.length - 1) startIdx = Math.max(0, measures.length - 1);
 
-	// обчислюємо скільки тактів залишилось від startIdx до кінця
+    // обчислюємо скільки тактів залишилось від startIdx до кінця
     const remaining = Math.max(0, measures.length - startIdx);
     const renderCount = (typeof maxBarsToRender === 'number' && isFinite(maxBarsToRender) && maxBarsToRender !== 1000)
         ? Math.min(remaining, maxBarsToRender)
         : remaining;
 
     // Витягуємо вікно тактів для рендерингу
-	// починаючи з startIdx, довжиною renderCount
     const measuresWindow = measures.slice(startIdx, startIdx + renderCount);
+    console.info(`renderMidiFileToNotation: startIdx=${startIdx}, renderCount=${renderCount}, measuresWindow=${measuresWindow.length}`);
 
     // Тримаємо лише ті такти, які містять Note On події
     const measuresToRender = [...measuresWindow];
@@ -415,8 +418,28 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         measuresToRender.pop();
     }
     const effectiveCount = measuresToRender.length;
+    console.info(`renderMidiFileToNotation: measuresToRender=${measuresToRender.length}, effectiveCount=${effectiveCount}`);
 
-	// створюємо новий measureMap для заданого діапазону
+    // If nothing to render then bail out with a helpful comment
+    if (effectiveCount === 0) {
+        const msg = 'No notes to render: selected segment contains no NoteOn events.';
+        console.warn(`renderMidiFileToNotation: ${msg} measures.length=${measures.length} measuresWindow.length=${measuresWindow.length}`);
+        if (commentsDiv) {
+            commentsDiv.innerHTML = msg;
+        } else {
+            const target = document.getElementById(ELEMENT_FOR_RENDERING);
+            if (target) target.innerHTML = `<div class="small text-muted">${msg}</div>`;
+        }
+        return {
+            totalMeasures: measures.length,
+            renderedMeasures: 0,
+            limited: false,
+            maxBarsToRender,
+            startAtMeasureIndex: startIdx
+        };
+    }
+
+    // створюємо новий measureMap для заданого діапазону
     const slicedMap = {};
     for (let i = 0; i <= effectiveCount; i++) {
         slicedMap[i] = measureMap[startIdx + i];
@@ -535,7 +558,18 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
     const activeNotes = {};
     let isFirstMeasureInRow = true;
-    let meanBarWidth = GetMeanBarWidth(BARWIDTH, measures);
+    let meanBarWidth;
+    try {
+        if (Array.isArray(measures) && measures.length > 0) {
+            meanBarWidth = GetMeanBarWidth(BARWIDTH, measures);
+        } else {
+            meanBarWidth = BARWIDTH;
+            console.debug("MR: measures empty — using BARWIDTH as meanBarWidth");
+        }
+    } catch (e) {
+        console.warn("MR: GetMeanBarWidth failed, falling back to BARWIDTH", e);
+        meanBarWidth = BARWIDTH;
+    }
 
     // determine global clef (existing logic)
     let globalClefChoice = "treble";

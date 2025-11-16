@@ -235,7 +235,7 @@
                                 else
                                 {
                                     <text>@songPattern[j] </text>
-                                }
+                                }                                
                             }
                             else
                             {
@@ -248,9 +248,15 @@
                                 {
                                     <text>@songPattern[j] </text>
                                 }
-                            }
+                            }                         
                         }
                     </p>
+                    <!--ТРАНСПОЗИЦІЯ-->
+                    @if (isSubseq)
+                    {
+                        <div class="small text-muted">Транспозиція @(Model.MatchedMelodies[i].BestShift) півтонів.</div>
+                    }
+
 
                     @if (!string.IsNullOrEmpty(midiUrl))
                     {
