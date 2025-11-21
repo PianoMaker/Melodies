@@ -1,4 +1,6 @@
+using Melanchall.DryWetMidi.Composing;
 using Melodies25.Models;
+using Melodies25.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -6,16 +8,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Music;
 using NAudio.Midi;
 using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using static Music.MidiConverter;
 using static Melodies25.Utilities.Algorythm;
 using static Melodies25.Utilities.PrepareFiles;
 using static Melodies25.Utilities.WaveConverter;
 using static Music.Messages;
+using static Music.MidiConverter;
 using Melody = Melodies25.Models.Melody;
-using Melodies25.Utilities;
-using System.Diagnostics;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -619,6 +620,17 @@ namespace Melodies25.Pages.Melodies
                     case "subsequence":
                         {
                             MessageL(14, $"comparing subsequence for {title}");
+                            // TEMPORARY: restrict subsequence search to songs whose Title starts with Cyrillic 'Г'
+                            if (string.IsNullOrEmpty(melody.Title) || !melody.Title.StartsWith("Г", StringComparison.CurrentCultureIgnoreCase))
+                            {
+                                MessageL(COLORS.gray, $"Skipping subsequence for '{title}' — title does not start with 'Г'");
+                                // ensure no match will be registered for this melody
+                                length = 0;
+                                position = -1;
+                                finalBestPairs = new List<(int i1, int i2)>();
+                                break;
+                            }
+
                             var (len, pos, pairs, bestShift) = FindBestSubsequenceMatch(melodinotes, patternNotes, MaxGap);
                             length = len;
                             position = pos;
@@ -730,50 +742,75 @@ namespace Melodies25.Pages.Melodies
             {
                 var transposedPattern = patternNotes.Select(p => (p + shift) % Globals.NotesInOctave).ToArray();
 
-                var (lcsTotalLen, idxFirstAll, idxSecondAll) = LongestCommonSubsequence(melodyNotes, transposedPattern);
-
+                LogInput(transposedPattern, melodyNotes);
+                var (lcsTotalLen, idxFirstAll, idxSecondAll) = LongestCommonSubsequence(melodyNotes, transposedPattern, maxGap);
                 if (idxSecondAll == null || idxSecondAll.Count == 0) continue;
 
-                // Filter matches by max skip on arr2 (pattern) - keep prefix cluster as previous logic
-                var filteredFirst = new List<int> { idxFirstAll[0] };
-                var filteredSecond = new List<int> { idxSecondAll[0] };
+                // Побудова всіх "кластерів" збігів, де розриви в обох масивах <= clamped.
+                // Обираємо найдовший кластер. При рівній довжині зберігаємо перший знайдений (найраніший).
+                var curFirst = new List<int>();
+                var curSecond = new List<int>();
 
-                for (int k = 1; k < idxSecondAll.Count; k++)
+                void FinalizeCluster()
                 {
-                    int gapSecond = idxSecondAll[k] - filteredSecond[^1] - 1;
-                    int gapFirst = idxFirstAll[k] - filteredFirst[^1] - 1;
+                    if (curFirst.Count == 0) return;
+
+                    int curLen = curFirst.Count;
+                    if (curLen > bestLen)
+                    {
+                        bestLen = curLen;
+                        bestPos = curFirst[0];
+                        bestShift = shift;
+
+                        bestPairsForMelody = new List<(int i1, int i2)>();
+                        for (int t = 0; t < curFirst.Count; t++)
+                            bestPairsForMelody.Add((curFirst[t], curSecond[t]));
+                    }
+                }
+
+                for (int k = 0; k < idxSecondAll.Count; k++)
+                {
+                    if (curFirst.Count == 0)
+                    {
+                        curFirst.Add(idxFirstAll[k]);
+                        curSecond.Add(idxSecondAll[k]);
+                        continue;
+                    }
+
+                    int gapSecond = idxSecondAll[k] - curSecond[^1] - 1;
+                    int gapFirst  = idxFirstAll[k]  - curFirst[^1]  - 1;
 
                     if (gapSecond <= clamped && gapFirst <= clamped)
                     {
-                        filteredSecond.Add(idxSecondAll[k]);
-                        filteredFirst.Add(idxFirstAll[k]);
+                        curFirst.Add(idxFirstAll[k]);
+                        curSecond.Add(idxSecondAll[k]);
                     }
                     else
                     {
-                        // stop cluster at violation (keeps the contiguous prefix)
-                        break;
+                        // Закриваємо поточний кластер і починаємо новий з поточного елемента
+                        FinalizeCluster();
+                        curFirst.Clear(); curSecond.Clear();
+                        curFirst.Add(idxFirstAll[k]);
+                        curSecond.Add(idxSecondAll[k]);
                     }
                 }
 
-                int filteredCount = filteredFirst.Count;
+                // фіналізуємо останній відкритий кластер
+                FinalizeCluster();
 
-                if (filteredCount > bestLen)
-                {
-                    bestLen = filteredCount;
-                    bestPos = filteredFirst.Count > 0 ? filteredFirst[0] : -1;
-                    bestShift = shift;
-
-                    bestPairsForMelody = new List<(int i1, int i2)>();
-                    for (int k = 0; k < filteredFirst.Count; k++)
-                        bestPairsForMelody.Add((filteredFirst[k], filteredSecond[k]));
-
-                    if (bestLen >= patternNotes.Length) break;
-                }
+                // ранній вихід, якщо знайдено повний збіг довжини патерна
+                if (bestLen >= patternNotes.Length) break;
             }
 
             return (bestLen, bestPos, bestPairsForMelody, bestShift);
         }
 
+        private void LogInput(int[] pattern, int[] melodyNotes)
+        {
+            
+            MessageL(COLORS.gray, $"melody: {string.Join(", ", melodyNotes)}");
+            MessageL(COLORS.gray, $"pattern: {string.Join(", ", pattern)}");
+        }
     }
     public class MatchedMelody
     {
