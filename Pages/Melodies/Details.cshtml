@@ -5,6 +5,7 @@
     ViewData["Title"] = "Мелодія";
     var item = Model.Melody;
     var url = Url.Content($"~/melodies/{item.FilePath}");
+    var notesearchHandlerUrl = Url.Page("./Search", new { handler = "Notesearch" });
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
@@ -245,6 +246,13 @@
         <div class="actions-row">
             <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
             <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку мелодій</a>
+
+            @* button triggers client-side MIDI->Keys extraction and posts to Search handler *@
+            <button id="findSimilarBtn" type="button"
+                    class="btn btn-outline-dark light-background link-dark"
+                    data-search-url="@notesearchHandlerUrl">
+                Знайти схожі мелодії
+            </button>
         </div>
     </div>
 </div>
@@ -259,3 +267,4 @@
 <script src="~/lib/midirender/rendererUtils.js"></script>
 <script src="~/lib/midirender/midiRenderer.js"></script>
 <script src="~/js/MelodyDetails.js" asp-append-version="true"></script>
+<script src="~/js/details.js" asp-append-version="true"></script>

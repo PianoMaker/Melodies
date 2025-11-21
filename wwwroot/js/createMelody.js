@@ -106,8 +106,9 @@ document.addEventListener("DOMContentLoaded", function () {
 	console.log(`[createMelody]: outernotebox count: ${outerNoteBoxCount}`);
 	if (outerNoteBoxCount > 0) {
 		fileIsReady = true;
-		midiIsNotReady.style.display = "none";
-		midiIsReady.style.display = "inline";
+		// Use safe helper to avoid null reference
+		safeStyleDisplay(midiIsNotReady, 'none');
+		safeStyleDisplay(midiIsReady, 'inline');
 	}
 
 
