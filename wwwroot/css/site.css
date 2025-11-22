@@ -20,9 +20,8 @@
 
 html {
     position: relative;
-    width: 100%;
-    /* прибираємо примусову висоту: нехай контент росте */
-    /* height: 100%; */ 
+    width: 100%;    
+    height: 100%; 
     font-size: 14px;
 }
 
@@ -32,13 +31,12 @@ html {
     }
 }
 
-body {
-    /* замінюємо margin-bottom -> padding-bottom для зарезервованого простору */
+body {    
     margin: 0;
     padding: 60px;
-    padding-bottom: calc(var(--footer-height) + 16px); /* резерв місця під fixed футер */
+    padding-bottom: calc(var(--footer-height) + 16px); 
     width: 100%;
-    /* height: 100%;  НЕ потрібно */
+    height: 100%;
     background-color: #f0e68c; /* lightkhaki */
     background-attachment: fixed;
     background-repeat: no-repeat;
@@ -1030,3 +1028,10 @@ p {
 }
 
 /* End control-strip block */
+
+/* Ensure footer always spans full viewport width */
+.footer {
+    width: 100%;
+    left: 0;
+    box-sizing: border-box;
+}
