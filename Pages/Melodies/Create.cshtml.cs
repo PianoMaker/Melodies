@@ -44,7 +44,7 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public string Keys { get; set; } = default!;
 
-        public Music.Melody NewPattern { get; set; }
+        public MusicMelody NewPattern { get; set; }
         internal string TempMidiFilePath { get; set; }
 
         [BindProperty]
@@ -126,7 +126,7 @@ namespace Melodies25.Pages.Melodies
             }
             else GrayMessageL("errormessage is null");
             //if (TempData["Title"] is not null)
-            //    Melody.Title = TempData["Title"] as string;
+            //    MusicMelody.Title = TempData["Title"] as string;
 
             GetAuthorsData();
             GetTonalitiesData();
@@ -160,11 +160,11 @@ namespace Melodies25.Pages.Melodies
             if (Keys is not null)
             {
                 /* Будуємо послідовність введених нот */
-                Music.Melody MelodyPattern = new();
+                MusicMelody MelodyPattern = new();
                 Globals.notation = Notation.eu;
                 Globals.lng = LNG.uk;
                 BuildPattern(MelodyPattern);
-                NewPattern = (Music.Melody)MelodyPattern.Clone();
+                NewPattern = (MusicMelody)MelodyPattern.Clone();
 
                 /* Створює MIDI в диеркторію TempMidiFilePath на основі введеної послідовності */
                 try
@@ -198,7 +198,7 @@ namespace Melodies25.Pages.Melodies
 
 
         //читання нотного рядку відбувається по одній ноті у конструкторі Note(string input) 
-        private void BuildPattern(Music.Melody MelodyPattern)
+        private void BuildPattern(MusicMelody MelodyPattern)
         {
             var pattern = Keys.Split(separator, StringSplitOptions.RemoveEmptyEntries);
             foreach (var key in pattern)
@@ -308,7 +308,7 @@ namespace Melodies25.Pages.Melodies
                     var autoTonality = MidiKeySignatureDetector.TryDetectTonality(midifilePath);
                     if (!string.IsNullOrWhiteSpace(autoTonality))
                     {
-                        Melody.Tonality = autoTonality; // якщо у вас є Tonality4, замініть на Melody.Tonality
+                        Melody.Tonality = autoTonality; // якщо у вас є Tonality4, замініть на MusicMelody.Tonality
                     }
                 }
 
@@ -436,7 +436,7 @@ namespace Melodies25.Pages.Melodies
             var incomingDir = Path.Combine(_environment.WebRootPath, "melodies", "incoming");
             if (!Directory.Exists(incomingDir)) Directory.CreateDirectory(incomingDir);
 
-            // Attempt to load music.Melody from saved midi file if available (now in incoming)
+            // Attempt to load music.MusicMelody from saved midi file if available (now in incoming)
             List<string>? notes = null;
             List<int>? intervals = null;
             List<int>? pitches = null;

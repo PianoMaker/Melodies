@@ -47,7 +47,7 @@ namespace Melodies25.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Melody",
+                name: "MusicMelody",
                 columns: table => new
                 {
                     ID = table.Column<int>(type: "int", nullable: false)
@@ -76,7 +76,7 @@ namespace Melodies25.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Melody_AuthorID",
-                table: "Melody",
+                table: "MusicMelody",
                 column: "AuthorID");
         }
 
@@ -84,7 +84,7 @@ namespace Melodies25.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Melody");
+                name: "MusicMelody");
 
             migrationBuilder.DropTable(
                 name: "Author");

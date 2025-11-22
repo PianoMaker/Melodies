@@ -201,7 +201,7 @@ namespace Music
         }
 
 
-        public static Note GenerateRandomDistinctNote(Melody melody)
+        public static Note GenerateRandomDistinctNote(MusicMelody melody)
         {
             var rnd = new Random();
             int counter = 0;

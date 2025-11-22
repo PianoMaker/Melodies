@@ -52,7 +52,7 @@ namespace Melodies25.Pages.Experimental
                     var dto = JsonSerializer.Deserialize<IncomingDto>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     if (dto is null) continue;
 
-                    // Map DTO to display Melody (do not touch DB)
+                    // Map DTO to display MusicMelody (do not touch DB)
                     var m = new Melody();
 
                     // fill the most useful fields for UI
@@ -150,7 +150,7 @@ namespace Melodies25.Pages.Experimental
                 bool exists = _context.Melody.Any(m => m.Title == incomingMelody.Title);
                 if (exists)
                 {
-                    Console.WriteLine("Melody already exists in DB");
+                    Console.WriteLine("MusicMelody already exists in DB");
                     TempData["Message"] = "Мелодія вже існує в базі";
                     DeleteFileFromWebDirectory(id); // опціонально
                     return RedirectToPage();

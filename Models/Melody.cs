@@ -40,7 +40,7 @@ namespace Melodies25.Models
 
         // власна розробка  для роботи з нотним текстом
         [NotMapped]
-        public Music.Melody? MidiMelody { get; set; } 
+        public MusicMelody? MidiMelody { get; set; } 
 
         [NotMapped]
         public string? Mp3Filepath 

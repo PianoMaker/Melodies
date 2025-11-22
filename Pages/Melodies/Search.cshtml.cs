@@ -11,12 +11,11 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using static Melodies25.Utilities.Algorythm;
+using static Music.Algorythm;
 using static Melodies25.Utilities.PrepareFiles;
 using static Melodies25.Utilities.WaveConverter;
 using static Music.Messages;
 using static Music.MidiConverter;
-using Melody = Melodies25.Models.Melody;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -84,9 +83,12 @@ namespace Melodies25.Pages.Melodies
         public int MaxGap { get; set; } = 1;
 
         // Нова мелодія, створена на сторінці пошуку
-        public Music.Melody NewPattern { get; set; }
+        public MusicMelody NewPattern { get; set; }
+
+        // Тимчасові файли для створеної мелодії
         internal string TempMidiFilePath { get; set; }
 
+        // Тимчасовий mp3 файл для створеної мелодії
         [BindProperty]
         internal string TempMp3FilePath { get; set; }
 
@@ -355,28 +357,7 @@ namespace Melodies25.Pages.Melodies
         public async Task OnPostNotesearch()
         {
             // Diagnostics: log incoming form, bound properties and ModelState
-            try
-            {
-                Console.WriteLine("---- OnPostNotesearch diagnostics ----");
-                Console.WriteLine("Request.Method: " + Request.Method);
-                Console.WriteLine("Request.Path: " + Request.Path);
-                Console.WriteLine("Request.Form keys: " + string.Join(", ", Request.Form.Keys));
-                Console.WriteLine($"Request.Form[TimeSignatureNumerator] = '{Request.Form["TimeSignatureNumerator"]}'");
-                Console.WriteLine($"Request.Form[TimeSignatureDenominator] = '{Request.Form["TimeSignatureDenominator"]}'");
-                Console.WriteLine($"Bound props before work: TimeSignatureNumerator={TimeSignatureNumerator}, TimeSignatureDenominator={TimeSignatureDenominator}");
-                Console.WriteLine($"ModelState.IsValid = {ModelState.IsValid}");
-                foreach (var kv in ModelState)
-                {
-                    var attempted = kv.Value?.AttemptedValue ?? "(null)";
-                    var errors = (kv.Value?.Errors != null && kv.Value.Errors.Count > 0) ? string.Join(" | ", kv.Value.Errors.Select(e => e.ErrorMessage + (e.Exception != null ? (" (ex: " + e.Exception.Message + ")") : ""))) : "";
-                    Console.WriteLine($"ModelState['{kv.Key}'] attempted='{attempted}' errors='{errors}'");
-                }
-                Console.WriteLine("---- end diagnostics ----");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Diagnostics failed: " + ex);
-            }
+            DiagnosticNoteSearch();
 
             MessageL(COLORS.yellow, $"SEARCH - OnPostNotesearch method, Keys = {Keys}, TimeSin={TimeSignatureNumerator}/{TimeSignatureDenominator}");
 
@@ -389,7 +370,7 @@ namespace Melodies25.Pages.Melodies
 
 
             /*ІНІЦІАЛІЗАЦІЯ ВВЕДЕНОГО МАЛЮНКУ*/
-            Music.Melody MelodyPattern = new();
+            MusicMelody MelodyPattern = new();
             Globals.notation = Notation.eu;
             Globals.lng = LNG.uk;
             TempData["Keys"] = Keys;
@@ -412,12 +393,7 @@ namespace Melodies25.Pages.Melodies
                 }
 
                 /* ЛОГУВАННЯ */
-                //MessageL(COLORS.olive, "melodies to compare with pattern:");
-                //foreach (var melody in Melody)
-                //    GrayMessageL(melody.Title);
-                //MessageL(COLORS.olive, "notes in patten:");
-                //foreach (var note in MelodyPattern)
-                //    GrayMessageL(note.Name);
+                LogNotesearch(MelodyPattern);
 
                 /*аудіо*/
                 try
@@ -457,6 +433,42 @@ namespace Melodies25.Pages.Melodies
                 Description = "Помилка розпізнавання введеної мелодії для пошуку";
             }
             MessageL(COLORS.cyan, $"finishing SEARCH method");
+        }
+
+        private void LogNotesearch(MusicMelody MelodyPattern)
+        {
+            MessageL(COLORS.olive, "melodies to compare with pattern:");
+            foreach (var melody in Melody)
+                GrayMessageL(melody.Title);
+            MessageL(COLORS.olive, "notes in patten:");
+            foreach (var note in MelodyPattern)
+                GrayMessageL(note.Name);
+        }
+
+        private void DiagnosticNoteSearch()
+        {
+            try
+            {
+                Console.WriteLine("---- OnPostNotesearch diagnostics ----");
+                Console.WriteLine("Request.Method: " + Request.Method);
+                Console.WriteLine("Request.Path: " + Request.Path);
+                Console.WriteLine("Request.Form keys: " + string.Join(", ", Request.Form.Keys));
+                Console.WriteLine($"Request.Form[TimeSignatureNumerator] = '{Request.Form["TimeSignatureNumerator"]}'");
+                Console.WriteLine($"Request.Form[TimeSignatureDenominator] = '{Request.Form["TimeSignatureDenominator"]}'");
+                Console.WriteLine($"Bound props before work: TimeSignatureNumerator={TimeSignatureNumerator}, TimeSignatureDenominator={TimeSignatureDenominator}");
+                Console.WriteLine($"ModelState.IsValid = {ModelState.IsValid}");
+                foreach (var kv in ModelState)
+                {
+                    var attempted = kv.Value?.AttemptedValue ?? "(null)";
+                    var errors = (kv.Value?.Errors != null && kv.Value.Errors.Count > 0) ? string.Join(" | ", kv.Value.Errors.Select(e => e.ErrorMessage + (e.Exception != null ? (" (ex: " + e.Exception.Message + ")") : ""))) : "";
+                    Console.WriteLine($"ModelState['{kv.Key}'] attempted='{attempted}' errors='{errors}'");
+                }
+                Console.WriteLine("---- end diagnostics ----");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Diagnostics failed: " + ex);
+            }
         }
 
         //--------------------------------
@@ -510,11 +522,11 @@ namespace Melodies25.Pages.Melodies
             {
                 try
                 {
-                    Music.Melody MelodyPattern = new();
+                    MusicMelody MelodyPattern = new();
                     Globals.notation = Notation.eu;
                     Globals.lng = LNG.uk;
                     BuildPattern(MelodyPattern);
-                    NewPattern = (Music.Melody)MelodyPattern.Clone();
+                    NewPattern = (MusicMelody)MelodyPattern.Clone();
 
                     TempMidiFilePath = PrepareTempName(_environment, ".mid");
                     MelodyPattern.SaveMidi(TempMidiFilePath);
@@ -566,7 +578,7 @@ namespace Melodies25.Pages.Melodies
         // ПОБУДОВА МЕЛОДІЇ З ВВЕДЕНИХ НОТ
         //  викликається в OnPostNotesearch
         //--------------------------------
-        private void BuildPattern(Music.Melody MelodyPattern)
+        private void BuildPattern(MusicMelody MelodyPattern)
         {
             MessageL(COLORS.olive, $"Building patern, keys = {Keys}");
 
@@ -590,7 +602,7 @@ namespace Melodies25.Pages.Melodies
         // ПОРІВНЯННЯ МЕЛОДІЙ
         // викликається в OnPostNotesearch
         //--------------------------------
-        private void CompareMelodies(Music.Melody MelodyPattern)
+        private void CompareMelodies(MusicMelody MelodyPattern)
         {
             MessageL(COLORS.olive, $"CompareMelodies method {SearchAlgorithm?.ToLowerInvariant()}, maxgap = {MaxGap}");
             var sw = new Stopwatch();
@@ -631,7 +643,7 @@ namespace Melodies25.Pages.Melodies
                                 break;
                             }
 
-                            var (len, pos, pairs, bestShift) = FindBestSubsequenceMatch(melodinotes, patternNotes, MaxGap);
+                            var (len, pos, pairs, bestShift) = MusicMelody.SimilarByIntervalsWithGap(MelodyPattern, melody.MidiMelody, MaxGap);
                             length = len;
                             position = pos;
                             finalBestPairs = pairs ?? new List<(int i1, int i2)>();
@@ -643,7 +655,7 @@ namespace Melodies25.Pages.Melodies
                     case "substring":
                         {
                             MessageL(14, $"comparing substring for {title}");
-                            var (len, pos, pairs) = FindLongestSubstringMatch(patternShape, melodyshape);
+                            var (len, pos, pairs) = MusicMelody.SimilarByIntervals(MelodyPattern, melody.MidiMelody);
                             length = len;
                             position = pos;
                             finalBestPairs = pairs ?? new List<(int i1, int i2)>();
@@ -710,108 +722,7 @@ namespace Melodies25.Pages.Melodies
             }
         }
 
-        //--------------------------------
-        //ДОПОМОЖНІ МЕТОДИ ДЛЯ ПОШУКУ
-        //викликаються в CompareMelodies
-        //--------------------------------
-        // Знаходить найкращий збіг melodyNotes та patternNotes з maxGap=0  (substring)
-        private (int length, int position, List<(int i1, int i2)> pairs) FindLongestSubstringMatch(int[] patternShape, int[] melodyShape)
-        {
-            // Use Algorythm.LongestCommonSubstring which returns (length, startIndex)
-            (int length, int position) = LongestCommonSubstring(patternShape, melodyShape);
-            var pairs = new List<(int i1, int i2)>();
-            if (length > 0 && position >= 0)
-            {
-                for (int k = 0; k < length; k++)
-                    pairs.Add((position + k, k));
-            }
-            return (length, position, pairs);
-        }
-
-        // Знаходить найкращий збіг melodyNotes та patternNotes з урахуванням maxGap (subsequence)
-        private (int length, int position, List<(int i1, int i2)> pairs, int bestShift) FindBestSubsequenceMatch(int[] melodyNotes, int[] patternNotes, int maxGap)
-        {
-            int clamped = Math.Clamp(maxGap, 1, 3);
-            int bestLen = 0;
-            int bestPos = -1;
-            int bestShift = 0;
-            List<(int i1, int i2)> bestPairsForMelody = new();
-
-            // Перебираємо усі 12 транспозицій (півтонів)
-            for (int shift = 0; shift < Globals.NotesInOctave; shift++)
-            {
-                var transposedPattern = patternNotes.Select(p => (p + shift) % Globals.NotesInOctave).ToArray();
-
-                LogInput(transposedPattern, melodyNotes);
-                var (lcsTotalLen, idxFirstAll, idxSecondAll) = LongestCommonSubsequence(melodyNotes, transposedPattern, maxGap);
-                if (idxSecondAll == null || idxSecondAll.Count == 0) continue;
-
-                // Побудова всіх "кластерів" збігів, де розриви в обох масивах <= clamped.
-                // Обираємо найдовший кластер. При рівній довжині зберігаємо перший знайдений (найраніший).
-                var curFirst = new List<int>();
-                var curSecond = new List<int>();
-
-                void FinalizeCluster()
-                {
-                    if (curFirst.Count == 0) return;
-
-                    int curLen = curFirst.Count;
-                    if (curLen > bestLen)
-                    {
-                        bestLen = curLen;
-                        bestPos = curFirst[0];
-                        bestShift = shift;
-
-                        bestPairsForMelody = new List<(int i1, int i2)>();
-                        for (int t = 0; t < curFirst.Count; t++)
-                            bestPairsForMelody.Add((curFirst[t], curSecond[t]));
-                    }
-                }
-
-                for (int k = 0; k < idxSecondAll.Count; k++)
-                {
-                    if (curFirst.Count == 0)
-                    {
-                        curFirst.Add(idxFirstAll[k]);
-                        curSecond.Add(idxSecondAll[k]);
-                        continue;
-                    }
-
-                    int gapSecond = idxSecondAll[k] - curSecond[^1] - 1;
-                    int gapFirst  = idxFirstAll[k]  - curFirst[^1]  - 1;
-
-                    if (gapSecond <= clamped && gapFirst <= clamped)
-                    {
-                        curFirst.Add(idxFirstAll[k]);
-                        curSecond.Add(idxSecondAll[k]);
-                    }
-                    else
-                    {
-                        // Закриваємо поточний кластер і починаємо новий з поточного елемента
-                        FinalizeCluster();
-                        curFirst.Clear(); curSecond.Clear();
-                        curFirst.Add(idxFirstAll[k]);
-                        curSecond.Add(idxSecondAll[k]);
-                    }
-                }
-
-                // фіналізуємо останній відкритий кластер
-                FinalizeCluster();
-
-                // ранній вихід, якщо знайдено повний збіг довжини патерна
-                if (bestLen >= patternNotes.Length) break;
-            }
-
-            return (bestLen, bestPos, bestPairsForMelody, bestShift);
-        }
-
-        private void LogInput(int[] pattern, int[] melodyNotes)
-        {
-            
-            MessageL(COLORS.gray, $"melody: {string.Join(", ", melodyNotes)}");
-            MessageL(COLORS.gray, $"pattern: {string.Join(", ", pattern)}");
-        }
-    }
+   
     public class MatchedMelody
     {
         public Melody Melody { get; set; } = default!;
@@ -822,3 +733,4 @@ namespace Melodies25.Pages.Melodies
         public int BestShift { get; set; } = 0;
     }
 }
+    }
