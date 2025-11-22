@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Music;
 using NAudio.Midi;
@@ -21,7 +22,7 @@ namespace Melodies25.Pages.Account
 
         public string CheckMessage { get; set; }
 
-        // Map: filename.mid -> Melody.ID (if exists)
+        // Map: filename.mid -> MusicMelody.ID (if exists)
         public Dictionary<string, int> FileIds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         public NotationModel(IWebHostEnvironment env, Melodies25Context context)
