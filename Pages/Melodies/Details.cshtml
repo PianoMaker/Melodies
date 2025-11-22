@@ -5,6 +5,7 @@
     ViewData["Title"] = "Мелодія";
     var item = Model.Melody;
     var url = Url.Content($"~/melodies/{item.FilePath}");
+    var notesearchHandlerUrl = Url.Page("./Search", new { handler = "Notesearch" });
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
