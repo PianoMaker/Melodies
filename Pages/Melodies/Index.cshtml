@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
 }
 <div class="infocontainer">
-    <h1>Мелодій у базі даних - @Model.Melody.Count</h1>
+    <h1>Мелодій у базі даних - @(Model.Melody?.Count ?? 0)</h1>
     <div class="d-flex flex-row melody-index-flex">
         <!-- Left column: search/add buttons -->
         <div id="operationbuttons" class="d-flex flex-column me-4">
@@ -73,7 +73,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Melody)
+        @foreach (var item in Model.Melody ?? Enumerable.Empty<Melodies25.Models.Melody>())
         {
             <tr>
                 <!--НАЗВА-->
@@ -166,14 +166,23 @@
             <button type="submit" class="btn-melody link-dark">Вилучити Дублікати</button>
         </form>
     </div>
+    <!-- control strip -->
+    @if (User.IsInRole("Admin"))
+    {
+    <div class="control-strip" id="controlStrip" role="region" aria-label="Control strip" aria-expanded="false">
+        <p>показати помилки</p>
+        <button id="controlToggle" class="control-toggle" aria-controls="controlContent" aria-expanded="false" title="Розгорнути/Згорнути">+</button>
+        <div id="controlContent" class="control-content" hidden>
+            <div class="control-messages">
+                <p class="control-msg">@Model.Msg</p>
+                <p class="control-err">@Model.Errormsg</p>
+            </div>
+        </div>
+    </div>
+    }
 </div>
 
-<div class="controlcontainer">
 
-    <p>@Model.Msg</p>
-    <p>@Model.Errormsg</p>
-
-</div>
 
 <script src="~/js/play.js"></script>
-<script src="~/js/melody-index.js"></script>
+<script src="~/js/index.js" asp-append-version="true"></script>
