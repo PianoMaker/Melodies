@@ -1,0 +1,19 @@
+﻿@page
+@model Melodies25.Pages.Account.ProfileModel
+@{
+    ViewData["Title"] = "Профіль користувача";
+}
+<div class="infocontainer">
+    <h2>Профіль користувача</h2>
+    <dl class="row">
+        <dt class="col-sm-3">Email</dt>
+        <dd class="col-sm-9">@Model.Email</dd>
+        <dt class="col-sm-3">Ім'я користувача</dt>
+        <dd class="col-sm-9">@Model.UserName</dd>
+        <dt class="col-sm-3">Статус користувача</dt>
+        <dd class="col-sm-9">@Model.Role</dd>
+        <!-- Додайте інші поля за потреби -->
+    </dl>
+
+<a class="btn btn-melody" asp-page="/Account/ChangePassword">Змінити пароль</a>
+</div>
