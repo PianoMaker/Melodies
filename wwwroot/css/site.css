@@ -14,13 +14,15 @@
     --shadow-inset: 0 1px 2px rgba(0,0,0,.12) inset;
     --btnheight: 40px;
     --mainimage: url(../images/elephantplays4.png); /* головний малюнок */
+    --footer-height: 30px; /* NEW */
 }
 
 
 html {
     position: relative;
     width: 100%;
-    height: 100%;
+    /* прибираємо примусову висоту: нехай контент росте */
+    /* height: 100%; */ 
     font-size: 14px;
 }
 
@@ -31,19 +33,12 @@ html {
 }
 
 body {
-    margin-bottom: 60px;
-    width: 100%;
-    height: 100%;
+    /* замінюємо margin-bottom -> padding-bottom для зарезервованого простору */
     margin: 0;
-    padding: 0;
-    /*overflow: hidden;*/
-    /* яскравий градієнт */
-    /*background: linear-gradient(
-        rgb(231 153 42 / 80%) 20%,*/ /* помаранчево‑жовтий */
-    /*rgb(239, 100, 247, 0.7) 40%,*/ /* рожево‑фіолетовий */
-    /*rgb(91 109 9 / 80%) 90%,*/ /* оливковий */
-    /*rgb(9 148 195 / 86%)*/ /* блакитний */
-    /*);*/
+    padding: 60px;
+    padding-bottom: calc(var(--footer-height) + 16px); /* резерв місця під fixed футер */
+    width: 100%;
+    /* height: 100%;  НЕ потрібно */
     background-color: #f0e68c; /* lightkhaki */
     background-attachment: fixed;
     background-repeat: no-repeat;
@@ -120,7 +115,7 @@ a.link-light:hover {
     background-color: var(--brand-maincolor);
     border-color: var(--brand-maincolor);
     color: var(--brand-gold);
-}   
+}
 
 /* пошук по нотах - головна */
 .btn-notes {
@@ -197,10 +192,9 @@ label, .form-label, .col-form-label {
 
 /*стилі елементів головного меню*/
 .melodyitem {
-    
     height: auto !important;
     display: flex;
-    align-items: stretch;   /* let link fill full navbar height */
+    align-items: stretch; /* let link fill full navbar height */
     justify-content: center;
 }
 
@@ -208,7 +202,7 @@ label, .form-label, .col-form-label {
     /* match li height to mainNavbar/navbar height */
     height: var(--nav-height) !important;
     display: flex;
-    align-items: stretch;   /* let link fill full navbar height */
+    align-items: stretch; /* let link fill full navbar height */
     justify-content: center;
 }
 
@@ -228,11 +222,11 @@ label, .form-label, .col-form-label {
 }
 
 
-.btn-light:hover {
-    background-color: darkgray;
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* Збільшена тінь при наведенні */
-    transform: translateY(-2px); /* Невеликий підйом кнопки */
-}
+    .btn-light:hover {
+        background-color: darkgray;
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* Збільшена тінь при наведенні */
+        transform: translateY(-2px); /* Невеликий підйом кнопки */
+    }
 
 .btn-compact-40 {
     min-height: var(--btnheight);
@@ -275,21 +269,23 @@ label, .form-label, .col-form-label {
         display: inline-block;
         height: 100%;
     }
+
         .exp-top a:hover {
             transform: scale(1.1);
             color: darkred;
         }
+
         .exp-top a.active {
             background-color: rgba(255, 125, 12, 0.2) !important;
         }
 
-    table {
-        background-color: white;
-        opacity: 0.9;
-        font-family: 'Times New Roman';
-        font-style: normal;
-        border: 1px solid black;
-    }
+table {
+    background-color: white;
+    opacity: 0.9;
+    font-family: 'Times New Roman';
+    font-style: normal;
+    border: 1px solid black;
+}
 
     table a {
         font-style: normal;
@@ -320,22 +316,35 @@ table, th, td {
 }
 
 /* Zebra + hover */
-.table tbody tr:nth-child(odd) td { background-color: rgba(255,255,255,0.96); }
-.table tbody tr:nth-child(even) td { background-color: rgba(250,250,250,0.96); }
-.table tbody tr:hover td { background-color: #f6f6f6; }
+.table tbody tr:nth-child(odd) td {
+    background-color: rgba(255,255,255,0.96);
+}
+
+.table tbody tr:nth-child(even) td {
+    background-color: rgba(250,250,250,0.96);
+}
+
+.table tbody tr:hover td {
+    background-color: #f6f6f6;
+}
 
 /* Sticky header for easier scanning */
 .table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 /* Narrow fixed width for action column if desired */
-.table td:last-child, .table th:last-child { width: 120px; white-space: nowrap; }
+.table td:last-child, .table th:last-child {
+    width: 120px;
+    white-space: nowrap;
+}
 
 /* Icon-only buttons: keep compact */
-.btn.btn-outline-dark i { pointer-events: none; }
+.btn.btn-outline-dark i {
+    pointer-events: none;
+}
 
 
 
@@ -348,13 +357,12 @@ table, th, td {
 }
 
 /* сирпінка файлів*/
-.filesbox{
-
+.filesbox {
     border: 1px solid gray;
     background: #fefee7;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
-    margin-top:20px;
-    margin-bottom:40px;
+    margin-top: 20px;
+    margin-bottom: 40px;
 }
 
 
@@ -390,6 +398,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     border-radius: 5px;
     box-shadow: rgba(55,55,0,0.3) 2px 2px;
 }
+
 .NotesList {
     display: inline-block;
     width: 20%;
@@ -398,6 +407,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     vertical-align: top;
     background-color: rgb(255,255,200)
 }
+
 .pausebox {
     font-size: 1.1em;
     background-color: white;
@@ -442,6 +452,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     height: 100%;
     margin: 0;
     padding: 0;
+    position: relative; /* required so control-strip absolute positions to this container */
 }
 
 /* головний малюнок сайту тут*/
@@ -462,7 +473,9 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 /* Tighten spacing for the top action strip */
-.d-flex > .btn.btn-compact-40 { margin: .25rem !important; }
+.d-flex > .btn.btn-compact-40 {
+    margin: .25rem !important;
+}
 
 /* Анімація м'якого пульсування світла */
 @keyframes glow {
@@ -471,7 +484,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     }
 
     to {
-        text-shadow: 0px 0px 12px rgb(255 50 50), 0px 0px 20px rgb(255 100 50);
+        text-shadow: 0px 0px 12px rgb(255, 50, 50), 0px 0px 20px rgb(255, 100, 50);
     }
 }
 
@@ -548,6 +561,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 .infocontainer {
     display: block;
 }
+
 .searchrightcontainer {
     /*display: inline-block;*/
     width: 70%;
@@ -609,7 +623,6 @@ p {
     .searchleftcontainer {
         width: 100%;
     }
-
 }
 
 @media (max-width: 768px) {
@@ -750,8 +763,6 @@ p {
     .commoncontainer {
         padding-top: 12rem !important; /* ~21px at 14px base font-size */
     }
-
-
 }
 
 /* Half-page responsive container: 100% below 992px, 50% from 992px up */
@@ -779,11 +790,15 @@ p {
 }
 
 @media (max-width: 768px) {
-    .fileinfo { font-size: 0.95rem; }
+    .fileinfo {
+        font-size: 0.95rem;
+    }
 }
 
 @media (max-width: 576px) {
-    .fileinfo { font-size: 0.9rem; }
+    .fileinfo {
+        font-size: 0.9rem;
+    }
 }
 
 /* Keep letter pickers horizontal and wrapping on all screen sizes */
@@ -795,40 +810,52 @@ p {
     justify-content: flex-start;
 }
 
-/* Each letter form should size to content, not stretch */
-.letters-row form {
-    flex: 0 0 auto;
-}
+    /* Each letter form should size to content, not stretch */
+    .letters-row form {
+        flex: 0 0 auto;
+    }
 
 /* Override the global mobile .d-flex column rule for letters */
 @media (max-width: 768px) {
-    .letters-row { 
+    .letters-row {
         flex-direction: row !important;
     }
 }
 
 /* Responsive layout for Notation page */
-.notation-layout 
-{ 
-    display: flex; 
-    width: 100%; 
-    margin-top: 20px; 
-    align-items: flex-start; 
-    gap: 12px; 
+.notation-layout {
+    display: flex;
+    width: 100%;
+    margin-top: 20px;
+    align-items: flex-start;
+    gap: 12px;
+}
 
+#SheetMusic {
+    flex: 0 0 80%;
+    background-color: rgb(255,255,230);
 }
-#SheetMusic 
-{ 
-  flex: 0 0 80%; 
-  background-color: rgb(255,255,230); 
+
+.NotesList {
+    flex: 0 0 20%;
 }
-.NotesList { flex: 0 0 20%; }
 
 @media (max-width: 992px) {
-    
-    .notation-layout { flex-direction: column; }
-    #SheetMusic { flex: 0 0 100% !important; width: 100% !important; }
-    .NotesList { width: 100% !important; display: block; margin-top: 8px; }
+
+    .notation-layout {
+        flex-direction: column;
+    }
+
+    #SheetMusic {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+    }
+
+    .NotesList {
+        width: 100% !important;
+        display: block;
+        margin-top: 8px;
+    }
 }
 
 .btn-melody {
@@ -848,39 +875,43 @@ p {
     background-clip: padding-box;
 }
 
-.btn-melody:hover, .btn-melody:focus {
-    color: var(--brand-gold);
-    background-color: var(--brand-maincolor);
-    border-color: #212529;
-    text-decoration: none;
-}
+    .btn-melody:hover, .btn-melody:focus {
+        color: var(--brand-gold);
+        background-color: var(--brand-maincolor);
+        border-color: #212529;
+        text-decoration: none;
+    }
 
-.btn-melody:active {
-    color: #fff;
-    background-color: #1a1e21;
-    border-color: #1a1e21;
-}
+    .btn-melody:active {
+        color: #fff;
+        background-color: #1a1e21;
+        border-color: #1a1e21;
+    }
 
 /* Melodies/Index adaptive layout for operationbuttons and lettersbutton */
 @media (max-width: 768px) {
     .melody-index-flex {
         flex-direction: column !important;
     }
+
     #operationbuttons {
         flex-direction: row !important;
         align-items: flex-start !important;
         margin-bottom: 1rem;
         gap: 0.5rem;
     }
-    #operationbuttons .btn-melody {
-        margin: 0 !important;
-    }
+
+        #operationbuttons .btn-melody {
+            margin: 0 !important;
+        }
 }
 
 @media (max-width: 900px) {
     .hide-mobile {
-        display: none !important;nt;
+        display: none !important;
+        nt;
     }
+
     .table {
         width: 100% !important;
         margin: 0 !important;
@@ -893,3 +924,109 @@ p {
         display: none !important;
     }
 }
+
+/* ===== Control strip (appended non-destructively) =====
+
+*/
+
+.control-strip {
+    /* in normal flow: sits where placed in DOM (after action buttons) */
+    position: relative; /* not fixed to viewport */
+    display: block;
+    margin: 16px auto 60px auto; /* gap above, large bottom margin to clear footer */
+    max-width: 1100px; /* match main content width */
+    width: calc(100% -20px); /* side gutters */
+    background: #f0f0f0;
+    border: 2px solid rgba(0,0,0,0.58);
+    border-radius: 8px;
+    font-size: 0.7em;
+    color: #111;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.86); /* було 02px8px */
+    overflow: visible; /* allow expanded content to push layout down */
+    transition: box-shadow 240ms ease; /* було box-shadow240ms */
+    z-index: 10;
+    padding: 8px 12px; /* було 8px12px */
+}
+
+    /* toggle inside strip, visible at top */
+    .control-strip .control-toggle {
+        position: absolute;
+        right: 12px;
+        top: 8px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 1px solid #ccc;
+        background: #fff;
+        color: #000;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        line-height: 1;
+        box-shadow: 1px 4px rgba(0,0,0,0.06);
+    }
+
+        .control-strip .control-toggle:focus {
+            outline: 2px solid rgba(0,0,0,0.12);
+        }
+
+/* content hidden by default */
+.control-content {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 300ms ease, opacity 160ms ease;
+    padding-top: 0;
+    
+}
+
+/* expanded state */
+.control-strip.expanded {
+    padding-bottom: 12px;
+}
+
+    .control-strip.expanded .control-content {
+        max-height: 480px;
+        opacity: 1;
+        padding-top: 8px;
+    }
+
+.control-messages {
+    font-size: 0.95rem;
+    color: #222;
+    line-height: 1.4;
+}
+
+.control-msg {
+    margin: 06px 6px 0;
+    color: #333;
+}
+
+.control-err {
+    margin: 0;
+    color: #b32d2e;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+@media (max-width:640px) {
+    .control-strip {
+        width: calc(100% -20px);
+        max-width: calc(100% -20px);
+        margin-bottom: 80px; /* more space on mobile for footer */
+    }
+
+        .control-strip .control-toggle {
+            right: 8px;
+            top: 6px;
+        }
+
+        .control-strip.expanded .control-content {
+            max-height: 360px;
+        }
+}
+
+/* End control-strip block */
