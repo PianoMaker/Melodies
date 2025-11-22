@@ -247,7 +247,7 @@
             <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
             <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку мелодій</a>
 
-            @* button triggers client-side MIDI->Keys extraction and posts to Search handler *@
+            @* запускає сторінку пошуку, атрибут notesearchHandlerUrl передається як адреса міді-файлу поточної мелодії *@
             <button id="findSimilarBtn" type="button"
                     class="btn btn-outline-dark light-background link-dark"
                     data-search-url="@notesearchHandlerUrl">
