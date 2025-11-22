@@ -124,6 +124,7 @@ async function renderMidiSegmentFromUrl(
                 count++;
             }
         }
+
         // Determine measure index containing this absTime
         const idxKeys = Object.keys(measureMap).map(k => parseInt(k, 10)).sort((a,b)=>a-b);
         let matchedMeasureIdx = 0;
@@ -135,6 +136,23 @@ async function renderMidiSegmentFromUrl(
         // Snap to nearest lower multiple of 4
         let startAtMeasureIndex = matchedMeasureIdx - (matchedMeasureIdx % 4);
         if (startAtMeasureIndex < 0) startAtMeasureIndex = 0;
+
+        // --- NEW: determine initial key signature active at targetAbsTime ---
+        let initialKeySig = null;
+        try {
+            // get all key signature events and pick the last one with absTime <= targetAbsTime
+            if (typeof getKeySignature === 'function') {
+                const keySigs = getKeySignature(allEvents); // returns array with absTime, sf, mode/name
+                if (Array.isArray(keySigs) && keySigs.length) {
+                    const candidates = keySigs.filter(k => (k.absTime || 0) <= targetAbsTime);
+                    const last = candidates.length ? candidates[candidates.length - 1] : null;
+                    if (last) initialKeySig = { sf: last.sf, mi: last.mode ?? 0 };
+                }
+            }
+        } catch (ksErr) {
+            console.warn('Could not determine initialKeySig for segment:', ksErr);
+            initialKeySig = null;
+        }
 
         // Render the segment
         const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
@@ -149,7 +167,8 @@ async function renderMidiSegmentFromUrl(
             Xmargin,
             commentsDiv,
             barsToRender,
-            startAtMeasureIndex
+            startAtMeasureIndex,
+            initialKeySig // <-- pass initial key signature (may be null)
         );
     } catch (err) {
         console.error('renderMidiSegmentFromUrl error:', err);
@@ -358,14 +377,14 @@ function hasNoteOn(measure) {
 // ---------------------
 
 
-function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, commentsDiv, maxBarsToRender = 1000, startAtMeasureIndex = 0) {
+function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, commentsDiv, maxBarsToRender = 1000, startAtMeasureIndex = 0, initialKeySig = null) {
     console.log("FOO: midiRenderer.js - renderMidiFileToNotation");
     if (!ELEMENT_FOR_RENDERING) {
         throw new Error(`Element with id ${ELEMENT_FOR_RENDERING} not found.`);
     }
     let midiData = MidiParser.Uint8(uint8);
     let ticksPerBeat = Array.isArray(midiData.timeDivision) ? 480 : midiData.timeDivision;
-    let allEvents = SetEventsAbsoluteTime(midiData);
+    let allEvents = SetEventsAbsoluteTime(midiData) || [];
 
     // Перевірка наявності EndTrack
     ensureEndEvent(allEvents);
@@ -373,21 +392,24 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
     const measureMap = createMeasureMap(allEvents, ticksPerBeat);
     const measures = groupEventsByMeasure(allEvents, measureMap);
 
-	// обчислюємо індекс початкового такту, вирівняного до кратного 4
+    // Diagnostics: log counts so we can see why measures may be empty
+    console.info(`renderMidiFileToNotation: allEvents=${allEvents.length}, measureMap_keys=${Object.keys(measureMap).length}, measures=${measures.length}, ticksPerBeat=${ticksPerBeat}`);
+
+    // обчислюємо індекс початкового такту, вирівняного до кратного 4
     let startIdx = parseInt(startAtMeasureIndex, 10);
     if (!isFinite(startIdx) || startIdx < 0) startIdx = 0;
     startIdx = startIdx - (startIdx % 4);
     if (startIdx > measures.length - 1) startIdx = Math.max(0, measures.length - 1);
 
-	// обчислюємо скільки тактів залишилось від startIdx до кінця
+    // обчислюємо скільки тактів залишилось від startIdx до кінця
     const remaining = Math.max(0, measures.length - startIdx);
     const renderCount = (typeof maxBarsToRender === 'number' && isFinite(maxBarsToRender) && maxBarsToRender !== 1000)
         ? Math.min(remaining, maxBarsToRender)
         : remaining;
 
     // Витягуємо вікно тактів для рендерингу
-	// починаючи з startIdx, довжиною renderCount
     const measuresWindow = measures.slice(startIdx, startIdx + renderCount);
+    console.info(`renderMidiFileToNotation: startIdx=${startIdx}, renderCount=${renderCount}, measuresWindow=${measuresWindow.length}`);
 
     // Тримаємо лише ті такти, які містять Note On події
     const measuresToRender = [...measuresWindow];
@@ -396,8 +418,28 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         measuresToRender.pop();
     }
     const effectiveCount = measuresToRender.length;
+    console.info(`renderMidiFileToNotation: measuresToRender=${measuresToRender.length}, effectiveCount=${effectiveCount}`);
 
-	// створюємо новий measureMap для заданого діапазону
+    // If nothing to render then bail out with a helpful comment
+    if (effectiveCount === 0) {
+        const msg = 'No notes to render: selected segment contains no NoteOn events.';
+        console.warn(`renderMidiFileToNotation: ${msg} measures.length=${measures.length} measuresWindow.length=${measuresWindow.length}`);
+        if (commentsDiv) {
+            commentsDiv.innerHTML = msg;
+        } else {
+            const target = document.getElementById(ELEMENT_FOR_RENDERING);
+            if (target) target.innerHTML = `<div class="small text-muted">${msg}</div>`;
+        }
+        return {
+            totalMeasures: measures.length,
+            renderedMeasures: 0,
+            limited: false,
+            maxBarsToRender,
+            startAtMeasureIndex: startIdx
+        };
+    }
+
+    // створюємо новий measureMap для заданого діапазону
     const slicedMap = {};
     for (let i = 0; i <= effectiveCount; i++) {
         slicedMap[i] = measureMap[startIdx + i];
@@ -430,8 +472,8 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         const score = factory.EasyScore();
 
         // РЕНДЕРИНГ ТАКТІВ
-        // ----------------------
-        renderMeasures(slicedMap, measuresToRender, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, effectiveWidth, commentsDiv);
+        // передаємо initialKeySig у renderMeasures
+        renderMeasures(slicedMap, measuresToRender, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, effectiveWidth, commentsDiv, initialKeySig);
 
         // ----------------------
         // ПІСЛЯ-ОБРОБКА SVG
@@ -498,51 +540,54 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
 // ----------------------
 
 
-function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, GENERALWIDTH, commentsDiv) {
+function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, GENERALWIDTH, commentsDiv, initialKeySig = null) {
     console.log("FOO: midiRenderer.js - renderMeasures ");
     let Xposition = Xmargin;
     let Yposition = TOPPADDING;
     let thresholdGap = ticksPerBeat / 8;
 
-
     // Початковий розмір такту (за замовчуванням 4/4)
     let currentNumerator = 4;
     let currentDenominator = 4;
+
+    // Initialize currentKeySig from provided initialKeySig when rendering slice
+    let currentKeySig = initialKeySig ? { sf: initialKeySig.sf, mi: initialKeySig.mi } : null;
+    if (currentKeySig) {
+        console.log(`MR: initialKeySig applied for slice -> sf:${currentKeySig.sf} mi:${currentKeySig.mi}`);
+    }
+
     const activeNotes = {};
-
-    // Флаг для відстеження першого такту на кожному рядку
     let isFirstMeasureInRow = true;
-    // Поточний key signature (оновлюється при meta подіях 0x59)
-    let currentKeySig = null;
-    let meanBarWidth = null;
+    let meanBarWidth;
+    try {
+        if (Array.isArray(measures) && measures.length > 0) {
+            meanBarWidth = GetMeanBarWidth(BARWIDTH, measures);
+        } else {
+            meanBarWidth = BARWIDTH;
+            console.debug("MR: measures empty — using BARWIDTH as meanBarWidth");
+        }
+    } catch (e) {
+        console.warn("MR: GetMeanBarWidth failed, falling back to BARWIDTH", e);
+        meanBarWidth = BARWIDTH;
+    }
 
-    meanBarWidth = GetMeanBarWidth(BARWIDTH, measures);
+    // determine global clef (existing logic)
+    let globalClefChoice = "treble";
+    try {
+        const firstWithNotes = (Array.isArray(measures) && measures.length) ? measures.find(m => hasNoteOn(m)) : null;
+        const basisMeasure = firstWithNotes || (measures && measures[0]) || [];
+        globalClefChoice = decideClefForMeasure(basisMeasure) || "treble";
+    } catch (e) { console.warn("MR: Failed to determine global clef, fallback to treble", e); globalClefChoice = "treble"; }
+    console.log(`MR: Global clef for melody determined from first measure => ${globalClefChoice}`);
 
-
-    // Перебирає усі такти
-    // ----------------------
-    // Для кожного такту:
-    // - Оновлює розмір такту, якщо є відповідна подія.
-    // - Визначає початковий час такту з measureMap.
-    // - Встановлює початковий час для активних нот з попереднього такту.
-    // - Налаштовує позицію X та Y для нотного стану.
-    // - Створює нотний стан (stave) з ключем та розміром такту.
-    // - Обробляє кожну подію в такті:
-    //   - Для Note On: додає ноту, обробляє паузи між нотами, перевіряє наявність активних нот.
-    //   - Для Note Off: завершує ноту, додає лігатури, видаляє ноту з активних.
-    // - Якщо є активні ноти в кінці такту, домалюємо їх до кінця такту.
-    // - Якщо немає активних нот, перевіряє наявність пропущених пауз і додає їх.
-    // - Рендерить такт у нотний стан.
-    // - Оновлює позицію X для наступного такту.
-    // ----------------------
+    // iterate measures (rest of original implementation unchanged)...
     measures.forEach((measure, index) => {
         measure = normalizeMetaEvents(measure);
-                       
+
         let keySignatureChanged;
         let keySigName;
         ({ keySignatureChanged, keySigName, currentKeySig } = getKeySignatureChanges(measure, currentKeySig));
 
-        
         const stepRead = document.getElementById("stepRead");
         logEvent(`<br/>LE: Processing measure ${index + 1}`);
         logMeasureEvents(measure);
@@ -557,7 +602,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         // Перевіряємо, чи змінився розмір такту
         const timeSignatureChanged = (currentNumerator !== previousNumerator || currentDenominator !== previousDenominator);
 
-		// Отримуємо абсолютний час початку такту з measureMap
+        // Отримуємо абсолютний час початку такту з measureMap
         const barStartAbsTime = (measureMap[index] !== undefined) ? measureMap[index] : index * ticksPerMeasure;
 
         // --- Встановлюємо startTime для активних нот на початку такту ---
@@ -568,8 +613,8 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
         // Перевіряємо, чи потрібно перейти на новий рядок
         const oldYposition = Yposition;
-        ({ Xposition, Yposition } = adjustXYposition(Xposition, GENERALWIDTH, meanBarWidth, Yposition, HEIGHT, Xmargin, index, barStartAbsTime));   
-        
+        ({ Xposition, Yposition } = adjustXYposition(Xposition, GENERALWIDTH, meanBarWidth, Yposition, HEIGHT, Xmargin, index, barStartAbsTime));
+
         // Якщо Y позиція змінилась, значить почався новий рядок
         if (Yposition !== oldYposition) {
             isFirstMeasureInRow = true;
@@ -578,9 +623,11 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
         let STAVE_WIDTH = adjustStaveWidth(meanBarWidth, index, CLEFZONE, isFirstMeasureInRow, timeSignatureChanged);
 
+        // Use global clefChoice determined from the first measure — do NOT change clef inside melody
+        const clefChoice = globalClefChoice;
+
         // Створюємо нотний стан (stave)
-        // Додаємо ключ та розмір такту, якщо потрібно (тепер також і key signature)
-        const stave = setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, currentDenominator, isFirstMeasureInRow, timeSignatureChanged, keySignatureChanged, keySigName);
+        const stave = setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, currentDenominator, isFirstMeasureInRow, timeSignatureChanged, keySignatureChanged, keySigName, clefChoice);
 
         // Малюємо нотний стан
         stave.setContext(context).draw();
@@ -592,10 +639,9 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
         // NEW: поточний стан показаних альтерацій у межах такту (letter+octave -> '#','b','n')
         const measureAccState = {};
-       
-		// Обробляємо кожну подію в такті
-        renderMeasure();
 
+        // Обробляємо кожну подію в такті
+        renderMeasure();
 
         // Якщо є "активні" ноти (activeNotes), домалюємо їх до кінця такту
         if (Object.keys(activeNotes).length > 0) {
@@ -603,17 +649,16 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
             const measureEndTick = (nextBoundary !== undefined) ? nextBoundary : barStartAbsTime + ticksPerMeasure; // fallback
             console.log(`AN: bar ${index + 1}, measureEndTick = ${measureEndTick}`)
             if (stepRead) stepRead.innerHTML += `<i> act.note</i>`;
-            drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState);
+            drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState, clefChoice);
         }
 
-        
-        // Якщо остання нота не доходить до кінця такту, додаємо паузу        
+        // Якщо остання нота не доходить до кінця такту, додаємо паузу
         if (Object.keys(activeNotes).length === 0) {
             addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, ticksPerBeat);
         }
 
         // Перевіряємо, чи потрібно скоротити останню ноту/паузу, якщо вона виходить за межі такту
-        correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat);
+        correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat, clefChoice);
 
         console.log(`start to draw measure ${index + 1}`);
 
@@ -621,7 +666,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
         drawMeasure(notes, meanBarWidth, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat);
 
         Xposition += STAVE_WIDTH;
-        
+
         // Скидаємо флаг після обробки першого такту в рядку
         isFirstMeasureInRow = false;
 
@@ -643,8 +688,8 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
 
         function renderMeasure() {
-            console.log("FOO: midiRenderer.js - renderMeasure"); 
-            let isFirstNoteInMeasure = true; 
+            console.log("FOO: midiRenderer.js - renderMeasure");
+            let isFirstNoteInMeasure = true;
 
             const isNoteOn = (ev) => ev.type === 0x9 && Array.isArray(ev.data) && ev.data[1] > 0;
             const isNoteOff = (ev) => ev.type === 0x8 || (ev.type === 0x9 && Array.isArray(ev.data) && ev.data[1] === 0);
@@ -708,8 +753,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
                             let previousNote = null;
                             durationsCode.forEach((durationCode, pieceIdx) => {
                                 const accToDraw = decideAccidentalForNote(vexKey, accidental, currentKeySig, measureAccState, pieceIdx);
-                                const note = processNoteElement(durationCode, vexKey, accToDraw);
-                                // APPLY AUTO STEM for each note piece
+                                const note = processNoteElement(durationCode, vexKey, accToDraw, clefChoice);
                                 applyAutoStem(note, durationCode);
 
                                 const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
@@ -740,7 +784,6 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
     });
 
 };
-
 // ----------------------
 // Допоміжні функції для обробки ключових знаків (key signatures)
 // ----------------------
@@ -764,7 +807,7 @@ function getKeySignatureChanges(measure, currentKeySig) {
 // Скорочення нот, якщо виходять за межі такту
 // ----------------------
 
-function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat) {
+function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat, clef) {
     console.log("FOO: midiRenderer.js - correctExtraNotes");
     if (notes.length === 0) return;
     
@@ -807,7 +850,8 @@ function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat) {
                 } else {
                     // Для нот потрібно зберегти висоту та знаки альтерації
                     const keys = lastNote.getKeys();
-                    const newNote = processNoteElement(newDuration, keys[0], null);
+                    // При створенні укоротженої ноти передаємо clef
+                    const newNote = processNoteElement(newDuration, keys[0], null, clef);
                     if (newNote) {
                         // Копіюємо знаки альтерації з оригінальної ноти
                         const modifiers = lastNote.getModifiers();
@@ -843,7 +887,7 @@ function processActiveNotesFromPreviousBar(activeNotes, index, barStartAbsTime) 
     }
 }
 
-function drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState) {
+function drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState, clef = 'treble') {
     console.log("FOO: midiRenderer.js - drawActiveNotes");
         // Домалювати всі ноти, які залишилися активними до кінця такту
     Object.keys(activeNotes).forEach(pitch => {
@@ -861,9 +905,8 @@ function drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties,
 
             let previousNote = null;
             durationsCode.forEach((durationCode, pieceIdx) => {
-                // UPDATED: measure-aware accidental logic for split pieces of a sustained note
                 const accToDraw = decideAccidentalForNote(key, accidental, currentKeySig, measureAccState, pieceIdx);
-                const note = processNoteElement(durationCode, key, accToDraw);
+                const note = processNoteElement(durationCode, key, accToDraw, clef);
                 applyAutoStem(note, durationCode);
 
                 const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
@@ -1071,9 +1114,20 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig) {
             const raisedVII = (tonicPc + 11) % 12; // VII# (ввідний тон)
             const raisedIV  = (tonicPc + 6)  % 12; // IV#
 
-            if (pc === raisedVI || pc === raisedVII || pc === raisedIV) {
-                chosen = sharpNames[pc];
-                outOctave = octaveRaw;
+            if ((pc === raisedVI || pc === raisedVII || pc === raisedIV) && pc !== 11) {
+				console.log(`MR: Minor key alteration: pc=${pc}, tonicPc=${tonicPc}`);
+                const naive = sharpNames[pc];
+                if (!naive.includes('#')) {
+                    const prevMap = { 'C':'B','D':'C','E':'D','F':'E','G':'F','A':'G','B':'A' };
+                    const prev = prevMap[naive] || naive;
+                    const special = prev + '#';
+                    chosen = special;
+                    // Adjust octave for wrapped case: B# corresponds to previous octave
+                    outOctave = (prev === 'B') ? octaveRaw - 1 : octaveRaw;
+                } else {
+                    chosen = sharpNames[pc];
+                    outOctave = octaveRaw;
+                }
             }
         }
     }
@@ -1084,14 +1138,21 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig) {
     return { key: `${chosen.replace(/[#b]/, '')}/${outOctave}`, accidental };
 }
 
-function setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, currentDenominator, isFirstMeasureInRow = false, timeSignatureChanged = false, keySignatureChanged = false, keySigName = null) {
+// --- updated setStave to accept clef parameter ---
+function setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, currentDenominator, isFirstMeasureInRow = false, timeSignatureChanged = false, keySignatureChanged = false, keySigName = null, clef = "treble") {
     console.log("FOO: midiRenderer.js - setStave");
     const stave = new Vex.Flow.Stave(Xposition, Yposition, STAVE_WIDTH);
+
+    try {
+        stave.clef = clef;
+    } catch (e) {
+		console.warn("MR: Could not set stave.clef directly:", e);
+    }
     
     // Додаємо ключ для першого такту взагалі або для першого такту в кожному рядку
     if (index === 0 || isFirstMeasureInRow) {
-        stave.addClef("treble");
-        console.log(`Adding clef to measure ${index + 1}, isFirstMeasureInRow: ${isFirstMeasureInRow}`);
+        stave.addClef(clef);
+        console.log(`Adding clef '${clef}' to measure ${index + 1}, isFirstMeasureInRow: ${isFirstMeasureInRow}`);
     }
     
     // Додаємо знаки при ключі (key signature) якщо доступні і це перший такт, або перший у рядку, або вона змінилась
@@ -1105,7 +1166,7 @@ function setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, cu
         }
     }
     
-    // Додаємо розмір такту для першого такту або коли розмір зміниється
+    // Додаємо розмір такту для першого такту або коли розмір змінився
     if (index === 0 || timeSignatureChanged) {
         stave.addTimeSignature(`${currentNumerator}/${currentDenominator}`);
         console.log(`Adding time signature ${currentNumerator}/${currentDenominator} to measure ${index + 1}, timeSignatureChanged: ${timeSignatureChanged}`);
@@ -1209,9 +1270,21 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
             // Додаємо нотні елементи до голосу
             voice.addTickables(validNotes);
 
-            
-            
-            // Форматуємо голос
+            // Ensure each note is associated with the current stave so VexFlow uses the stave clef/metrics
+            validNotes.forEach((vn, idx) => {
+                try {
+                    if (vn && typeof vn.setStave === 'function') {
+                        vn.setStave(stave);
+                    }
+                    // Log for quick diagnostics
+                    const keys = (typeof vn.getKeys === 'function') ? vn.getKeys() : [];
+                    console.log(`MR: note[${idx}] keys=${JSON.stringify(keys)}, stave.clef=${stave.clef || '(unknown)'}`);
+                } catch (err) {
+                    console.warn(`MR: Failed to setStave on note[${idx}]`, err);
+                }
+            });
+
+            // --- restored formatter + availableWidth calculation (fixes "formatter is not defined") ---
             const formatter = new Vex.Flow.Formatter();
             const staveX = (typeof stave.getX === 'function') ? stave.getX() : stave.x || 0;
             const staveW = (typeof stave.getWidth === 'function') ? stave.getWidth() : stave.width || BARWIDTH;
@@ -1562,14 +1635,98 @@ function AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime)
 //// - accidental: Знак альтерації ('#', 'b', 'n') або null.
 // Повертає: Об'єкт Vex.Flow.StaveNote або null у разі помилки.
 // ----------------------
-function processNoteElement(durationCode, key, accidental) {
+function processNoteElement(durationCode, key, accidental, clef = 'treble') {
     console.log("FOO: midiRenderer.js - processNoteElement");
-    key = key.replace('/', '');
-    const note = createNote(key, durationCode);
+    // key може бути в форматі "C/4" або "C4" — normalize до формату, який очікує createNote (наприклад "c4")
+    let normalized = (typeof key === 'string') ? key.replace('/', '') : key;
+    normalized = (typeof normalized === 'string') ? normalized.toLowerCase() : normalized;
+
+    // Передаємо clef у опціях StaveNote — це дозволяє VexFlow позиціонувати ноту відносно потрібного ключа
+    const note = createNote(normalized, durationCode, clef);
     if (note && accidental) {
         note.addAccidental(0, new Vex.Flow.Accidental(accidental));
     }
     applyAutoStem(note, durationCode);
     return note;
 }
+
+// Decide clef for a measure based on pitch range.
+// Returns "bass" or "treble".
+function decideClefForMeasure(measure) {
+    console.log("FOO: midiRenderer.js - decideClefForMeasure");
+    const bassThreshold = 60; // MIDI pitch threshold under which we prefer bass clef
+    let maxPitch = -1;
+    let minPitch = 128;
+
+    if (!Array.isArray(measure) || measure.length === 0) {
+        return "treble";
+    }
+
+    for (const ev of measure) {
+        if (ev && ev.type === 0x9 && Array.isArray(ev.data)) {
+            const pitch = ev.data[0];
+            if (typeof pitch === 'number') {
+                if (pitch < minPitch) minPitch = pitch;
+                if (pitch > maxPitch) maxPitch = pitch;
+            }
+        }
+    }
+
+    console.log(`Measure pitch range: min ${minPitch}, max ${maxPitch}`);
+
+    // Choose bass if any note is below threshold (you can tweak logic)
+    if (minPitch < bassThreshold) {
+        console.log("Choosing bass clef");
+        return "bass";
+    }
+    console.log("Choosing treble clef");
+    return "treble";
+}
+
+function createNote(noteKey, duration, clef = 'treble') {
+    console.log("FOO: midiparser_ext.js - createNote");
+    const noteMatch = noteKey.match(/^([a-gA-G])(b|#)?(\d)?$/);
+    if (!noteMatch) {
+        console.error(`Invalid note key: ${noteKey}`);
+        return null;
+    }
+
+    const [, letter, accidental, octaveRaw] = noteMatch;
+    const octave = octaveRaw || '4'; // Default to octave 4
+    const key = `${letter.toLowerCase()}${accidental || ''}/${octave}`;
+    const isTriplet = duration.endsWith('t');
+    const isDotted = duration.endsWith('.');
+    const baseDuration = (isTriplet || isDotted) ? duration.slice(0, -1) : duration;
+
+    try {
+        // Передаємо clef у опціях StaveNote — це дозволяє VexFlow позиціонувати ноту відносно потрібного ключа
+        const staveNote = new Vex.Flow.StaveNote({
+            keys: [key],
+            duration: baseDuration,
+            clef: clef || 'treble'
+        });
+
+        if (accidental) {
+            staveNote.addAccidental(0, new Vex.Flow.Accidental(accidental));
+        }
+
+        if (isDotted && !isTriplet) {
+            staveNote.addDot(0); // Add dot if dotted
+        }
+        if (typeof staveNote.autoStem === 'function') {
+            staveNote.autoStem(); 
+        }
+
+        if (isTriplet) {
+            // Помітимо ноту як тріольну для швидкого складання Tuplet
+            staveNote.__isTriplet = true;
+            staveNote.__tripletBase = baseDuration; // 'q','8','16','32'
+            staveNote.__durationCode = duration;    // 'qt','8t','16t','32t'
+        }
+        return staveNote;
+    } catch (error) {
+        console.error(`Failed to create note with key: ${noteKey} and duration: ${duration}`, error);
+        return null; // Return null if creation fails
+    }
+};
 

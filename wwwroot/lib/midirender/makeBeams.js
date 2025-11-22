@@ -351,48 +351,47 @@ const allowDotted = false;
     }
 
     function CheckSplitOnBeat(note, timeSignature) {
-        //console.log(`MB: CheckSplitOnBeat method starts, noteEndBeat=${noteEndBeat}, time sign=${JSON.stringify(timeSignature)}`);
-        const noteStartBeat = note.startBeat;
         const noteEndBeat = note.endBeat;
         if (!timeSignature || noteEndBeat == null) return false;
 
         if (!Array.isArray(timeSignature.beatPositions)) {
             const num = timeSignature.num || 4;
             const den = timeSignature.den || 4;
-            // Базові позиції у чвертях
             const barBeats = num * 4 / den;
             timeSignature.beatPositions = [];
-
-            // Складені метри: 6/8, 9/8, 12/8 — крок крапкована чверть (1.5 чверті)
             const isCompound = (den === 8) && (num % 3 === 0) && (num >= 3);
             if (isCompound) {
-                const step = 3 * (4 / den); // для den=8 -> 1.5
+                const step = 3 * (4 / den);
                 for (let p = step; p <= barBeats + 1e-9; p += step) {
                     timeSignature.beatPositions.push(Number(p.toFixed(9)));
                 }
             } else {
-                // Прості метри: межі на кожну чверть
                 for (let b = 1; b <= barBeats; b++) timeSignature.beatPositions.push(b);
             }
-            //console.log(`MB: computed beatPositions: [${timeSignature.beatPositions.join(', ')}]`);
+        }
 
-        }      
+        // --- Округлення endBeat до найближчої позиції, якщо різниця < 0.075 ---
+        const ROUND_EPS = 0.075;
+        let roundedEndBeat = noteEndBeat;
+        for (const bp of timeSignature.beatPositions) {
+            if (Math.abs(bp - noteEndBeat) < ROUND_EPS) {
+                roundedEndBeat = bp;
+                break;
+            }
+        }
 
-
-        const EPS = 1e-6; // більш поблажлива точність
-        var result = timeSignature.beatPositions.some(bp => Math.abs(bp - noteEndBeat) < EPS);
+        const result = timeSignature.beatPositions.some(bp => Math.abs(bp - roundedEndBeat) < 1e-6);
 
         try {
             console.log(
                 `MB: CheckSplitOnBeat | idx=${note.idx}, pitch=${note.pitch || note.name || '?'}, dur=${note.duration || '?'}, ` +
-                `endTick=${note.endTick}, endBeat=${noteEndBeat}, beatPositions=[${timeSignature.beatPositions.join(', ')}] => ${result}`
+                `endTick=${note.endTick}, endBeat=${noteEndBeat}, roundedEndBeat=${roundedEndBeat}, beatPositions=[${timeSignature.beatPositions.join(', ')}] => ${result}`
             );
         } catch (e) {
             console.log(`MB: CheckSplitOnBeat | logging failed: ${e}`);
         }
 
-
-		return result;
+        return result;
     }
 
     // NEW: перевірка, що початок ноти/паузи припадає на початок біта (сильну долю)
