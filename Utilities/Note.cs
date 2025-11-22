@@ -47,10 +47,12 @@ namespace Music
         
         public int MidiDur { get { return duration.MidiDuration(PPQN); } }
 
+        public float RelDur { get { return (float)duration.RelDuration(); } }
         public string DurSymbol
         {
             get { return duration.Symbol(rest); }
         }
+
 
         public (string, string) DurName
         {

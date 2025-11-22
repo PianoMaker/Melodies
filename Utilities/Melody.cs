@@ -117,6 +117,19 @@ namespace Music
             }
         }
 
+        public List<float> RelDurationsList
+        {
+            get
+            {
+                var list = new List<float>();
+                foreach (var note in Notes)
+                {
+                    list.Add(note.RelDur);
+                }
+                return list;
+            }
+        }
+
         public List<(string, string)> DurName
         {
             get

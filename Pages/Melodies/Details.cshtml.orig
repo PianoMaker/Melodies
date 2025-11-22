@@ -245,6 +245,8 @@
         <div class="actions-row">
             <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
             <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку мелодій</a>
+<<<<<<< HEAD
+=======
 
             @* запускає сторінку пошуку, атрибут notesearchHandlerUrl передається як адреса міді-файлу поточної мелодії *@
             <button id="findSimilarBtn" type="button"
@@ -252,6 +254,7 @@
                     data-search-url="@notesearchHandlerUrl">
                 Знайти схожі мелодії
             </button>
+>>>>>>> 0d45373 (Add relative duration calculation and search button)
         </div>
     </div>
 </div>

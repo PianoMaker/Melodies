@@ -161,6 +161,7 @@ namespace Music
         public DURATION Dur
         { get { return duration; } set { duration = value; } }
 
+        //повертає відносну тривалість у четвертних долях
         public double RelDuration()
         {
             double relduration = 4;
