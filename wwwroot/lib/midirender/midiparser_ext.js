@@ -183,20 +183,26 @@ function calculateTicksFromDuration(duration, ticksPerBeat) {
     return result;
 }
 
-// приймає кількість тіків, повертає код тривалості
+/**
+ * Повертає код тривалості ноти
+ * @param {any} ticks        - тривалість у тіках
+ * @param {any} ticksPerBeat - поточний TPQN
+ * @returns
+ */
+
 function getDurationFromTicks(ticks, ticksPerBeat) {
     console.log("FOO: midiparser_ext.js - getDurationFromTicks");
     if (typeof ticks !== "number" || typeof ticksPerBeat !== "number" || ticks <= 0 || ticksPerBeat <= 0) {
         console.warn("Invalid input to getDurationFromTicks:", { ticks, ticksPerBeat });
-        return []; // Повертаємо порожній масив у разі некоректних даних
+        return [];                      // Повертаємо порожній масив у разі некоректних даних
     }
     console.log('Calculating duration for ticks: ' + ticks + ', ticksPerBeat: ' + ticksPerBeat);
-    var quarterTicks = ticksPerBeat; // Тривалість чверті дорівнює TPQN
-    let mingap = ticksPerBeat / 16; // Мінімальний проміжок між нотами
+    var quarterTicks = ticksPerBeat;    // Тривалість чверті дорівнює TPQN
+    let mingap = ticksPerBeat / 16;     // Мінімальний проміжок між нотами
 
     const durations = [];
 
-    // Попередньо обчислюємо тріольні таргети
+    // Значення для тріолей
     const triQ  = quarterTicks * (2 / 3);  // 'qt'
     const tri8  = quarterTicks / 3;        // '8t'
     const tri16 = quarterTicks / 6;        // '16t'
@@ -206,52 +212,52 @@ function getDurationFromTicks(ticks, ticksPerBeat) {
     while (ticks > 0) {
         // Спочатку обробляємо тріолі (вікно допуску ±mingap)
         if (ticks >= triQ - mingap && ticks <= triQ + mingap) {
-            durations.push("qt");
+            durations.push("qt");       //тріольна четвертна
             ticks -= triQ;
             continue;
         } else if (ticks >= tri8 - mingap && ticks <= tri8 + mingap) {
-            durations.push("8t");
+            durations.push("8t");       //тріольна вісімка
             ticks -= tri8;
             continue;
         } else if (ticks >= tri16 - mingap && ticks <= tri16 + mingap) {
-            durations.push("16t");
+            durations.push("16t");      //тріольна шіснадцятка
             ticks -= tri16;
             continue;
         } else if (ticks >= tri32 - mingap && ticks <= tri32 + mingap) {
-            durations.push("32t");
+            durations.push("32t");      //тріольна 32-га
             ticks -= tri32;
             continue;
         }
-
+        // Регулярні тривалості
         if (ticks >= quarterTicks * 6 - mingap) {
-            durations.push("w."); // Ціла нота з крапкою
+            durations.push("w.");       // Ціла нота з крапкою
             ticks -= quarterTicks * 6;
         } else if (ticks >= quarterTicks * 4 - mingap) {
-            durations.push("w"); // Ціла нота
+            durations.push("w");        // Ціла нота
             ticks -= quarterTicks * 4;
         } else if (ticks >= quarterTicks * 3 - mingap) {
-            durations.push("h."); // Половинна нота з крапкою
+            durations.push("h.");       // Половинка з крапкою
             ticks -= quarterTicks * 3;
         } else if (ticks >= quarterTicks * 2 - mingap) {
-            durations.push("h"); // Половинна нота
+            durations.push("h");        // Половинка 
             ticks -= quarterTicks * 2;
         } else if (ticks >= quarterTicks * 1.5 - mingap) {
-            durations.push("q."); // Чверть нота з крапкою
+            durations.push("q.");       // Чвертна з крапкою
             ticks -= quarterTicks * 1.5;
         } else if (ticks >= quarterTicks * 1 - mingap) {
-            durations.push("q"); // Чверть нота
+            durations.push("q");        // Чвертна 
             ticks -= quarterTicks * 1;
         } else if (ticks >= quarterTicks * 0.75 - mingap) {
-            durations.push("8."); // Восьма нота з крапкою
+            durations.push("8.");       // Вісімка з крапкою
             ticks -= quarterTicks * 0.75;
         } else if (ticks >= quarterTicks * 0.5 - mingap) {
-            durations.push("8"); // Восьма нота
+            durations.push("8");        // Вісімка
             ticks -= quarterTicks * 0.5;
         } else if (ticks >= quarterTicks * 0.25 - mingap) {
-            durations.push("16"); // 0.25 = 64 тіків при ticksPerBeat=256
+            durations.push("16");       // Шіснадцятка
             ticks -= quarterTicks * 0.25;
         } else if (ticks >= quarterTicks * 0.125 - mingap) {
-            durations.push("32"); // 0.125 = 32 тіки при ticksPerBeat=256
+            durations.push("32");       // 32-га
             ticks -= quarterTicks * 0.125;
         } else {
             console.warn(`Calculated durations: unknown / ${ticks} ticks`);
@@ -264,7 +270,11 @@ function getDurationFromTicks(ticks, ticksPerBeat) {
     return durations;
 }
 
-
+/**
+ * 
+ * @param {any} notesString
+ * @returns
+ */
 function calculateEndless(notesString) {
     console.log("FOO: midiparser_ext.js - calculateEndless");
 
