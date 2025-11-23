@@ -131,36 +131,7 @@
         </div>
         <script type="module" src="~/js/noteTable.js"></script>
 
-        <script>
-            console.log("adjusting NoteSearch UI");
-            const saveButton = document.getElementById("createMIDI");
-            if (saveButton) {
-                saveButton.textContent = "попередній перегляд";
-            }
-
-            // Bind LCS gap display and enable/disable based on algorithm
-            const gap = document.getElementById('lcsGap');
-            const gapVal = document.getElementById('lcsGapVal');
-            const algSub = document.getElementById('algSubstring');
-            const algSeq = document.getElementById('algSubsequence');
-
-            function updateGapEnabled(){
-                const enabled = algSeq && algSeq.checked;
-                if (gap) gap.disabled = !enabled;
-                const labelWrap = gap ? gap.nextElementSibling : null; // span with value
-                if (labelWrap) {
-                    if (enabled) labelWrap.classList.remove('text-muted');
-                    else labelWrap.classList.add('text-muted');
-                }
-            }
-
-            if (gap && gapVal) {
-                gap.addEventListener('input', () => gapVal.textContent = gap.value);
-            }
-            if (algSub) algSub.addEventListener('change', updateGapEnabled);
-            if (algSeq) algSeq.addEventListener('change', updateGapEnabled);
-            updateGapEnabled();
-        </script>
+        
         <!--АУДІО-->
 
         <audio id="audioPlayer" controls autoplay style="display: none">
@@ -453,7 +424,7 @@
 
 
 <script src="~/js/play.js" asp-append-version="true"></script>
-<script src="~/js/searchResults.js" asp-append-version="true"></script>
+<script src="~/js/search.js" asp-append-version="true"></script>
 <script src="~/js/createMelody.js" asp-append-version="true"></script>
 <!-- Pattern renderer dependencies and live renderer for Search page only -->
 <script src="~/lib/midirender/vexflow.js"></script>
@@ -464,7 +435,7 @@
 <script src="~/lib/midirender/midiRenderer.js"></script>
 <script src="~/lib/midirender/patternRenderer.js"></script>
 
-<!-- new: shared setup (must load before wrapper) -->
+<!-- Shared setup (must load before wrapper) -->
 <script src="~/lib/midirender/setupLiveNotationCreate.js"></script>
 
 <!-- thin wrapper that calls setupLiveNotationOnCreate -->
