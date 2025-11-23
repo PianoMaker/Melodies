@@ -16,7 +16,9 @@ namespace Melodies25.Models
 
         
         [Required(ErrorMessage = "Назва є обов'язковою.")]
-        public string Title { get; set; }  
+        public string Title { get; set; }
+
+        public string TitleEn { get; set; }
         public int? Year { get; set; }  
 
         public string? Description { get; set; }  

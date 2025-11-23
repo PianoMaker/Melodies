@@ -12,6 +12,8 @@ namespace Melodies25.Models
         [Required]
         public string Name { get; set; }  // Назва країни
 
+        public string NameEn { get; set; }  // Назва країни
+
         [NotMapped]
         public int? AuthorsCount { get; set; }
 
