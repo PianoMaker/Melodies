@@ -58,8 +58,8 @@ namespace Melodies25.Pages.Authors
             {
                 "surname_asc" => authorQuery.OrderBy(a => a.Surname == "Українська народна пісня" ? "!" + a.Surname : a.Surname),
                 "surname_desc" => authorQuery.OrderByDescending(a => a.Surname == "Українська народна пісня" ? "!" + a.Surname : a.Surname),
-                "country_asc" => authorQuery.OrderBy(a => a.Country.Name),
-                "country_desc" => authorQuery.OrderByDescending(a => a.Country.Name),
+                "country_asc" => authorQuery.OrderBy(a => a.Country.NameUk),
+                "country_desc" => authorQuery.OrderByDescending(a => a.Country.NameUk),
                 "melody_asc" => authorQuery.OrderBy(a => a.MelodiesCount),
                 "melody_desc" => authorQuery.OrderByDescending(a => a.MelodiesCount),
                 _ => authorQuery // Якщо немає сортування, залишаємо список без змін

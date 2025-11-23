@@ -11,7 +11,7 @@ namespace Melodies25.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "Name",
+                name: "NameUk",
                 table: "Country",
                 type: "nvarchar(450)",
                 nullable: false,
@@ -21,7 +21,7 @@ namespace Melodies25.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Country_Name",
                 table: "Country",
-                column: "Name",
+                column: "NameUk",
                 unique: true);
         }
 
@@ -33,7 +33,7 @@ namespace Melodies25.Migrations
                 table: "Country");
 
             migrationBuilder.AlterColumn<string>(
-                name: "Name",
+                name: "NameUk",
                 table: "Country",
                 type: "nvarchar(max)",
                 nullable: false,

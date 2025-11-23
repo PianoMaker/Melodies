@@ -42,7 +42,7 @@ namespace Melodies25.Pages.Authors
                 return NotFound();
             }
             Author = author;
-            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
+            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "NameUk");
 
 
             var meloides = await _context.Melody.Where(m => m.AuthorID == Author.ID).ToListAsync();
@@ -97,7 +97,7 @@ namespace Melodies25.Pages.Authors
             }
             if (string.IsNullOrEmpty(Author.NameEn))
             {
-                Author.NameEn = Translit.Transliterate(Author.Name);
+                Author.NameEn = Translit.Transliterate(Author.NameUk);
             }
 
 

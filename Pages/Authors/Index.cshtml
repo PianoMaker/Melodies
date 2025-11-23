@@ -55,7 +55,7 @@
                     @Html.DisplayFor(modelItem => item.DateOfBirth) - @Html.DisplayFor(modelItem => item.DateOfDeath)
             </td>
             <td>
-                    @(item.Country != null ? item.Country.Name : "Немає даних")
+                    @(item.Country != null ? item.Country.NameUk : "Немає даних")
             </td>
             <td>
                     @Html.DisplayFor(modelItem => item.MelodiesCount)
