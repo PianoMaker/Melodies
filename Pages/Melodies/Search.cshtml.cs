@@ -1,4 +1,6 @@
+
 using Melodies25.Models;
+using Melodies25.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -6,16 +8,14 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Music;
 using NAudio.Midi;
 using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using static Music.MidiConverter;
-using static Melodies25.Utilities.Algorythm;
+using static Music.Algorythm;
 using static Melodies25.Utilities.PrepareFiles;
 using static Melodies25.Utilities.WaveConverter;
 using static Music.Messages;
-using Melody = Melodies25.Models.Melody;
-using Melodies25.Utilities;
-using System.Diagnostics;
+using static Music.MidiConverter;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -24,6 +24,7 @@ namespace Melodies25.Pages.Melodies
         private readonly Melodies25.Data.Melodies25Context _context;
         private readonly IWebHostEnvironment _environment;
 
+
         public IList<Melody> Melody { get; set; } = default!;
 
         // Список знайдених мелодій з довжиною збігу та позицією
@@ -31,16 +32,22 @@ namespace Melodies25.Pages.Melodies
         // position - позиція початку збігу в мелодії
         // Якщо position = -1, збіг не є підрядком (для алгоритму підпослідовності)
         // Якщо position >= 0, збіг є підрядком (для алгоритму підрядка)
+        // Додається ще список пар індексів (melodyIndex, patternIndex) для відображення підсвітки у режимі Subsequence
         // Сортування за commonLength у спадному порядку
         // Використовується в OnPostNotesearch
-        public List<(Melody melody, int commonLength, int position)> MatchedMelodies { get; set; } = new();
+        public List<MatchedMelody> MatchedMelodies { get; set; } = new();
         // Чи відображати результати пошуку за нотами
         public bool NoteSearch { get; set; }
+
+        [BindProperty]
+        public int? TimeSignatureNumerator { get; set; }
+        [BindProperty]
+        public int? TimeSignatureDenominator { get; set; }
         public string Msg { get; set; }
 
         public string ErrorWarning { get; set; }
 
-        public SearchModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
+        public SearchModel(Data.Melodies25Context context, IWebHostEnvironment environment)
         {
             _context = context;
             _environment = environment;
@@ -57,7 +64,6 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public string Title { get; set; }
 
-        // Повний збіг (false) чи частковий (true)
         [BindProperty]
         public bool IfPartly { get; set; }
 
@@ -77,18 +83,25 @@ namespace Melodies25.Pages.Melodies
         public int MaxGap { get; set; } = 1;
 
         // Нова мелодія, створена на сторінці пошуку
-        public Music.MusicMelody NewPattern { get; set; }
+        public MusicMelody NewPattern { get; set; }
+
+        // Тимчасові файли для створеної мелодії
         internal string TempMidiFilePath { get; set; }
 
+        // Тимчасовий mp3 файл для створеної мелодії
         [BindProperty]
         internal string TempMp3FilePath { get; set; }
 
         private static readonly char[] separator = new char[] { ' ', '_' };
 
-        public void OnGetAsync(string search)
+        public void OnGetAsync(string search, int? numerator, int? denominator)
         {
 
             MessageL(COLORS.yellow, "SEARCH - OnGetAsync method");
+
+            TimeSignatureNumerator = numerator ?? 4;
+            TimeSignatureDenominator = denominator ?? 4;
+
             if (!string.IsNullOrEmpty(search))
             {
                 Console.WriteLine($"Received search: {search}");
@@ -118,17 +131,22 @@ namespace Melodies25.Pages.Melodies
 
         }
 
+        //--------------------------------
+        // ІНІЦІАЛІЗАЦІЯ БАЗИ ДАНИХ ДЛЯ ПОШУКУ ЗА НОТАМИ
+        //--------------------------------
         private async Task NotesSearchInitialize()
         {
             MessageL(COLORS.yellow, "NotesSearchInitialize Method");
 
             Melody = _context.Melody.Include(m => m.Author).ToList();
 
-            Music.Globals.notation = Notation.eu;           
+            Music.Globals.notation = Notation.eu;
 
             int numberoffileschecked = 0;
             var sw = new Stopwatch();
             sw.Start();
+
+            var missingFiles = new List<string>();
 
             //Підготовка файлів
             foreach (var melody in Melody)
@@ -146,20 +164,18 @@ namespace Melodies25.Pages.Melodies
                         if (!System.IO.File.Exists(path))
                         {
                             MessageL(COLORS.red, $"{path} does not exist");
-                            return;
+                            missingFiles.Add(path);
+                            // don't abort whole initialization, just skip this melody
+                            continue;
                         }
-                        
 
                         var midifile = GetMidiFile(path);
 
                         melody.MidiMelody = await GetMelodyFromMidiAsync(midifile);
 
                         melody.MidiMelody.Enharmonize();
-                                               
 
                         numberoffileschecked++;
-                        
-
                     }
                     else if (melody.FilePath is null)
                     {
@@ -170,21 +186,27 @@ namespace Melodies25.Pages.Melodies
                         MessageL(COLORS.yellow, $"{melody.MidiMelody} already exists");
                     }
                 }
-
                 catch (Exception ex)
                 {
-                    ErrorMessage(ex.Message);
+                    ErrorMessage($"Exception processing file for melody '{melody?.Title}' (FilePath='{melody?.FilePath}'): {ex.Message}");
+                    Console.WriteLine($"NotesSearchInitialize: parse error for '{melody?.Title}' file='{melody?.FilePath}' => {ex}");
+                    // continue with other melodies
                 }
-
             }
 
-            sw.Stop();            
+            sw.Stop();
             MessageL(COLORS.standart, $"{numberoffileschecked} file analyzed, {sw.ElapsedMilliseconds} ms spent");
+            if (missingFiles.Count > 0)
+            {
+                MessageL(COLORS.red, $"Missing {missingFiles.Count} midi files (skipped). Example: {missingFiles.First()}");
+            }
             MessageL(COLORS.cyan, "NotesSearchInitialize finished");
-
         }
 
-
+        //--------------------------------
+        // ПОШУК МЕЛОДІЇ ЗА МЕТАДАНИМИ
+        // викликається кнопкою "Пошук" (id="metaSearchForm")
+        //--------------------------------
         public async Task OnPostSearchAsync()
         {
             NoteSearch = false;
@@ -265,6 +287,11 @@ namespace Melodies25.Pages.Melodies
 
         }
 
+        //--------------------------------
+        // ДОДАВАННЯ НОТИ ЧЕРЕЗ ПІАНІНО
+        // викликається кнопкою на піаніно
+        // параметр key - назва ноти
+        //--------------------------------
         public void OnPostAsync(string key)
         {
 
@@ -274,6 +301,7 @@ namespace Melodies25.Pages.Melodies
 
 
         }
+
 
         public IActionResult OnPostPiano(string key)
         {
@@ -311,32 +339,45 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
-        // СКИДАННЯ МЕЛОДІЇ
+        //--------------------------------
+        // СКИДАННЯ МЕЛОДІЇ ПОШУКУ
+        // викликається кнопкою "Скинути"
+        // параметр key - назва ноти
+        //--------------------------------
         public void OnPostReset()
         {
             MessageL(COLORS.yellow, $"SEARCH - OnPostReset method");
             Keys = string.Empty;
             Page();
         }
-
-        // ПОШУК
+        //--------------------------------
+        // ПОШУК МЕЛОДІЇ ЗА НОТАМИ
+        // викликається кнопкою "Пошук" (id="searchBtn")
+        //--------------------------------
         public async Task OnPostNotesearch()
         {
-            MessageL(COLORS.yellow, $"SEARCH - OnPostNotesearch method, Keys = {Keys}");
+            // Diagnostics: log incoming form, bound properties and ModelState
+            DiagnosticNoteSearch();
+
+            MessageL(COLORS.yellow, $"SEARCH - OnPostNotesearch method, Keys = {Keys}, TimeSin={TimeSignatureNumerator}/{TimeSignatureDenominator}");
 
             /*включаємо відображення за нотним пошуком*/
             NoteSearch = true;
 
-                        
+
             /*ІНІЦІАЛІЗАЦІЯ БАЗИ*/
             await NotesSearchInitialize();
 
 
             /*ІНІЦІАЛІЗАЦІЯ ВВЕДЕНОГО МАЛЮНКУ*/
-            Music.MusicMelody MelodyPattern = new();
+            MusicMelody MelodyPattern = new();
             Globals.notation = Notation.eu;
             Globals.lng = LNG.uk;
             TempData["Keys"] = Keys;
+            TempData["Numerator"] = TimeSignatureNumerator;
+            TempData["Denominator"] = TimeSignatureDenominator;
+
+
 
             if (Keys is not null)
             {
@@ -352,12 +393,7 @@ namespace Melodies25.Pages.Melodies
                 }
 
                 /* ЛОГУВАННЯ */
-                MessageL(COLORS.olive, "melodies to compare with pattern:");
-                foreach (var melody in Melody)
-                    GrayMessageL(melody.Title);
-                MessageL(COLORS.olive, "notes in patten:");
-                foreach (var note in MelodyPattern)
-                    GrayMessageL(note.Name);
+                LogNotesearch(MelodyPattern);
 
                 /*аудіо*/
                 try
@@ -371,12 +407,13 @@ namespace Melodies25.Pages.Melodies
                     ErrorMessageL($"impossible to create mp3: {e.Message}");
                 }
 
+
                 /* будуємо список виявлених збігів MathedMelodies */
                 CompareMelodies(MelodyPattern);
 
 
                 // Сортуємо за довжиною збігу
-                MatchedMelodies = MatchedMelodies.OrderByDescending(m => m.commonLength).ToList();
+                MatchedMelodies = MatchedMelodies.OrderByDescending(m => m.CommonLength).ToList();
 
                 Description = $"Знайдено {MatchedMelodies.Count} мелодій, в яких співпадають не менше ніж {minimummatch} нот поспіль";
 
@@ -398,85 +435,46 @@ namespace Melodies25.Pages.Melodies
             MessageL(COLORS.cyan, $"finishing SEARCH method");
         }
 
-        private void CreatingPatternsView()
+        private void LogNotesearch(MusicMelody MelodyPattern)
         {
-            for (int i = 0; i < MatchedMelodies.Count; i++)
-            {
-                ViewData[$"songpattern{i}"] = MatchedMelodies[i].melody.MidiMelody?.NotesList;
-                GrayMessageL($"adding song pattern {i}, {MatchedMelodies[i].melody.MidiMelody?.NotesList.Count} notes");
-            }
-            ViewData["matchedMelodiesCount"] = MatchedMelodies.Count;
-            GrayMessageL($"patterns are ready");
-        }
-
-        private void BuildPattern(Music.MusicMelody MelodyPattern)
-        {
-            MessageL(COLORS.olive, $"Building patern, keys = {Keys}");
-
-            var pattern = Keys.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var key in pattern)
-            {
-                try
-                {
-                    var note = new Note(key);
-                    MelodyPattern.AddNote(note);
-                    GrayMessage($"{note.Name} - ");
-                }
-                catch
-                {
-                    ErrorMessage($"impossible to read note {key}\n");
-                }
-                GrayMessageL("building is finished");
-            }
-        }
-        // ПОРІВНЯННЯ 
-        private void CompareMelodies(Music.MusicMelody MelodyPattern)
-        {
-            MessageL(COLORS.olive, "CompareMelodies method");
-            var sw = new Stopwatch();
-            sw.Start();
-
-            int[] patternShape = MelodyPattern.IntervalList.ToArray();
-            MatchedMelodies.Clear();
-
+            MessageL(COLORS.olive, "melodies to compare with pattern:");
             foreach (var melody in Melody)
-            {
-                if (melody.MidiMelody is null) continue;
-
-                var melodyshape = melody.MidiMelody.IntervalList.ToArray();
-
-                int length = 0;
-                int position = -1;
-
-                switch (SearchAlgorithm?.ToLowerInvariant())
-                {
-                    case "subsequence":
-                        {
-                            int clamped = Math.Clamp(MaxGap, 1, 3);
-                            var (lcsLen, indices) = LongestCommonSubsequenceLimitedSkips(patternShape, melodyshape, clamped);
-                            length = lcsLen;
-                            position = indices.Count > 0 ? indices[0] : -1;
-                            break;
-                        }
-
-                    case "substring":
-                    default:
-                        var (subLen, startPos) = LongestCommonSubstring(patternShape, melodyshape);
-                        length = subLen;
-                        position = startPos;
-                        break;
-                }
-
-                if (length >= minimummatch)
-                {
-                    length++; // інтервалів + 1 нота
-                    MatchedMelodies.Add((melody, length, position));
-                }
-            }
-            sw.Stop();
-            Console.WriteLine($"{sw.ElapsedMilliseconds} ms spent");
+                GrayMessageL(melody.Title);
+            MessageL(COLORS.olive, "notes in patten:");
+            foreach (var note in MelodyPattern)
+                GrayMessageL(note.Name);
         }
 
+        private void DiagnosticNoteSearch()
+        {
+            try
+            {
+                Console.WriteLine("---- OnPostNotesearch diagnostics ----");
+                Console.WriteLine("Request.Method: " + Request.Method);
+                Console.WriteLine("Request.Path: " + Request.Path);
+                Console.WriteLine("Request.Form keys: " + string.Join(", ", Request.Form.Keys));
+                Console.WriteLine($"Request.Form[TimeSignatureNumerator] = '{Request.Form["TimeSignatureNumerator"]}'");
+                Console.WriteLine($"Request.Form[TimeSignatureDenominator] = '{Request.Form["TimeSignatureDenominator"]}'");
+                Console.WriteLine($"Bound props before work: TimeSignatureNumerator={TimeSignatureNumerator}, TimeSignatureDenominator={TimeSignatureDenominator}");
+                Console.WriteLine($"ModelState.IsValid = {ModelState.IsValid}");
+                foreach (var kv in ModelState)
+                {
+                    var attempted = kv.Value?.AttemptedValue ?? "(null)";
+                    var errors = (kv.Value?.Errors != null && kv.Value.Errors.Count > 0) ? string.Join(" | ", kv.Value.Errors.Select(e => e.ErrorMessage + (e.Exception != null ? (" (ex: " + e.Exception.Message + ")") : ""))) : "";
+                    Console.WriteLine($"ModelState['{kv.Key}'] attempted='{attempted}' errors='{errors}'");
+                }
+                Console.WriteLine("---- end diagnostics ----");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Diagnostics failed: " + ex);
+            }
+        }
+
+        //--------------------------------
+        // ВІДТВОРЕННЯ МЕЛОДІЇ
+        // викликається кнопкою "Прослухати"
+        //--------------------------------
         public IActionResult OnPostPlay(string midiPath)
         {
 
@@ -495,7 +493,7 @@ namespace Melodies25.Pages.Melodies
                 var relativePath = "/mp3/" + Path.GetFileName(mp3Path);
                 TempData["AudioFile"] = relativePath;
                 MessageL(COLORS.green, relativePath);
-                
+
             }
             catch (Exception ex)
             {
@@ -505,8 +503,11 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
+        //--------------------------------
         // СТВОРЕННЯ МЕЛОДІЇ ВРУЧНУ НА СТОРІНЦІ ПОШУКУ
         // зберігає у тимчасовий midi та генерує mp3 для попереднього прослуховування
+        // викликається кнопкою "Згенерувати мелодію"
+        //--------------------------------
         public async Task<IActionResult> OnPostMelody()
         {
             MessageL(COLORS.yellow, $"MELODIES/SEARCH - OnPostMelody method, keys = {Keys}");
@@ -521,11 +522,11 @@ namespace Melodies25.Pages.Melodies
             {
                 try
                 {
-                    Music.MusicMelody MelodyPattern = new();
+                    MusicMelody MelodyPattern = new();
                     Globals.notation = Notation.eu;
                     Globals.lng = LNG.uk;
                     BuildPattern(MelodyPattern);
-                    NewPattern = (Music.MusicMelody)MelodyPattern.Clone();
+                    NewPattern = (MusicMelody)MelodyPattern.Clone();
 
                     TempMidiFilePath = PrepareTempName(_environment, ".mid");
                     MelodyPattern.SaveMidi(TempMidiFilePath);
@@ -552,6 +553,184 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
-       
+        //================================
+        // ДОПОМІЖНІ ФУНКЦІЇ 
+        //================================
+
+        //--------------------------------
+        // СТВОРЕННЯ ВІДОБРАЖЕННЯ ЗНАЙДЕНИХ ПАТЕРНІВ
+        //--------------------------------
+        private void CreatingPatternsView()
+        {
+            for (int i = 0; i < MatchedMelodies.Count; i++)
+            {
+                ViewData[$"songpattern{i}"] = MatchedMelodies[i].Melody.MidiMelody?.NotesList;
+                // For subsequence highlighting we provide the melody indices that actually matched
+                var matchedIndices = MatchedMelodies[i].Pairs?.Select(p => p.i1).ToList() ?? new List<int>();
+                ViewData[$"songmatched{i}"] = matchedIndices;
+                GrayMessageL($"adding song pattern {i}, {MatchedMelodies[i].Melody.MidiMelody?.NotesList.Count} notes, matched count {matchedIndices.Count}");
+            }
+            ViewData["matchedMelodiesCount"] = MatchedMelodies.Count;
+            GrayMessageL($"patterns are ready");
+        }
+
+        //--------------------------------
+        // ПОБУДОВА МЕЛОДІЇ З ВВЕДЕНИХ НОТ
+        //  викликається в OnPostNotesearch
+        //--------------------------------
+        private void BuildPattern(MusicMelody MelodyPattern)
+        {
+            MessageL(COLORS.olive, $"Building patern, keys = {Keys}");
+
+            var pattern = Keys.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var key in pattern)
+            {
+                try
+                {
+                    var note = new Note(key);
+                    MelodyPattern.AddNote(note);
+                    GrayMessage($"{note.Name} - ");
+                }
+                catch
+                {
+                    ErrorMessage($"impossible to read note {key}\n");
+                }
+                GrayMessageL("building is finished");
+            }
+        }
+        //--------------------------------
+        // ПОРІВНЯННЯ МЕЛОДІЙ
+        // викликається в OnPostNotesearch
+        //--------------------------------
+        private void CompareMelodies(MusicMelody MelodyPattern)
+        {
+            MessageL(COLORS.olive, $"CompareMelodies method {SearchAlgorithm?.ToLowerInvariant()}, maxgap = {MaxGap}");
+            var sw = new Stopwatch();
+            sw.Start();
+
+            int[] patternShape = MelodyPattern.IntervalList.ToArray();
+            int[] patternNotes = MelodyPattern.GetPitches().ToArray();
+            var algorithm = SearchAlgorithm?.ToLowerInvariant() ?? "substring";
+            MatchedMelodies.Clear();
+
+            foreach (var melody in Melody)
+            {
+                var title = melody.Title;
+                if (melody.MidiMelody is null) continue;
+
+                var melodyshape = melody.MidiMelody.IntervalList.ToArray(); //послідовність інтервалів
+                var melodinotes = melody.MidiMelody.GetPitches().ToArray(); //послідовність нот
+
+                int length = 0;
+                int position = -1;
+
+                // This will hold the final best pairs for the subsequence case (arr1Index, arr2Index)
+                List<(int i1, int i2)> finalBestPairs = new();
+
+                switch (algorithm)
+                {
+                    case "subsequence":
+                        {
+                            MessageL(14, $"comparing subsequence for {title}");
+                            // TEMPORARY: restrict subsequence search to songs whose Title starts with Cyrillic 'Г'
+                            if (string.IsNullOrEmpty(melody.Title) || !melody.Title.StartsWith("Г", StringComparison.CurrentCultureIgnoreCase))
+                            {
+                                MessageL(COLORS.gray, $"Skipping subsequence for '{title}' — title does not start with 'Г'");
+                                // ensure no match will be registered for this melody
+                                length = 0;
+                                position = -1;
+                                finalBestPairs = new List<(int i1, int i2)>();
+                                break;
+                            }
+
+                            var (len, pos, pairs, bestShift) = MusicMelody.SimilarByIntervalsWithGap(MelodyPattern, melody.MidiMelody, MaxGap);
+                            length = len;
+                            position = pos;
+                            finalBestPairs = pairs ?? new List<(int i1, int i2)>();
+                            MessageL(COLORS.gray, $"best shift for '{title}' = {bestShift}");
+                            // when adding matched melody below we will store bestShift
+                            break;
+                        }
+
+                    case "substring":
+                        {
+                            MessageL(14, $"comparing substring for {title}");
+                            var (len, pos, pairs) = MusicMelody.SimilarByIntervals(MelodyPattern, melody.MidiMelody);
+                            length = len;
+                            position = pos;
+                            finalBestPairs = pairs ?? new List<(int i1, int i2)>();
+                            break;
+                        }
+
+                    default:
+                        {
+                            var (len, pos, pairs) = FindLongestSubstringMatch(patternShape, melodyshape);
+                            length = len;
+                            position = pos;
+                            finalBestPairs = pairs ?? new List<(int i1, int i2)>();
+                            break;
+                        }
+                }
+
+                if (length >= minimummatch)
+                {
+                    // If algorithm was subsequence we previously computed bestShift; recompute to capture it here
+                    int bestShiftForThis = 0;
+                    if (algorithm == "subsequence")
+                    {
+                        var (_, _, _, bestShift) = FindBestSubsequenceMatch(melodinotes, patternNotes, MaxGap);
+                        bestShiftForThis = bestShift;
+                    }
+
+                    MatchedMelodies.Add(new MatchedMelody
+                    {
+                        Melody = melody,
+                        CommonLength = length,
+                        Position = position,
+                        Pairs = finalBestPairs,
+                        BestShift = bestShiftForThis
+                    });
+
+                    // centralized logging
+                    LogFoundMatch(title, length, position, finalBestPairs);
+                }
+            }
+
+            sw.Stop();
+            MessageL(COLORS.yellow, $"{sw.ElapsedMilliseconds} ms spent for {algorithm} search");
+
+            // local helper kept for minimal change - logs according to current SearchAlgorithm
+            void LogFoundMatch(string title, int length, int position, List<(int i1, int i2)> pairs)
+            {
+                if (SearchAlgorithm?.ToLower() == "substring")
+                {
+                    MessageL(COLORS.cyan, $"Found match in '{title}': length={length}, position={position}");
+                }
+                else if (SearchAlgorithm?.ToLower() == "subsequence")
+                {
+                    if (pairs != null && pairs.Count > 0)
+                    {
+                        var sb = new System.Text.StringBuilder();
+                        foreach (var p in pairs) sb.Append($"{p.i1}:{p.i2} ");
+                        MessageL(COLORS.cyan, $"Found matches in '{title}': {sb.ToString().Trim()}");
+                    }
+                    else
+                    {
+                        MessageL(COLORS.cyan, $"Found matches in '{title}': (no paired indices available)");
+                    }
+                }
+            }
+        }
+
+   
+    public class MatchedMelody
+    {
+        public Melody Melody { get; set; } = default!;
+        public int CommonLength { get; set; }
+        public int Position { get; set; }
+        public List<(int i1, int i2)> Pairs { get; set; } = new();
+        // NEW: store optimal shift (in semitones) found for subsequence matching
+        public int BestShift { get; set; } = 0;
     }
 }
+    }
