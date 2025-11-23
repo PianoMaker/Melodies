@@ -108,7 +108,7 @@ namespace Melodies25.Pages.Melodies
             return Page();
         }
 
-        //private async Task GetMidiMelody(Melody melody)
+        //private async Task GetMidiMelody(MusicMelody melody)
         //{
         //    MidiFile midifile = GetMidiFile(melody);
         //    Globals.lng = Music.LNG.uk;
@@ -216,7 +216,7 @@ namespace Melodies25.Pages.Melodies
         public async Task<IActionResult> OnPostAsync(IFormFile? fileupload)
         {
             MessageL(COLORS.yellow, "MELODIES/EDIT OnPost");
-            if (Melody is null) ErrorMessageL("Melody is null");
+            if (Melody is null) ErrorMessageL("MusicMelody is null");
             else GrayMessageL($"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}, Tempo = {Tempo}");
 
             if (!ModelState.IsValid)

@@ -158,7 +158,7 @@ namespace Melodies25.Utilities
 
 
 
-        public static void GenerateMp3(Melody melody, string outputPath)
+        public static void GenerateMp3(MusicMelody melody, string outputPath)
         {
 
             List<(double frequency, int durationMs)> sequence = new();
@@ -181,7 +181,7 @@ namespace Melodies25.Utilities
             await GenerateMp3Async(sequence, outputPath);
         }
 
-        public async static Task GenerateMp3Async(Melody melody, string outputPath)
+        public async static Task GenerateMp3Async(MusicMelody melody, string outputPath)
         {
 
             List<(double frequency, int durationMs)> sequence = new();

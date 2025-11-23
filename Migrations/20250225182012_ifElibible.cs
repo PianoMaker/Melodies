@@ -12,7 +12,7 @@ namespace Melodies25.Migrations
         {
             migrationBuilder.AddColumn<bool>(
                 name: "IsFileEligible",
-                table: "Melody",
+                table: "MusicMelody",
                 type: "bit",
                 nullable: true);
         }
@@ -22,7 +22,7 @@ namespace Melodies25.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "IsFileEligible",
-                table: "Melody");
+                table: "MusicMelody");
         }
     }
 }

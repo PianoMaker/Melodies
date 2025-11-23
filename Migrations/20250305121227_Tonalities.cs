@@ -12,7 +12,7 @@ namespace Melodies25.Migrations
         {
             migrationBuilder.AddColumn<string>(
                 name: "Tonality",
-                table: "Melody",
+                table: "MusicMelody",
                 type: "nvarchar(max)",
                 nullable: true);
         }
@@ -22,7 +22,7 @@ namespace Melodies25.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "Tonality",
-                table: "Melody");
+                table: "MusicMelody");
         }
     }
 }

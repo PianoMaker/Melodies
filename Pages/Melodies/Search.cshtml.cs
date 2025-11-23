@@ -77,7 +77,7 @@ namespace Melodies25.Pages.Melodies
         public int MaxGap { get; set; } = 1;
 
         // Íîâà ìåëîä³ÿ, ñòâîğåíà íà ñòîğ³íö³ ïîøóêó
-        public Music.Melody NewPattern { get; set; }
+        public Music.MusicMelody NewPattern { get; set; }
         internal string TempMidiFilePath { get; set; }
 
         [BindProperty]
@@ -333,7 +333,7 @@ namespace Melodies25.Pages.Melodies
 
 
             /*²Í²Ö²ÀË²ÇÀÖ²ß ÂÂÅÄÅÍÎÃÎ ÌÀËŞÍÊÓ*/
-            Music.Melody MelodyPattern = new();
+            Music.MusicMelody MelodyPattern = new();
             Globals.notation = Notation.eu;
             Globals.lng = LNG.uk;
             TempData["Keys"] = Keys;
@@ -409,7 +409,7 @@ namespace Melodies25.Pages.Melodies
             GrayMessageL($"patterns are ready");
         }
 
-        private void BuildPattern(Music.Melody MelodyPattern)
+        private void BuildPattern(Music.MusicMelody MelodyPattern)
         {
             MessageL(COLORS.olive, $"Building patern, keys = {Keys}");
 
@@ -430,7 +430,7 @@ namespace Melodies25.Pages.Melodies
             }
         }
         // ÏÎĞ²ÂÍßÍÍß 
-        private void CompareMelodies(Music.Melody MelodyPattern)
+        private void CompareMelodies(Music.MusicMelody MelodyPattern)
         {
             MessageL(COLORS.olive, "CompareMelodies method");
             var sw = new Stopwatch();
@@ -521,11 +521,11 @@ namespace Melodies25.Pages.Melodies
             {
                 try
                 {
-                    Music.Melody MelodyPattern = new();
+                    Music.MusicMelody MelodyPattern = new();
                     Globals.notation = Notation.eu;
                     Globals.lng = LNG.uk;
                     BuildPattern(MelodyPattern);
-                    NewPattern = (Music.Melody)MelodyPattern.Clone();
+                    NewPattern = (Music.MusicMelody)MelodyPattern.Clone();
 
                     TempMidiFilePath = PrepareTempName(_environment, ".mid");
                     MelodyPattern.SaveMidi(TempMidiFilePath);

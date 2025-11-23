@@ -18,13 +18,13 @@ namespace Music
     public static class MidiConverter
     {
 
-        public static Melody GetMelodyFromMidi(string file)
+        public static MusicMelody GetMelodyFromMidi(string file)
         {
             MidiFile midiFile = new MidiFile(file);
             return GetMelodyFromMidi(midiFile);
         }
         // трансформує міді-файл у формат мелодії
-        public static Melody GetMelodyFromMidi(MidiFile midiFile)
+        public static MusicMelody GetMelodyFromMidi(MidiFile midiFile)
         {
             MessageL(COLORS.olive, "GetMelodyFromMidi method");
             //GrayMessageL($"midiFile = {midiFile}");
@@ -33,7 +33,7 @@ namespace Music
 
             var ticksperquater = midiFile.DeltaTicksPerQuarterNote;
 
-            Melody melody = new Melody();
+            MusicMelody melody = new MusicMelody();
             List<string> noteDurations = new List<string>(); // Для збереження тривалості нот
             double tempo = 100;
 
@@ -122,7 +122,7 @@ namespace Music
             return midiFile == null ? null : GetTonalities(midiFile.Events);
         }
 
-        public static async Task<Melody> GetMelodyFromMidiAsync(MidiFile midiFile)
+        public static async Task<MusicMelody> GetMelodyFromMidiAsync(MidiFile midiFile)
         {
             // Використовуємо Task.Run для асинхронної обробки в окремому потоці
             return await Task.Run(() =>
@@ -673,7 +673,7 @@ namespace Music
             return 60 * 1000 * 1000 / bpm;
         }
 
-        private static void MelodyToTrack(Melody melody, int channel, MidiEventCollection events)
+        private static void MelodyToTrack(MusicMelody melody, int channel, MidiEventCollection events)
         {
             // Записуємо NoteOn події
             int noteOnTime = 0;
@@ -702,7 +702,7 @@ namespace Music
                 }
             }
         }
-        internal static void SaveMidi(Melody melody, string fileName = "output.mid")
+        internal static void SaveMidi(MusicMelody melody, string fileName = "output.mid")
         {
 
             int channel;

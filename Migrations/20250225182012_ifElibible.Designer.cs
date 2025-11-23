@@ -79,7 +79,7 @@ namespace Melodies25.Migrations
                     b.ToTable("Country");
                 });
 
-            modelBuilder.Entity("Melodies25.Models.Melody", b =>
+            modelBuilder.Entity("Melodies25.Models.MusicMelody", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -110,7 +110,7 @@ namespace Melodies25.Migrations
 
                     b.HasIndex("AuthorID");
 
-                    b.ToTable("Melody");
+                    b.ToTable("MusicMelody");
                 });
 
             modelBuilder.Entity("Melodies25.Models.Author", b =>
@@ -122,7 +122,7 @@ namespace Melodies25.Migrations
                     b.Navigation("Country");
                 });
 
-            modelBuilder.Entity("Melodies25.Models.Melody", b =>
+            modelBuilder.Entity("Melodies25.Models.MusicMelody", b =>
                 {
                     b.HasOne("Melodies25.Models.Author", "Author")
                         .WithMany()

@@ -41,7 +41,7 @@ namespace Melodies25.Pages.Melodies
             _environment = environment;
         }
 
-        // Ensure Melody is never null to avoid NullReferenceException in the Razor view
+        // Ensure MusicMelody is never null to avoid NullReferenceException in the Razor view
         public IList<Melody> Melody { get; set; } = new List<Melody>();
 
 
