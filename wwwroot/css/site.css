@@ -13,16 +13,17 @@
     --shadow-1: 0 1px 2px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.08);
     --shadow-inset: 0 1px 2px rgba(0,0,0,.12) inset;
     --btnheight: 40px;
-    --mainimage: url(../images/elephantplays4.png); /* головний малюнок */
+    --mainimage: url(../images/catplays3.png); /* головний малюнок */
     --footer-height: 30px; /* NEW */
 }
 
 
 html {
     position: relative;
-    width: 100%;    
-    height: 100%; 
+    width: 100%;
+    height: 100%;
     font-size: 14px;
+    padding: 0px;
 }
 
 @media (min-width: 768px) {
@@ -33,7 +34,7 @@ html {
 
 body {    
     margin: 0;
-    padding: 60px;
+    padding: 0px;
     padding-bottom: calc(var(--footer-height) + 16px); 
     width: 100%;
     height: 100%;
