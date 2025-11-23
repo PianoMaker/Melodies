@@ -54,18 +54,10 @@ namespace Melodies25.Pages.Account
                 return Page();
             }
 
-            if (!await _userManager.IsEmailConfirmedAsync(user))
-            {
-                ModelState.AddModelError(string.Empty, "Email не підтверджений. Перевірте пошту.");
-                return Page();
-            }
-
             var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, false, lockoutOnFailure: true);
 
             if (result.Succeeded)
-            {
                 return RedirectToPage("/Index");
-            }
             if (result.RequiresTwoFactor)
             {
                 ModelState.AddModelError(string.Empty, "Потрібна двофакторна автентифікація.");
@@ -73,16 +65,15 @@ namespace Melodies25.Pages.Account
             }
             if (result.IsLockedOut)
             {
-                ModelState.AddModelError(string.Empty, "Обліковий запис заблоковано через багато невдалих спроб. Спробуйте пізніше.");
+                ModelState.AddModelError(string.Empty, "Обліковий запис заблоковано.");
                 return Page();
             }
             if (result.IsNotAllowed)
             {
-                ModelState.AddModelError(string.Empty, "Вхід заборонено для цього облікового запису.");
+                ModelState.AddModelError(string.Empty, "Вхід наразі не дозволено.");
                 return Page();
             }
 
-            // Generic wrong password case
             ModelState.AddModelError(string.Empty, "Невірний пароль.");
             return Page();
         }
@@ -92,12 +83,12 @@ namespace Melodies25.Pages.Account
             MessageL(Music.COLORS.yellow, "OnPostRecoverPasswordAsync");
             if (Input == null || string.IsNullOrEmpty(Input.Email))
             {
-                ModelState.AddModelError(string.Empty, "Вкажіть Email.");
+                ModelState.AddModelError(string.Empty, "Введіть Email.");
                 return Page();
             }
 
             var user = await _userManager.FindByEmailAsync(Input.Email);
-            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+            if (user == null)
             {
                 return RedirectToPage("/Account/RecoverPasswordConfirmation");
             }
@@ -111,10 +102,15 @@ namespace Melodies25.Pages.Account
 
             await _emailSender.SendEmailAsync(
                 Input.Email,
-                "Скидання пароля",
-                $"Для скидання пароля перейдіть за посиланням: <a href='{callbackUrl}'>Скинути пароль</a>.");
+                "Відновлення пароля",
+                $"Для відновлення пароля перейдіть за посиланням: <a href='{callbackUrl}'>Відновити</a>.");
 
             return RedirectToPage("/Account/RecoverPasswordConfirmation");
+        }
+
+        public IActionResult OnPostSignIn()
+        {
+            return RedirectToPage($"/Account/Register");
         }
     }
 }
