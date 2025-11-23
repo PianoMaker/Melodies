@@ -41,10 +41,10 @@ namespace Melodies25.Pages.Authors
             var countries = _context.Country.ToList();
             if (countries == null || !countries.Any())
             {
-                countries = new List<Country> { new Country { ID = 0, NameUk = "-- Оберіть країну --" } };
+                countries = new List<Country> { new Country { ID = 0, Name = "-- Оберіть країну --" } };
             }           
 
-            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "NameUk");
+            ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
             if (ViewData["CountryID"] == null)
             {
                 ViewData["CountryID"] = new SelectList(Enumerable.Empty<SelectListItem>());
@@ -70,12 +70,12 @@ namespace Melodies25.Pages.Authors
             var countries = _context.Country.ToList();
             if (countries == null || !countries.Any())
             {
-                countries = new List<Country> { new Country { ID = 0, NameUk = "-- Оберіть країну --" } };
+                countries = new List<Country> { new Country { ID = 0, Name = "-- Оберіть країну --" } };
             }
 
             if (!ModelState.IsValid)
             {
-                ViewData["CountryID"] = new SelectList(_context.Country, "ID", "NameUk");
+                ViewData["CountryID"] = new SelectList(_context.Country, "ID", "Name");
                 if (ViewData["CountryID"] == null)
                 {
                     ViewData["CountryID"] = new SelectList(Enumerable.Empty<SelectListItem>());

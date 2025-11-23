@@ -105,7 +105,7 @@ namespace Melodies25.Pages.Melodies
                                                         .Select(a => new
                                                         {
                                                             a.ID,
-                                                            FullName = a.Name + " " + a.Surname  // Об'єднуємо NameUk і Surname
+                                                            FullName = a.Name + " " + a.Surname  // Об'єднуємо Name і Surname
                                                         }),
                                                     "ID",
                                                     "FullName",

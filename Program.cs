@@ -39,12 +39,8 @@ namespace Melodies25
                 .SetBasePath(builder.Environment.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-            // Отримуємо вибір бази даних (з профілю запуску)
-            var selectedDatabase = builder.Configuration.GetValue<string>("SelectedDatabase");
-
-            // Логування для перевірки значення
-            logger.LogInformation($"SelectedDatabase: {selectedDatabase}");
-            string connectionString = builder.Configuration.GetConnectionString(selectedDatabase);
+            // Отримуємо рядок підключення до бази даних          
+            string connectionString = builder.Configuration.GetConnectionString("VisualStudio");
             logger.LogInformation($"connectionString: {connectionString}");
 
             // Перевірка на порожній рядок підключення

@@ -45,7 +45,7 @@ namespace Melodies25.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("NameUk")
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NameEn")
@@ -73,13 +73,13 @@ namespace Melodies25.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
-                    b.Property<string>("NameUk")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("NameUk")
+                    b.HasIndex("Name")
                         .IsUnique();
 
                     b.ToTable("Country");

@@ -4,13 +4,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Melodies25.Models
 {
-    [Index(nameof(NameUk), IsUnique = true)]
+    [Index(nameof(Name), IsUnique = true)]
     public class Country
     {
         public int ID { get; set; }  // Унікальний ідентифікатор для автора
         
         [Required]
-        public string NameUk { get; set; }  // Назва країни
+        public string Name { get; set; }  // Назва країни
 
         [Required]
         public string NameEn { get; set; }  // Назва країни

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Melodies25.Migrations
 {
     [DbContext(typeof(Melodies25Context))]
-    [Migration("20250225182012_ifElibible")]
-    partial class ifElibible
+    [Migration("20251123012133_EnNames_provided")]
+    partial class EnNames_provided
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,8 +48,14 @@ namespace Melodies25.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("NameEn")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Surname")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SurnameEn")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ID");
@@ -71,6 +77,10 @@ namespace Melodies25.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("ID");
 
                     b.HasIndex("Name")
@@ -79,7 +89,7 @@ namespace Melodies25.Migrations
                     b.ToTable("Country");
                 });
 
-            modelBuilder.Entity("Melodies25.Models.MusicMelody", b =>
+            modelBuilder.Entity("Melodies25.Models.Melody", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -93,7 +103,7 @@ namespace Melodies25.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FileName")
+                    b.Property<string>("FilePath")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool?>("IsFileEligible")
@@ -103,6 +113,9 @@ namespace Melodies25.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Tonality")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("Year")
                         .HasColumnType("int");
 
@@ -110,7 +123,7 @@ namespace Melodies25.Migrations
 
                     b.HasIndex("AuthorID");
 
-                    b.ToTable("MusicMelody");
+                    b.ToTable("Melody");
                 });
 
             modelBuilder.Entity("Melodies25.Models.Author", b =>
@@ -122,7 +135,7 @@ namespace Melodies25.Migrations
                     b.Navigation("Country");
                 });
 
-            modelBuilder.Entity("Melodies25.Models.MusicMelody", b =>
+            modelBuilder.Entity("Melodies25.Models.Melody", b =>
                 {
                     b.HasOne("Melodies25.Models.Author", "Author")
                         .WithMany()

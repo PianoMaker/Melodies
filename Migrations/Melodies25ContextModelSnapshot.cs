@@ -42,7 +42,7 @@ namespace Melodies25.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("NameUk")
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NameEn")
@@ -70,19 +70,23 @@ namespace Melodies25.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
-                    b.Property<string>("NameUk")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("ID");
 
-                    b.HasIndex("NameUk")
+                    b.HasIndex("Name")
                         .IsUnique();
 
                     b.ToTable("Country");
                 });
 
-            modelBuilder.Entity("Melodies25.Models.MusicMelody", b =>
+            modelBuilder.Entity("Melodies25.Models.Melody", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -96,7 +100,7 @@ namespace Melodies25.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FileName")
+                    b.Property<string>("FilePath")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool?>("IsFileEligible")
@@ -116,7 +120,7 @@ namespace Melodies25.Migrations
 
                     b.HasIndex("AuthorID");
 
-                    b.ToTable("MusicMelody");
+                    b.ToTable("Melody");
                 });
 
             modelBuilder.Entity("Melodies25.Models.Author", b =>
@@ -128,7 +132,7 @@ namespace Melodies25.Migrations
                     b.Navigation("Country");
                 });
 
-            modelBuilder.Entity("Melodies25.Models.MusicMelody", b =>
+            modelBuilder.Entity("Melodies25.Models.Melody", b =>
                 {
                     b.HasOne("Melodies25.Models.Author", "Author")
                         .WithMany()
