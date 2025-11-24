@@ -6,10 +6,10 @@ namespace Melodies25.Models
         public bool AlgorithmDiagnostics { get; set; } = true;
 
         // Controls printing timing information (Stopwatch outputs)
-        public bool AlgorithmTiming { get; set; } = true;
+        public bool Comparing { get; set; } = true;
 
         // Other toggles you may want
-        public bool UIEvents { get; set; } = false;
+        public bool PatternSearch { get; set; } = true;
         public bool DbQueries { get; set; } = false;
 
         // NEW: granular toggles for new logging targets

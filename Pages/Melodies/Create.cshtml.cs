@@ -183,7 +183,7 @@ namespace Melodies25.Pages.Melodies
                 }
                 catch (Exception e)
                 {
-                    ErrorMessageL(e.ToString());
+                    ErrorMessageL($"Failed to create MIDI file: {e.ToString()}");
                     TempData["ErrorWarning"] = $"Невідома помилка";
                     Console.WriteLine($"Проблема: {e.Message}");
                 }

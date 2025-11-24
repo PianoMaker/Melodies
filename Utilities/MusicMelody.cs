@@ -1,14 +1,15 @@
 ﻿using Melodies25.Migrations;
+using Melodies25.Utilities;
 using NAudio.CoreAudioApi;
 using NAudio.Midi;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Numerics;
 using System.Linq; // added for Zip()
+using System.Numerics;
+using static Music.Algorythm;
 using static Music.Engine;
 using static Music.Globals;
 using static Music.Messages;
-using static Music.Algorythm;
 
 
 namespace Music
@@ -88,22 +89,25 @@ namespace Music
             get
             {
                 var list = new List<string>();
-                Message(COLORS.gray, "creating NoteList");
-                for (int i = 0; i < Notes.Count; i++)
+                if (LoggingManager.ReadMidi)
+                    Message(COLORS.gray, "creating NoteList");
+                    for (int i = 0; i < Notes.Count; i++)
                 {
                     try
                     {
                         var name = Notes[i].Name;
                         list.Add(name);
-                        //Message(COLORS.gray, name + " ");
+                        if (LoggingManager.ReadMidi)
+                            Message(COLORS.gray, name + " ");
                     }
                     catch
                     {
                         list.Add("?");
-                        ErrorMessage($"unable to read {Notes[i]} ");
+                        if (LoggingManager.ReadMidi)
+                            ErrorMessage($"unable to read {Notes[i]} ");
                     }
-                }
-                MessageL(COLORS.olive, "+");
+                }                
+                //MessageL(COLORS.olive, "+");
                 return list;
             }
         }
@@ -149,7 +153,8 @@ namespace Music
         {
             get
             {
-                MessageL(COLORS.olive, "\ngetting AllNotes list");
+                if (LoggingManager.ReadMidi)
+                    MessageL(COLORS.olive, "\ngetting AllNotes list");
                 string list = "";
                 foreach (var note in Notes)
                 {
@@ -299,7 +304,8 @@ namespace Music
         private void EnharmonizeToTonality()
         {
             if (Tonality is null) return;
-            MessageL(COLORS.olive, "Enharmonize to tonality");
+            if (LoggingManager.ReadMidi)
+                MessageL(COLORS.olive, "Enharmonize to tonality");
             var scale = Tonality.NotesInTonalityExtended();
             for (int i = 0; i < Size(); i++)
             {
@@ -321,7 +327,11 @@ namespace Music
                     Notes[i + 1].Sharpness - Notes[i].Sharpness >= 0)
                 { Notes[i].EnharmonizeSharp(); count++; }
             }
-            GrayMessageL($"generally enharmonized {count} notes");
+            if (LoggingManager.ReadMidi)
+            {
+                if (LoggingManager.ReadMidi)
+                    GrayMessageL($"generally enharmonized {count} notes");
+            }
         }
 
         //якщо надто дієзна тональність фрагменту
@@ -356,7 +366,8 @@ namespace Music
 
             if (startsharprow > 0 && doublesharpposition >= startsharprow && endsharprow >= doublesharpposition)
             {
-                Console.WriteLine($"Desharp notes from {startsharprow} to {endsharprow}");
+                if (LoggingManager.ReadMidi)
+                    Console.WriteLine($"Desharp notes from {startsharprow} to {endsharprow}");
                 for (int j = startsharprow; j < endsharprow; j++)
                     Notes[j].EnharmonizeFlat();
             }
@@ -373,7 +384,8 @@ namespace Music
 
                 if (Notes[i].Sharpness - Notes[i - 1].Sharpness >= 7 && Notes[i].Sharpness > 0)
                 {
-                    GrayMessageL($"sharp jump at bestpos. {i}");
+                    if (LoggingManager.ReadMidi)
+                        GrayMessageL($"sharp jump at bestpos. {i}");
                     startposition = i;
                 }
 
@@ -393,17 +405,17 @@ namespace Music
             }
             if (startposition > 0 && endposition > startposition)
             {
-                {
+                if (LoggingManager.ReadMidi)                
                     GrayMessageL($"Desharp (flat) notes from {startposition} to {endposition}");
-                    for (int i = startposition; i <= endposition; i++)
-                    {
+                for (int i = startposition; i <= endposition; i++)
+                {
 
-                        Notes[i].EnharmonizeFlat();
-                    }
-                    DesharpFlatTonalities();
+                    Notes[i].EnharmonizeFlat();
                 }
-
+                DesharpFlatTonalities();
             }
+
+            
         }
 
 
@@ -427,23 +439,27 @@ namespace Music
             if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == 7)
             {
                 Notes[lastindex].EnharmonizeFlat();
-                GrayMessageL("unhromed end to flat");
+                if (LoggingManager.ReadMidi)
+                    GrayMessageL("unhromed end to flat");
 
             }
             else if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == -7)
             {
                 Notes[lastindex].EnharmonizeSharp();
-                GrayMessageL("unhromed end to sharp");
+                if (LoggingManager.ReadMidi)
+                    GrayMessageL("unhromed end to sharp");
             }
             else if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == 12)
             {
                 Notes[lastindex].EnharmonizeFlat();
-                GrayMessageL("unhromed end to flat");
+                if (LoggingManager.ReadMidi)
+                    GrayMessageL("unhromed end to flat");
             }
             else if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == -12)
             {
                 Notes[lastindex].EnharmonizeSharp();
-                GrayMessageL("unhromed end to sharp");
+                if (LoggingManager.ReadMidi)
+                    GrayMessageL("unhromed end to sharp");
             }
         }
 
@@ -458,14 +474,16 @@ namespace Music
                     Notes[i].Sharpness - Notes[i - 1].Sharpness == -5)
                 {
                     Notes[i - 2].EnharmonizeSharp();
-                    GrayMessageL($"correct upgoing chromatics, position {i - 2}");
+                    if (LoggingManager.ReadMidi)
+                        GrayMessageL($"correct upgoing chromatics, position {i - 2}");
                 }
                 else if (Notes[i - 2].Sharpness - Notes[i - 3].Sharpness == -5 &&
                     Notes[i - 1].Sharpness - Notes[i - 2].Sharpness == -5 &&
                     Notes[i].Sharpness - Notes[i - 1].Sharpness == 7)
                 {
                     Notes[i - 1].EnharmonizeSharp();
-                    GrayMessageL($"correct upgoing chromatics 2, position {i - 2}");
+                    if (LoggingManager.ReadMidi)
+                        GrayMessageL($"correct upgoing chromatics 2, position {i - 2}");
                 }
             }
 
@@ -478,7 +496,8 @@ namespace Music
                 if (Notes[i].Sharpness - Notes[i - 1].Sharpness == 10)
                 {
                     Notes[i - 1].EnharmonizeSharp();
-                    GrayMessageL($"unflat note {i}");
+                    if (LoggingManager.ReadMidi)
+                        GrayMessageL($"unflat note {i}");
                 }
             }
         }
@@ -663,7 +682,8 @@ namespace Music
 
         private static (int bestlen, int bestpos, List<(int i1, int i2)> bestpairs, int bestshift) FindBestShift(int gap, int[] melodyNotes, int[] patternNotes)
         {
-            MessageL(COLORS.olive, "\nFinding best shift for interval match with gap");
+            if (LoggingManager.PatternSearch || LoggingManager.AlgorithmDiagnostics)
+                    MessageL(COLORS.olive, "\nFinding best shift for interval match with gap");
             int shift = 0;
             int bestshift = 0;
             int bestlen = 0;
@@ -673,7 +693,8 @@ namespace Music
             for (int i = 0; i < NotesInOctave; i++)
             {
                 var result = LongestCommonSubsequence(melodyNotes, patternNotes, gap);
-                Logresults(shift, result);
+                if (LoggingManager.PatternSearch || LoggingManager.AlgorithmDiagnostics)
+                    Logresults(shift, result);
 
                 if (result.Length > bestlen)
                 {
@@ -690,9 +711,12 @@ namespace Music
 
         private static void Logresults(int shift, MelodyMatchResult result)
         {
-            Message(COLORS.white, $"\nshift {shift}, len {result.Length}");
+            if (!LoggingManager.PatternSearch && !LoggingManager.AlgorithmDiagnostics)
+                return;
+            
+                Message(COLORS.white, $"\nshift {shift}, len {result.Length}");
             foreach (var pair in result.Pairs)
-            {
+            {                
                 Message(COLORS.white, pair.ToString() + " ");
             }
         }
@@ -742,7 +766,8 @@ namespace Music
         private static (int bestLen, int bestPos, List<(int i1, int i2)> bestPairs, int bestShift)
         FindBestShift2D(int[] melodyNotes, int[] patternNotes, float[] durMelody, float[] durPattern, int maxGap, double eps)
         {
-            MessageL(COLORS.olive, "\nFinding best 2D shift (interval + duration) with gap");
+            if (LoggingManager.PatternSearch || LoggingManager.AlgorithmDiagnostics)
+                MessageL(COLORS.olive, "\nFinding best 2D shift (interval + duration) with gap");
             int clamped = Math.Clamp(maxGap, 1, 3);
 
             int curBestLen = 0;

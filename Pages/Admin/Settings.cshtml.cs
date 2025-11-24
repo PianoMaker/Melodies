@@ -13,15 +13,15 @@ namespace Melodies25.Pages.Admin
 
         public void OnGet()
         {
-            // read current cached settings
-            Logging = FileSettingsProvider.Logging;
+            // read current cached settings (from new LoggingManager)
+            Logging = LoggingManager.Settings;
         }
 
         public IActionResult OnPost()
         {
             if (!ModelState.IsValid) return Page();
 
-            FileSettingsProvider.Save(Logging);
+            LoggingManager.Save(Logging);
             TempData["Saved"] = "Settings saved";
             return RedirectToPage();
         }

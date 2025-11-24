@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System;
-using System.IO;
+﻿using Melodies25.Utilities;
 using NAudio.Midi;
 using NAudio.Wave;
+using System;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Drawing.Drawing2D;
+using System.IO;
 using static Music.Engine;
 using static Music.Globals;
 using static Music.Messages;
-using System.ComponentModel.Design;
-using System.Drawing.Drawing2D;
 //using Microsoft.DotNet.Scaffolding.Shared;
 //using Microsoft.CodeAnalysis.Elfie.Serialization;
 
@@ -26,7 +27,10 @@ namespace Music
         // трансформує міді-файл у формат мелодії
         public static MusicMelody GetMelodyFromMidi(MidiFile midiFile)
         {
-            MessageL(COLORS.olive, "GetMelodyFromMidi method");
+            if (LoggingManager.ReadMidi)
+            {
+                MessageL(COLORS.olive, "GetMelodyFromMidi method");
+            }
             //GrayMessageL($"midiFile = {midiFile}");
 
             notation = Notation.eu;
@@ -127,8 +131,9 @@ namespace Music
             // Використовуємо Task.Run для асинхронної обробки в окремому потоці
             return await Task.Run(() =>
             {
-                MessageL(COLORS.olive, "GetMelodyFromMidiAsync is running");
-
+                if (LoggingManager.ReadMidi)                
+                    MessageL(COLORS.olive, "GetMelodyFromMidiAsync is running");
+                
                 return GetMelodyFromMidi(midiFile);
 
             });
@@ -154,7 +159,8 @@ namespace Music
         {
             List<(double frequency, int durationMs)> notes = new();
             Dictionary<int, double> activeNotes = new(); // {NoteNumber, StartTime в мс}
-            MessageL(COLORS.blue, "starting Hz_Ms list");
+            if (LoggingManager.ReadMidi)
+                MessageL(COLORS.blue, "starting Hz_Ms list");
             double starttime = 0;
             long expectedcurrentticktime = 0;
             int ticksPerQuarterNote = midiFile.DeltaTicksPerQuarterNote;
@@ -231,6 +237,9 @@ namespace Music
         }
         private static void LogTempo(double microsecondsPerQuarterNote, double ticksToMsFactor, double tempoBPM)
         {
+            if (!LoggingManager.ReadMidi)
+                return;
+
             Console.WriteLine($"Tempo = {tempoBPM}");
             Console.WriteLine($"PQN = {microsecondsPerQuarterNote}");
             Console.WriteLine($"ticksToMsFactor  = {ticksToMsFactor}");
@@ -295,29 +304,32 @@ namespace Music
 
             foreach (var track in mifidile.Events)
             {
-
-                Console.WriteLine($"track {currenttrack}");
+                if (LoggingManager.ReadMidi)
+                    Console.WriteLine($"track {currenttrack}");
                 currenttrack++;
                 foreach (var me in track)
                 {
 
                     if (me is TempoEvent te)
                     {
-                        //Console.WriteLine(te.Tempo);
+                        if (LoggingManager.ReadMidi)
+                            Console.WriteLine(te.Tempo);
                     }
                     else if (me is NoteEvent note)
                     {
                         if (IfNoteOn(note))
                         {
-                            // GrayMessageL($"\t\tafternote = {note.AbsoluteTime - currenttime}");
-                            //Console.WriteLine($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
-                            currentNoteNumber = note.NoteNumber;
+                            if (LoggingManager.ReadMidi)
+                                //GrayMessageL($"\t\tafternote = {note.AbsoluteTime - currenttime}");
+                                Console.WriteLine($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
+                                currentNoteNumber = note.NoteNumber;
                             currenttime = note.AbsoluteTime;
                         }
                         else if (IfNoteOff(note))
                         {
+                            if (LoggingManager.ReadMidi)
                             //GrayMessageL($"{note.NoteNumber} - {note.AbsoluteTime} - {note.DeltaTime}");
-                            // GrayMessageL($"\tduration = {note.AbsoluteTime - currenttime}");
+                            GrayMessageL($"\tduration = {note.AbsoluteTime - currenttime}");
                         }
                     }
                     else Message(COLORS.gray, ".");
@@ -358,7 +370,8 @@ namespace Music
 
             int ifchanged = 0;
 
-            Console.WriteLine("Start straighting file");
+            if (LoggingManager.ReadMidi)
+                Console.WriteLine("Start straighting file");
 
             //MessageL(COLORS.gray, "eventType - note number - AbsTime - DeltaTime");
 
@@ -368,7 +381,8 @@ namespace Music
 
             MidiEventCollection straightEventCollection = StraigtEventCollection(ref ifchanged, midiFile, monoEventCollection);
 
-            MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
+            if (LoggingManager.ReadMidi)
+                MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
 
             MidiFile.Export(newpath, straightEventCollection);
         }
@@ -379,7 +393,8 @@ namespace Music
 
             int ifchanged = 0;
 
-            Console.WriteLine("StraightMidiFile is running");
+            if (LoggingManager.ReadMidi)
+                Console.WriteLine("StraightMidiFile is running");
 
             //GrayMessageL("eventType - note number - AbsTime - DeltaTime");
 
@@ -389,7 +404,8 @@ namespace Music
 
             MidiEventCollection straightEventCollection = StraigtEventCollection(ref ifchanged, midiFile, monoEventCollection);
 
-            MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
+            if (LoggingManager.ReadMidi)
+                MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
 
             MidiFile.Export(path, straightEventCollection);
 
@@ -398,7 +414,8 @@ namespace Music
         {
             var midiFile = new MidiFile(path);
 
-            Console.WriteLine("StraightMidiFile is running");
+            if (LoggingManager.ReadMidi)
+                Console.WriteLine("StraightMidiFile is running");
 
             //GrayMessageL("eventType - note number - AbsTime - DeltaTime");
 
@@ -408,13 +425,15 @@ namespace Music
 
             MidiEventCollection straightEventCollection = StraigtEventCollection(ref ifchanged, midiFile, monoEventCollection);
 
-            MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
+            if (LoggingManager.ReadMidi)
+                MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
 
             // Запис нового MIDI-файлу
             string newPath = path.Replace(".mid", "_straight.mid");
             MidiFile.Export(newPath, straightEventCollection);
 
-            Console.WriteLine($"New MIDI file saved as {newPath}");
+            if (LoggingManager.ReadMidi)
+                Console.WriteLine($"New MIDI file saved as {newPath}");
 
             return newPath;
         }
@@ -424,7 +443,8 @@ namespace Music
             var monoEventCollection = new MidiEventCollection(midiFile.FileFormat, midiFile.DeltaTicksPerQuarterNote);
             long currentstarttime = 0;
 
-            MessageL(COLORS.purple, "MonoEventCollection is running");
+            if (LoggingManager.ReadMidi)
+                MessageL(COLORS.purple, "MonoEventCollection is running");
 
             foreach (var track in eventCollection)  
             {
@@ -435,7 +455,8 @@ namespace Music
                 {
                     if (me is TempoEvent tempo)
                     {
-                        MessageL(COLORS.gray, $"tempo = {tempo} bpm");
+                        if (LoggingManager.ReadMidi)
+                            MessageL(COLORS.gray, $"tempo = {tempo} bpm");
                         newTrack.Add(tempo); // Копіюємо інші події
                     }
                     else if (me is NoteEvent ne)
@@ -480,11 +501,13 @@ namespace Music
             int currentchanges = 0;
             var newEventCollection = new MidiEventCollection(midiFile.FileFormat, midiFile.DeltaTicksPerQuarterNote);
 
-            MessageL(COLORS.purple, "StraightEventCollection is running");
+            if (LoggingManager.ReadMidi)
+                MessageL(COLORS.purple, "StraightEventCollection is running");
 
             foreach (var track in EventCollection)
             {
-                GrayMessageL($"Track {currentTrack}");
+                if (LoggingManager.ReadMidi)
+                    GrayMessageL($"Track {currentTrack}");
                 currentTrack++;
                 bool isOpen = false;
                 var newTrack = new List<MidiEvent>();
@@ -493,7 +516,8 @@ namespace Music
                 {
                     if (me is TempoEvent te)
                     {
-                        GrayMessageL($"tempo = {te.Tempo}");
+                        if (LoggingManager.ReadMidi)
+                            GrayMessageL($"tempo = {te.Tempo}");
                         newTrack.Add(te); // Копіюємо подію у новий трек
                     }
                     else if (me is NoteEvent note)
@@ -781,11 +805,11 @@ public static void ExportOverwrite(string destinationPath, MidiEventCollection e
                     File.SetAttributes(destinationPath, attrs & ~FileAttributes.ReadOnly);
 
                 File.Delete(destinationPath);
-                MessageL(COLORS.gray, $"[MIDI Export] Old file deleted: {destinationPath}");
+                if (LoggingManager.ReadMidi) MessageL(COLORS.gray, $"[MIDI Export] Old file deleted: {destinationPath}");
             }
             catch (Exception delEx)
             {
-                GrayMessageL($"[MIDI Export] Delete failed, fallback to atomic replace: {delEx.Message}");
+                if (LoggingManager.ReadMidi) GrayMessageL($"[MIDI Export] Delete failed, fallback to atomic replace: {delEx.Message}");
             }
         }
 
@@ -797,7 +821,7 @@ public static void ExportOverwrite(string destinationPath, MidiEventCollection e
             try
             {
                 File.Replace(tmp, destinationPath, null);
-                MessageL(COLORS.gray, $"[MIDI Export] Atomic replace done: {destinationPath}");
+                if (LoggingManager.ReadMidi) MessageL(COLORS.gray, $"[MIDI Export] Atomic replace done: {destinationPath}");
             }
             finally
             {
@@ -808,12 +832,12 @@ public static void ExportOverwrite(string destinationPath, MidiEventCollection e
         {
             // Звичайний запис
             MidiFile.Export(destinationPath, events);
-            MessageL(COLORS.gray, $"[MIDI Export] Exported: {destinationPath}");
+            if (LoggingManager.ReadMidi) MessageL(COLORS.gray, $"[MIDI Export] Exported: {destinationPath}");
         }
     }
     catch (Exception ex)
     {
-        ErrorMessageL($"ExportOverwrite failed: {ex.Message}");
+        if (LoggingManager.ReadMidi) ErrorMessageL($"ExportOverwrite failed: {ex.Message}");
         throw;
     }
 }

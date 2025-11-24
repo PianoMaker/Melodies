@@ -1,6 +1,8 @@
 {
-  "AlgorithmDiagnostics": true,
-  "AlgorithmTiming": true,
-  "UIEvents": false,
-  "DbQueries": false
+  "AlgorithmDiagnostics": false,
+  "Comparing": false,
+  "PatternSearch": false,
+  "DbQueries": false,
+  "CreateAudio": false,
+  "CompareMidi": false
 }

@@ -385,7 +385,7 @@ namespace Melodies25.Pages.Melodies
                 }
                 catch (Exception e)
                 {
-                    ErrorMessageL(e.Message);
+                    ErrorMessageL($"Failed to update key signature: {melody.FilePath} " + e.Message);
 
                 }
             }
@@ -539,7 +539,7 @@ namespace Melodies25.Pages.Melodies
 
                 if (ifeligible)
                 {
-                    if (FileSettingsProvider.Logging.CreateAudio)
+                    if (LoggingManager.CreateAudio)
                     {
                         MessageL(COLORS.standart, $"генеруємо mp3 з оригінала (не змінюючи його), тимчасові копії всередині PrepareMp3Async");
                     }

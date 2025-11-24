@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using static Music.Messages;
+using Melodies25.Utilities;
+using System.Drawing; // added for LoggingManager
 
 namespace Music
 {
@@ -18,7 +20,8 @@ namespace Music
 
             // prepare a buffer for diagnostics so printing can be deferred
             var diag = new System.Text.StringBuilder();
-            MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<int>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<int>()));
+            if (LoggingManager.AlgorithmDiagnostics)
+                MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<int>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<int>()));
             try
             {
                 if (arr1 == null || arr2 == null || arr1.Length == 0 || arr2.Length == 0)
@@ -63,13 +66,16 @@ namespace Music
             {
                 sw.Stop();
 
-                // print diagnostics AFTER stopwatch stopped so elapsed excludes printing time
-                if (diag.Length > 0)
-                    Console.WriteLine(diag.ToString());
+                // діагностика
+                if (LoggingManager.AlgorithmDiagnostics)
+                {
+                    if (diag.Length > 0)
+                        Console.WriteLine(diag.ToString());
 
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine($"Algorythm.LongestCommonSubstring(int[]) elapsed: {sw.ElapsedMilliseconds} ms");
-                Console.ResetColor();
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine($"Algorythm.LongestCommonSubstring(int[]) elapsed: {sw.ElapsedMilliseconds} ms");
+                    Console.ResetColor();
+                }
             }
         }
 
@@ -79,7 +85,8 @@ namespace Music
             var sw = Stopwatch.StartNew();
             (int length, int startIndex) result = (0, -1);
 
-            MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<float>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<float>()));
+            if (LoggingManager.AlgorithmDiagnostics)
+                MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<float>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<float>()));
             try
             {
                 if (arr1 == null || arr2 == null || arr1.Length == 0 || arr2.Length == 0)
@@ -137,7 +144,8 @@ namespace Music
             var sw = Stopwatch.StartNew();
             (int length, List<int> indicesInFirst, List<int> indicesInSecond) result = (0, new List<int>(), new List<int>());
 
-            MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<int>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<int>()));
+            if (LoggingManager.AlgorithmDiagnostics)
+                MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<int>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<int>()));
             try
             {
                 if (arr1 == null || arr2 == null || arr1.Length == 0 || arr2.Length == 0)
@@ -199,22 +207,27 @@ namespace Music
                 }
 
                 // Друк для діагностики
-                Console.Write($"\nmatches (arr1Index:arr2Index value) with gap={gap}: ");
-                for (var k = 0; k < bestI.Count; k++)
+                if (LoggingManager.AlgorithmDiagnostics)
                 {
-                    Console.Write($"{bestI[k]}:{bestJ[k]} {arr1[bestI[k]]}/{arr2[bestJ[k]]} ");
+                    Console.Write($"\nmatches (arr1Index:arr2Index value) with gap={gap}: ");
+                    for (var k = 0; k < bestI.Count; k++)
+                    {
+                        MessageL(COLORS.gray, $"{bestI[k]}:{bestJ[k]} {arr1[bestI[k]]}/{arr2[bestJ[k]]} ");
+                    }
+                    Console.WriteLine();
                 }
-                Console.WriteLine();
-
                 result = (bestLen, bestI, bestJ);
                 return result;
             }
             finally
             {
                 sw.Stop();
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine($"Algorythm.LongestCommonSubsequence(int[]) elapsed: {sw.ElapsedMilliseconds} ms");
-                Console.ResetColor();
+                if (LoggingManager.AlgorithmDiagnostics)
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine($"Algorythm.LongestCommonSubsequence(int[]) elapsed: {sw.ElapsedMilliseconds} ms");
+                    Console.ResetColor();
+                }
             }
         }
 
@@ -230,9 +243,12 @@ namespace Music
             finally
             {
                 sw.Stop();
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine($"Algorythm.LongestCommonSubsequence(float[] wrapper) elapsed: {sw.ElapsedMilliseconds} ms");
-                Console.ResetColor();
+                if (LoggingManager.AlgorithmDiagnostics)
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine($"Algorythm.LongestCommonSubsequence(float[] wrapper) elapsed: {sw.ElapsedMilliseconds} ms");
+                    Console.ResetColor();
+                }
             }
         }
 
@@ -242,7 +258,8 @@ namespace Music
             var sw = Stopwatch.StartNew();
             (int length, List<int> indicesInFirst, List<int> indicesInSecond) result = (0, new List<int>(), new List<int>());
 
-            MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<float>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<float>()));
+            if (LoggingManager.AlgorithmDiagnostics)
+                MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<float>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<float>()));
             try
             {
                 if (arr1 == null || arr2 == null || arr1.Length == 0 || arr2.Length == 0)
@@ -296,12 +313,15 @@ namespace Music
                 }
 
                 // Diagnostics
-                Console.Write($"\nmatches (arr1Index:arr2Index value) with gap={gap}: ");
-                for (var k = 0; k < bestI.Count; k++)
+                if (LoggingManager.AlgorithmDiagnostics)
                 {
-                    Console.Write($"{bestI[k]}:{bestJ[k]} {arr1[bestI[k]]}/{arr2[bestJ[k]]} ");
+                    Console.Write($"\nmatches (arr1Index:arr2Index value) with gap={gap}: ");
+                    for (var k = 0; k < bestI.Count; k++)
+                    {
+                        Console.Write($"{bestI[k]}:{bestJ[k]} {arr1[bestI[k]]}/{arr2[bestJ[k]]} ");
+                    }
+                    Console.WriteLine();
                 }
-                Console.WriteLine();
 
                 result = (bestLen, bestI, bestJ);
                 return result;
@@ -309,9 +329,12 @@ namespace Music
             finally
             {
                 sw.Stop();
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine($"Algorythm.LongestCommonSubsequence(float[], eps) elapsed: {sw.ElapsedMilliseconds} ms");
-                Console.ResetColor();
+                if (LoggingManager.AlgorithmDiagnostics)
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine($"Algorythm.LongestCommonSubsequence(float[], eps) elapsed: {sw.ElapsedMilliseconds} ms");
+                    Console.ResetColor();
+                }
             }
         }
 
@@ -320,7 +343,8 @@ namespace Music
             var sw = Stopwatch.StartNew();
             (int len, int pos, List<(int i1, int i2)> pairs) result = (0, -1, new List<(int i1, int i2)>());
 
-            MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<int>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<int>()) + ",\nfloat1: " + string.Join(", ", float1 ?? Array.Empty<float>()) + ",\nfloat2: " + string.Join(", ", float2 ?? Array.Empty<float>()));
+            if (LoggingManager.AlgorithmDiagnostics)
+                MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<int>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<int>()) + ",\nfloat1: " + string.Join(", ", float1 ?? Array.Empty<float>()) + ",\nfloat2: " + string.Join(", ", float2 ?? Array.Empty<float>()));
             try
             {
                 // Validate
@@ -383,9 +407,12 @@ namespace Music
             finally
             {
                 sw.Stop();
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine($"Algorythm.FindCommonSubstringByIntervalAndDuration elapsed: {sw.ElapsedMilliseconds} ms");
-                Console.ResetColor();
+                if (LoggingManager.AlgorithmDiagnostics)
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine($"Algorythm.FindCommonSubstringByIntervalAndDuration elapsed: {sw.ElapsedMilliseconds} ms");
+                    Console.ResetColor();
+                }
             }
         }
 
@@ -403,9 +430,12 @@ namespace Music
             finally
             {
                 sw.Stop();
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine($"Algorythm.FindLongestSubstringMatch(int[]) elapsed: {sw.ElapsedMilliseconds} ms");
-                Console.ResetColor();
+                if (LoggingManager.AlgorithmDiagnostics)
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine($"Algorythm.FindLongestSubstringMatch(int[]) elapsed: {sw.ElapsedMilliseconds} ms");
+                    Console.ResetColor();
+                }
             }
         }
 
@@ -422,9 +452,12 @@ namespace Music
             finally
             {
                 sw.Stop();
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine($"Algorythm.FindLongestSubstringMatch(float[]) elapsed: {sw.ElapsedMilliseconds} ms");
-                Console.ResetColor();
+                if (LoggingManager.AlgorithmDiagnostics)
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine($"Algorythm.FindLongestSubstringMatch(float[]) elapsed: {sw.ElapsedMilliseconds} ms");
+                    Console.ResetColor();
+                }
             }
         }
 
@@ -445,9 +478,12 @@ namespace Music
             finally
             {
                 sw.Stop();
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine($"Algorythm.GetPairs elapsed: {sw.ElapsedMilliseconds} ms");
-                Console.ResetColor();
+                if (LoggingManager.AlgorithmDiagnostics)
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine($"Algorythm.GetPairs elapsed: {sw.ElapsedMilliseconds} ms");
+                    Console.ResetColor();
+                }
             }
         }
     }
