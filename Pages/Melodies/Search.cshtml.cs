@@ -654,8 +654,6 @@ namespace Melodies25.Pages.Melodies
             var sw = new Stopwatch();
             sw.Start();
 
-            int[] patternShape = MelodyPattern.IntervalList.ToArray();
-            int[] patternNotes = MelodyPattern.GetPitches().ToArray();
             var algorithm = SearchAlgorithm?.ToLowerInvariant() ?? "substring";
             MatchedMelodies.Clear();
 
@@ -663,9 +661,6 @@ namespace Melodies25.Pages.Melodies
             {
                 var title = melody.Title;
                 if (melody.MidiMelody is null) continue;
-
-                var melodyshape = melody.MidiMelody.IntervalList.ToArray(); //послідовність інтервалів
-                var melodinotes = melody.MidiMelody.GetPitches().ToArray(); //послідовність нот
 
                 int length = 0;
                 int position = -1;
@@ -770,7 +765,7 @@ namespace Melodies25.Pages.Melodies
 
                     default:
                         {
-                            var (len, pos, pairs) = FindLongestSubstringMatch(patternShape, melodyshape);
+                            var (len, pos, pairs) = FindLongestSubstringMatch(MelodyPattern.IntervalList.ToArray(), melody.MidiMelody.IntervalList.ToArray());
                             length = len;
                             position = pos;
                             finalBestPairs = pairs ?? new List<(int i1, int i2)>();
