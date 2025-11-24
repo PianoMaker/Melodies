@@ -23,6 +23,7 @@ namespace Melodies25.Pages.Melodies
     {
         private readonly Melodies25.Data.Melodies25Context _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly ILogger<SearchModel> _logger;
 
 
         public IList<Melody> Melody { get; set; } = default!;
@@ -92,15 +93,23 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         internal string TempMp3FilePath { get; set; }
 
+        [BindProperty]
+        public bool IfIntonation { get; set; } = true;
+
+        [BindProperty]
+        public bool IfRhythm { get; set; }
+
         private static readonly char[] separator = new char[] { ' ', '_' };
 
         public void OnGetAsync(string search, int? numerator, int? denominator)
         {
 
-            MessageL(COLORS.yellow, "SEARCH - OnGetAsync method");
+            MessageL(COLORS.yellow, $"SEARCH - OnGetAsync method, intonation = {IfIntonation}");
 
             TimeSignatureNumerator = numerator ?? 4;
             TimeSignatureDenominator = denominator ?? 4;
+            IfRhythm = false;
+            IfIntonation = true;
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -198,7 +207,7 @@ namespace Melodies25.Pages.Melodies
             MessageL(COLORS.standart, $"{numberoffileschecked} file analyzed, {sw.ElapsedMilliseconds} ms spent");
             if (missingFiles.Count > 0)
             {
-                MessageL(COLORS.red, $"Missing {missingFiles.Count} midi files (skipped). Example: {missingFiles.First()}");
+                MessageL(COLORS.red, $"Missing {missingFiles.Count} midi files (skipped).");
             }
             MessageL(COLORS.cyan, "NotesSearchInitialize finished");
         }
@@ -357,9 +366,9 @@ namespace Melodies25.Pages.Melodies
         public async Task OnPostNotesearch()
         {
             // Diagnostics: log incoming form, bound properties and ModelState
-            DiagnosticNoteSearch();
+            //DiagnosticNoteSearch();
 
-            MessageL(COLORS.yellow, $"SEARCH - OnPostNotesearch method, Keys = {Keys}, TimeSin={TimeSignatureNumerator}/{TimeSignatureDenominator}");
+            MessageL(COLORS.yellow, $"SEARCH - OnPostNotesearch method, Keys = {Keys}, TimeSin={TimeSignatureNumerator}/{TimeSignatureDenominator}, Intonation = {IfIntonation}, Rhythm = {IfRhythm}");
 
             /*включаємо відображення за нотним пошуком*/
             NoteSearch = true;
@@ -604,7 +613,7 @@ namespace Melodies25.Pages.Melodies
         //--------------------------------
         private void CompareMelodies(MusicMelody MelodyPattern)
         {
-            MessageL(COLORS.olive, $"CompareMelodies method {SearchAlgorithm?.ToLowerInvariant()}, maxgap = {MaxGap}");
+            MessageL(COLORS.olive, $"CompareMelodies method {SearchAlgorithm?.ToLowerInvariant()}, intonation = {IfIntonation}, rhythm = {IfRhythm}, maxgap = {MaxGap}");
             var sw = new Stopwatch();
             sw.Start();
 
@@ -623,6 +632,7 @@ namespace Melodies25.Pages.Melodies
 
                 int length = 0;
                 int position = -1;
+                int bestshift = 0;
 
                 // This will hold the final best pairs for the subsequence case (arr1Index, arr2Index)
                 List<(int i1, int i2)> finalBestPairs = new();
@@ -635,31 +645,82 @@ namespace Melodies25.Pages.Melodies
                             // TEMPORARY: restrict subsequence search to songs whose Title starts with Cyrillic 'Г'
                             if (string.IsNullOrEmpty(melody.Title) || !melody.Title.StartsWith("Г", StringComparison.CurrentCultureIgnoreCase))
                             {
-                                MessageL(COLORS.gray, $"Skipping subsequence for '{title}' — title does not start with 'Г'");
-                                // ensure no match will be registered for this melody
-                                length = 0;
-                                position = -1;
-                                finalBestPairs = new List<(int i1, int i2)>();
+                                TempLetterMethod(title, out length, out position, out finalBestPairs);
                                 break;
                             }
+                            // END TEMPORARY
 
-                            var (len, pos, pairs, bestShift) = MusicMelody.SimilarByIntervalsWithGap(MelodyPattern, melody.MidiMelody, MaxGap);
-                            length = len;
-                            position = pos;
-                            finalBestPairs = pairs ?? new List<(int i1, int i2)>();
-                            MessageL(COLORS.gray, $"best shift for '{title}' = {bestShift}");
-                            // when adding matched melody below we will store bestShift
-                            break;
+                            if (IfIntonation && !IfRhythm)
+                            {
+                                var match = MusicMelody.SimilarByIntervalsWithGap(MelodyPattern, melody.MidiMelody, MaxGap);
+                                length = match.Length;
+                                position = match.Position;
+
+                                finalBestPairs = match.Pairs ?? new List<(int i1, int i2)>();
+                                MessageL(COLORS.gray, $"best shift for '{title}' = {match.BestShift}");
+                                // when adding matched melody below we will store bestShift
+                                break;
+                            }
+                            if (IfRhythm && !IfIntonation)
+                            {
+                                var match = MusicMelody.SimilarByRhythmWithGap(MelodyPattern, melody.MidiMelody, MaxGap);
+                                length = match.Length;
+                                position = match.Position;
+                                bestshift = match.BestShift;
+                                finalBestPairs = match.Pairs ?? new List<(int i1, int i2)>();
+                                MessageL(COLORS.gray, $"best shift for '{title}' = {match.BestShift}");
+                                // when adding matched melody below we will store bestShift
+                                break;
+                            }
+                            if (IfRhythm && IfIntonation)
+                            {
+                                var match = MusicMelody.SimilarByBothWithGap(MelodyPattern, melody.MidiMelody, MaxGap);
+                                length = match.Length;
+                                position = match.Position;
+                                bestshift = match.BestShift;
+                                finalBestPairs = match.Pairs ?? new List<(int i1, int i2)>();
+                                break;
+                            }
+                            else
+                            {
+                                return;
+                            }
+
                         }
-
                     case "substring":
                         {
-                            MessageL(14, $"comparing substring for {title}");
-                            var (len, pos, pairs) = MusicMelody.SimilarByIntervals(MelodyPattern, melody.MidiMelody);
-                            length = len;
-                            position = pos;
-                            finalBestPairs = pairs ?? new List<(int i1, int i2)>();
-                            break;
+                            if (IfIntonation && !IfRhythm)
+                            {
+                                MessageL(14, $"comparing substring for {title}");
+                                var match = MusicMelody.SimilarByIntervals(MelodyPattern, melody.MidiMelody);
+                                length = match.Length;
+                                position = match.Position;
+                                finalBestPairs = match.Pairs ?? new List<(int i1, int i2)>();
+                                break;
+                            }
+                            if (!IfIntonation && IfRhythm)
+                            {
+                                MessageL(14, $"comparing substring for {title}");
+                                var match = MusicMelody.SimilarByRhythm(MelodyPattern, melody.MidiMelody);
+                                length = match.Length;
+                                position = match.Position;
+                                finalBestPairs = match.Pairs ?? new List<(int i1, int i2)>();
+                                break;
+                            }
+                            if (IfRhythm && IfIntonation)
+                            {
+                                MessageL(14, $"comparing substring for {title}");
+                                var match = MusicMelody.SimilarByBoth(MelodyPattern, melody.MidiMelody);
+                                length = match.Length;
+                                position = match.Position;
+                                finalBestPairs = match.Pairs ?? new List<(int i1, int i2)>();
+                                bestshift = match.BestShift;
+                                break;
+                            }
+                            else                             
+                            {
+                                return;
+                            }
                         }
 
                     default:
@@ -674,13 +735,7 @@ namespace Melodies25.Pages.Melodies
 
                 if (length >= minimummatch)
                 {
-                    // If algorithm was subsequence we previously computed bestShift; recompute to capture it here
-                    int bestShiftForThis = 0;
-                    if (algorithm == "subsequence")
-                    {
-                        var (_, _, _, bestShift) = FindBestSubsequenceMatch(melodinotes, patternNotes, MaxGap);
-                        bestShiftForThis = bestShift;
-                    }
+
 
                     MatchedMelodies.Add(new MatchedMelody
                     {
@@ -688,7 +743,7 @@ namespace Melodies25.Pages.Melodies
                         CommonLength = length,
                         Position = position,
                         Pairs = finalBestPairs,
-                        BestShift = bestShiftForThis
+                        BestShift = bestshift
                     });
 
                     // centralized logging
@@ -722,8 +777,17 @@ namespace Melodies25.Pages.Melodies
             }
         }
 
-   
-    public class MatchedMelody
+        private static void TempLetterMethod(string title, out int length, out int position, out List<(int i1, int i2)> finalBestPairs)
+        {
+            MessageL(COLORS.gray, $"Skipping subsequence for '{title}' — title does not start with 'Г'");
+            // ensure no match will be registered for this melody
+            length = 0;
+            position = -1;
+            finalBestPairs = new List<(int i1, int i2)>();
+            return;
+        }
+
+        public class MatchedMelody
     {
         public Melody Melody { get; set; } = default!;
         public int CommonLength { get; set; }

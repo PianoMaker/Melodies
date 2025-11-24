@@ -2,277 +2,455 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 using static Music.Messages;
 
 namespace Music
 {
     public static class Algorythm
     {
+        //================== Longest Common Substring =================//
+        // Повертає (довжина послідовності нот, початковий індекс у другому масиві) для int масивів
         public static (int length, int startIndex) LongestCommonSubstring(int[] arr1, int[] arr2)
         {
-            
-            MessageL(7, " arr1: " + string.Join(", ", arr1) + ",\narr2: " + string.Join(", ", arr2));
-            if (arr1 == null || arr2 == null || arr1.Length == 0 || arr2.Length == 0)
-                return (0, -1);
+            var sw = Stopwatch.StartNew();
+            (int length, int startIndex) result = (0, -1);
 
-            int[,] dp = new int[arr1.Length + 1, arr2.Length + 1];
-            int maxLength = 0;
-            int endIndex = -1; // Індекс останнього елемента підрядка у другій послідовності
-
-            for (int i = 1; i <= arr1.Length; i++)
+            // prepare a buffer for diagnostics so printing can be deferred
+            var diag = new System.Text.StringBuilder();
+            MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<int>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<int>()));
+            try
             {
-                for (int j = 1; j <= arr2.Length; j++)
+                if (arr1 == null || arr2 == null || arr1.Length == 0 || arr2.Length == 0)
                 {
-                    if (arr1[i - 1] == arr2[j - 1])
+                    result = (0, -1);
+                    return result;
+                }
+
+                int[,] dp = new int[arr1.Length + 1, arr2.Length + 1];
+                int maxLength = 0;
+                int endIndex = -1;
+
+                for (int i = 1; i <= arr1.Length; i++)
+                {
+                    for (int j = 1; j <= arr2.Length; j++)
                     {
-                        dp[i, j] = dp[i - 1, j - 1] + 1;
-                        if (dp[i, j] > maxLength)
+                        if (arr1[i - 1] == arr2[j - 1])
                         {
-                            maxLength = dp[i, j];
-                            endIndex = j - 1; // Останній збіг у `arr2`
+                            dp[i, j] = dp[i - 1, j - 1] + 1;
+                            if (dp[i, j] > maxLength)
+                            {
+                                maxLength = dp[i, j];
+                                endIndex = j - 1;
+                            }
+                        }
+                        else
+                        {
+                            dp[i, j] = 0;
                         }
                     }
-                    else
-                    {
-                        dp[i, j] = 0;
-                    }
                 }
+
+                int startIndex = (maxLength > 0) ? (endIndex - maxLength + 1) : -1;
+                int notesCount = (maxLength > 0) ? (maxLength + 1) : 0;
+
+                // build diagnostics but do not print yet
+                diag.AppendLine($"\nmatches (arr1Index:arr2Index value) example: (notesCount={notesCount}, startIndex={startIndex})");
+                result = (notesCount, startIndex);
+                return result;
             }
+            finally
+            {
+                sw.Stop();
 
-            int startIndex = (maxLength > 0) ? (endIndex - maxLength + 1) : -1;
+                // print diagnostics AFTER stopwatch stopped so elapsed excludes printing time
+                if (diag.Length > 0)
+                    Console.WriteLine(diag.ToString());
 
-            // NOTE:
-            // arr1/arr2 are arrays of intervals (length = notes-1). The number of matching notes
-            // corresponding to maxLength matching intervals is maxLength +1. Return length in
-            // terms of notes (not intervals) so callers and UI highlighting operate on note counts.
-            int notesCount = (maxLength > 0) ? (maxLength + 1) : 0;
-
-
-            return (notesCount, startIndex);
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"Algorythm.LongestCommonSubstring(int[]) elapsed: {sw.ElapsedMilliseconds} ms");
+                Console.ResetColor();
+            }
         }
 
-        // Overload for float arrays with epsilon tolerance (useful when values are floats)
+        // Повертає (довжина послідовності нот, початковий індекс у другому масиві) для float масивів
         public static (int length, int startIndex) LongestCommonSubstring(float[] arr1, float[] arr2)
         {
-            MessageL(7, " arr1: " + string.Join(", ", arr1) + ",\narr2: " + string.Join(", ", arr2));
-            if (arr1 == null || arr2 == null || arr1.Length == 0 || arr2.Length == 0)
-                return (0, -1);
+            var sw = Stopwatch.StartNew();
+            (int length, int startIndex) result = (0, -1);
 
-            const double EPS = 1e-6; // tolerance for float comparison
-            int n = arr1.Length;
-            int m = arr2.Length;
-            int[,] dp = new int[n + 1, m + 1];
-            int maxLength = 0;
-            int endIndex = -1;
-
-            for (int i = 1; i <= n; i++)
+            MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<float>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<float>()));
+            try
             {
-                for (int j = 1; j <= m; j++)
+                if (arr1 == null || arr2 == null || arr1.Length == 0 || arr2.Length == 0)
                 {
-                    if (Math.Abs(arr1[i - 1] - arr2[j - 1]) <= EPS)
+                    result = (0, -1);
+                    return result;
+                }
+
+                const double EPS = 1e-6; // tolerance for float comparison
+                int n = arr1.Length;
+                int m = arr2.Length;
+                int[,] dp = new int[n + 1, m + 1];
+                int maxLength = 0;
+                int endIndex = -1;
+
+                for (int i = 1; i <= n; i++)
+                {
+                    for (int j = 1; j <= m; j++)
                     {
-                        dp[i, j] = dp[i - 1, j - 1] + 1;
-                        if (dp[i, j] > maxLength)
+                        if (Math.Abs(arr1[i - 1] - arr2[j - 1]) <= EPS)
                         {
-                            maxLength = dp[i, j];
-                            endIndex = j - 1;
+                            dp[i, j] = dp[i - 1, j - 1] + 1;
+                            if (dp[i, j] > maxLength)
+                            {
+                                maxLength = dp[i, j];
+                                endIndex = j - 1;
+                            }
+                        }
+                        else
+                        {
+                            dp[i, j] = 0;
                         }
                     }
-                    else
-                    {
-                        dp[i, j] = 0;
-                    }
                 }
-            }
 
-            int startIndex = (maxLength > 0) ? (endIndex - maxLength + 1) : -1;
-            int notesCount = (maxLength > 0) ? (maxLength + 1) : 0;
-            return (notesCount, startIndex);
+                int startIndex = (maxLength > 0) ? (endIndex - maxLength + 1) : -1;
+                int notesCount = (maxLength > 0) ? (maxLength + 1) : 0;
+                result = (notesCount, startIndex);
+                return result;
+            }
+            finally
+            {
+                sw.Stop();
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"Algorythm.LongestCommonSubstring(float[]) elapsed: {sw.ElapsedMilliseconds} ms");
+                Console.ResetColor();
+            }
         }
-            
+
+        //================== Longest Common Subsequence with Gap =================//
+        // Повертає (довжина послідовності нот, індекси у першому масиві, індекси у другому масиві)
+        // gap - максимальна кількість пропущених елементів у другому масиві між послідовними співпадіннями
         public static (int length, List<int> indicesInFirst, List<int> indicesInSecond) LongestCommonSubsequence(int[] arr1, int[] arr2, int gap)
         {
-            int m = arr1.Length;
-            int n = arr2.Length;
+            var sw = Stopwatch.StartNew();
+            (int length, List<int> indicesInFirst, List<int> indicesInSecond) result = (0, new List<int>(), new List<int>());
 
-            // Ми будемо робити жадібний пошук всіх можливих послідовностей, що починаються з будь-якої пари співпадіння
-            int bestLen = 0;
-            List<int> bestI = new List<int>();
-            List<int> bestJ = new List<int>();
-
-            for (int iStart = 0; iStart < m; iStart++)
+            MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<int>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<int>()));
+            try
             {
-                for (int jStart = 0; jStart < n; jStart++)
+                if (arr1 == null || arr2 == null || arr1.Length == 0 || arr2.Length == 0)
                 {
-                    if (arr1[iStart] != arr2[jStart])
-                        continue;
+                    return result;
+                }
 
-                    var curI = new List<int> { iStart };
-                    var curJ = new List<int> { jStart };
-                    int prevJ = jStart;
+                int m = arr1.Length;
+                int n = arr2.Length;
 
-                    // Пробігаємо наступні індекси arr1 (можемо пропускати елементи arr1)
-                    for (int i = iStart + 1; i < m; i++)
+                // Ми будемо робити жадібний пошук всіх можливих послідовностей, що починаються з будь-якої пари співпадіння
+                int bestLen = 0;
+                List<int> bestI = new List<int>();
+                List<int> bestJ = new List<int>();
+
+                for (int iStart = 0; iStart < m; iStart++)
+                {
+                    for (int jStart = 0; jStart < n; jStart++)
                     {
-                        // допустимий інтервал пошуку в arr2: від prevJ+1 до prevJ + gap +1
-                        int limit = Math.Min(n - 1, prevJ + gap + 1);
-                        bool found = false;
-                        for (int jj = prevJ + 1; jj <= limit; jj++)
+                        if (arr1[iStart] != arr2[jStart])
+                            continue;
+
+                        var curI = new List<int> { iStart };
+                        var curJ = new List<int> { jStart };
+                        int prevJ = jStart;
+
+                        // Пробігаємо наступні індекси arr1 (можемо пропускати елементи arr1)
+                        for (int i = iStart + 1; i < m; i++)
                         {
-                            if (arr2[jj] == arr1[i])
+                            // допустимий інтервал пошуку в arr2: від prevJ+1 до prevJ + gap +1
+                            int limit = Math.Min(n - 1, prevJ + gap + 1);
+                            bool found = false;
+                            for (int jj = prevJ + 1; jj <= limit; jj++)
                             {
-                                curI.Add(i);
-                                curJ.Add(jj);
-                                prevJ = jj;
-                                found = true;
+                                if (arr2[jj] == arr1[i])
+                                {
+                                    curI.Add(i);
+                                    curJ.Add(jj);
+                                    prevJ = jj;
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found)
+                            {
+                                // якщо наступний співпад не знайдено в межах гепа, послідовність вважається завершеною
                                 break;
                             }
                         }
 
-                        if (!found)
+                        if (curI.Count > bestLen)
                         {
-                            // якщо наступний співпад не знайдено в межах гепа, послідовність вважається завершеною
-                            break;
+                            bestLen = curI.Count;
+                            bestI = new List<int>(curI);
+                            bestJ = new List<int>(curJ);
                         }
                     }
-
-                    if (curI.Count > bestLen)
-                    {
-                        bestLen = curI.Count;
-                        bestI = new List<int>(curI);
-                        bestJ = new List<int>(curJ);
-                    }
                 }
-            }
 
-            // Друк для діагностики
-            Console.Write($"\nmatches (arr1Index:arr2Index value) with gap={gap}: ");
-            for (var k = 0; k < bestI.Count; k++)
-            {
-                Console.Write($"{bestI[k]}:{bestJ[k]} {arr1[bestI[k]]}/{arr2[bestJ[k]]} ");
-            }
-            Console.WriteLine();
-
-            return (bestLen, bestI, bestJ);
-        }
-
-        private static void LogInput(int[] arr1, int[] arr2)
-        {
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine("SimilarByIntervalsWithGap Indices starts:");
-            for (int i = 0; i < arr1.Length; i++) Console.Write(arr1[i] + " ");
-            Console.Write(" vs ");
-            for (int i = 0; i < arr2.Length; i++) Console.Write(arr2[i] + " ");
-        }
-
-        // New --- moved helpers so Pages/Melodies/Search.cshtml.cs can call them directly:
-        public static (int length, int position, List<(int i1, int i2)> pairs) FindLongestSubstringMatch(int[] patternShape, int[] melodyShape)
-        {
-            // Use existing SimilarByIntervals which returns (notesCount, startIndex)
-            var (notesCount, startIndex) = LongestCommonSubstring(patternShape, melodyShape);
-            var pairs = new List<(int i1, int i2)>();
-            if (notesCount > 0 && startIndex >= 0)
-            {
-                for (int k = 0; k < notesCount; k++)
-                    pairs.Add((startIndex + k, k));
-            }
-            return (notesCount, startIndex, pairs);
-        }
-
-        public static (int len, int pos, List<(int i1, int i2)> pairs) FindLongestSubstringMatch(float[] patternShape, float[] melodyShape)
-        {
-            // Call canonical Algorythm implementation to get (length, startIndex)
-            var result = LongestCommonSubstring(patternShape, melodyShape);
-            int notesCount = result.length;
-            int startIndex = result.startIndex;
-
-            var pairs = new List<(int i1, int i2)>();
-            if (notesCount > 0 && startIndex >= 0)
-            {
-                for (int k = 0; k < notesCount; k++)
-                    pairs.Add((startIndex + k, k));
-            }
-
-            return (notesCount, startIndex, pairs);
-        }
-        public static (int length, int position, List<(int i1, int i2)> pairs, int bestShift) FindBestSubsequenceMatch(int[] melodyNotes, int[] patternNotes, int maxGap)
-        {
-            int clamped = Math.Clamp(maxGap, 1, 3);
-            int bestLen = 0;
-            int bestPos = -1;
-            int bestShift = 0;
-            List<(int i1, int i2)> bestPairsForMelody = new();
-
-            // Перебираємо усі 12 транспозицій (півтонів)
-            for (int shift = 0; shift < Globals.NotesInOctave; shift++)
-            {
-                var transposedPattern = patternNotes.Select(p => (p + shift) % Globals.NotesInOctave).ToArray();
-
-                LogInput(transposedPattern, melodyNotes);
-                var (lcsTotalLen, idxFirstAll, idxSecondAll) = LongestCommonSubsequence(melodyNotes, transposedPattern, maxGap);
-                if (idxSecondAll == null || idxSecondAll.Count == 0) continue;
-
-                // Побудова всіх "кластерів" збігів, де розриви в обох масивах <= clamped.
-                // Обираємо найдовший кластер. При рівній довжині зберігаємо перший знайдений (найраніший).
-                var curFirst = new List<int>();
-                var curSecond = new List<int>();
-
-                void FinalizeCluster()
+                // Друк для діагностики
+                Console.Write($"\nmatches (arr1Index:arr2Index value) with gap={gap}: ");
+                for (var k = 0; k < bestI.Count; k++)
                 {
-                    if (curFirst.Count == 0) return;
-
-                    int curLen = curFirst.Count;
-                    if (curLen > bestLen)
-                    {
-                        bestLen = curLen;
-                        bestPos = curFirst[0];
-                        bestShift = shift;
-
-                        bestPairsForMelody = new List<(int i1, int i2)>();
-                        for (int t = 0; t < curFirst.Count; t++)
-                            bestPairsForMelody.Add((curFirst[t], curSecond[t]));
-                    }
+                    Console.Write($"{bestI[k]}:{bestJ[k]} {arr1[bestI[k]]}/{arr2[bestJ[k]]} ");
                 }
+                Console.WriteLine();
 
-                for (int k = 0; k < idxSecondAll.Count; k++)
-                {
-                    if (curFirst.Count == 0)
-                    {
-                        curFirst.Add(idxFirstAll[k]);
-                        curSecond.Add(idxSecondAll[k]);
-                        continue;
-                    }
-
-                    int gapSecond = idxSecondAll[k] - curSecond[^1] - 1;
-                    int gapFirst  = idxFirstAll[k]  - curFirst[^1]  - 1;
-
-                    if (gapSecond <= clamped && gapFirst <= clamped)
-                    {
-                        curFirst.Add(idxFirstAll[k]);
-                        curSecond.Add(idxSecondAll[k]);
-                    }
-                    else
-                    {
-                        // Закриваємо поточний кластер і починаємо новий з поточного елемента
-                        FinalizeCluster();
-                        curFirst.Clear(); curSecond.Clear();
-                        curFirst.Add(idxFirstAll[k]);
-                        curSecond.Add(idxSecondAll[k]);
-                    }
-                }
-
-                // фіналізуємо останній відкритий кластер
-                FinalizeCluster();
-
-                // ранній вихід, якщо знайдено повний збіг довжини патерна
-                if (bestLen >= patternNotes.Length) break;
+                result = (bestLen, bestI, bestJ);
+                return result;
             }
+            finally
+            {
+                sw.Stop();
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"Algorythm.LongestCommonSubsequence(int[]) elapsed: {sw.ElapsedMilliseconds} ms");
+                Console.ResetColor();
+            }
+        }
 
-            return (bestLen, bestPos, bestPairsForMelody, bestShift);
+        // public wrapper with default tolerance so callers can call without eps
+        public static (int length, List<int> indicesInFirst, List<int> indicesInSecond) LongestCommonSubsequence(float[] arr1, float[] arr2, int gap)
+        {
+            var sw = Stopwatch.StartNew();
+            try
+            {
+                const double DEFAULT_EPS = 1e-3; // adjust precision if needed
+                return LongestCommonSubsequence(arr1, arr2, gap, DEFAULT_EPS);
+            }
+            finally
+            {
+                sw.Stop();
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"Algorythm.LongestCommonSubsequence(float[] wrapper) elapsed: {sw.ElapsedMilliseconds} ms");
+                Console.ResetColor();
+            }
+        }
+
+        // Add missing float overload that accepts eps tolerance
+        public static (int length, List<int> indicesInFirst, List<int> indicesInSecond) LongestCommonSubsequence(float[] arr1, float[] arr2, int gap, double eps)
+        {
+            var sw = Stopwatch.StartNew();
+            (int length, List<int> indicesInFirst, List<int> indicesInSecond) result = (0, new List<int>(), new List<int>());
+
+            MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<float>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<float>()));
+            try
+            {
+                if (arr1 == null || arr2 == null || arr1.Length == 0 || arr2.Length == 0)
+                    return result;
+
+                int m = arr1.Length;
+                int n = arr2.Length;
+
+                int bestLen = 0;
+                List<int> bestI = new List<int>();
+                List<int> bestJ = new List<int>();
+
+                for (int iStart = 0; iStart < m; iStart++)
+                {
+                    for (int jStart = 0; jStart < n; jStart++)
+                    {
+                        if (Math.Abs(arr1[iStart] - arr2[jStart]) > eps)
+                            continue;
+
+                        var curI = new List<int> { iStart };
+                        var curJ = new List<int> { jStart };
+                        int prevJ = jStart;
+
+                        for (int i = iStart + 1; i < m; i++)
+                        {
+                            int limit = Math.Min(n - 1, prevJ + gap + 1);
+                            bool found = false;
+                            for (int jj = prevJ + 1; jj <= limit; jj++)
+                            {
+                                if (Math.Abs(arr2[jj] - arr1[i]) <= eps)
+                                {
+                                    curI.Add(i);
+                                    curJ.Add(jj);
+                                    prevJ = jj;
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found)
+                                break;
+                        }
+
+                        if (curI.Count > bestLen)
+                        {
+                            bestLen = curI.Count;
+                            bestI = new List<int>(curI);
+                            bestJ = new List<int>(curJ);
+                        }
+                    }
+                }
+
+                // Diagnostics
+                Console.Write($"\nmatches (arr1Index:arr2Index value) with gap={gap}: ");
+                for (var k = 0; k < bestI.Count; k++)
+                {
+                    Console.Write($"{bestI[k]}:{bestJ[k]} {arr1[bestI[k]]}/{arr2[bestJ[k]]} ");
+                }
+                Console.WriteLine();
+
+                result = (bestLen, bestI, bestJ);
+                return result;
+            }
+            finally
+            {
+                sw.Stop();
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"Algorythm.LongestCommonSubsequence(float[], eps) elapsed: {sw.ElapsedMilliseconds} ms");
+                Console.ResetColor();
+            }
+        }
+
+        public static (int len, int pos, List<(int i1, int i2)> pairs) FindCommonSubstringByIntervalAndDuration(int[] arr1, int[] arr2, float[] float1, float[] float2, double eps = 1e-3)
+        {
+            var sw = Stopwatch.StartNew();
+            (int len, int pos, List<(int i1, int i2)> pairs) result = (0, -1, new List<(int i1, int i2)>());
+
+            MessageL(7, " arr1: " + string.Join(", ", arr1 ?? Array.Empty<int>()) + ",\narr2: " + string.Join(", ", arr2 ?? Array.Empty<int>()) + ",\nfloat1: " + string.Join(", ", float1 ?? Array.Empty<float>()) + ",\nfloat2: " + string.Join(", ", float2 ?? Array.Empty<float>()));
+            try
+            {
+                // Validate
+                if (arr1 == null || arr2 == null || float1 == null || float2 == null)
+                    return result;
+                if (arr1.Length == 0 || arr2.Length == 0 || float1.Length == 0 || float2.Length == 0)
+                    return result;
+
+                int n = arr1.Length;
+                int m = arr2.Length;
+
+                // DP for longest common contiguous substring over intervals where durations also match
+                var dp = new int[n + 1, m + 1];
+                int maxLenIntervals = 0;
+                int endIndexInMelody = -1;
+
+                for (int i = 1; i <= n; i++)
+                {
+                    for (int j = 1; j <= m; j++)
+                    {
+                        bool intervalsEqual = arr1[i - 1] == arr2[j - 1];
+                        bool durationsEqual = false;
+
+                        // Compare the second-note durations in each interval-pair (as in original logic)
+                        float patDur = float1.Length > i ? float1[i] : float.NaN;
+                        float melDur = float2.Length > j ? float2[j] : float.NaN;
+                        durationsEqual = !(float.IsNaN(patDur) || float.IsNaN(melDur)) && Math.Abs(patDur - melDur) <= eps;
+
+                        if (intervalsEqual && durationsEqual)
+                        {
+                            dp[i, j] = dp[i - 1, j - 1] + 1;
+                            if (dp[i, j] > maxLenIntervals)
+                            {
+                                maxLenIntervals = dp[i, j];
+                                endIndexInMelody = j - 1;
+                            }
+                        }
+                        else
+                        {
+                            dp[i, j] = 0;
+                        }
+                    }
+                }
+
+                if (maxLenIntervals == 0)
+                    return result;
+
+                // Convert interval-run len to notes count (intervals + 1)
+                int len = maxLenIntervals + 1;
+                int startIntervalIndex = endIndexInMelody - maxLenIntervals + 1;
+                int pos = startIntervalIndex;
+
+                var pairs = new List<(int i1, int i2)>();
+                for (int k = 0; k < len; k++)
+                    pairs.Add((pos + k, k));
+
+                result = (len, pos, pairs);
+                return result;
+            }
+            finally
+            {
+                sw.Stop();
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"Algorythm.FindCommonSubstringByIntervalAndDuration elapsed: {sw.ElapsedMilliseconds} ms");
+                Console.ResetColor();
+            }
+        }
+
+        //================== Public API Methods =================//
+        // Повертає (довжина збігу, початковий індекс у другому масиві, пари індексів)
+        public static (int length, int position, List<(int i1, int i2)> pairs) FindLongestSubstringMatch(int[] arr1, int[] arr2)
+        {
+            var sw = Stopwatch.StartNew();
+            try
+            {
+                var (len, pos) = LongestCommonSubstring(arr1, arr2);
+                List<(int i1, int i2)> pairs = GetPairs(len, pos);
+                return (len, pos, pairs);
+            }
+            finally
+            {
+                sw.Stop();
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"Algorythm.FindLongestSubstringMatch(int[]) elapsed: {sw.ElapsedMilliseconds} ms");
+                Console.ResetColor();
+            }
         }
 
 
-        
-        
+        public static (int len, int pos, List<(int i1, int i2)> pairs) FindLongestSubstringMatch(float[] arr1, float[] arr2)
+        {
+            var sw = Stopwatch.StartNew();
+            try
+            {
+                var (len, pos) = LongestCommonSubstring(arr1, arr2);
+                var pairs = GetPairs(len, pos);
+                return (len, pos, pairs);
+            }
+            finally
+            {
+                sw.Stop();
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"Algorythm.FindLongestSubstringMatch(float[]) elapsed: {sw.ElapsedMilliseconds} ms");
+                Console.ResetColor();
+            }
+        }
+
+        private static List<(int i1, int i2)> GetPairs(int notesCount, int startIndex)
+        {
+            var sw = Stopwatch.StartNew();
+            try
+            {
+                var pairs = new List<(int i1, int i2)>();
+                if (notesCount > 0 && startIndex >= 0)
+                {
+                    for (int k = 0; k < notesCount; k++)
+                        pairs.Add((startIndex + k, k));
+                }
+
+                return pairs;
+            }
+            finally
+            {
+                sw.Stop();
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"Algorythm.GetPairs elapsed: {sw.ElapsedMilliseconds} ms");
+                Console.ResetColor();
+            }
+        }
     }
 }
+
+

@@ -59,7 +59,7 @@
 
     <!--ПРАВОРУЧ-->
     <div class="notesearchrightcontainer">
-        <!--КНОПКИ УПРАВЛІННЯ І Нотний рядок-->
+        <!--КНОПКИ УПРАВЛІННЯ, Нотний рядок і кнопка "Пошук"-->
         @await Html.PartialAsync("_pianoDisplay")
 
         <!--режим пошуку-->
@@ -80,6 +80,14 @@
                        class="form-range ms-2" style="width:120px" form="notesearchForm" name="MaxGap"
                        disabled="@((Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true) ? null : "disabled")" />
                 <span class="small ms-1 @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? null : "text-muted")">gap: <span id="lcsGapVal">@Model.MaxGap</span></span>
+            </div>
+            <div class="form-check d-flex align-items-center gap-2">                                
+                <input asp-for="IfIntonation" class="form-check-input" id="ifIntonation" form="notesearchForm" checked="checked" />
+                <label class="form-check-label" for="ifIntonation">Мелодичний малюнок</label>
+            </div>
+            <div class="form-check d-flex align-items-center gap-2">                
+                <input asp-for="IfRhythm" class="form-check-input" id="ifRhythm" form="notesearchForm" />
+                <label class="form-check-label" for="ifRhythm">Ритм</label>
             </div>
         </div>
 
@@ -401,7 +409,7 @@
                                 <span>Файл не доступний</span>
                             }
                         </td>
-
+                        <!-- редагувати/вилучити -->
                         <td class="col-actions">
                             <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
                             <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
