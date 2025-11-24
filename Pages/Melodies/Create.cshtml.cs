@@ -58,8 +58,9 @@ namespace Melodies25.Pages.Melodies
         {
             _context = context;
             _environment = environment;
-            isPrivileged = User?.Identity?.IsAuthenticated == true
-                                && (User.IsInRole("Admin") || User.IsInRole("Moderator"));
+            // do not evaluate roles here — User is not populated reliably in constructor
+            // isPrivileged = User?.Identity?.IsAuthenticated == true
+            //                     && (User.IsInRole("Admin") || User.IsInRole("Moderator"));
         }
 
         public IActionResult OnGet(int selectedAuthorId)
@@ -194,9 +195,6 @@ namespace Melodies25.Pages.Melodies
             }
         }
 
-
-
-
         //читання нотного рядку відбувається по одній ноті у конструкторі Note(string input) 
         private void BuildPattern(MusicMelody MelodyPattern)
         {
@@ -284,23 +282,46 @@ namespace Melodies25.Pages.Melodies
             Directory.CreateDirectory(publishedDir);
 
 
+            // determine privilege at request time (do not rely on constructor)
+            bool isPrivileged = User?.Identity?.IsAuthenticated == true
+                                && (User.IsInRole("Admin") || User.IsInRole("Moderator"));
+
+            string savedMidifilePath = string.Empty;
+            string savedFileName = string.Empty;
+
             //ЯКЩО ФАЙЛ ЗАВАНТАЖЕНО ЧЕРЕЗ ФОРМУ
             
             if (fileupload is not null)
             {
                 //складаємо ім'я файлу
                 string newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
-                Melody.FilePath = newfilename; //назву MIDI файлу фіксуємо
+                Melody.FilePath = newfilename; //назву MIDI файлу фіксуємо (назва для DB/JSON)
 
                 MessageL(COLORS.green, $"try to process uploaded file {newfilename}");
 
+                // choose destination based on role: privileged -> published, others -> incoming
+                var destDir = isPrivileged ? publishedDir : incomingDir;
+                var midifilePath = Path.Combine(destDir, newfilename);
 
-                // Записуємо файл з uploadPath на сервер
-                var midifilePath = Path.Combine(incomingDir, newfilename);
+                // ensure unique name in destination
+                var baseName = Path.GetFileNameWithoutExtension(newfilename);
+                var ext = Path.GetExtension(newfilename);
+                int k = 0;
+                while (System.IO.File.Exists(midifilePath))
+                {
+                    k++;
+                    var candidate = $"{baseName}_{k}{ext}";
+                    midifilePath = Path.Combine(destDir, candidate);
+                    Melody.FilePath = Path.GetFileName(midifilePath);
+                }
+
                 using (var stream = new FileStream(midifilePath, FileMode.Create))
                 {
                     await fileupload.CopyToAsync(stream);
                 }
+
+                savedMidifilePath = midifilePath;
+                savedFileName = Path.GetFileName(midifilePath);
 
                 // встановлюємо тональність, якщо її не вказано
                 if (string.IsNullOrWhiteSpace(Melody.Tonality))
@@ -335,11 +356,8 @@ namespace Melodies25.Pages.Melodies
                     Melody.IsFileEligible = false;
                 }
 
-                // СПОІВЩЕННЯ НА ТЕЛЕГРАМ 
-
-
-                await NotifyTelegram(newfilename);
-
+                // СПОВІЩЕННЯ НА ТЕЛЕГРАМ 
+                await NotifyTelegram(savedFileName);
             }
 
             // ЯКЩО ФАЙЛ СТВОРЕНО НА ВІРТУАЛЬНІЙ КЛАВІАТУРІ САЙТУ
@@ -348,16 +366,20 @@ namespace Melodies25.Pages.Melodies
 
                 string newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
 
-                string midifilePath = Path.Combine(incomingDir, publishedDir);
-                if (!isPrivileged) midifilePath = Path.Combine(incomingDir, newfilename);
+                // destination depends on role
+                var destDir = isPrivileged ? publishedDir : incomingDir;
+                var midifilePath = Path.Combine(destDir, newfilename);
 
-                
+                // ensure unique filename
+                var baseName = Path.GetFileNameWithoutExtension(newfilename);
+                var ext = Path.GetExtension(newfilename);
                 int i = 0;
                 while (System.IO.File.Exists(midifilePath))
                 {
-                    newfilename += (i + 1).ToString();
-                    midifilePath += (i + 1).ToString();
-                    MessageL(COLORS.yellow, "file exists, filename modified");
+                    i++;
+                    var candidate = $"{baseName}_{i}{ext}";
+                    midifilePath = Path.Combine(destDir, candidate);
+                    newfilename = Path.GetFileName(midifilePath);
                 }
 
                 MessageL(COLORS.green, $"try to move file {TempMidiFilePath} to {midifilePath}");
@@ -367,11 +389,14 @@ namespace Melodies25.Pages.Melodies
                     await PrepareMp3Async(_environment, midifilePath, false);
                     Melody.IsFileEligible = true;
                     ViewData["Message"] = "Файл успішно завантажено!";
-                    Melody.FilePath = newfilename;
+                    Melody.FilePath = Path.GetFileName(midifilePath);
                     GrayMessageL($"файл завантажено!");
 
-                    // СПОІВЩЕННЯ НА ТЕЛЕГРАМ 
-                    await NotifyTelegram(newfilename);
+                    savedMidifilePath = midifilePath;
+                    savedFileName = Path.GetFileName(midifilePath);
+
+                    // СПОВІЩЕННЯ НА ТЕЛЕГРАМ 
+                    await NotifyTelegram(savedFileName);
 
                 }
                 catch (IOException ex)
@@ -391,7 +416,11 @@ namespace Melodies25.Pages.Melodies
 
             // ЗБЕРЕЖЕННЯ У БД ДЛЯ АДМІНІВ ТА МОДЕРАТОРІВ
             if (isPrivileged)
-            {                
+            {
+                // ensure FilePath contains only filename
+                if (!string.IsNullOrEmpty(savedFileName))
+                    Melody.FilePath = savedFileName;
+
                 _context.Melody.Add(Melody);
                 await _context.SaveChangesAsync();
                 var recentmelody = await _context.Melody.FirstOrDefaultAsync(m => m.Title == Melody.Title && m.Author == Melody.Author);
@@ -491,7 +520,7 @@ namespace Melodies25.Pages.Melodies
 
         private static async Task NotifyTelegram(string newfilename)
         {
-            // СПОІВЩЕННЯ НА ТЕЛЕГРАМ 
+            // СПОВІЩЕННЯ НА ТЕЛЕГРАМ 
             try
             {
                 var telegramService = new TelegramService();

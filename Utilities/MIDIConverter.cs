@@ -157,76 +157,71 @@ namespace Music
         // трансформує MIDI файл у список нот у форматі герци-мілісекунди
         public static List<(double frequency, int durationMs)> GetHzMsListFromMidi(MidiFile midiFile)
         {
-            List<(double frequency, int durationMs)> notes = new();
-            Dictionary<int, double> activeNotes = new(); // {NoteNumber, StartTime в мс}
-            if (LoggingManager.ReadMidi)
-                MessageL(COLORS.blue, "starting Hz_Ms list");
-            double starttime = 0;
-            long expectedcurrentticktime = 0;
+            var notes = new List<(double frequency, int durationMs)>();
+
+            if (midiFile == null) return notes;
+
             int ticksPerQuarterNote = midiFile.DeltaTicksPerQuarterNote;
-            double microsecondsPerQuarterNote = 500000; // за замовченням для 120 BPM
+            // default tempo = 120 BPM -> 500000 microseconds per quarter
+            double microsecondsPerQuarterNote = 500000;
             double ticksToMsFactor = microsecondsPerQuarterNote / (ticksPerQuarterNote * 1000.0);
 
+            // Collect all events from all tracks and sort by AbsoluteTime
+            var allEvents = new List<MidiEvent>();
             foreach (var track in midiFile.Events)
             {
-                foreach (var midiEvent in track)
+                allEvents.AddRange(track);
+            }
+            allEvents.Sort((a, b) => a.AbsoluteTime.CompareTo(b.AbsoluteTime));
+
+            long lastAbsTime = 0;
+            // map {noteNumber -> startAbsTick}
+            var activeNotes = new Dictionary<int, long>();
+
+            foreach (var ev in allEvents)
+            {
+                // update tempo if present (recompute ticksToMsFactor)
+                if (ev is TempoEvent tempoEvent)
                 {
-                    if (midiEvent is TempoEvent tempoEvent)
+                    double tempoBpm;
+                    SetupTempo(ticksPerQuarterNote, out microsecondsPerQuarterNote, out ticksToMsFactor, tempoEvent, out tempoBpm);
+                }
+
+                // if there is a gap between lastAbsTime and current event absolute time -> add pause
+                if (ev.AbsoluteTime > lastAbsTime)
+                {
+                    long gapTicks = ev.AbsoluteTime - lastAbsTime;
+                    int gapMs = (int)Math.Round(gapTicks * ticksToMsFactor);
+                    if (gapMs > 0)
                     {
-                        double tempoBPM;
-                        SetupTempo(ticksPerQuarterNote, out microsecondsPerQuarterNote, out ticksToMsFactor, tempoEvent, out tempoBPM);
-                        LogTempo(microsecondsPerQuarterNote, ticksToMsFactor, tempoBPM);
+                        notes.Add((0.0, gapMs));
                     }
-                    if (midiEvent is NoteEvent ne)
+                    lastAbsTime = ev.AbsoluteTime;
+                }
+
+                if (ev is NoteEvent ne)
+                {
+                    if (IfNoteOn(ne))
                     {
-                        //Console.WriteLine($"Analyzing event {ne.NoteNumber} {ne.CommandCode} {ne.Velocity}");
-
-                        if (IfNoteOn(ne))
+                        // record start tick for this note
+                        activeNotes[ne.NoteNumber] = ev.AbsoluteTime;
+                    }
+                    else if (IfNoteOff(ne))
+                    {
+                        if (activeNotes.TryGetValue(ne.NoteNumber, out long startTick))
                         {
-
-                            activeNotes[ne.NoteNumber] = starttime;
-
-                            //Console.WriteLine($"\tNote On fact currentTime = {midiEvent.AbsoluteTime} vs expected {expectedcurrentticktime}");
-
-                            if (midiEvent.AbsoluteTime > expectedcurrentticktime)
-                            {
-                                var pauseTickTime = midiEvent.AbsoluteTime - expectedcurrentticktime;
-                                double pauseDurationMs = pauseTickTime * ticksToMsFactor;
-                                notes.Add((0, (int)pauseDurationMs)); // Додаємо паузу
-                                expectedcurrentticktime += pauseTickTime;
-                            }
-                        }
-                        else if (IfNoteOff(ne))
-                        {
-                            //Console.WriteLine($"\tNote Off {ne.NoteNumber}");
-                            if (activeNotes.TryGetValue(ne.NoteNumber, out double startTimeMs))
-                            {
-                                double durationMs = midiEvent.DeltaTime * ticksToMsFactor;
-                                expectedcurrentticktime += midiEvent.DeltaTime;
-
-                                double frequency = NoteToFrequency(ne.NoteNumber);
-
-                                activeNotes.Remove(ne.NoteNumber);
-
-                                notes.Add((frequency, (int)durationMs));
-
-                            }
+                            long durationTicks = ev.AbsoluteTime - startTick;
+                            int durationMs = (int)Math.Round(durationTicks * ticksToMsFactor);
+                            double frequency = NoteToFrequency(ne.NoteNumber);
+                            notes.Add((frequency, Math.Max(1, durationMs)));
+                            activeNotes.Remove(ne.NoteNumber);
                         }
                     }
-
                 }
             }
 
-
-            notes.Add((0, 500));//для уникнення різкого обриву звучання в кінці додаємо тишу
-
-
-            //Console.WriteLine("result:");
-            foreach (var note in notes)
-            {
-               // Console.WriteLine($"{note.frequency} Hz - {note.durationMs} мс.");
-            }
-
+            // trailing silence to avoid abrupt cut
+            notes.Add((0.0, 500));
 
             return notes;
         }

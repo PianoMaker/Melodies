@@ -13,8 +13,8 @@ namespace Melodies25.Services
     public class TemporaryFilesCleanupOptions
     {
         public string RelativePath { get; set; } = "melodies/temporary";
-        public int MaxFileAgeMinutes { get; set; } = 24 * 60;
-        public int IntervalMinutes { get; set; } = 60;
+        public int MaxFileAgeMinutes { get; set; } = 12 * 60;
+        public int IntervalMinutes { get; set; } = 30;
         public string SearchPattern { get; set; } = "*.*";
         public bool Enabled { get; set; } = true;
         public bool DryRun { get; set; } = false;
