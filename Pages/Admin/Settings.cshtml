@@ -26,6 +26,16 @@
         <label asp-for="Logging.DbQueries" class="form-check-label">DB queries</label>
     </div>
 
+    <div class="form-check mt-2">
+        <input asp-for="Logging.CreateAudio" class="form-check-input" />
+        <label asp-for="Logging.CreateAudio" class="form-check-label">Create audio (mp3) from pattern/midi</label>
+    </div>
+
+    <div class="form-check mt-2">
+        <input asp-for="Logging.CompareMidi" class="form-check-input" />
+        <label asp-for="Logging.CompareMidi" class="form-check-label">Compare midi diagnostics</label>
+    </div>
+
     <button type="submit" class="btn btn-primary mt-3">Save</button>
 
     @if (TempData["Saved"] != null)

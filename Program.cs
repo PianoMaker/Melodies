@@ -105,6 +105,9 @@ namespace Melodies25
             app.UseAuthorization();
 
             app.MapRazorPages();
+            
+            // Налаштування логувань
+            Utilities.FileSettingsProvider.Initialize(app.Environment);
 
             app.Run();
         }

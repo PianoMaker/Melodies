@@ -539,7 +539,10 @@ namespace Melodies25.Pages.Melodies
 
                 if (ifeligible)
                 {
-                    MessageL(COLORS.standart, $"генеруємо mp3 з оригінала (не змінюючи його), тимчасові копії всередині PrepareMp3Async");
+                    if (FileSettingsProvider.Logging.CreateAudio)
+                    {
+                        MessageL(COLORS.standart, $"генеруємо mp3 з оригінала (не змінюючи його), тимчасові копії всередині PrepareMp3Async");
+                    }
                     try
                     {
                         // Генерація MP3 на основі оригінального імені файлу (без префіксів)

@@ -332,6 +332,7 @@ namespace Melodies25.Pages.Melodies
             try
             {
                 string mp3Path = Path.Combine(_environment.WebRootPath, "sounds", $"{key}.mp3");
+
                 if (!System.IO.File.Exists(mp3Path))
                     GenerateMp3(note, mp3Path);
                 else Console.WriteLine("using existing file");
@@ -408,6 +409,12 @@ namespace Melodies25.Pages.Melodies
                 try
                 {
                     TempMp3FilePath = PrepareTempName(_environment, ".mp3");
+
+                    if (Utilities.FileSettingsProvider.Logging.CreateAudio)
+                    {
+                        MessageL(COLORS.green, $"CreateAudio: generating preview mp3 at {TempMp3FilePath}");
+                    }
+
                     await GenerateMp3Async(MelodyPattern, TempMp3FilePath);
                     TempMp3FilePath = GetTemporaryPath(TempMp3FilePath);
                 }
@@ -498,6 +505,12 @@ namespace Melodies25.Pages.Melodies
                 string mp3Path = ConvertToMp3Path(path);
                 MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
 
+                // log create-audio if enabled
+                if (Utilities.FileSettingsProvider.Logging.CreateAudio)
+                {
+                    MessageL(COLORS.green, $"CreateAudio: converting midi -> mp3: {path} -> {mp3Path}");
+                }
+
                 GenerateMp3(hzmslist, mp3Path);
                 var relativePath = "/mp3/" + Path.GetFileName(mp3Path);
                 TempData["AudioFile"] = relativePath;
@@ -543,6 +556,13 @@ namespace Melodies25.Pages.Melodies
 
                     await PrepareMp3Async(_environment, TempMidiFilePath, false);
                     TempMp3FilePath = GetTemporaryPath(ConvertToMp3Path(TempMidiFilePath));
+
+                    // log create-audio if enabled
+                    if (Utilities.FileSettingsProvider.Logging.CreateAudio)
+                    {
+                        MessageL(COLORS.green, $"CreateAudio: generated preview mp3 {TempMp3FilePath} for saved temp midi {TempMidiFilePath}");
+                    }
+
                     TempData["HighlightPlayButton"] = true;
                     TempData["Keys"] = Keys;
                 }
@@ -748,6 +768,20 @@ namespace Melodies25.Pages.Melodies
 
                     // centralized logging
                     LogFoundMatch(title, length, position, finalBestPairs);
+
+                    // additional detailed compare logging (controlled by settings)
+                    if (Utilities.FileSettingsProvider.Logging.CompareMidi)
+                    {
+                        var details = new
+                        {
+                            title = title,
+                            length = length,
+                            position = position,
+                            bestshift = bestshift,
+                            pairs = finalBestPairs
+                        };
+                        MessageL(COLORS.cyan, $"CompareMidi: {JsonConvert.SerializeObject(details)}");
+                    }
                 }
             }
 

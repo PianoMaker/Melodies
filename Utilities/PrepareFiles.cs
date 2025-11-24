@@ -99,10 +99,12 @@ namespace Melodies25.Utilities
                 if (File.Exists(workMidiPath))
                 {
                     File.Delete(workMidiPath);
-                    MessageL(COLORS.cyan, "Temporary working copy deleted");
+                    if (FileSettingsProvider.Logging.CreateAudio)
+                        MessageL(COLORS.cyan, "Temporary working copy deleted");
                 }
-
-                MessageL(COLORS.cyan, "PrepareMp3Async finished (original preserved)");
+                if (FileSettingsProvider.Logging.CreateAudio)
+                                    MessageL(COLORS.cyan, "PrepareMp3Async finished (original preserved)");
+                
             }
             catch (Exception ex)
             {
@@ -123,15 +125,18 @@ namespace Melodies25.Utilities
 
             var newFile = new MidiFile(workingMidiPath);
             var hzmslist = GetHzMsListFromMidi(newFile);
-
-            MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
+            if (FileSettingsProvider.Logging.CreateAudio)
+                            MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
+            
             Stopwatch sw = new();
             sw.Start();
 
             await GenerateMp3Async(hzmslist, mp3Path);
 
             sw.Stop();
-            MessageL(COLORS.green, $"File {mp3Path} was generated in {sw.ElapsedMilliseconds} ms");
+            if (FileSettingsProvider.Logging.CreateAudio)
+                            MessageL(COLORS.green, $"File {mp3Path} was generated in {sw.ElapsedMilliseconds} ms");
+           
         }
     }
 }

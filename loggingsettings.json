@@ -1,0 +1,6 @@
+{
+  "AlgorithmDiagnostics": true,
+  "AlgorithmTiming": true,
+  "UIEvents": false,
+  "DbQueries": false
+}

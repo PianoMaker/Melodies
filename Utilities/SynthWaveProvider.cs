@@ -109,7 +109,8 @@ namespace Melodies25.Utilities
                     {
 
                         _adsr.Gate(false);  // Запуск фази релізу
-                        Console.WriteLine($"Release phase started for note {_noteIndex}");
+                        if (FileSettingsProvider.Logging.CreateAudio)
+                            Console.WriteLine($"Release phase started for note {_noteIndex}");
                         _samplesRemaining = durationMs * samplesPerMs; // Задаємо тривалість релізу
                     }
                 }
@@ -121,7 +122,8 @@ namespace Melodies25.Utilities
                         _phaseIncrement = 2 * Math.PI * frequency / _sampleRate;
                         _samplesRemaining = durationMs * samplesPerMs;
                         _adsr.Gate(true);  // Запуск ADSR
-                        MessageL(COLORS.gray, $"Recording note {_noteIndex}: {frequency} Hz, {durationMs} ms");
+                        if (FileSettingsProvider.Logging.CreateAudio)
+                            MessageL(COLORS.gray, $"Recording note {_noteIndex}: {frequency} Hz, {durationMs} ms");
                     }
                 }
 
