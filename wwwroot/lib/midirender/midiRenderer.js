@@ -411,6 +411,19 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
     const measuresWindow = measures.slice(startIdx, startIdx + renderCount);
     console.info(`renderMidiFileToNotation: startIdx=${startIdx}, renderCount=${renderCount}, measuresWindow=${measuresWindow.length}`);
 
+    // For MIDI format 0: trim leading empty measures before the first NoteOn so no empty bars appear before music.
+    const isMidi0 = midiData && (midiData.format === 0 || midiData.format === '0');
+    if (isMidi0) {
+        let trimmedLeading = 0;
+        while (measuresWindow.length > 0 && !hasNoteOn(measuresWindow[0])) {
+            measuresWindow.shift();
+            trimmedLeading++;
+            startIdx++;
+        }
+        if (trimmedLeading > 0) console.info(`renderMidiFileToNotation: trimmed ${trimmedLeading} leading empty measures for MIDI 0`);
+    }
+
+
     // Тримаємо лише ті такти, які містять Note On події
     const measuresToRender = [...measuresWindow];
     while (measuresToRender.length > 0 && !hasNoteOn(measuresToRender[measuresToRender.length - 1])) {

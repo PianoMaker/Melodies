@@ -25,9 +25,9 @@ const reverseDurationMapping = {
     "64": 64
 };
 
-// NOTE: getAllEvents moved to the bottom (after helper meta functions) to avoid referencing MidiMeta before it is defined.
+ // NOTE: getAllEvents moved to the bottom (after helper meta functions) to avoid referencing MidiMeta before it is defined.
 
-// --- Enharmonic support (minimal) ---
+ // --- Enharmonic support (minimal) ---
 let currentKeySignature = 0; // -7..+7 (sf)
 let enharmonicPreference = 'auto'; // 'auto' | 'sharps' | 'flats'
 function setEnharmonicPreference(pref) {
@@ -40,15 +40,15 @@ function setEnharmonicPreference(pref) {
 if (typeof window !== 'undefined') window.setEnharmonicPreference = setEnharmonicPreference;
 
 
-// ---------------------------------------------------------------------
-// ФУНКЦІЯ ДЛЯ ОНОВЛЕННЯ ТОНАЛЬНОСТІ З ПОДІЙ MIDI
-// Використання: updateKeySignatureFromEvents(midiEvents);
-// Повертає об'єкт { sf, mi } або null, якщо подій Key Signature немає
-// sf: -7..+7, mi: 0=major, 1=minor
-// Потрібні глобальні функції: normalizeMetaEvent, decodeKeySignature, isKeySignatureEvent
-// currentKeySignature - глобальна змінна
-// enharmonicPreference - 'auto' | 'sharps' | 'flats'
-// ---------------------------------------------------------------------
+ // ---------------------------------------------------------------------
+ // ФУНКЦІЯ ДЛЯ ОНОВЛЕННЯ ТОНАЛЬНОСТІ З ПОДІЙ MIDI
+ // Використання: updateKeySignatureFromEvents(midiEvents);
+ // Повертає об'єкт { sf, mi } або null, якщо подій Key Signature немає
+ // sf: -7..+7, mi: 0=major, 1=minor
+ // Потрібні глобальні функції: normalizeMetaEvent, decodeKeySignature, isKeySignatureEvent
+ // currentKeySignature - глобальна змінна
+ // enharmonicPreference - 'auto' | 'sharps' | 'flats'
+ // ---------------------------------------------------------------------
 
 function updateKeySignatureFromEvents(events) {
     console.log("FOO: midiparser_ext.js - updateKeySignatureFromEvents");
@@ -573,22 +573,91 @@ if (typeof window !== 'undefined') window.getKeySignature = getKeySignature;
 // Використання: const allEvents = SetEventsAbsoluteTime(midiData);
 // Повертає масив всіх подій з абсолютним часом absTime
 //---------------------------------------------------------------------
+
+/**
+ * Detect whether a parsed midiData object likely represents MIDI Format 0.
+ * Heuristic: explicit format fields or single track array.
+ * @param {object} midiData - parsed MIDI object
+ * @returns {boolean}
+ */
+const isMidiFormat0 = (midiData) => {
+    if (!midiData) return false;
+    // explicit fields some parsers use
+    if (midiData.format === 0 || midiData.format === '0') return true;
+    if (midiData.fileFormat === 0 || midiData.fileFormat === '0') return true;
+    if (midiData.header && (midiData.header.format === 0 || midiData.header.format === '0')) return true;
+    // fallback heuristic: single track => likely format 0
+    if (Array.isArray(midiData.track) && midiData.track.length === 1) return true;
+    return false;
+};
+
 function SetEventsAbsoluteTime(midiData) {
-    console.log("FOO: midiparser_ext.js - SetEventsAbsoluteTime");
-    let allEvents = [];
+    console.log("FOO: midiparser_ext.js - SetEventsAbsoluteTime (format-aware)");
+    const allEvents = [];
+    if (!midiData || !Array.isArray(midiData.track)) return allEvents;
+
+    // Головний біль з форматом MIDI 0: деякі парсери не встановлюють коректно deltaTime для першої події після великого initial delta
+    const isMidi0 = isMidiFormat0(midiData);
+    console.log(`MIDI format 0 detected: ${isMidi0}`);
+
     midiData.track.forEach((track, trackIndex) => {
+        if (!Array.isArray(track.event)) return;
         let absTime = 0;
-        if (Array.isArray(track.event)) {
-            track.event.forEach(event => {
-                absTime += event.deltaTime || 0;
-                allEvents.push({ ...event, absTime, track: trackIndex });
-            });
 
-        }
+        track.event.forEach((event, idx) => {
+
+            // Виявлення неадекватних delta time
+            const deltaAdded = (event && (event.deltaTime ?? event.delta ?? event.deltaTicks ?? event.delta_time)) ?? 0;
+            try { if (event && event.deltaTime === undefined) event.deltaTime = deltaAdded; } catch {}
+
+
+            let deltaToAdd = deltaAdded;
+            if (isMidi0) {
+                const LARGE_DELTA_THRESHOLD = 1000; //
+                const prevAreMeta = idx === 0 ? true : track.event.slice(0, idx).every(e => e && e.type === 0xFF);
+                if (deltaAdded > LARGE_DELTA_THRESHOLD && prevAreMeta) {
+                    deltaToAdd = 0;
+                    console.info(`Clamped large initial delta ${deltaAdded} -> 0 (track ${trackIndex}, idx ${idx})`);
+                }
+            }
+
+            // Accumulate absTime once (use deltaToAdd)
+            absTime += deltaToAdd;
+
+            // Detect NoteOn (type 0x9) with velocity > 0
+            let isNoteOn = false, midiNote = null, velocity = null;
+            if (event && (event.type === 0x9 || event.type === 9)) {
+                if (Array.isArray(event.data) && event.data.length >= 2) {
+                    midiNote = event.data[0];
+                    velocity = event.data[1];
+                } else {
+                    midiNote = event.param1 ?? event.note ?? null;
+                    velocity = event.param2 ?? event.velocity ?? null;
+                }
+                isNoteOn = (typeof velocity === 'number' && velocity > 0);
+            }
+
+            if (isNoteOn) {
+                console.log(`ABSTIME: NoteOn: midi=${midiNote}, absTime=${absTime}, deltaAdded=${deltaAdded}, deltaUsed=${deltaToAdd}, track=${trackIndex}, eventIndex=${idx}`);
+            } else {
+                console.debug('RAW EVENT DIAG', { index: idx, type: event?.type, metaType: event?.metaType, deltaTime: event?.deltaTime, delta: event?.delta, data: event?.data, param1: event?.param1, param2: event?.param2 });
+            }
+
+            allEvents.push({ ...event, absTime, track: trackIndex, __trackIndexEvent: idx });
+        });
     });
-    allEvents.sort((a, b) => a.absTime - b.absTime);
 
-    return allEvents;
+    // Stable sort by absTime, then track, then original order
+    allEvents.sort((a, b) => {
+        if (a.absTime !== b.absTime) return a.absTime - b.absTime;
+        if (a.track !== b.track) return a.track - b.track;
+        return (a.__trackIndexEvent ?? 0) - (b.__trackIndexEvent ?? 0);
+    });
+
+    return allEvents.map(ev => {
+        const { __trackIndexEvent, ...rest } = ev;
+        return rest;
+    });
 }
 
 // Функція для логування подій з детальною інформацією
@@ -861,7 +930,7 @@ function normalizeMetaEvent(ev) {
 
 
 
-// Helper to normalize all meta events in an array (wraps normalizeMetaEvent if available)
+ // Helper to normalize all meta events in an array (wraps normalizeMetaEvent if available)
 function normalizeMetaEvents(events) {
     if (!Array.isArray(events)) return events;
     if (typeof normalizeMetaEvent === 'function') {
@@ -941,7 +1010,7 @@ async function getAllEvents(file) {
 if (typeof window !== 'undefined') window.getAllEvents = getAllEvents;
 
 
-// Рахує кількість NoteOn (velocity > 0) у такті
+ // Рахує кількість NoteOn (velocity > 0) у такті
 function getNumberOfNotes(measure) {
     console.log("FOO: midiparser_ext.js - getNumberOfNotes");
     if (!Array.isArray(measure)) return 0;
@@ -956,7 +1025,7 @@ function getNumberOfNotes(measure) {
 if (typeof window !== 'undefined') window.getNumberOfNotes = getNumberOfNotes;
 
 
-// Розраховує середню ширину такту на основі кількості нот у кожному такті
+ // Розраховує середню ширину такту на основі кількості нот у кожному такті
 function GetMeanBarWidth(BARWIDTH, measures) {
 
     // If measures is not a non-empty array — just return default BARWIDTH without noisy warnings
