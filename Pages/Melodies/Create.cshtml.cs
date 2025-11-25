@@ -12,6 +12,7 @@ using static Melodies25.Utilities.WaveConverter;
 using Microsoft.EntityFrameworkCore;
 using Melody = Melodies25.Models.Melody;
 using System.Text.Json;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 
 namespace Melodies25.Pages.Melodies
 {
@@ -21,6 +22,10 @@ namespace Melodies25.Pages.Melodies
         private readonly Melodies25.Data.Melodies25Context _context;
 
         private readonly IWebHostEnvironment _environment;
+
+        private readonly ILogger<CreateModel> _logger;
+
+        
 
         public int? SelectedAuthorID { get; set; } = default!;
 
@@ -54,13 +59,12 @@ namespace Melodies25.Pages.Melodies
 
         private bool isPrivileged;
 
-        public CreateModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
+        public CreateModel(Data.Melodies25Context context, IWebHostEnvironment environment, ILogger<CreateModel> logger)
         {
             _context = context;
             _environment = environment;
-            // do not evaluate roles here — User is not populated reliably in constructor
-            // isPrivileged = User?.Identity?.IsAuthenticated == true
-            //                     && (User.IsInRole("Admin") || User.IsInRole("Moderator"));
+            _logger = logger;
+            //NewPattern = new MusicMelody();
         }
 
         public IActionResult OnGet(int selectedAuthorId)
@@ -213,7 +217,7 @@ namespace Melodies25.Pages.Melodies
             }
         }
 
-        public async void OnPostAsync(string key)
+        public async Task OnPostAsync(string key)
         {
             //подолання глюку
             MessageL(COLORS.yellow, $"MELODIES/CREATE - OnPostAsync method {key}");
@@ -256,7 +260,7 @@ namespace Melodies25.Pages.Melodies
             {
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
                 {
-                    Console.WriteLine(error.ErrorMessage);
+                    _logger.LogError("MELODIES/CREATE OnPostAsync " + error.ErrorMessage);
                 }
                 //return Page();
             }
@@ -348,6 +352,7 @@ namespace Melodies25.Pages.Melodies
                     catch
                     {
                         ViewData["Message"] = "Не вдалося завантажити файл";
+                        _logger.LogWarning("Failed to load file");
                     }
                 }
                 else
@@ -401,8 +406,7 @@ namespace Melodies25.Pages.Melodies
                 }
                 catch (IOException ex)
                 {
-                    ErrorMessage($"Помилка переміщення файлу: ");
-                    GrayMessageL($"{ex.Message}");
+                    _logger?.LogError($"Помилка переміщення файлу: {ex.Message}");                    
                     TempData["ErrorMessage"] = "Помилка переміщення файлу";
                 }
             }
@@ -455,7 +459,7 @@ namespace Melodies25.Pages.Melodies
             }
         }
 
-        // Save melody metadata and extracted note data as JSON file under wwwroot/json/melodies
+        // Збереження JSON file wwwroot/json/melodies для перевірки модератором
         private async Task SaveMelodyJsonAsync(Melody melody, string addedBy)
         {
             if (melody == null) return;
@@ -490,7 +494,7 @@ namespace Melodies25.Pages.Melodies
             catch (Exception e)
             {
                 // ignore parse errors, still save basic metadata
-                GrayMessageL($"Failed to extract MIDI details for JSON: {e.Message}");
+                _logger?.LogError($"Failed to extract MIDI details for JSON: {e.Message}");
             }
 
             var dto = new
@@ -515,7 +519,8 @@ namespace Melodies25.Pages.Melodies
             var filePath = Path.Combine(incomingDir, fileName);
 
             await System.IO.File.WriteAllTextAsync(filePath, json);
-            GrayMessageL($"Saved melody JSON: {filePath}");
+            _logger?.LogInformation($"Saved melody JSON: {filePath}");
+            
         }
 
         private static async Task NotifyTelegram(string newfilename)
@@ -613,6 +618,13 @@ namespace Melodies25.Pages.Melodies
             return new JsonResult(new { exists });
         }
 
+        public async Task<JsonResult> OnGetCheckAuthorFullAsync(string name, string surname)
+        {
+            Console.WriteLine($"Checking for full author match: name={name}, surname={surname}");
+            bool exists = await _context.Author.AnyAsync(a => a.Name == name && a.Surname == surname);
+            return new JsonResult(new { exists });
+        }
+
 
         public IActionResult OnPostPiano(string key)
         {
@@ -671,8 +683,6 @@ namespace Melodies25.Pages.Melodies
 
     }
 }
-
-
 
 
 
