@@ -353,6 +353,7 @@ function hasNoteOn(measure) {
 
 
 
+
 // ФУНКЦІЯ ВІЗУАЛІЗАЦІЇ MIDI ФАЙЛУ
 // ----------------------
 // Приймає Uint8Array з MIDI файлом, ID елемента для рендерингу, ширину і висоту нотного стану та інші параметри.
@@ -458,7 +459,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
         slicedMap[i] = measureMap[startIdx + i];
     }
 
-    // ВИКОРИСТАТИ ФАКТИЧНУ ШИРИНУ КОНТЕЙНЕРА
+    // ВИКОРИСТАТИ ФАКТИЧНУ ШИРИНУ КОНТЕЙНА
     const MIN_SCORE_WIDTH = Math.max(320, CLEFZONE + BARWIDTH + Xmargin * 2);
 
     const target = document.getElementById(ELEMENT_FOR_RENDERING);
@@ -739,7 +740,13 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
                     }
 
                     // Add rests between previous end and current event (if any)
-                    addRestsBetween(lastNoteOffTime, event, ticksPerBeat, thresholdGap, notes);
+                    if (Object.keys(activeNotes).length === 0) {
+                        // No currently sounding notes — it's safe to add rests between last ended note and this event
+                        addRestsBetween(lastNoteOffTime, event, ticksPerBeat, thresholdGap, notes);
+                    } else {
+                        // There are active (sustained) notes — do not insert rests that would break overlapping voices
+                        console.log(`MR: Skipping addRestsBetween — activeNotes present: ${Object.keys(activeNotes).join(',')}`);
+                    }
                     checkConcide(event, lastNoteOnTime);
 
                     activeNotes[pitch] = event.absTime;
@@ -858,6 +865,7 @@ function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat, clef) {
                     const newRest = createRest(newDuration);
                     if (newRest) {
                         notes[notes.length - 1] = newRest;
+                        console.log(`MR: Rest added (correctExtraNotes - shortened) duration=${newDuration}`);
                         console.log(`Shortened last rest to: ${finalDuration}`);
                     }
                 } else {
@@ -1264,7 +1272,9 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
                 console.warn(`Measure ${index + 1} has no valid notes to render.`);
                 const ticksPerMeasure = currentNumerator * ticksPerBeat * 4 / currentDenominator;
                 const restDurations = getDurationFromTicks(ticksPerMeasure, ticksPerBeat);
-                validNotes.push(createRest(restDurations[0]));
+                const rest = createRest(restDurations[0]);
+                validNotes.push(rest);
+                console.log(`MR: Rest added (drawMeasure - whole measure) duration=${restDurations[0]}`);
             }
 
             // Обчислення ребер нот (beams) з обробкою помилок
@@ -1284,16 +1294,28 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
             voice.addTickables(validNotes);
 
             // Ensure each note is associated with the current stave so VexFlow uses the stave clef/metrics
-            validNotes.forEach((vn, idx) => {
+            // Log for quick diagnostics — show attached absolute start if available
+            const logNoteDiagnostics = (vn, idx) => {
                 try {
                     if (vn && typeof vn.setStave === 'function') {
                         vn.setStave(stave);
                     }
-                    // Log for quick diagnostics
                     const keys = (typeof vn.getKeys === 'function') ? vn.getKeys() : [];
-                    console.log(`MR: note[${idx}] keys=${JSON.stringify(keys)}, stave.clef=${stave.clef || '(unknown)'}`);
+                    const duration = (typeof vn.getDuration === 'function') ? vn.getDuration() : (vn.duration || '');
+                    const isRest = (typeof vn.isRest === 'function' && vn.isRest()) ||
+                        (typeof duration === 'string' && duration.endsWith('r'));
+                    console.log(`MR: note[${idx}] keys=${JSON.stringify(keys)}, duration=${duration}, rest?=${isRest ? 'yes' : 'no'}`);
                 } catch (err) {
-                    console.warn(`MR: Failed to setStave on note[${idx}]`, err);
+                    console.warn(`MR: Failed to setStave or log diagnostics on note[${idx}]`, err);
+                }
+            };
+
+            validNotes.forEach((vn, idx) => {
+                try {
+                    // associate stave and log diagnostics via extracted inner arrow function
+                    logNoteDiagnostics(vn, idx);
+                } catch (err) {
+                    console.warn(`MR: Failed during per-note handling for note[${idx}]`, err);
                 }
             });
 
@@ -1604,7 +1626,7 @@ function addRestsBetween(lastNoteOffTime, event, ticksPerBeat, thresholdGap, not
             : getDurationFromTicks(gapTicks, ticksPerBeat);
         if (gapTicks > thresholdGap) {
             restDurations.forEach((restDuration) => {
-                console.log(`current event abs time ${event.absTime} vs lastNoteOffTime: ${lastNoteOffTime}: rest is needed: ${restDuration}`);
+                console.log(`Rest added: current event abs time ${event.absTime} vs lastNoteOffTime: ${lastNoteOffTime}: rest is needed: ${restDuration}`);
                 notes.push(createRest(restDuration));
             });
         }
@@ -1632,7 +1654,9 @@ function AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime)
         if (relTime > thresholdGap) {
             console.log(`adding a starting rest ${relTime}`);
             restDurations.forEach((restDuration) => {
-                notes.push(createRest(restDuration));
+                const rest = createRest(restDuration);
+                notes.push(rest);
+                console.log(`MR: Rest added (AddStartRest) duration=${restDuration}`);
             });
         }
     } else {
@@ -1645,7 +1669,7 @@ function AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime)
 // Параметри:
 // - durationCode: Код тривалості ноти (наприклад, 'q', 'h', '8', '16r' для паузи).
 //// - key: Висота ноти у форматі VexFlow (наприклад, 'C/4', 'D#/5').
-//// - accidental: Знак альтерації ('#', 'b', 'n') або null.
+// / / - accidental: Знак альтерації ('#', 'b', 'n') або null.
 // Повертає: Об'єкт Vex.Flow.StaveNote або null у разі помилки.
 // ----------------------
 function processNoteElement(durationCode, key, accidental, clef = 'treble') {
@@ -1742,4 +1766,3 @@ function createNote(noteKey, duration, clef = 'treble') {
         return null; // Return null if creation fails
     }
 };
-
