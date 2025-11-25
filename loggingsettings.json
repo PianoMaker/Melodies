@@ -1,0 +1,8 @@
+{
+  "AlgorithmDiagnostics": true,
+  "Comparing": true,
+  "PatternSearch": true,
+  "DbQueries": false,
+  "CreateAudio": false,
+  "CompareMidi": false
+}
