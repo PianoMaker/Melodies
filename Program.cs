@@ -177,6 +177,9 @@ namespace Melodies25
 
             app.MapRazorPages();
 
+            // Initialize logging manager (loads loggingsettings.json if present)
+            Utilities.LoggingManager.Initialize(app.Environment);
+
             app.Run();
         }
     }
