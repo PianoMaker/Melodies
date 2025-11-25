@@ -1,5 +1,6 @@
 using Melodies25.Models;
 using Melodies25.Utilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -8,6 +9,7 @@ using System.Text.Json;
 
 namespace Melodies25.Pages.Experimental
 {
+    [Authorize(Roles = "Admin, Moderator")] // Доступ лише для адміністратора або модератора
     public class IncomingModel : PageModel
     {
 

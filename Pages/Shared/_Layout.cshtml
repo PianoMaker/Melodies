@@ -117,8 +117,8 @@
                         -->                           
                         @if (User.IsInRole("Admin"))
                         {
-                            @* when in Account/Experimental *@
-                            @if (currentPage.Contains("/Account") || currentPage.Contains("/Experimental"))
+                            @* when in Account/Experimental/Admin *@
+                            @if (currentPage.Contains("/Account") || currentPage.Contains("/Experimental") || currentPage.Contains("/Admin"))
                             {
                                 <li class="nav-item melodyitem active">
                                     <a class="nav-link navmelody" style="width:100px" asp-page="/Account/Users">
@@ -143,9 +143,11 @@
             </div>
             
         </nav>
-        @if (currentPage.Contains("/Account") || currentPage.Contains("/Experimental"))
-        @await Html.PartialAsync("_adminMenu")
-        
+        @* show admin menu for Account, Experimental and Admin sections *@
+        @if (currentPage.Contains("/Account") || currentPage.Contains("/Experimental") || currentPage.Contains("/Admin"))
+        {
+            @await Html.PartialAsync("_adminMenu")
+        }
     </header>
     
     <!-- Середина -->
@@ -167,7 +169,7 @@
 
     <!-- Нижня панель -->
     <footer class="border-top footer text-muted">
-        <div class="container-fluid">
+        <div class="container">
             &copy; 2025 - Melodies25 - <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>
     </footer>

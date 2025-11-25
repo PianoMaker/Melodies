@@ -1,10 +1,11 @@
-﻿using static Music.Engine;
-using static System.Console;
-using static System.Convert;
+﻿using Melodies25.Utilities;
+using NAudio.Midi;
+using System.Diagnostics.Metrics;
+using static Music.Engine;
 using static Music.Globals;
 using static Music.Messages;
-using System.Diagnostics.Metrics;
-using NAudio.Midi;
+using static System.Console;
+using static System.Convert;
 
 namespace Music
 {
@@ -518,7 +519,8 @@ namespace Music
             }
             catch (Exception e)
             {
-                ErrorMessage(e.Message);
+                if (LoggingManager.ReadMidi)
+                    ErrorMessage("Failed to set duration: " + e.Message);
             }
         }
 
@@ -532,7 +534,8 @@ namespace Music
             }
             catch (Exception e)
             {
-                ErrorMessage(e.Message);
+                if (LoggingManager.ReadMidi)
+                    ErrorMessage("Failed to set duration: " + e.Message);
             }
 
         }

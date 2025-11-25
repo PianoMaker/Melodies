@@ -1,13 +1,15 @@
 ﻿using Melodies25.Migrations;
+using Melodies25.Utilities;
 using NAudio.CoreAudioApi;
 using NAudio.Midi;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq; // added for Zip()
 using System.Numerics;
+using static Music.Algorythm;
 using static Music.Engine;
 using static Music.Globals;
 using static Music.Messages;
-using static Music.Algorythm;
 
 
 namespace Music
@@ -87,22 +89,25 @@ namespace Music
             get
             {
                 var list = new List<string>();
-                Message(COLORS.gray, "creating NoteList");
-                for (int i = 0; i < Notes.Count; i++)
+                if (LoggingManager.ReadMidi)
+                    Message(COLORS.gray, "creating NoteList");
+                    for (int i = 0; i < Notes.Count; i++)
                 {
                     try
                     {
                         var name = Notes[i].Name;
                         list.Add(name);
-                        //Message(COLORS.gray, name + " ");
+                        if (LoggingManager.ReadMidi)
+                            Message(COLORS.gray, name + " ");
                     }
                     catch
                     {
                         list.Add("?");
-                        ErrorMessage($"unable to read {Notes[i]} ");
+                        if (LoggingManager.ReadMidi)
+                            ErrorMessage($"unable to read {Notes[i]} ");
                     }
-                }
-                MessageL(COLORS.olive, "+");
+                }                
+                //MessageL(COLORS.olive, "+");
                 return list;
             }
         }
@@ -148,7 +153,8 @@ namespace Music
         {
             get
             {
-                MessageL(COLORS.olive, "\ngetting AllNotes list");
+                if (LoggingManager.ReadMidi)
+                    MessageL(COLORS.olive, "\ngetting AllNotes list");
                 string list = "";
                 foreach (var note in Notes)
                 {
@@ -239,97 +245,39 @@ namespace Music
             return Algorythm.LongestCommonSubstring(A, B).length;
         }
 
-        public static (int len, int pos, List<(int i1, int i2)> pairs) FindLongestSubstringMatch(int[] patternShape, int[] melodyShape)
-        {
-            // Delegate to canonical Algorythm implementation to avoid duplication
-            var (length, position, pairs) = Algorythm.FindLongestSubstringMatch(patternShape, melodyShape);
-            return (length, position, pairs ?? new List<(int i1, int i2)>());
-        }
-
-
-        public static (int len, int pos, List<(int i1, int i2)> pairs) FindLongestSubstringMatch(float[] patternShape, float[] melodyShape)
+        public static MelodyMatchResult FindLongestSubstringMatch(int[] patternShape, int[] melodyShape)
         {
 
-            return FindLongestSubstringMatch(patternShape, melodyShape);
-
-        }
-
-        public static (int length, List<int> indicesInFirst, List<int> indicesInSecond) LongestCommonSubsequence(int[] arr1, int[] arr2, int gap)
-        {
-            return LongestCommonSubsequence(arr1, arr2, gap);
-        }
-
-        // Збіг по інтервалах, а не по звуках,
-        // таким чином однакові мелодії в різних тональностях розпінаються як однакові)
-        public int SimilarByIntervals(MusicMelody other)
-        {
-            var notesThis = IntervalList.ToArray();
-            var notesOther = other.IntervalList.ToArray();
-            return LongestCommonSubstring(notesThis, notesOther);
-        }
-
-
-        public static (int len, int pos, List<(int i1, int i2)> pairs) SimilarByIntervals(MusicMelody A, MusicMelody B)
-        {
-            var notesA = A.IntervalList.ToArray();
-            var notesB = B.IntervalList.ToArray();
-            return FindLongestSubstringMatch(notesA, notesB);
-        }
-
-        // Збіг по нотах (однакові мелодії в різних тональностях виглядатимуть як різні)
-        public int SimilarByPitches(MusicMelody other)
-        {
-            var notesThis = Pitches.ToArray();
-            var notesOther = other.Pitches.ToArray();
-            return LongestCommonSubstring(notesThis, notesOther);
-        }
-
-        public static (int len, int pos, List<(int i1, int i2)> pairs) SimilarByPitches(MusicMelody A, MusicMelody B)
-        {
-            var notesA = A.PitchesList.ToArray();
-            var notesB = B.PitchesList.ToArray();
-            return FindLongestSubstringMatch(notesA, notesB);
-        }
-
-        // Збіг за ритмічним малюнком
-        public int SimilarByRythm(MusicMelody other)
-        {
-            var notesThis = RelDurationsList.ToArray();
-            var notesOther = other.RelDurationsList.ToArray();
-            return LongestCommonSubstring(notesThis, notesOther);
-        }
-
-        public static (int len, int pos, List<(int i1, int i2)> pairs) SimilarByRhythm(MusicMelody A, MusicMelody B)
-        {
-            var notesA = A.RelDurationsList.ToArray();
-            var notesB = B.RelDurationsList.ToArray();
-            return FindLongestSubstringMatch(notesA, notesB);
-        }
-
-
-        // Найдовший збіг мелодій в заданій тональності з пропусками,
-        // повертає кількість нот у послідовності
-        public int SimilarByIntervalsWithGap(MusicMelody other, int gap)
-        {
-            var notesThis = IntervalList.ToArray();
-            var notesOther = other.IntervalList.ToArray();
-            var (length, _, _) = LongestCommonSubsequence(notesThis, notesOther, gap);
-            return length;
-        }
-
-        public static (int length, int position, List<(int i1, int i2)> pairs, int bestShift) SimilarByIntervalsWithGap(MusicMelody pattern, MusicMelody melody, int gap)
-        {
-            if (pattern is null || melody is null)
-                return (0, -1, new List<(int i1, int i2)>(), 0);
-
-            // Use absolute pitches for subsequence matching (keeps original behavior)
-            int[] melodyNotes = melody.GetPitches().ToArray();
-            int[] patternNotes = pattern.GetPitches().ToArray();
-
-            // Call canonical algorithm (expects melodyNotes, patternNotes, gap)
-            var result = Music.Algorythm.FindBestSubsequenceMatch(melodyNotes, patternNotes, gap);
+            var match = Algorythm.FindLongestSubstringMatch(patternShape, melodyShape);
+            MelodyMatchResult result = new MelodyMatchResult(match.length, match.position, match.pairs, 0);
             return result;
         }
+
+
+        public static MelodyMatchResult FindLongestSubstringMatch(float[] patternShape, float[] melodyShape)
+        {
+            var match = Algorythm.FindLongestSubstringMatch(patternShape, melodyShape);
+            int pos = match.pairs.Count > 0 ? match.pairs[0].i1 : -1;
+            var pairs = match.pairs;
+            return new MelodyMatchResult(match.len, pos, pairs, 0);
+        }
+
+        public static MelodyMatchResult LongestCommonSubsequence(int[] arr1, int[] arr2, int gap)
+        {
+            var match = Algorythm.LongestCommonSubsequence(arr1, arr2, gap);
+            int pos = match.indicesInFirst.Count > 0 ? match.indicesInFirst[0] : -1;
+            var pairs = match.indicesInFirst.Zip(match.indicesInSecond, (i1, i2) => (i1, i2)).ToList();
+            return new MelodyMatchResult(match.length, pos, pairs, 0);
+        }
+
+        public static MelodyMatchResult LongestCommonSubsequence(float[] arr1, float[] arr2, int gap)
+        {
+            var match = Algorythm.LongestCommonSubsequence(arr1, arr2, gap);
+            int pos = match.indicesInFirst.Count > 0 ? match.indicesInFirst[0] : -1;
+            var pairs = match.indicesInFirst.Zip(match.indicesInSecond, (i1, i2) => (i1, i2)).ToList();
+            return new MelodyMatchResult(match.length, pos, pairs, 0);
+        }
+
 
         public void Enharmonize()
         {//бета-версія
@@ -356,7 +304,8 @@ namespace Music
         private void EnharmonizeToTonality()
         {
             if (Tonality is null) return;
-            MessageL(COLORS.olive, "Enharmonize to tonality");
+            if (LoggingManager.ReadMidi)
+                MessageL(COLORS.olive, "Enharmonize to tonality");
             var scale = Tonality.NotesInTonalityExtended();
             for (int i = 0; i < Size(); i++)
             {
@@ -378,7 +327,11 @@ namespace Music
                     Notes[i + 1].Sharpness - Notes[i].Sharpness >= 0)
                 { Notes[i].EnharmonizeSharp(); count++; }
             }
-            GrayMessageL($"generally enharmonized {count} notes");
+            if (LoggingManager.ReadMidi)
+            {
+                if (LoggingManager.ReadMidi)
+                    GrayMessageL($"generally enharmonized {count} notes");
+            }
         }
 
         //якщо надто дієзна тональність фрагменту
@@ -413,7 +366,8 @@ namespace Music
 
             if (startsharprow > 0 && doublesharpposition >= startsharprow && endsharprow >= doublesharpposition)
             {
-                Console.WriteLine($"Desharp notes from {startsharprow} to {endsharprow}");
+                if (LoggingManager.ReadMidi)
+                    Console.WriteLine($"Desharp notes from {startsharprow} to {endsharprow}");
                 for (int j = startsharprow; j < endsharprow; j++)
                     Notes[j].EnharmonizeFlat();
             }
@@ -430,7 +384,8 @@ namespace Music
 
                 if (Notes[i].Sharpness - Notes[i - 1].Sharpness >= 7 && Notes[i].Sharpness > 0)
                 {
-                    GrayMessageL($"sharp jump at pos. {i}");
+                    if (LoggingManager.ReadMidi)
+                        GrayMessageL($"sharp jump at bestpos. {i}");
                     startposition = i;
                 }
 
@@ -450,17 +405,17 @@ namespace Music
             }
             if (startposition > 0 && endposition > startposition)
             {
-                {
+                if (LoggingManager.ReadMidi)                
                     GrayMessageL($"Desharp (flat) notes from {startposition} to {endposition}");
-                    for (int i = startposition; i <= endposition; i++)
-                    {
+                for (int i = startposition; i <= endposition; i++)
+                {
 
-                        Notes[i].EnharmonizeFlat();
-                    }
-                    DesharpFlatTonalities();
+                    Notes[i].EnharmonizeFlat();
                 }
-
+                DesharpFlatTonalities();
             }
+
+            
         }
 
 
@@ -484,23 +439,27 @@ namespace Music
             if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == 7)
             {
                 Notes[lastindex].EnharmonizeFlat();
-                GrayMessageL("unhromed end to flat");
+                if (LoggingManager.ReadMidi)
+                    GrayMessageL("unhromed end to flat");
 
             }
             else if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == -7)
             {
                 Notes[lastindex].EnharmonizeSharp();
-                GrayMessageL("unhromed end to sharp");
+                if (LoggingManager.ReadMidi)
+                    GrayMessageL("unhromed end to sharp");
             }
             else if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == 12)
             {
                 Notes[lastindex].EnharmonizeFlat();
-                GrayMessageL("unhromed end to flat");
+                if (LoggingManager.ReadMidi)
+                    GrayMessageL("unhromed end to flat");
             }
             else if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == -12)
             {
                 Notes[lastindex].EnharmonizeSharp();
-                GrayMessageL("unhromed end to sharp");
+                if (LoggingManager.ReadMidi)
+                    GrayMessageL("unhromed end to sharp");
             }
         }
 
@@ -515,14 +474,16 @@ namespace Music
                     Notes[i].Sharpness - Notes[i - 1].Sharpness == -5)
                 {
                     Notes[i - 2].EnharmonizeSharp();
-                    GrayMessageL($"correct upgoing chromatics, position {i - 2}");
+                    if (LoggingManager.ReadMidi)
+                        GrayMessageL($"correct upgoing chromatics, position {i - 2}");
                 }
                 else if (Notes[i - 2].Sharpness - Notes[i - 3].Sharpness == -5 &&
                     Notes[i - 1].Sharpness - Notes[i - 2].Sharpness == -5 &&
                     Notes[i].Sharpness - Notes[i - 1].Sharpness == 7)
                 {
                     Notes[i - 1].EnharmonizeSharp();
-                    GrayMessageL($"correct upgoing chromatics 2, position {i - 2}");
+                    if (LoggingManager.ReadMidi)
+                        GrayMessageL($"correct upgoing chromatics 2, position {i - 2}");
                 }
             }
 
@@ -535,7 +496,8 @@ namespace Music
                 if (Notes[i].Sharpness - Notes[i - 1].Sharpness == 10)
                 {
                     Notes[i - 1].EnharmonizeSharp();
-                    GrayMessageL($"unflat note {i}");
+                    if (LoggingManager.ReadMidi)
+                        GrayMessageL($"unflat note {i}");
                 }
             }
         }
@@ -634,8 +596,271 @@ namespace Music
         { return pitchdiff(notes[0].AbsPitch(), notes[^1].AbsPitch()); }
 
 
+        // Збіг по інтервалах, а не по звуках,
+        // таким чином однакові мелодії в різних тональностях розпінаються як однакові)
+        public int SimilarByIntervals(MusicMelody other)
+        {
+            var notesThis = IntervalList.ToArray();
+            var notesOther = other.IntervalList.ToArray();
+            return LongestCommonSubstring(notesThis, notesOther);
+        }
+
+        public static MelodyMatchResult SimilarByIntervals(MusicMelody A, MusicMelody B)
+        {
+            var notesA = A.IntervalList.ToArray();
+            var notesB = B.IntervalList.ToArray();
+            return FindLongestSubstringMatch(notesA, notesB);
+        }
+
+        // Збіг по нотах (однакові мелодії в різних тональностях виглядатимуть як різні)
+        public int SimilarByPitches(MusicMelody other)
+        {
+            var notesThis = Pitches.ToArray();
+            var notesOther = other.Pitches.ToArray();
+            return LongestCommonSubstring(notesThis, notesOther);
+        }
+
+        public static MelodyMatchResult SimilarByPitches(MusicMelody A, MusicMelody B)
+        {
+            var notesA = A.PitchesList.ToArray();
+            var notesB = B.PitchesList.ToArray();
+            return FindLongestSubstringMatch(notesA, notesB);
+        }
+
+        // Збіг за ритмічним малюнком
+        public int SimilarByRythm(MusicMelody other)
+        {
+            var notesThis = RelDurationsList.ToArray();
+            var notesOther = other.RelDurationsList.ToArray();
+            return LongestCommonSubstring(notesThis, notesOther);
+        }
+
+        public static MelodyMatchResult SimilarByRhythm(MusicMelody A, MusicMelody B)
+        {
+            var notesA = A.RelDurationsList.ToArray();
+            var notesB = B.RelDurationsList.ToArray();
+            return FindLongestSubstringMatch(notesA, notesB);
+        }
 
 
+        public static MelodyMatchResult SimilarByBoth(MusicMelody melodyPattern, MusicMelody midiMelody)
+        {
+            if (melodyPattern is null || midiMelody is null)
+                return new MelodyMatchResult(0, -1, new List<(int i1, int i2)>(), 0);
+
+            var intPattern = melodyPattern.IntervalList.ToArray();
+            var intMelody = midiMelody.IntervalList.ToArray();
+            var durPattern = melodyPattern.RelDurationsList.ToArray();
+            var durMelody = midiMelody.RelDurationsList.ToArray();
+
+            const double EPS = 1e-3;
+            var (notesCount, startPos, pairs) = FindCommonSubstringByIntervalAndDuration(intPattern, intMelody, durPattern, durMelody, EPS);
+
+            if (notesCount == 0)
+                return new MelodyMatchResult(0, -1, new List<(int i1, int i2)>(), 0);
+
+            return new MelodyMatchResult(notesCount, startPos, pairs, 0);
+        }
+
+
+        // Найдовший збіг мелодій в заданій тональності з пропусками,
+        // повертає кількість нот у послідовності
+
+
+        public static MelodyMatchResult SimilarByIntervalsWithGap(MusicMelody pattern, MusicMelody melody, int gap)
+        {
+            if (pattern is null || melody is null)
+                return new MelodyMatchResult(0, -1, new List<(int i1, int i2)>(), 0);
+
+            int[] melodyNotes = melody.GetPitches().ToArray();
+            int[] patternNotes = pattern.GetPitches().ToArray();
+
+            var (bestlen, bestpos, bestpairs, bestshift) = FindBestShift(gap, melodyNotes, patternNotes);
+
+            return new MelodyMatchResult(bestlen, bestpos, bestpairs, bestshift);
+        }
+
+        private static (int bestlen, int bestpos, List<(int i1, int i2)> bestpairs, int bestshift) FindBestShift(int gap, int[] melodyNotes, int[] patternNotes)
+        {
+            if (LoggingManager.PatternSearch || LoggingManager.AlgorithmDiagnostics)
+                    MessageL(COLORS.olive, "\nFinding best shift for interval match with gap");
+            int shift = 0;
+            int bestshift = 0;
+            int bestlen = 0;
+            int bestpos = 0;
+            var bestpairs = new List<(int i1, int i2)>();
+
+            for (int i = 0; i < NotesInOctave; i++)
+            {
+                var result = LongestCommonSubsequence(melodyNotes, patternNotes, gap);
+                if (LoggingManager.PatternSearch || LoggingManager.AlgorithmDiagnostics)
+                    Logresults(shift, result);
+
+                if (result.Length > bestlen)
+                {
+                    bestlen = result.Length;
+                    bestshift = shift;
+                    bestpairs = result.Pairs;
+                    bestpos = result.Position;
+                }
+                shift++;
+            }
+
+            return (bestlen, bestpos, bestpairs, bestshift);
+        }
+
+        private static void Logresults(int shift, MelodyMatchResult result)
+        {
+            if (!LoggingManager.PatternSearch && !LoggingManager.AlgorithmDiagnostics)
+                return;
+            
+                Message(COLORS.white, $"\nshift {shift}, len {result.Length}");
+            foreach (var pair in result.Pairs)
+            {                
+                Message(COLORS.white, pair.ToString() + " ");
+            }
+        }
+
+        public static MelodyMatchResult SimilarByRhythmWithGap(MusicMelody pattern, MusicMelody melody, int gap)
+        {
+            if (pattern is null || melody is null)
+                return new MelodyMatchResult(0, -1, new List<(int i1, int i2)>(), 0);
+
+            // Use absolute pitches for subsequence matching (keeps original behavior)
+            float[] melodyNotes = melody.RelDurationsList.ToArray();
+            float[] patternNotes = pattern.RelDurationsList.ToArray();
+
+            var match = Algorythm.LongestCommonSubsequence(melodyNotes, patternNotes, gap);
+            var pairs = match.indicesInFirst.Zip(match.indicesInSecond, (i1, i2) => (i1, i2)).ToList();
+            var pos = match.indicesInFirst.Count > 0 ? match.indicesInFirst[0] : -1;
+            return new MelodyMatchResult(match.length, pos, pairs, 0);
+        }
+
+        internal static MelodyMatchResult SimilarByBothWithGap(MusicMelody melodyPattern, MusicMelody midiMelody, int maxGap)
+        {
+            if (melodyPattern is null || midiMelody is null)
+                return new MelodyMatchResult(0, -1, new List<(int i1, int i2)>(), 0);
+
+            // absolute pitches and durations
+            int[] melodyNotes = midiMelody.GetPitches().ToArray();
+            int[] patternNotes = melodyPattern.GetPitches().ToArray();
+            float[] durMelody = midiMelody.RelDurationsList.ToArray();
+            float[] durPattern = melodyPattern.RelDurationsList.ToArray();
+
+            const double EPS = 1e-3;
+
+            var (foundLen, foundPos, foundPairs, foundShift) = FindBestShift2D(melodyNotes, patternNotes, durMelody, durPattern, maxGap, EPS);
+
+            if (foundLen == 0)
+                return new MelodyMatchResult(0, -1, new List<(int i1, int i2)>(), 0);
+
+            return new MelodyMatchResult(foundLen, foundPos, foundPairs, foundShift);
+        }
+
+        // Найкраще транспонування за інтервалами і тривалістю з пропусками
+        // повертає кількість нот у послідовності
+        // eps - максимальна різниця тривалостей для вважання їх однаковими
+        //  maxGap - максимальна кількість пропущених нот у обох мелодіях        
+        // melodyNotes - мелодія, patternNotes - зразок        
+
+        private static (int bestLen, int bestPos, List<(int i1, int i2)> bestPairs, int bestShift)
+        FindBestShift2D(int[] melodyNotes, int[] patternNotes, float[] durMelody, float[] durPattern, int maxGap, double eps)
+        {
+            if (LoggingManager.PatternSearch || LoggingManager.AlgorithmDiagnostics)
+                MessageL(COLORS.olive, "\nFinding best 2D shift (interval + duration) with gap");
+            int clamped = Math.Clamp(maxGap, 1, 3);
+
+            int curBestLen = 0;
+            int curBestPos = -1;
+            int curBestShift = 0;
+            var curBestPairs = new List<(int i1, int i2)>();
+
+            for (int shift = 0; shift < NotesInOctave; shift++)
+            {
+                // transpose pattern pitches (wrap within octave)
+                var transposedPattern = patternNotes.Select(p => (p + shift) % NotesInOctave).ToArray();
+
+                var (totalLen, idxFirstAll, idxSecondAll) = Algorythm.LongestCommonSubsequence(melodyNotes, transposedPattern, maxGap);
+                if (idxSecondAll == null || idxSecondAll.Count == 0)
+                    continue;
+
+                // Keep only pairs where durations also match within eps
+                var matchedPairs = new List<(int i1, int i2)>();
+                for (int k = 0; k < idxFirstAll.Count; k++)
+                {
+                    int i1 = idxFirstAll[k];
+                    int i2 = idxSecondAll[k];
+                    if (i1 >= 0 && i1 < durMelody.Length && i2 >= 0 && i2 < durPattern.Length)
+                    {
+                        if (Math.Abs(durMelody[i1] - durPattern[i2]) <= eps)
+                            matchedPairs.Add((i1, i2));
+                    }
+                }
+
+                if (matchedPairs.Count == 0)
+                    continue;
+
+                // Cluster matched pairs into contiguous clusters where gaps in both sequences <= clamped
+                var curFirst = new List<int>();
+                var curSecond = new List<int>();
+
+                void FinalizeCluster()
+                {
+                    if (curFirst.Count == 0) return;
+                    int curLen = curFirst.Count;
+                    if (curLen > curBestLen)
+                    {
+                        curBestLen = curLen;
+                        curBestPos = curFirst[0];
+                        curBestShift = shift;
+                        curBestPairs = new List<(int i1, int i2)>();
+                        for (int t = 0; t < curFirst.Count; t++)
+                            curBestPairs.Add((curFirst[t], curSecond[t]));
+                    }
+                }
+
+                for (int k = 0; k < matchedPairs.Count; k++)
+                {
+                    var (i1, i2) = matchedPairs[k];
+                    if (curFirst.Count == 0)
+                    {
+                        curFirst.Add(i1);
+                        curSecond.Add(i2);
+                        continue;
+                    }
+
+                    int gapSecond = i2 - curSecond[^1] - 1;
+                    int gapFirst = i1 - curFirst[^1] - 1;
+
+                    if (gapSecond <= clamped && gapFirst <= clamped)
+                    {
+                        curFirst.Add(i1);
+                        curSecond.Add(i2);
+                    }
+                    else
+                    {
+                        FinalizeCluster();
+                        curFirst.Clear(); curSecond.Clear();
+                        curFirst.Add(i1);
+                        curSecond.Add(i2);
+                    }
+                }
+
+                FinalizeCluster();
+
+                // early exit if we matched whole pattern
+                if (curBestLen >= patternNotes.Length) break;
+            }
+
+            return (curBestLen, curBestPos, curBestPairs, curBestShift);
+        }
+
+        /// <summary>
+        /// ТРАНСПОНУВАННЯ МЕЛОДІЇ
+        /// </summary>
+        /// <param name="interval"></param> - інтервал транспонування
+        /// <param name="quality"></param> - якість інтервалу
+        /// <param name="dir"></param> - напрямок транспонування
         public void Transpose(INTERVALS interval, QUALITY quality, DIR dir)
         {
             foreach (Note note in notes)
@@ -711,7 +936,10 @@ namespace Music
             return newmelody;
         }
 
-
+        /// <summary>
+        /// ГЕНЕРУВАННЯ ВИПАДКОВИХ МЕЛОДІЙ
+        /// </summary>
+        /// <param name="oct"></param>
 
         public void RandomizeOct(int oct)
         {
@@ -725,6 +953,10 @@ namespace Music
                 note.SetRandomDuration();
         }
 
+        /// <summary>
+        /// СТАТИСТИЧНІ
+        /// </summary>
+        /// <returns></returns>
 
         public Dictionary<string, float>? GetStats()
         {
@@ -930,7 +1162,22 @@ namespace Music
         {
             MidiConverter.SaveMidi(this, filepath);
         }
-        // Added helper to delegate subsequence-with-gap matching to canonical Algorythm implementation.
-        
+
+
+    }
+
+    public struct MelodyMatchResult
+    {
+        public int Length;
+        public int Position;
+        public List<(int i1, int i2)> Pairs;
+        public int BestShift;
+        public MelodyMatchResult(int length, int position, List<(int i1, int i2)> pairs, int bestShift)
+        {
+            Length = length;
+            Position = position;
+            Pairs = pairs;
+            BestShift = bestShift;
+        }
     }
 }

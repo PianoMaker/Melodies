@@ -15,6 +15,11 @@
                 <span asp-validation-for="Country.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="Country.NameEn" class="control-label">Name</label>
+                <input asp-for="Country.NameEn" class="form-control" />
+                <span asp-validation-for="Country.NameEn" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <input type="submit" value="Create" class="btn-melody" />
             </div>
         </form>

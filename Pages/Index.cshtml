@@ -40,12 +40,12 @@
                 @if (SignInManager.IsSignedIn(User))
                 {
                     <div class="d-flex gap-3 m-3">
-                        <a class="btn btn-light link-dark shadow" asp-area="Identity" asp-page="/Account/Users" title="Manage">
-                            Ви увійшли як @User.Identity?.Name!
+                        <a class="btn btn-logo" asp-area="Identity" asp-page="/Account/Profile" title="Manage">
+                            профіль
                         </a>
 
                         <form class="form-inline" method="post" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
-                            <button type="submit" class="btn btn-light link-dark shadow">Вийти</button>
+                            <button type="submit" class="btn btn-logo">Вийти</button>
                         </form>
                     </div>
                 }

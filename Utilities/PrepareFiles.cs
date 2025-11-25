@@ -2,7 +2,6 @@
 using static Music.Messages;
 using static Music.MidiConverter;
 using static Melodies25.Utilities.WaveConverter;
-
 using NAudio.Midi;
 using System.Diagnostics;
 using System.IO;
@@ -99,14 +98,16 @@ namespace Melodies25.Utilities
                 if (File.Exists(workMidiPath))
                 {
                     File.Delete(workMidiPath);
-                    MessageL(COLORS.cyan, "Temporary working copy deleted");
+                    if (LoggingManager.CreateAudio)
+                        MessageL(COLORS.cyan, "Temporary working copy deleted");
                 }
-
-                MessageL(COLORS.cyan, "PrepareMp3Async finished (original preserved)");
+                if (LoggingManager.CreateAudio)
+                                    MessageL(COLORS.cyan, "PrepareMp3Async finished (original preserved)");
+                
             }
             catch (Exception ex)
             {
-                ErrorMessageL(ex.Message);
+                ErrorMessageL($"Failed to prepare mp3: {midifileNameOrPath}" + ex.Message);
                 throw; // нехай викликаючий код вирішує що робити
             }
         }
@@ -123,15 +124,18 @@ namespace Melodies25.Utilities
 
             var newFile = new MidiFile(workingMidiPath);
             var hzmslist = GetHzMsListFromMidi(newFile);
-
-            MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
+            if (LoggingManager.CreateAudio)
+                            MessageL(COLORS.green, $"Starting to prepare {mp3Path}");
+            
             Stopwatch sw = new();
             sw.Start();
 
             await GenerateMp3Async(hzmslist, mp3Path);
 
             sw.Stop();
-            MessageL(COLORS.green, $"File {mp3Path} was generated in {sw.ElapsedMilliseconds} ms");
+            if (LoggingManager.CreateAudio)
+                            MessageL(COLORS.green, $"File {mp3Path} was generated in {sw.ElapsedMilliseconds} ms");
+           
         }
     }
 }
