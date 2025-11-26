@@ -1,8 +1,14 @@
 ﻿// АНІМАЦІЯ НОТОК
 
 const maxNotes = 50; // максимальна кількість нот
+let notesIntervalId = null; // interval handler for addNote
 
 const addNote = () => {
+    // Вимикаємо на вузьких екранах
+    if (window.innerWidth <= 768) {
+        return;
+    }
+
     if (window.location.pathname !== "/" && window.location.pathname !== "/Index") {
         return; // Якщо ми не на головній сторінці — виходимо
     }
@@ -50,8 +56,30 @@ const addNote = () => {
     });
 };
 
-// Додаємо нотки кожні 0.3 секунди
-setInterval(addNote, 400);
+function startNotes() {
+    if (notesIntervalId || window.innerWidth <= 768) return;
+    notesIntervalId = setInterval(addNote, 400);
+}
+
+function stopNotes() {
+    if (notesIntervalId) {
+        clearInterval(notesIntervalId);
+        notesIntervalId = null;
+    }
+    // При вимкненні на мобільних — прибираємо існуючі нотки
+    document.querySelectorAll('.notka, .notka-blue').forEach(n => n.remove());
+}
+
+// Ініціалізація після завантаження DOM
+window.addEventListener('DOMContentLoaded', () => {
+    if (window.innerWidth > 768) startNotes();
+});
+
+// Динамічне вмикання/вимикання при зміні ширини
+window.addEventListener('resize', () => {
+    if (window.innerWidth <= 768) stopNotes();
+    else startNotes();
+});
 
 
 

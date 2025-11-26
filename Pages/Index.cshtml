@@ -19,33 +19,33 @@
     <!--оригінальний дизайн-->
     @if (@Singerella == false)
     {
-        <div class="d-flex commoncontainer">
+        <div id="mainpagecommoncontainer" class="d-flex commoncontainer">
             <!-- -->
-            <div class="container flex-column justify-content-center align-items-start mt-5 w-25 haslo">
-                <h3 class="homepagetitle mt-lg-5">Поринь у світ музики</h3>
+            <div id="mainpageleftcontainer" class="container flex-column justify-content-center align-items-start mt-5 w-25">
+                <h3 class="homepagetitle mt-lg-5">Знайди схожу мелодію!</h3>
                 <p class="homepagesubtitle">Мелодії з усього світу в одному сайті!</p>
                 <!--ПОШУК-->
-                <form method="post" asp-page-handler="Search" class="mt-3 w-100 d-flex flex-row align-items-baseline">
+                <form method="post" asp-page-handler="Search" class="mt-3 w-100 d-flex align-items-stretch search-form">
                     <input asp-for="Search" type="text" class="form-control searchfield" />
-                    <button type="submit" class="btn btn-index mt-2">🔍 Пошук</button>
+                    <button type="submit" class="btn btn-index mt-2 search-button"><span class="me-2">🔍</span><span>Пошук</span></button>
                 </form>
-                <form method="post" asp-page-handler="AdvancedSearch" class="mt-3 w-100 d-flex flex-row align-items-baseline">
-                    <button type="submit" class="btn btn-index w-100 mt-2 btn-notes">🔍 Пошук по нотах</button>
+                <form method="post" asp-page-handler="AdvancedSearch" class="mt-3 w-100 d-flex search-form-notes">
+                    <button type="submit" class="btn btn-index w-100 mt-2 btn-notes"><span class="me-2">🔍</span><span>Пошук по нотах</span></button>
                 </form>
             </div>
 
-            <!--кнопки входу/реєстрації-->
+            <!--контейнер з малюнком -->
             <div class="d-flex flex-column align-items-end w-75 rightcontainer mt-0">
-
+                <!--кнопки входу/реєстрації-->
                 @if (SignInManager.IsSignedIn(User))
                 {
                     <div class="d-flex gap-3 m-3">
-                        <a class="btn btn-light link-dark shadow" asp-area="Identity" asp-page="/Account/Users" title="Manage">
-                            Ви увійшли як @User.Identity?.Name!
+                        <a class="btn btn-logo" asp-area="Identity" asp-page="/Account/Profile" title="Manage">
+                            профіль
                         </a>
 
                         <form class="form-inline" method="post" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
-                            <button type="submit" class="btn btn-light link-dark shadow">Вийти</button>
+                            <button type="submit" class="btn btn-logo">Вийти</button>
                         </form>
                     </div>
                 }

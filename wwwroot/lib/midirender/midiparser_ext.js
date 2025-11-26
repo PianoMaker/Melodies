@@ -25,9 +25,9 @@ const reverseDurationMapping = {
     "64": 64
 };
 
-// NOTE: getAllEvents moved to the bottom (after helper meta functions) to avoid referencing MidiMeta before it is defined.
+ // NOTE: getAllEvents moved to the bottom (after helper meta functions) to avoid referencing MidiMeta before it is defined.
 
-// --- Enharmonic support (minimal) ---
+ // --- Enharmonic support (minimal) ---
 let currentKeySignature = 0; // -7..+7 (sf)
 let enharmonicPreference = 'auto'; // 'auto' | 'sharps' | 'flats'
 function setEnharmonicPreference(pref) {
@@ -40,15 +40,15 @@ function setEnharmonicPreference(pref) {
 if (typeof window !== 'undefined') window.setEnharmonicPreference = setEnharmonicPreference;
 
 
-// ---------------------------------------------------------------------
-// ФУНКЦІЯ ДЛЯ ОНОВЛЕННЯ ТОНАЛЬНОСТІ З ПОДІЙ MIDI
-// Використання: updateKeySignatureFromEvents(midiEvents);
-// Повертає об'єкт { sf, mi } або null, якщо подій Key Signature немає
-// sf: -7..+7, mi: 0=major, 1=minor
-// Потрібні глобальні функції: normalizeMetaEvent, decodeKeySignature, isKeySignatureEvent
-// currentKeySignature - глобальна змінна
-// enharmonicPreference - 'auto' | 'sharps' | 'flats'
-// ---------------------------------------------------------------------
+ // ---------------------------------------------------------------------
+ // ФУНКЦІЯ ДЛЯ ОНОВЛЕННЯ ТОНАЛЬНОСТІ З ПОДІЙ MIDI
+ // Використання: updateKeySignatureFromEvents(midiEvents);
+ // Повертає об'єкт { sf, mi } або null, якщо подій Key Signature немає
+ // sf: -7..+7, mi: 0=major, 1=minor
+ // Потрібні глобальні функції: normalizeMetaEvent, decodeKeySignature, isKeySignatureEvent
+ // currentKeySignature - глобальна змінна
+ // enharmonicPreference - 'auto' | 'sharps' | 'flats'
+ // ---------------------------------------------------------------------
 
 function updateKeySignatureFromEvents(events) {
     console.log("FOO: midiparser_ext.js - updateKeySignatureFromEvents");
@@ -70,22 +70,28 @@ function updateKeySignatureFromEvents(events) {
         }
         // Fallback 1: з data байтів
         if (!ks && ev && Array.isArray(ev.data) && ev.data.length >= 2) {
-            let sf = ev.data[0]; if (sf > 127) sf -= 256;
-            const mi = ev.data[1];
+            let bytes = ev.data.slice();
+            if (bytes.length >= 3 && bytes[0] === 2) bytes = bytes.slice(1);
+            let sf = bytes[0]; if (sf > 127) sf -= 256;
+            const miRaw = bytes[1];
+            const mi = (miRaw === 0 || miRaw === 1) ? miRaw : (miRaw ? 1 : 0);
             ks = { sf, mi };
         }
+
         // Fallback 2: param1/param2
         if (!ks && ev && ev.param1 !== undefined && ev.param2 !== undefined) {
             let sf = ev.param1; if (sf > 127) sf -= 256;
-            const mi = ev.param2;
+            const miRaw = ev.param2;
+            const mi = (miRaw === 0 || miRaw === 1) ? miRaw : (miRaw ? 1 : 0);
             ks = { sf, mi };
         }
 
         if (ks) break;
     }
-    if (ks) {
-        // Оновимо глобальну (для midiNoteToVexFlow) і повернемо об'єкт (для midiRenderer.js)
-        if (typeof ks.sf === 'number') currentKeySignature = ks.sf;
+    if (ks && typeof ks.sf === 'number') {
+        currentKeySignature = ks.sf;
+        // Extra safety
+        ks.mi = (ks.mi === 0 || ks.mi === 1) ? ks.mi : (ks.mi ? 1 : 0);
         return { sf: ks.sf, mi: ks.mi };
     }
     return null;
@@ -177,20 +183,26 @@ function calculateTicksFromDuration(duration, ticksPerBeat) {
     return result;
 }
 
-// приймає кількість тіків, повертає код тривалості
+/**
+ * Повертає код тривалості ноти
+ * @param {any} ticks        - тривалість у тіках
+ * @param {any} ticksPerBeat - поточний TPQN
+ * @returns
+ */
+
 function getDurationFromTicks(ticks, ticksPerBeat) {
     console.log("FOO: midiparser_ext.js - getDurationFromTicks");
     if (typeof ticks !== "number" || typeof ticksPerBeat !== "number" || ticks <= 0 || ticksPerBeat <= 0) {
         console.warn("Invalid input to getDurationFromTicks:", { ticks, ticksPerBeat });
-        return []; // Повертаємо порожній масив у разі некоректних даних
+        return [];                      // Повертаємо порожній масив у разі некоректних даних
     }
     console.log('Calculating duration for ticks: ' + ticks + ', ticksPerBeat: ' + ticksPerBeat);
-    var quarterTicks = ticksPerBeat; // Тривалість чверті дорівнює TPQN
-    let mingap = ticksPerBeat / 16; // Мінімальний проміжок між нотами
+    var quarterTicks = ticksPerBeat;    // Тривалість чверті дорівнює TPQN
+    let mingap = ticksPerBeat / 16;     // Мінімальний проміжок між нотами
 
     const durations = [];
 
-    // Попередньо обчислюємо тріольні таргети
+    // Значення для тріолей
     const triQ  = quarterTicks * (2 / 3);  // 'qt'
     const tri8  = quarterTicks / 3;        // '8t'
     const tri16 = quarterTicks / 6;        // '16t'
@@ -200,52 +212,52 @@ function getDurationFromTicks(ticks, ticksPerBeat) {
     while (ticks > 0) {
         // Спочатку обробляємо тріолі (вікно допуску ±mingap)
         if (ticks >= triQ - mingap && ticks <= triQ + mingap) {
-            durations.push("qt");
+            durations.push("qt");       //тріольна четвертна
             ticks -= triQ;
             continue;
         } else if (ticks >= tri8 - mingap && ticks <= tri8 + mingap) {
-            durations.push("8t");
+            durations.push("8t");       //тріольна вісімка
             ticks -= tri8;
             continue;
         } else if (ticks >= tri16 - mingap && ticks <= tri16 + mingap) {
-            durations.push("16t");
+            durations.push("16t");      //тріольна шіснадцятка
             ticks -= tri16;
             continue;
         } else if (ticks >= tri32 - mingap && ticks <= tri32 + mingap) {
-            durations.push("32t");
+            durations.push("32t");      //тріольна 32-га
             ticks -= tri32;
             continue;
         }
-
+        // Регулярні тривалості
         if (ticks >= quarterTicks * 6 - mingap) {
-            durations.push("w."); // Ціла нота з крапкою
+            durations.push("w.");       // Ціла нота з крапкою
             ticks -= quarterTicks * 6;
         } else if (ticks >= quarterTicks * 4 - mingap) {
-            durations.push("w"); // Ціла нота
+            durations.push("w");        // Ціла нота
             ticks -= quarterTicks * 4;
         } else if (ticks >= quarterTicks * 3 - mingap) {
-            durations.push("h."); // Половинна нота з крапкою
+            durations.push("h.");       // Половинка з крапкою
             ticks -= quarterTicks * 3;
         } else if (ticks >= quarterTicks * 2 - mingap) {
-            durations.push("h"); // Половинна нота
+            durations.push("h");        // Половинка 
             ticks -= quarterTicks * 2;
         } else if (ticks >= quarterTicks * 1.5 - mingap) {
-            durations.push("q."); // Чверть нота з крапкою
+            durations.push("q.");       // Чвертна з крапкою
             ticks -= quarterTicks * 1.5;
         } else if (ticks >= quarterTicks * 1 - mingap) {
-            durations.push("q"); // Чверть нота
+            durations.push("q");        // Чвертна 
             ticks -= quarterTicks * 1;
         } else if (ticks >= quarterTicks * 0.75 - mingap) {
-            durations.push("8."); // Восьма нота з крапкою
+            durations.push("8.");       // Вісімка з крапкою
             ticks -= quarterTicks * 0.75;
         } else if (ticks >= quarterTicks * 0.5 - mingap) {
-            durations.push("8"); // Восьма нота
+            durations.push("8");        // Вісімка
             ticks -= quarterTicks * 0.5;
         } else if (ticks >= quarterTicks * 0.25 - mingap) {
-            durations.push("16"); // 0.25 = 64 тіків при ticksPerBeat=256
+            durations.push("16");       // Шіснадцятка
             ticks -= quarterTicks * 0.25;
         } else if (ticks >= quarterTicks * 0.125 - mingap) {
-            durations.push("32"); // 0.125 = 32 тіки при ticksPerBeat=256
+            durations.push("32");       // 32-га
             ticks -= quarterTicks * 0.125;
         } else {
             console.warn(`Calculated durations: unknown / ${ticks} ticks`);
@@ -258,7 +270,11 @@ function getDurationFromTicks(ticks, ticksPerBeat) {
     return durations;
 }
 
-
+/**
+ * 
+ * @param {any} notesString
+ * @returns
+ */
 function calculateEndless(notesString) {
     console.log("FOO: midiparser_ext.js - calculateEndless");
 
@@ -366,7 +382,7 @@ function createRest(duration) {
 
 function createNote(noteKey, duration) {
     console.log("FOO: midiparser_ext.js - createNote");
-    console.log(`Creating note with noteKey ${noteKey} duration: ${duration}`);
+    //console.log(`Creating note with noteKey ${noteKey} duration: ${duration}`);
     const noteMatch = noteKey.match(/^([a-gA-G])(b|#)?(\d)?$/);
     if (!noteMatch) {
         console.error(`Invalid note key: ${noteKey}`);
@@ -393,6 +409,9 @@ function createNote(noteKey, duration) {
         if (isDotted && !isTriplet) {
             staveNote.addDot(0); // Add dot if dotted
         }
+        if (typeof staveNote.autoStem === 'function') {
+            staveNote.autoStem(); 
+        }
 
         if (isTriplet) {
             // Помітимо ноту як тріольну для швидкого складання Tuplet
@@ -400,8 +419,7 @@ function createNote(noteKey, duration) {
             staveNote.__tripletBase = baseDuration; // 'q','8','16','32'
             staveNote.__durationCode = duration;    // 'qt','8t','16t','32t'
         }
-
-        console.log(`Created note: ${key}, duration: ${baseDuration}`);
+        //        console.log(`Created note: ${key}, duration: ${baseDuration}`);
         return staveNote;
     } catch (error) {
         console.error(`Failed to create note with key: ${noteKey} and duration: ${duration}`, error);
@@ -460,7 +478,7 @@ function isKeySignatureEvent(ev) {
     const META_KEY_ID = 0x59; // 89
     const isMeta =
         ev.type === 0xFF ||
-        ev.type === (typeof MIDIEvents !== 'undefined' ? MIDIEvents.EVENT_META : undefined) ||
+        (typeof MIDIEvents !== 'undefined' ? ev.type === MIDIEvents.EVENT_META : false) ||
         ev.meta === true;
 
     // metaType або subtype або можливі рядкові значення
@@ -555,22 +573,91 @@ if (typeof window !== 'undefined') window.getKeySignature = getKeySignature;
 // Використання: const allEvents = SetEventsAbsoluteTime(midiData);
 // Повертає масив всіх подій з абсолютним часом absTime
 //---------------------------------------------------------------------
+
+/**
+ * Detect whether a parsed midiData object likely represents MIDI Format 0.
+ * Heuristic: explicit format fields or single track array.
+ * @param {object} midiData - parsed MIDI object
+ * @returns {boolean}
+ */
+const isMidiFormat0 = (midiData) => {
+    if (!midiData) return false;
+    // explicit fields some parsers use
+    if (midiData.format === 0 || midiData.format === '0') return true;
+    if (midiData.fileFormat === 0 || midiData.fileFormat === '0') return true;
+    if (midiData.header && (midiData.header.format === 0 || midiData.header.format === '0')) return true;
+    // fallback heuristic: single track => likely format 0
+    if (Array.isArray(midiData.track) && midiData.track.length === 1) return true;
+    return false;
+};
+
 function SetEventsAbsoluteTime(midiData) {
-    console.log("FOO: midiparser_ext.js - SetEventsAbsoluteTime");
-    let allEvents = [];
+    console.log("FOO: midiparser_ext.js - SetEventsAbsoluteTime (format-aware)");
+    const allEvents = [];
+    if (!midiData || !Array.isArray(midiData.track)) return allEvents;
+
+    // Головний біль з форматом MIDI 0: деякі парсери не встановлюють коректно deltaTime для першої події після великого initial delta
+    const isMidi0 = isMidiFormat0(midiData);
+    console.log(`MIDI format 0 detected: ${isMidi0}`);
+
     midiData.track.forEach((track, trackIndex) => {
+        if (!Array.isArray(track.event)) return;
         let absTime = 0;
-        if (Array.isArray(track.event)) {
-            track.event.forEach(event => {
-                absTime += event.deltaTime || 0;
-                allEvents.push({ ...event, absTime, track: trackIndex });
-            });
 
-        }
+        track.event.forEach((event, idx) => {
+
+            // Виявлення неадекватних delta time
+            const deltaAdded = (event && (event.deltaTime ?? event.delta ?? event.deltaTicks ?? event.delta_time)) ?? 0;
+            try { if (event && event.deltaTime === undefined) event.deltaTime = deltaAdded; } catch {}
+
+
+            let deltaToAdd = deltaAdded;
+            if (isMidi0) {
+                const LARGE_DELTA_THRESHOLD = 1000; //
+                const prevAreMeta = idx === 0 ? true : track.event.slice(0, idx).every(e => e && e.type === 0xFF);
+                if (deltaAdded > LARGE_DELTA_THRESHOLD && prevAreMeta) {
+                    deltaToAdd = 0;
+                    console.info(`Clamped large initial delta ${deltaAdded} -> 0 (track ${trackIndex}, idx ${idx})`);
+                }
+            }
+
+            // Accumulate absTime once (use deltaToAdd)
+            absTime += deltaToAdd;
+
+            // Detect NoteOn (type 0x9) with velocity > 0
+            let isNoteOn = false, midiNote = null, velocity = null;
+            if (event && (event.type === 0x9 || event.type === 9)) {
+                if (Array.isArray(event.data) && event.data.length >= 2) {
+                    midiNote = event.data[0];
+                    velocity = event.data[1];
+                } else {
+                    midiNote = event.param1 ?? event.note ?? null;
+                    velocity = event.param2 ?? event.velocity ?? null;
+                }
+                isNoteOn = (typeof velocity === 'number' && velocity > 0);
+            }
+
+            if (isNoteOn) {
+                console.log(`ABSTIME: NoteOn: midi=${midiNote}, absTime=${absTime}, deltaAdded=${deltaAdded}, deltaUsed=${deltaToAdd}, track=${trackIndex}, eventIndex=${idx}`);
+            } else {
+                console.debug('RAW EVENT DIAG', { index: idx, type: event?.type, metaType: event?.metaType, deltaTime: event?.deltaTime, delta: event?.delta, data: event?.data, param1: event?.param1, param2: event?.param2 });
+            }
+
+            allEvents.push({ ...event, absTime, track: trackIndex, __trackIndexEvent: idx });
+        });
     });
-    allEvents.sort((a, b) => a.absTime - b.absTime);
 
-    return allEvents;
+    // Stable sort by absTime, then track, then original order
+    allEvents.sort((a, b) => {
+        if (a.absTime !== b.absTime) return a.absTime - b.absTime;
+        if (a.track !== b.track) return a.track - b.track;
+        return (a.__trackIndexEvent ?? 0) - (b.__trackIndexEvent ?? 0);
+    });
+
+    return allEvents.map(ev => {
+        const { __trackIndexEvent, ...rest } = ev;
+        return rest;
+    });
 }
 
 // Функція для логування подій з детальною інформацією
@@ -796,15 +883,15 @@ function midiNoteFromVexKey(key) {
 //--------------------------------------------------------------------
 function ensureEndEvent(midiEvents, element) {
     console.log("FOO: midiparser_ext.js - ensureEndEvent");
-    const hasEndTrack = midiEvents.some(e => e.type === MIDIEvents.EVENT_META && e.subtype === MIDIEvents.EVENT_META_END_OF_TRACK
-    );
+    // Robust check without relying on MIDIEvents global
+    const hasEndTrack = midiEvents.some(e => e && (e.type === 0xFF || e.meta === true || e.type === 'meta') && (e.metaType === 0x2F || e.subtype === 0x2F));
     if (!hasEndTrack) {
-        let lastEvent = midiEvents[midiEvents.length - 1];
+        let lastEvent = midiEvents[midiEvents.length - 1] || {};
         let endTime = lastEvent.absTime || lastEvent.playTime || 0;
         midiEvents.push({
-            type: MIDIEvents.EVENT_META,
-            subtype: MIDIEvents.EVENT_META_END_OF_TRACK,
-            delta: 0,
+            type: 0xFF,
+            metaType: 0x2F,
+            deltaTime: 0,
             absTime: endTime,
             playTime: endTime,
             track: lastEvent.track || 0
@@ -843,7 +930,7 @@ function normalizeMetaEvent(ev) {
 
 
 
-// Helper to normalize all meta events in an array (wraps normalizeMetaEvent if available)
+ // Helper to normalize all meta events in an array (wraps normalizeMetaEvent if available)
 function normalizeMetaEvents(events) {
     if (!Array.isArray(events)) return events;
     if (typeof normalizeMetaEvent === 'function') {
@@ -862,14 +949,23 @@ function normalizeMetaEvents(events) {
 // --------------------------------------------------------------------
 function decodeKeySignature(ev) {
     console.log("FOO: Decoding Key Signature from event:", ev);
-    if (!ev || ev.metaType !== 0x59) return null;
+    if (!ev || (ev.metaType !== 0x59 && ev.subtype !== 0x59)) return null;
+
     let bytes = ev.data;
+    if (!Array.isArray(bytes)) bytes = [];
+
+    // Some libs keep a leading length byte (0x02)
     if (bytes.length === 3 && bytes[0] === 2) bytes = bytes.slice(1);
     if (bytes.length < 2) return null;
+
     let sf = bytes[0]; if (sf > 127) sf -= 256;
-    const mi = bytes[1];
-    const majors = ['Cb', 'Gb', 'Db', 'Ab', 'Eb', 'Bb', 'F', 'C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#'];
-    const minors = ['Abm', 'Ebm', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm', 'Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m', 'A#m'];
+
+    // Clamp mi to 0 or 1; treat any non-zero (incl. 255) as 1
+    const miRaw = bytes[1];
+    const mi = (miRaw === 0 || miRaw === 1) ? miRaw : (miRaw ? 1 : 0);
+
+    const majors = ['Cb','Gb','Db','Ab','Eb','Bb','F','C','G','D','A','E','B','F#','C#'];
+    const minors = ['Abm','Ebm','Bbm','Fm','Cm','Gm','Dm','Am','Em','Bm','F#m','C#m','G#m','D#m','A#m'];
     const idx = sf + 7;
     const name = (idx >= 0 && idx < majors.length) ? (mi === 0 ? majors[idx] : minors[idx]) : `sf=${sf}`;
     return { sf, mi, name, raw: ev.data };
@@ -914,3 +1010,46 @@ async function getAllEvents(file) {
 if (typeof window !== 'undefined') window.getAllEvents = getAllEvents;
 
 
+ // Рахує кількість NoteOn (velocity > 0) у такті
+function getNumberOfNotes(measure) {
+    console.log("FOO: midiparser_ext.js - getNumberOfNotes");
+    if (!Array.isArray(measure)) return 0;
+    let count = 0;
+    for (const ev of measure) {
+        if (ev && ev.type === 0x9 && Array.isArray(ev.data) && ev.data.length > 1 && ev.data[1] > 0) {
+            count++;
+        }
+    }
+    return count;
+}
+if (typeof window !== 'undefined') window.getNumberOfNotes = getNumberOfNotes;
+
+
+ // Розраховує середню ширину такту на основі кількості нот у кожному такті
+function GetMeanBarWidth(BARWIDTH, measures) {
+
+    // If measures is not a non-empty array — just return default BARWIDTH without noisy warnings
+    if (!Array.isArray(measures) || measures.length === 0) {
+        console.debug("meanBarWidth: measures empty or invalid, using BARWIDTH fallback");
+        return BARWIDTH;
+    }
+
+    console.log("FOO: midiparser_ext.js - meanBarWidth");
+    let meanBarWidth = BARWIDTH;
+    let sumBarWidth = 0;
+    let currentWidth;
+
+    measures.forEach((m) => {
+        let notesamount = getNumberOfNotes(m);
+        if (notesamount !== undefined) {
+            currentWidth = meanBarWidth / 3 + meanBarWidth * notesamount / 7;
+            sumBarWidth += currentWidth;
+        }
+    });
+
+    meanBarWidth = sumBarWidth / measures.length;
+    console.log(`meanBarWidth total: ${meanBarWidth}`);
+
+    return meanBarWidth;
+}
+if (typeof window !== 'undefined') window.GetMeanBarWidth = GetMeanBarWidth;

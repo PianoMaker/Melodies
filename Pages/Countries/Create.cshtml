@@ -4,12 +4,8 @@
 @{
     ViewData["Title"] = "Мелодія - додати країну";
 }
-
-<h1>Створити</h1>
-
-<h4>Країни</h4>
-<hr />
-<div class="row addcontainer">
+<div class="infocontainer melody-width">
+<h1>Додати країну</h1>
     <div class="col-md-4">
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -19,17 +15,18 @@
                 <span asp-validation-for="Country.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <label asp-for="Country.NameEn" class="control-label">Name</label>
+                <input asp-for="Country.NameEn" class="form-control" />
+                <span asp-validation-for="Country.NameEn" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn-melody" />
             </div>
         </form>
     </div>
-</div>
-<div>
     <p>@Model.Msg</p>    
-</div>
 
-<div>
-    <a asp-page="Index">Назад до списку</a>
+    <a asp-page="Index" class="btn-melody">Назад до списку</a>
 </div>
 
 @section Scripts {

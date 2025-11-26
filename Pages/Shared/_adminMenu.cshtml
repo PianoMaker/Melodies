@@ -1,12 +1,16 @@
 ﻿@{
     var currentPage = ViewContext.RouteData.Values["Page"]?.ToString();
 }
-<div class="exp-top">
-    <p>
-        <a class="@(currentPage == "/Account/Users" ? "active" : "")" href="/Account/Users">Управління користувачами</a> -
-        <a class="@(currentPage == "/Experimental/Files" ? "active" : "")" href="/Experimental/Files">Управління файлами</a> -
-        <a class="@(currentPage == "/Experimental/Notation" ? "active" : "")" href="/Experimental/Notation">Нотація</a> -
-        <a class="@(currentPage == "/Experimental/Widi" ? "active" : "")" href="/Experimental/Widi">Widi</a> -
-        <a class="@(currentPage == "/Experimental/Tone" ? "active" : "")" href="/Experimental/Tone">Tone</a>
-    </p>
+<div class="exp-top d-flex justify-content-between align-items-center">
+    <div>
+        <p>
+            <a class="@(currentPage == "/Account/Users" ? "active" : "")" href="/Account/Users">Управління користувачами</a> -
+            <a class="@(currentPage == "/Admin/Incoming" ? "active" : "")" href="/Admin/Incoming">Нові файли</a> -
+            <a class="@(currentPage == "/Admin/Files" ? "active" : "")" href="/Admin/Files">Управління файлами</a> -
+            <a class="@(currentPage == "/Admin/Notation" ? "active" : "")" href="/Admin/Notation">Нотація</a> -
+            @* <a class="@(currentPage == "/Admin/Widi" ? "active" : "")" href="/Admin/Widi">Widi</a> - *@
+            <a class="@(currentPage == "/Admin/Tone" ? "active" : "")" href="/Admin/Tone">Tone</a>
+            <a class="@(currentPage == "/Admin/Settings" ? "active" : "")" href="/Admin/Settings">Налаштування</a>
+        </p>
+    </div>
 </div>

@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Melodies25.Data;
 using Melodies25.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Melodies25.Pages.Countries
 {
+    [Authorize(Roles = "Admin, Moderator")]
     public class EditModel : PageModel
     {
         private readonly Melodies25.Data.Melodies25Context _context;

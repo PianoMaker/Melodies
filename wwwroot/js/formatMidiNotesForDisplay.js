@@ -1,38 +1,57 @@
 ﻿// Відображення списком
 export function formatMidiNotesForDisplay(midiFile) {
     let output = "MIDI Notes:\n";
-    let activeNotes = {};
-    let currentTick = 0;
-    let lastEventWasNoteOff = false;
-    let lastNoteEndTick = 0;
     const ticksPerBeat = midiFile.header.getTicksPerBeat();
     const MIN_REST_DURATION = 10; // Не відображати паузи менше 10 ticks
 
+    // Отримати перший знайдений музичний розмір (або 4/4 за замовчуванням)
+    const firstTs = getFirstTimeSignature(midiFile);
+    const tsNum = firstTs?.numerator ?? 4;
+    const tsDen = firstTs?.denominator ?? 4;
+    const ticksPerMeasure = Math.round(ticksPerBeat * (tsNum * 4 / tsDen));
+
     midiFile.tracks.forEach((track, index) => {
         const events = midiFile.getTrackEvents(index);
+
+        let currentTick = 0;
+        let activeNotes = {};
+        let lastEventWasNoteOff = false;
+        let lastNoteEndTick = 0;
+
         events.forEach(event => {
             currentTick += event.delta || 0;
 
+            // NoteOn (velocity > 0)
             if (event.type === 8 && event.subtype === 9 && event.param2 > 0) {
                 if (lastEventWasNoteOff && currentTick > lastNoteEndTick) {
                     const restTicks = currentTick - lastNoteEndTick;
                     if (restTicks >= MIN_REST_DURATION) {
                         output += `${ticksToRestDuration(restTicks / 2, ticksPerBeat)}   [${Math.round(restTicks)}]\n`;
                     } else {
-                        // Корегуємо початок наступної ноти, ігноруючи коротку паузу
                         activeNotes[event.param1] = lastNoteEndTick;
                     }
                 }
                 activeNotes[event.param1] = currentTick;
                 lastEventWasNoteOff = false;
             }
+            // NoteOff (або NoteOn з velocity === 0)
             else if ((event.type === 8 && event.subtype === 8) ||
-                (event.type === 8 && event.subtype === 9 && event.param2 === 0)) {
+                     (event.type === 8 && event.subtype === 9 && event.param2 === 0)) {
                 if (activeNotes[event.param1] !== undefined) {
-                    let durationTicks = currentTick - activeNotes[event.param1];
-                    // Округлюємо тривалість, якщо вона на 10 ticks менша від наступного рівня
+                    const startTick = activeNotes[event.param1];
+                    let durationTicks = currentTick - startTick;
                     durationTicks = roundDuration(durationTicks, ticksPerBeat);
-                    output += `${ticksToDuration(durationTicks / 2, ticksPerBeat)}   ${getVexFlowNoteName(event.param1)}  [${event.param1} : ${Math.round(durationTicks)}]\n`;
+
+                    const barIndex = ticksPerMeasure > 0 ? (Math.floor(startTick / ticksPerMeasure) + 1) : 1;
+                    const tickInBar = ticksPerMeasure > 0 ? Math.round(startTick % ticksPerMeasure) : startTick;
+
+                    // Додаємо лог тільки для Experimental/Notation
+                    if (typeof window !== 'undefined' && window.location.pathname.includes("Experimental/Notation")) {
+                        console.log(`NoteAnalizer: track=${index}, startTick=${startTick}, barIndex=${barIndex}, tickInBar=${tickInBar}, note=${event.param1}`);
+                    }
+
+                    output += `${ticksToDuration(durationTicks / 2, ticksPerBeat)}   ${getVexFlowNoteName(event.param1)}  [${event.param1} : ${Math.round(durationTicks)}]   ${barIndex}:${tickInBar}\n`;
+
                     lastNoteEndTick = currentTick;
                     lastEventWasNoteOff = true;
                     delete activeNotes[event.param1];
@@ -44,6 +63,30 @@ export function formatMidiNotesForDisplay(midiFile) {
     return output;
 }
 ;
+
+// Пошук першого музичного розміру у файлі (перший трак з подією 0x58). Якщо не знайдено — 4/4
+function getFirstTimeSignature(midiFile) {
+    try {
+        for (let ti = 0; ti < midiFile.tracks.length; ti++) {
+            const events = midiFile.getTrackEvents(ti);
+            for (const ev of events) {
+                if (ev.subtype === 0x58) {
+                    const numerator = ev.data?.[0] ?? 4;
+                    const denominator = ev.data?.[1] ? Math.pow(2, ev.data[1]) : 4;
+                    return { numerator, denominator };
+                }
+                // Деякі збірки MIDIFile можуть кодувати як meta
+                if (ev.type === 0xFF && ev.metaType === 0x58 && Array.isArray(ev.data)) {
+                    const numerator = ev.data?.[0] ?? 4;
+                    const denominator = ev.data?.[1] ? Math.pow(2, ev.data[1]) : 4;
+                    return { numerator, denominator };
+                }
+            }
+        }
+    } catch { /* ignore, повернемо 4/4 */ }
+    return { numerator: 4, denominator: 4 };
+}
+
 // Функція для округлення тривалості
 export function roundDuration(durationTicks, ticksPerBeat) {
     const standardDurations = [

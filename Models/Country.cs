@@ -10,7 +10,10 @@ namespace Melodies25.Models
         public int ID { get; set; }  // Унікальний ідентифікатор для автора
         
         [Required]
-        public string Name { get; set; }  // Прізвище автора
+        public string Name { get; set; }  // Назва країни
+
+        [Required]
+        public string NameEn { get; set; }  // Назва країни
 
         [NotMapped]
         public int? AuthorsCount { get; set; }

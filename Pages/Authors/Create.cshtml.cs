@@ -10,9 +10,11 @@ using Melodies25.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.DotNet.Scaffolding.Shared;
 using Music;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Melodies25.Pages.Authors
 {
+    [Authorize]
     public class CreateModel : PageModel
     {
         private readonly Melodies25.Data.Melodies25Context _context;

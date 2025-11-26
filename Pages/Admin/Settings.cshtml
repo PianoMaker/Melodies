@@ -1,0 +1,54 @@
+﻿@page
+@model Melodies25.Pages.Admin.SettingsModel
+@{
+    ViewData["Title"] = "Налаштування";
+}
+
+<div class="container infocontainer">
+
+<h1>Налаштування</h1>
+
+    <h2>Логування</h2>
+    <form method="post" class="mt-3">
+
+        <div class="form-check">
+            <input asp-for="Logging.AlgorithmDiagnostics" class="form-check-input" />
+            <label asp-for="Logging.AlgorithmDiagnostics" class="form-check-label">Algorithm diagnostics (match lists)</label>
+        </div>
+
+        <div class="form-check mt-2">
+            <input asp-for="Logging.Comparing" class="form-check-input" />
+            <label asp-for="Logging.Comparing" class="form-check-label">Порівняння мелодій</label>
+        </div>
+
+        <div class="form-check mt-2">
+            <input asp-for="Logging.PatternSearch" class="form-check-input" />
+            <label asp-for="Logging.PatternSearch" class="form-check-label">Пошук за мелодією</label>
+        </div>
+
+        <div class="form-check mt-2">
+            <input asp-for="Logging.CreateAudio" class="form-check-input" />
+            <label asp-for="Logging.CreateAudio" class="form-check-label">Генерування аудіо</label>
+        </div>
+
+        <div class="form-check mt-2">
+            <input asp-for="Logging.DbQueries" class="form-check-input" />
+            <label asp-for="Logging.DbQueries" class="form-check-label">DB queries</label>
+        </div>
+
+        <!-- Added control for MIDI logging (LoggingManager.ReadMidi / Logging.CompareMidi) -->
+        <div class="form-check mt-2">
+            <input asp-for="Logging.CompareMidi" class="form-check-input" />
+            <label asp-for="Logging.CompareMidi" class="form-check-label">Логування MIDI (ReadMidi)</label>
+        </div>
+
+        <button type="submit" class="btn btn-melody mt-5">Save</button>
+
+
+        @if (TempData["Saved"] != null)
+        {
+            <div class="text-success mt-2">@TempData["Saved"]</div>
+        }
+
+    </form>
+</div>

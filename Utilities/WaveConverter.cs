@@ -35,7 +35,10 @@ namespace Melodies25.Utilities
         public static void GenerateMp3(List<(double frequency, int durationMs)> sequence, string mp3Path)
         {
             int sampleRate = 44100;
-            Console.WriteLine("Starting GenerateMp3 method...");
+            if (LoggingManager.CreateAudio)
+            {
+                Console.WriteLine("Starting GenerateMp3 method...");
+            }
 
             var waveProvider = new SynthWaveProvider(sequence, sampleRate);
             //Console.WriteLine("waveProvider is ready");
@@ -49,24 +52,32 @@ namespace Melodies25.Utilities
 
         private static void WaveToMp3(string wavPath, string mp3Path)
         {
-            Console.WriteLine("Starting MP3 conversion...");
+            if (LoggingManager.CreateAudio)
+            {
+                Console.WriteLine("Starting MP3 conversion...");
+            }
 
             using (var reader = new WaveFileReader(wavPath))
             using (var mp3Writer = new LameMP3FileWriter(mp3Path, reader.WaveFormat, LAMEPreset.ABR_128))
             {
                 reader.CopyTo(mp3Writer);
-                Console.WriteLine("MP3 conversion completed.");
+                if (LoggingManager.CreateAudio)
+                                    Console.WriteLine("MP3 conversion completed.");
+                
             }
 
             File.Delete(wavPath);
-            Console.WriteLine("Temporary WAV file deleted.");
+            if (LoggingManager.CreateAudio)      
+                Console.WriteLine("Temporary WAV file deleted.");
 
-            Console.WriteLine($"File is ready at {mp3Path}");
+            if (LoggingManager.CreateAudio)
+                            Console.WriteLine($"File is ready at {mp3Path}");
         }
 
         private static void CreateWave(int sampleRate, SynthWaveProvider waveProvider, string wavPath)
         {
-            Console.WriteLine("Starting WAV file creation...");
+            if (LoggingManager.CreateAudio)
+                Console.WriteLine("Starting WAV file creation...");
 
             using (var waveStream = new WaveFileWriter(wavPath, waveProvider.WaveFormat))
             {
@@ -83,20 +94,24 @@ namespace Melodies25.Utilities
 
                     if (totalBytesWritten >= maxBytes)
                     {
-                        Console.WriteLine("Reached maximum file size. Stopping.");
+                        if (LoggingManager.CreateAudio)
+                            Console.WriteLine("Reached maximum file size. Stopping.");
                         break;
                     }
 
                 }
             }
 
-            Console.WriteLine("WAV file created successfully.");
+            if (LoggingManager.CreateAudio)
+                Console.WriteLine("WAV file created successfully.");
         }
 
         public static async Task GenerateMp3Async(List<(double frequency, int durationMs)> sequence, string mp3Path)
         {
             int sampleRate = 44100;
-            MessageL(COLORS.olive, "Starting GenerateMp3Async method...");
+            if (LoggingManager.CreateAudio)            
+                MessageL(COLORS.olive, "Starting GenerateMp3Async method...");
+            
 
             var waveProvider = new SynthWaveProvider(sequence, sampleRate);
             string wavPath = "output.wav";
@@ -106,24 +121,30 @@ namespace Melodies25.Utilities
 
         private static async Task WavToMp3Async(string wavPath, string mp3Path)
         {
-            Console.WriteLine("Starting MP3 conversion...");
+            if (LoggingManager.CreateAudio)
+                Console.WriteLine("Starting MP3 conversion...");
 
             using (var reader = new WaveFileReader(wavPath))
             using (var mp3Writer = new LameMP3FileWriter(mp3Path, reader.WaveFormat, LAMEPreset.ABR_128))
             {
                 await reader.CopyToAsync(mp3Writer);
-                Console.WriteLine("MP3 conversion completed.");
+                if (LoggingManager.CreateAudio)
+                    Console.WriteLine("MP3 conversion completed.");
             }
 
             File.Delete(wavPath);
-            Console.WriteLine("Temporary WAV file deleted.");
-            Console.WriteLine($"File is ready at {mp3Path}");
+            if (LoggingManager.CreateAudio)
+            {
+                Console.WriteLine("Temporary WAV file deleted.");
+                Console.WriteLine($"File is ready at {mp3Path}");
+            }
         }
 
         private static async Task CreateWaveAsync(int sampleRate, SynthWaveProvider waveProvider, string wavPath)
         {
-            Console.WriteLine("Starting WAV file creation...");
-
+            if (LoggingManager.CreateAudio)
+                            Console.WriteLine("Starting WAV file creation...");
+            
             using (var waveStream = new WaveFileWriter(wavPath, waveProvider.WaveFormat))
             {
                 byte[] buffer = new byte[Math.Min(waveProvider.WaveFormat.BlockAlign * 1024, 65536)];
@@ -138,18 +159,24 @@ namespace Melodies25.Utilities
 
                     if (totalBytesWritten >= maxBytes)
                     {
-                        Console.WriteLine("Reached maximum file size. Stopping.");
+                        if (LoggingManager.CreateAudio)
+                            Console.WriteLine("Reached maximum file size. Stopping.");                        
                         break;
                     }
                 }
             }
-
-            Console.WriteLine($"WAV file {wavPath} created successfully.");
+            if (LoggingManager.CreateAudio)
+            {
+                Console.WriteLine($"WAV file {wavPath} created successfully.");
+            }
         }
 
         public static void GenerateMp3(Note note, string outputPath)
         {
-            Console.WriteLine($"Preparing to play {note.GetName()}...");
+            if (LoggingManager.CreateAudio)
+            {
+                Console.WriteLine($"Preparing to play {note.GetName()}...");
+            }
             List<(double frequency, int durationMs)> sequence = new();
             sequence.Add(new(Pitch_to_hz(note.AbsPitch()), note.AbsDuration()));
             sequence.Add(new(0, 200));
@@ -158,7 +185,7 @@ namespace Melodies25.Utilities
 
 
 
-        public static void GenerateMp3(Melody melody, string outputPath)
+        public static void GenerateMp3(MusicMelody melody, string outputPath)
         {
 
             List<(double frequency, int durationMs)> sequence = new();
@@ -174,14 +201,15 @@ namespace Melodies25.Utilities
 
         public async static void GenerateMp3Async(Note note, string outputPath)
         {
-            Console.WriteLine($"Preparing to play {note.GetName()}...");
+            if (LoggingManager.CreateAudio)
+                Console.WriteLine($"Preparing to play {note.GetName()}...");
             List<(double frequency, int durationMs)> sequence = new();
             sequence.Add(new(Pitch_to_hz(note.AbsPitch()), note.AbsDuration()));
             sequence.Add(new(0, 200));
             await GenerateMp3Async(sequence, outputPath);
         }
 
-        public async static Task GenerateMp3Async(Melody melody, string outputPath)
+        public async static Task GenerateMp3Async(MusicMelody melody, string outputPath)
         {
 
             List<(double frequency, int durationMs)> sequence = new();

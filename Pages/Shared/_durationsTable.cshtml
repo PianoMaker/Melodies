@@ -2,31 +2,60 @@
     /*Панель вибору тривалостей для вводу мелодій*/
 *@
 @{
+    // Prefer TempData values (Peek so they are not consumed) then fallback to 4
+    object tmpNum = TempData.Peek("TimeSignatureNumerator");
+    object tmpDen = TempData.Peek("TimeSignatureDenominator");
+    int tsNum = 4;
+    int tsDen = 4;
+
+    if (tmpNum is not null && int.TryParse(tmpNum.ToString(), out var n)) tsNum = n;
+    if (tmpDen is not null && int.TryParse(tmpDen.ToString(), out var d)) tsDen = d;
 }
 <div id="durationspanel" class="pianodisplay notesinfo">
-    <button class="durationbutton durbtn">
-        <img src="~/images/whole_note.png" alt="Whole Note" />
-    </button>
-    <button class="durationbutton durbtn">
-        <img src="~/images/half_note.png" alt="Half Note" />
-    </button>
-    <button class="durationbutton durbtn">
-        <img src="~/images/quarter_note.png" alt="Quarter Note" />
-    </button>
-    <button class="durationbutton durbtn">
-        <img src="~/images/eighth_note.png" alt="Eighth Note" />
-    </button>
-    <button class="durationbutton durbtn">
-        <img src="~/images/sixteenth_note.png" alt="Sixteenth Note" />
-    </button>
-    <button class="durationbutton durbtn">
-        <img src="~/images/32nd_note.png" alt="Thirty-Second Note" />
-    </button>
-    <button id="dotbutton" class="durbtn">
-        <p>.</p>
-    </button>
-    <button id="pausebutton" class="durbtn" style="width:80px">
-        <p><i>/pause/</i></p>
-    </button>
-    <script src="~/js/switchDurations.js"></script>
+    <div id="durationbuttons" style="display: flex;">
+        <button class="durationbutton durbtn">
+        </button>
+        <button class="durationbutton durbtn">
+            <img src="~/images/half_note.png" alt="Half Note" />
+        </button>
+        <button class="durationbutton durbtn">
+            <img src="~/images/quarter_note.png" alt="Quarter Note" />
+        </button>
+        <button class="durationbutton durbtn">
+            <img src="~/images/eighth_note.png" alt="Eighth Note" />
+        </button>
+        <button class="durationbutton durbtn">
+            <img src="~/images/sixteenth_note.png" alt="Sixteenth Note" />
+        </button>
+        <button class="durationbutton durbtn">
+            <img src="~/images/32nd_note.png" alt="Thirty-Second Note" />
+        </button>
+        <button id="dotbutton" class="durbtn">
+            <p>.</p>
+        </button>
+        <button id="pausebutton" class="durbtn" style="width:80px">
+            <p><i>/pause/</i></p>
+        </button>
+        <script src="~/js/switchDurations.js" asp-append-version="true"></script>
+    </div>
+    <div id="timesignature">
+        <label class="form-label mb-1">Музичний розмір</label>
+        <div class="settimesignature">
+            <input type="number" id="TimeSignatureNumerator" name="TimeSignatureNumerator" form="notesearchForm" min="1" value="@tsNum" class="form-control" style="width:60px" />
+            <span class="fs-5">/</span>
+            <select name="TimeSignatureDenominator" id="TimeSignatureDenominator" form="notesearchForm" class="form-select" style="width:70px">
+                @foreach (var denom in new[] { 2, 4, 8, 16 })
+                {
+                    if (tsDen == denom)
+                    {
+                        <option value="@denom" selected>@denom</option>
+                    }
+                    else
+                    {
+                        <option value="@denom">@denom</option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
 </div>

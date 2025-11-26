@@ -2,19 +2,27 @@
 @model Melodies25.Pages.Melodies.SearchModel
 
 @{
-    ViewData["Title"] = "Мелодія - пошук";
-    var melodyPattern = ViewData["melodypattern"] as List<string>;    
-    var matchedMelodiesCount = ViewData["matchedMelodiesCount"] as int? ?? 0;    
-    
+    ViewData["Title"] = "Мелодія - Пошук";
+    // Pull data prepared in the PageModel for display blocks below
+    var melodyPattern = ViewData["melodypattern"] as IEnumerable<string>;
+    var matchedMelodiesCount = ViewData["matchedMelodiesCount"] as int? ?? 0;
+    int? numerator = Model.TimeSignatureNumerator;
+    int? denominator = Model.TimeSignatureDenominator;
+    int currentSum = 0;
 }
 
-<h1>Пошук</h1>
-<div class="searchcontainer h-100">
+@section Styles {
+    <link rel="stylesheet" href="~/css/notes.css" asp-append-version="true" />
+}
+<div class="infocontainer mb-1">
+    <h1>Пошук</h1>
+</div>
+<div class="searchcontainer h-100 mt-1">
 
     <!--ЛІВОРУЧ-->
 
     <div class="searchleftcontainer">
-        <form method="post" asp-page-handler="search">
+        <form method="post" asp-page-handler="search" id="metaSearchForm">
             <label>Автор</label>
             <input type="text" asp-for="Author" class="form-control w-75" placeholder="шукати серед усіх" />
 
@@ -22,7 +30,7 @@
             <input type="text" asp-for="Title" class="form-control w-75" placeholder="шукати серед усіх" />
 
             <div class="form-check mt-2">
-                <input type="checkbox" id="ifPartly" asp-for="IfPartly" class="form-check-input" />
+                <input type="checkbox" id="ifPartly" asp-for="IfPartly" class="form-check-input" checked="checked" />
                 <label class="form-check-label" for="ifPartly">Частковий збіг</label>
             </div>
 
@@ -44,23 +52,57 @@
                 <option value="ais">ля♯ / сі♭</option>
                 <option value="h">сі</option>
             </select>
-            <button type="submit" class="btn btn-primary">Пошук</button>
+            <button type="submit" class="btn btn-melody">Пошук</button>
         </form>
+
     </div>
 
     <!--ПРАВОРУЧ-->
-    <div class="searchrightcontainer">
-        <!--КНОПКИ УПРАВЛІННЯ І Нотний рядок-->
+    <div class="notesearchrightcontainer">
+        <!--КНОПКИ УПРАВЛІННЯ, Нотний рядок і кнопка "Пошук"-->
         @await Html.PartialAsync("_pianoDisplay")
+
+        <!--режим пошуку-->
+        <div class="d-flex align-items-center gap-3 my-2">
+            <div class="form-check me-3">
+                <input class="form-check-input" type="radio" name="SearchAlgorithm"
+                       value="Substring" id="algSubstring" form="notesearchForm"
+                       @(Model.SearchAlgorithm?.Equals("Substring", StringComparison.OrdinalIgnoreCase) == true ? "checked" : null) />
+                <label class="form-check-label" for="algSubstring">Longest common substring</label>
+            </div>
+            <div class="form-check d-flex align-items-center gap-2">
+                <input class="form-check-input" type="radio" name="SearchAlgorithm"
+                       value="Subsequence" id="algSubsequence" form="notesearchForm"
+                       @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? "checked" : null) />
+                <label class="form-check-label" for="algSubsequence">Longest common subsequence</label>
+                <!-- LCS max gap slider (1..3) -->
+                <input type="range" min="1" max="3" step="1" value="@Model.MaxGap" id="lcsGap"
+                       class="form-range ms-2" style="width:120px" form="notesearchForm" name="MaxGap"
+                       disabled="@((Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true) ? null : "disabled")" />
+                <span class="small ms-1 @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? null : "text-muted")">gap: <span id="lcsGapVal">@Model.MaxGap</span></span>
+            </div>
+            <div class="form-check d-flex align-items-center gap-2">                                
+                <input asp-for="IfIntonation" class="form-check-input" id="ifIntonation" form="notesearchForm" checked="checked" />
+                <label class="form-check-label" for="ifIntonation">Мелодичний малюнок</label>
+            </div>
+            <div class="form-check d-flex align-items-center gap-2">                
+                <input asp-for="IfRhythm" class="form-check-input" id="ifRhythm" form="notesearchForm" />
+                <label class="form-check-label" for="ifRhythm">Ритм</label>
+            </div>
+        </div>
 
         <!--МІЙ СТЕЙНВЕЙ-->
         @await Html.PartialAsync("_PianoKeys")
-        
+
         <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
         @await Html.PartialAsync("_durationsTable")
 
         <!--ТАБЛО НОТ ВНИЗУ -->
         <div id="innerNotesContainer">
+            <!-- LIVE notation (stays on top, updated as user types/clicks)-->
+            <div id="liveNotation" class="mb-3"></div>
+            <div id="patternComments" style="display:none"></div>
+
             @if (@Model.NewPattern is not null)
             {
                 @for (int index = 0; index < @Model.NewPattern.Count(); index++)
@@ -92,18 +134,12 @@
             }
             else
             {
-                <p>no notes have been entered</p>
+                <p id="noNotesMsg">жодної ноти не введено</p>
             }
         </div>
         <script type="module" src="~/js/noteTable.js"></script>
 
-        <div>@Model.ErrorWarning</div>
-
-        <script>
-            console.log("hiding NoteSearch");
-            document.getElementById("melodyForm").style.display = "none";
-            document.getElementById("createMIDI").style.display = "none";
-        </script>
+        
         <!--АУДІО-->
 
         <audio id="audioPlayer" controls autoplay style="display: none">
@@ -115,228 +151,300 @@
 </div>
 
 
-<!-- ОПИС СПІВПАДІННЯ -->
-<div class="notescontainer">
+<!-- ОПИС ВВЕДЕНИХ НОТ -->
+<div class="infocontainer">
+    <h2>Результати пошуку</h2>
+
+
     @if (melodyPattern != null)
     {
-        <p>Введено мелодію:     
+        <p>
+            Введено мелодію:
             @foreach (var notes in melodyPattern)
             {
                 <text>@notes </text>
             }
         </p>
     }
-</div>
 
-<!-- ВІДОБРАЖЕННЯ  МЕЛОДІЇ ЩО ЗБІГАЄТЬСЯ-->
-<div class="notescontainer">
-    @for (int i = 0; i < matchedMelodiesCount; i++)
-    {
-        var songPattern = ViewData[$"songpattern{i}"] as List<string>;
-        var title = Model.MatchedMelodies[i].melody.Title;
-        var startposition = Model.MatchedMelodies[i].position;
-        var length = Model.MatchedMelodies[i].commonLength;
-        var endposition = startposition + length;
 
-        if (songPattern != null)
+    <!-- ВІДОБРАЖЕННЯ  МЕЛОДІЇ ЩО ЗБІГАЄТЬСЯ-->
+    <div class="notescontainer" id="matchedMelodiesContainer">
+        @for (int i = 0; i < matchedMelodiesCount; i++)
         {
-            var @melodyId = $"melody{i}";
-            <div id="@melodyId">
-                <p>@title</p>
-                <p>
-                @for(int j = 0; j<songPattern.Count; j++)
+            var songPattern = ViewData[$"songpattern{i}"] as List<string>;  //ноти мелодії, що збігаються
+            var title = Model.MatchedMelodies[i].Melody.Title;              //назва мелодії
+            var startposition = Model.MatchedMelodies[i].Position;          //позиція початку збігу
+            var length = Model.MatchedMelodies[i].CommonLength;             //довжина збігу
+            var endposition = startposition + length;                       //позиція кінця збігу
+            var filePath = Model.MatchedMelodies[i].Melody.FilePath;        //шлях до файлу
+            var midiUrl = string.IsNullOrEmpty(filePath) ? null : Url.Content($"~/melodies/{filePath}");
+            var matchedIndices = ViewData[$"songmatched{i}"] as List<int> ?? new List<int>(); //для підсвітки нот, що збігаються за індексами
+            bool isSubseq = Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true;
+
+            if (songPattern != null)
+            {
+                var @melodyId = $"melody{i}";
+                var notationId = $"notation_match_{i}";
+                var commentsId = $"comments_match_{i}";
+                <div id="@melodyId" class="mb-3 melody-block" style="cursor:pointer">
+                    <!--НАЗВА-->
+                    <div class="d-flex align-items-center gap-2">
+                        <button id="previoussong" type="button" class="btn btn-outline-secondary song-nav prev" aria-label="previous">
+                            <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                        </button>
+                        <p class="mb-0">Пісня: <span class="matchedsongname">@title</span></p>
+                        <button id="nextsong" type="button" class="btn btn-outline-secondary song-nav next" aria-label="next">
+                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
+                    <!--ПЕРЕЛІК НОТ-->
+                    <p id="noteslist">
+                        @for (int j = 0; j < songPattern.Count; j++)
+                        {
+                            if (isSubseq)
+                            {
+                                if (matchedIndices.Contains(j))
+                                {
+                                    <span style="color:darkmagenta">@songPattern[j]</span>
+                                }
+                                else
+                                {
+                                    <text>@songPattern[j] </text>
+                                }                                
+                            }
+                            else
+                            {
+                                // substring or default: keep contiguous highlight behavior
+                                if (j >= startposition && j < endposition)
+                                {
+                                    <span style="color:darkmagenta">@songPattern[j]</span>
+                                }
+                                else
+                                {
+                                    <text>@songPattern[j] </text>
+                                }
+                            }                         
+                        }
+                    </p>
+                    <!--ТРАНСПОЗИЦІЯ-->
+                    @if (isSubseq)
+                    {
+                        <div class="small text-muted">Транспозиція @(Model.MatchedMelodies[i].BestShift) півтонів.</div>
+                    }
+
+
+                    @if (!string.IsNullOrEmpty(midiUrl))
+                    {
+                        <!-- НОТАЦІЯ ТУТ -->
+                        <div id="@notationId"
+                             class="mb-2"
+                             data-midi-url="@midiUrl"
+                             data-start-position="@startposition"
+                             data-comments-id="@commentsId"></div>
+                        <!-- КОМЕНТАРІ ТУТ -->
+                        <div id="@commentsId" class="small text-muted" data-suppress-summary="1"></div>
+                    }
+
+                </div>
+            }
+            else
+            {
+                <p>Мелодія @i не знайдена.</p>
+            }
+        }
+    </div>
+    <div class="notescontainer">
+        <p>@Model.Description</p>
+    </div>
+
+
+    <!-- ТАБЛИЦЯ РЕЗУЛЬТАТІВ -->
+
+    <table class="table">
+
+        <thead>
+            <tr>
+                <th>Назва</th>
+                <th>Автор</th>
+                <th>Файл</th>
+                @if (Model.NoteSearch is true)
                 {
-                    if(j>=startposition && j<endposition)
-                    {
-                        <span style="color:darkmagenta">@songPattern[j]</span>
-                    }
-                    else
-                    {
-                    <text>@songPattern[j] </text>
-                    }
+                    <th>Довжина <br>збігу</th>
+                    <th>на позиції</th>
                 }
-                </p> 
-                 @* <p>@string.Join(", ", songPattern)</p>  *@
-            </div>
-        }
-        else
-        {
-            <p>Мелодія @i не знайдена.</p>
-        }
-    }
+                <th class="col-actions">Редагувати/Вилучити</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @if (Model.MatchedMelodies is not null && Model.MatchedMelodies.Count > 0 && Model.NoteSearch is true)
+            {
+                <!--якщо пошук за нотами-->
+                @foreach (var mm in Model.MatchedMelodies)
+                {
+                    var item = mm.Melody;
+                    var matchLength = mm.CommonLength;
+                    var position = mm.Position;
+                    var pairs = mm.Pairs;
+                    <tr>
+                        <td>
+                            <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
+                        </td>
+                        <!--АВТОР-->
+                        <td>
+                            @if (item.Author is not null)
+                            {
+                                if (item.Author.Surname == "Українська народна пісня")
+                                {
+                                    <span class="song-title" data-full="Українська народна пісня" data-short="укр. нар. пісня">
+                                        Українська народна пісня
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="author-name">@item.Author.Name</span>
+                                    <span> @Html.DisplayFor(modelItem => item.Author.Surname)</span>
+                                }
+                            }
+                        </td>
+                        <!--файл-->
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.FilePath))
+                            {
+                                var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
+                                var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
+                                <div style="display:inline-flex">
+                                    <a href="@midifilepath" download class="btn btn-outline-dark light-background">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <form method="post">
+                                        <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.FilePath"
+                                                class="btn btn-outline-dark light-background playbutton"
+                                                data-filepath="@item.FilePath" id="playButton_@item.FilePath">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    </form>
+                                    <button id="stopButton_@item.FilePath" disabled="disabled"
+                                            class="stopButton btn btn-outline-dark light-background">
+                                        <i class="fas fa-stop"></i>
+                                    </button>
+                                    <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: none">
+                                        <source src="@mp3filepath" type="audio/mpeg" />
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                </div>
+                            }
+                            else
+                            {
+                                <span>Файл не доступний</span>
+                            }
+                        </td>
+                        <td>@matchLength</td> @* Відображаємо довжину збігу *@
+                        <td>@position</td> @* На якій позиції співпадає *@
+                        <td class="col-actions">
+                            <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
+                            <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
+                        </td>
+                    </tr>
+                }
+            }
+            else if (Model.Melody is not null && Model.Melody.Count > 0 && Model.NoteSearch is false)
+            {
+                <!--якщо пошук за назвами-->
+                @foreach (var item in Model.Melody)
+                {
+                    <tr>
+                        <!--Назва-->
+                        <td>
+                            <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
+                        </td>
+                        <!--АВТОР-->
+                        <td>
+                            @if (item.Author is not null)
+                            {
+                                if (item.Author.Surname == "Українська народна пісня")
+                                {
+                                    <span class="song-title" data-full="Українська народна пісня" data-short="укр. нар. пісня">
+                                        Українська народна пісня
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="author-name">@item.Author.Name</span>
+                                    <span> @Html.DisplayFor(modelItem => item.Author.Surname)</span>
+                                }
+                            }
+                        </td>
+                        <!--Файл-->
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.FilePath))
+                            {
+                                var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
+                                var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
+                                <div style="display:inline-flex">
+                                    <a href="@midifilepath" download class="btn btn-outline-dark light-background">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <form method="post">
+                                        <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.FilePath"
+                                                class="btn btn-outline-dark light-background playbutton"
+                                                data-filepath="@item.FilePath" id="playButton_@item.FilePath">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    </form>
+                                    <button id="stopButton_@item.FilePath" disabled="disabled"
+                                            class="stopButton btn btn-outline-dark light-background">
+                                        <i class="fas a-stop"></i>
+                                    </button>
+                                    <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: none">
+                                        <source src="@mp3filepath" type="audio/mpeg" />
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                </div>
+                            }
+                            else
+                            {
+                                <span>Файл не доступний</span>
+                            }
+                        </td>
+                        <!-- редагувати/вилучити -->
+                        <td class="col-actions">
+                            <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
+                            <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
+                        </td>
+                    </tr>
+                }
+
+            }
+
+            else
+            {
+                <!--якщо нічого не знайдено-->
+
+                <tr><td>@Model.Description</td></tr>
+
+            }
+        </tbody>
+    </table>
 </div>
 
 
-<!--ВЕРСІЯ ДЛЯ ОДНІЄЇ МЕЛОДІЇ -->
+<script src="~/js/play.js" asp-append-version="true"></script>
+<script src="~/js/search.js" asp-append-version="true"></script>
+<script src="~/js/createMelody.js" asp-append-version="true"></script>
+<!-- Pattern renderer dependencies and live renderer for Search page only -->
+<script src="~/lib/midirender/vexflow.js"></script>
+<script src="~/lib/midirender/midiparser.js"></script>
+<script src="~/lib/midirender/midiparser_ext.js"></script>
+<script src="~/lib/midirender/makeBeams.js"></script>
+<script src="~/lib/midirender/rendererUtils.js"></script>
+<script src="~/lib/midirender/midiRenderer.js"></script>
+<script src="~/lib/midirender/patternRenderer.js"></script>
 
-@* @if (songPattern != null)
-{
-    <p>Інтервали у пісні:</p>
-    <p>
-        @foreach (var interval in songPattern)
-        {
-            <text>@interval </text>
-        }
-    </p>
-}
- *@
+<!-- Shared setup (must load before wrapper) -->
+<script src="~/lib/midirender/setupLiveNotationCreate.js"></script>
 
-<!-- ТАБЛИЦЯ РЕЗУЛЬТАТІВ -->
-
-<p>@Model.Description</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Назва</th>
-            <th>Автор</th>
-            <th>Файл</th>
-            @if (Model.NoteSearch is true)
-            {
-                <th>Довжина <br>збігу</th>
-                <th>на позиції</th>
-            }
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-
-        @if (Model.MatchedMelodies is not null && Model.MatchedMelodies.Count > 0 && Model.NoteSearch is true)
-        {
-            <!--якщо пошук за нотами-->
-            @foreach (var (item, matchLength, position) in Model.MatchedMelodies)
-            {
-                <tr>
-                    <td>
-                        <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
-                    </td>
-                    <!--Автор-->
-                    <td>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</td>
-                    <!--файл-->
-                    <td>
-                        @if (!string.IsNullOrEmpty(item.FilePath))
-                        {
-                            var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
-                            var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
-                            <div style="display:inline-flex">
-                                <a href="@midifilepath" download class="btn btn-outline-dark light-background">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                                <form method="post">
-                                    <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.FilePath"
-                                            class="btn btn-outline-dark light-background playbutton"
-                                            data-filepath="@item.FilePath" id="playButton_@item.FilePath">
-                                        <i class="fas fa-play"></i>
-                                    </button>
-                                </form>
-                                <button id="stopButton_@item.FilePath" disabled="disabled"
-                                        class="stopButton btn btn-outline-dark light-background">
-                                    <i class="fas fa-stop"></i>
-                                </button>
-                                <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: none">
-                                    <source src="@mp3filepath" type="audio/mpeg" />
-                                    Your browser does not support the audio element.
-                                </audio>
-                            </div>
-                        }
-                        else
-                        {
-                            <span>Файл не доступний</span>
-                        }
-                    </td>
-                    <td>@matchLength</td> @* Відображаємо довжину збігу *@
-                    <td>@position</td> @* На якій позиції співпадає *@
-                    <td>
-                        <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
-                        <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
-                    </td>
-                </tr>
-            }
-        }
-        else if (Model.Melody is not null && Model.Melody.Count > 0 && Model.NoteSearch is false)
-        {
-            <!--якщо пошук за назвами-->
-            @foreach (var item in Model.Melody)
-            {
-                <tr>
-                    <!--Назва-->
-                    <td>
-                        <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
-                    </td>
-                    <!--Автор-->
-                    <td>@Html.DisplayFor(modelItem => item.Author.Name) @Html.DisplayFor(modelItem => item.Author.Surname)</td>
-                    <!--Файл-->
-                    <td>
-                        @if (!string.IsNullOrEmpty(item.FilePath))
-                        {
-                            var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
-                            var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
-                            <div style="display:inline-flex">
-                                <a href="@midifilepath" download class="btn btn-outline-dark light-background">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                                <form method="post">
-                                    <button type="submit" asp-page-handler="Play" asp-route-midiPath="@item.FilePath"
-                                            class="btn btn-outline-dark light-background playbutton"
-                                            data-filepath="@item.FilePath" id="playButton_@item.FilePath">
-                                        <i class="fas fa-play"></i>
-                                    </button>
-                                </form>
-                                <button id="stopButton_@item.FilePath" disabled="disabled"
-                                        class="stopButton btn btn-outline-dark light-background">
-                                    <i class="fas fa-stop"></i>
-                                </button>
-                                <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: none">
-                                    <source src="@mp3filepath" type="audio/mpeg" />
-                                    Your browser does not support the audio element.
-                                </audio>
-                            </div>
-                        }
-                        else
-                        {
-                            <span>Файл не доступний</span>
-                        }
-                    </td>
-
-                    <td>
-                        <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
-                        <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
-                    </td>
-                </tr>
-            }
-
-        }
-
-        else
-        {
-            <!--якщо нічого не знайдено-->
-
-            <tr><td>@Model.Description</td></tr>
-
-        }
-    </tbody>
-</table>
-
-
-<!-- АУДІО   -->
-
-<div class="controlcontainer infocontainer">
-
-    <p class="smallfont">@Model.Msg</p>
-    <p>@Model.ErrorWarning</p>
-    @if (TempData["AudioFile"] != null)
-    {
-        <p class="smallfont">@TempData["AudioFile"]</p>
-        <audio id="audioPlayer" controls autoplay style="display: none">
-            <source src="@TempData["AudioFile"]" type="audio/mpeg" />
-            Your browser does not support the audio element.
-        </audio>
-    }
-    else
-    {
-        <p class="smallfont">File is not ready</p>
-    }
-</div>
-
-<script src="~/js/play.js"></script>
-<script src="~/js/searchResults.js"></script>
-<script src="~/js/createMelody.js"></script>
+<!-- thin wrapper that calls setupLiveNotationOnCreate -->
+<script src="~/js/livePatternRenderer.js" asp-append-version="true"></script>

@@ -9,19 +9,25 @@
 
 }
 
-<h1>Додати пісню</h1>
-
-<hr />
-
-@if (ViewData["Message"] != null)
-{
-    <div class="alert alert-info">
-        @ViewData["Message"]
-    </div>
-
+@section Styles {
+    <link rel="stylesheet" href="~/css/notes.css" asp-append-version="true" />
 }
 
 <div class="searchcontainer h-100">
+<h1>Додати мелодію</h1>
+
+<hr />
+</div>
+
+@{
+    var message = TempData["Message"] as string;
+}
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-info">@message</div>
+}
+    <div class="searchcontainer h-100">
+
 
     <!--ЛІВОРУЧ-->
     <div class="searchleftcontainer">        
@@ -78,12 +84,14 @@
         <!-- СТВОРИТИ -->
             <div id="submitMelodyBtn" class="form-group" style="display:none; margin-top: 10px">
                 <input type="submit" value="Створити" class="btn btn-primary btn-outline-dark bg-yellow">
+                <p id="midiIsNotReady">MIDI-файл не готовий</p>
+                <p id="midiIsReady" style="display:none">MIDI-файл готовий</p>
             </div>
         </form>
         <!-- ДОДАТИ АВТОРА -->
         <form method="post">
             <div class="form-group" style="margin-top: 10px">
-                <button id="createAuthorBtn" asp-page-handler="addform" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light">Додати автора</button>
+                <button id="createAuthorBtn" asp-page-handler="addform" value="Додати автора" class="btn btn-outline-dark light-background border-dark m-2 btn-compact-40 align-self-start">Додати автора</button>
             </div>
             @if (Model.ShowAuthor)
             {
@@ -93,12 +101,11 @@
                 </div>
                 <p id="authorWarning"></p>
                 <div class="form-group mt-3">
-                    <button type="submit" value="Додати автора" class="btn btn-primary btn-outline-dark bg-light">Додати</button>
-
+                    <button type="submit" value="Додати автора" class="btn btn-outline-dark light-background border-dark m-2 btn-compact-40 align-self-start">Додати</button>
                 </div>
             }
         </form>
-        <a asp-page="Index" class="btn btn-primary btn-outline-dark bg-light mt-3">Назад до списку</a>
+        <a asp-page="Index" class="btn btn-outline-dark light-background border-dark m-2 btn-compact-40 align-self-start">Назад до списку</a>
     </div>
     <!--ПРАВОРУЧ-->
 
@@ -149,7 +156,7 @@
             }
             else
             {
-                <p>no notes have been entered</p>
+                <p id="ifNotesEntered">жодної ноти не введено</p>
             }
         </div>
         <script type="module" src="~/js/noteTable.js"></script>
@@ -177,7 +184,9 @@
     }
     <script src="~/js/duplicate.js"></script>
     <script src="~/js/newAuthor.js"></script>
-    <script src="~/js/createMelody.js"></script>
+    <script src="~/lib/midirender/rendererUtils.js"></script> <!-- added; must come before any script using its helpers -->
+    <script src="~/lib/midirender/setupLiveNotationCreate.js" asp-append-version="true"></script>
+    <script src="~/js/createMelody.js" asp-append-version="true"></script>
     <script src="~/js/play.js"></script>
     <script src="~/js/openpiano.js"></script>
 }

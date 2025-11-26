@@ -4,12 +4,9 @@ using NAudio.Wave;
 using NAudio.Lame;
 using System.IO;
 using NAudio.Dsp;
-using Microsoft.CodeAnalysis.Elfie.Serialization;
-using Microsoft.DotNet.Scaffolding.Shared;
 using Music;
 using static Music.Engine;
 using static Music.Messages;
-using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 
 namespace Melodies25.Utilities
 {
@@ -109,7 +106,8 @@ namespace Melodies25.Utilities
                     {
 
                         _adsr.Gate(false);  // Запуск фази релізу
-                        Console.WriteLine($"Release phase started for note {_noteIndex}");
+                        if (LoggingManager.CreateAudio)
+                            Console.WriteLine($"Release phase started for note {_noteIndex}");
                         _samplesRemaining = durationMs * samplesPerMs; // Задаємо тривалість релізу
                     }
                 }
@@ -121,7 +119,8 @@ namespace Melodies25.Utilities
                         _phaseIncrement = 2 * Math.PI * frequency / _sampleRate;
                         _samplesRemaining = durationMs * samplesPerMs;
                         _adsr.Gate(true);  // Запуск ADSR
-                        MessageL(COLORS.gray, $"Recording note {_noteIndex}: {frequency} Hz, {durationMs} ms");
+                        if (LoggingManager.CreateAudio)
+                            MessageL(Music.COLORS.gray, $"Recording note {_noteIndex}: {frequency} Hz, {durationMs} ms");
                     }
                 }
 
@@ -283,7 +282,7 @@ namespace Melodies25.Utilities
             GenerateMp3(sequence, outputPath);
         }
 
-        public static void GenerateMp3(Melody melody, string outputPath)
+        public static void GenerateMp3(MusicMelody melody, string outputPath)
         {
 
             List<(double frequency, int durationMs)> sequence = new();
@@ -305,7 +304,7 @@ namespace Melodies25.Utilities
             await GenerateMp3Async(sequence, outputPath);
         }
 
-        public async static void GenerateMp3Async(Melody melody, string outputPath)
+        public async static void GenerateMp3Async(MusicMelody melody, string outputPath)
         {
 
             List<(double frequency, int durationMs)> sequence = new();

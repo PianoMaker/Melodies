@@ -2,35 +2,40 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+    // optional: prefer TempData values if present
+    var tmpNum = TempData.Peek("TimeSignatureNumerator");
+    var tmpDen = TempData.Peek("TimeSignatureDenominator");
+    string initNum = tmpNum != null ? tmpNum.ToString() : "4";
+    string initDen = tmpDen != null ? tmpDen.ToString() : "4";
 }
 <div id="pianoDiv" class="notesinfo" style="display:block">
-    <div style="display:block; width:100%">
-        <div id="saver" style="display:none">@Model.TempData["Keys"]</div><!--  тимчасове зберігання -->
+    <div id="lettersdisplay" style="display:block; width:100%">
+        <div id="saver" style="display:none">@TempData["Keys"]</div><!--  тимчасове зберігання -->
         <textarea id="pianodisplay" class="d-inline-block" style="width:90%" rows="2" placeholder="для вводу нот натискайте клавіші клавіатури або введіть код вручну">@Model.Keys</textarea>
     </div>
     <div id="buttonarea" style="display:block; width:60%">
         <!--СКИНУТИ-->
         <form method="post" asp-page-handler="reset" class="d-inline-block m-1">
-            <button type="submit" class="btn btn-outline-dark">Скинути</button>
+            <button type="submit" class="btn-melody">Скинути</button>
         </form>
         <!--ПОШУК-->
         <form id="notesearchForm" method="post" asp-page-handler="notesearch" class="d-inline-block m-1">
             <input type="hidden" name="Keys" id="keysInput-search" /><!--зберігає код натиснутих клавіш у поле Keys-->
-            <button id="searchBtn" type="submit" class="btn btn-outline-dark">Пошук</button><!--відправка через createMelody.js-->
+            <button id="searchBtn" type="submit" class="btn-melody">Пошук</button><!--відправка через createMelody.js-->
         </form>
         <!--ЗБЕРЕГТИ-->
         <form id="melodyForm" method="post" asp-page-handler="melody" class="d-inline-block m-1">
             <input type="hidden" name="Keys" id="keysInput-save" /><!--зберігає код натиснутих клавіш у поле Keys-->
-            <button id="createMIDI" type="submit" class="btn btn-outline-dark">Зберегти</button><!--відправка через createMelody.js-->
+            <button id="createMIDI" type="submit" class="btn-melody">Зберегти</button><!--відправка через createMelody.js-->
         </form>
         <div id="previewMp3path" style="display:none"> @Model.TempMp3FilePath</div>
         @if (TempData["HighlightPlayButton"] is not null)
         {
-            <button id="melodyPlayBtn" type="submit" class="btn btn-outline-dark" style="background-color: lightgreen"><i class="fas fa-play" style="color: green;"></i></button>
+            <button id="melodyPlayBtn" type="submit" class="btn-melody" style="background-color: lightgreen"><i class="fas fa-play" style="color: green;"></i></button>
         }
         else
         {
-            <button id="melodyPlayBtn" type="submit" class="btn btn-outline-dark"><i class="fas fa-play" style="color: gray;"></i></button>
+            <button id="melodyPlayBtn" type="submit" class="btn-melody"><i class="fas fa-play" style="color: gray;"></i></button>
         }
     </div>
 </div>

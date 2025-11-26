@@ -16,9 +16,11 @@ using static Music.MidiConverter;
 using static Melodies25.Utilities.PrepareFiles;
 using Melody = Melodies25.Models.Melody;
 using System.IO;
+using System.Diagnostics;
 
 namespace Melodies25.Pages.Melodies
 {
+    [Authorize(Roles = "Admin, Moderator")]
     public class EditModel : PageModel
     {
         private readonly Melodies25.Data.Melodies25Context _context;
@@ -46,24 +48,52 @@ namespace Melodies25.Pages.Melodies
         {
             MessageL(COLORS.yellow, "MELODIES/EDIT OnGet");
 
-
             if (id == null)
             {
                 return NotFound();
             }
 
             var melody = await _context.Melody
-                .Include(m => m.Author).
-                FirstOrDefaultAsync(m => m.ID == id);
+                .Include(m => m.Author)
+                .FirstOrDefaultAsync(m => m.ID == id);
+
             if (melody == null)
             {
                 return NotFound();
             }
+
             Melody = melody;
+
+            // Add file existence check and error handling
             if (Melody.FilePath is not null)
             {
                 var midiFilepath = Path.Combine(_environment.WebRootPath, "melodies", Melody.FilePath);
-                Tempo = (int)GetTempofromMidi(midiFilepath);
+                
+                try
+                {
+                    if (!System.IO.File.Exists(midiFilepath))
+                    {
+                        // Log the missing file
+                        MessageL(COLORS.red, $"MIDI file not found: {midiFilepath}");
+                        // Set a warning message that will be displayed to the user
+                        TempData["ErrorWarning"] = "MIDI файл не знайдено на сервері";
+                        // Set default tempo
+                        Tempo = 120; // Default tempo if file is missing
+                    }
+                    else
+                    {
+                        Tempo = (int)GetTempofromMidi(midiFilepath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the error
+                    MessageL(COLORS.red, $"Error reading MIDI file: {ex.Message}");
+                    // Set a user-friendly error message
+                    TempData["ErrorWarning"] = "Помилка читання MIDI файлу";
+                    // Set default tempo
+                    Tempo = 120;
+                }
             }
 
             GrayMessageL($"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}, Tempo = {Tempo}");
@@ -74,18 +104,18 @@ namespace Melodies25.Pages.Melodies
                 "F-dur", "B-dur", "Es-dur", "As-dur", "Des-dur", "Ges-dur", "Ces-dur",
                 "a-moll", "e-moll", "h-moll", "fis-moll", "cis-moll", "gis-moll", "dis-moll", "ais-moll",
                 "d-moll", "g-moll", "c-moll", "f-moll", "b-moll", "es-moll", "as-moll"
-            });            
+            });
 
             return Page();
         }
 
-        private async Task GetMidiMelody(Melody melody)
-        {
-            MidiFile midifile = GetMidiFile(melody);
-            Globals.lng = Music.LNG.uk;
-            Globals.notation = Music.Notation.eu;
-            melody.MidiMelody = await MidiConverter.GetMelodyFromMidiAsync(midifile);
-        }
+        //private async Task GetMidiMelody(MusicMelody melody)
+        //{
+        //    MidiFile midifile = GetMidiFile(melody);
+        //    Globals.lng = Music.LNG.uk;
+        //    Globals.notation = Music.Notation.eu;
+        //    melody.MidiMelody = await MidiConverter.GetMelodyFromMidiAsync(midifile);
+        //}
 
         private MidiFile GetMidiFile(Melody melody)
         {
@@ -95,10 +125,99 @@ namespace Melodies25.Pages.Melodies
             return midifile;
         }
 
+        // AJAX: Detect tonality from MIDI Key Signature meta-event and persist to DB
+        public async Task<JsonResult> OnGetDetectTonalityAsync(int id)
+        {
+            MessageL(COLORS.yellow, "MELODIES/DETECT TONALITY");
+            try
+            {
+                var melody = await _context.Melody.FirstOrDefaultAsync(m => m.ID == id);
+                if (melody == null)
+                {
+                    return new JsonResult(new { ok = false, error = "melody_not_found" });
+                }
+                if (string.IsNullOrWhiteSpace(melody.FilePath))
+                {
+                    return new JsonResult(new { ok = false, error = "no_file" });
+                }
+                var fullPath = Path.Combine(_environment.WebRootPath, "melodies", melody.FilePath);
+                var tonality = MidiKeySignatureDetector.TryDetectTonality(fullPath);
+                if (string.IsNullOrWhiteSpace(tonality))
+                {
+                    return new JsonResult(new { ok = false, error = "no_keysig" });
+                }
+
+                // Persist detected tonality
+                melody.Tonality = tonality;
+                _context.Attach(melody);
+                _context.Entry(melody).Property(x => x.Tonality).IsModified = true;
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new { ok = true, tonality });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { ok = false, error = ex.Message });
+            }
+        }
+
+        // AJAX: change to parallel (relative) tonality and persist
+        public async Task<JsonResult> OnGetParallelTonalityAsync(int id)
+        {
+            MessageL(COLORS.yellow, "MELODIES/RELATIVE TONALITY starts");
+            try
+            {
+
+                var sw = Stopwatch.StartNew();
+                var melody = await _context.Melody.FirstOrDefaultAsync(m => m.ID == id);
+                if (melody == null)
+                    return new JsonResult(new { ok = false, error = "melody_not_found" });
+
+                if (string.IsNullOrWhiteSpace(melody.Tonality))
+                    return new JsonResult(new { ok = false, error = "no_tonality" });
+
+                var tonStr = (melody.Tonality ?? "").Trim()
+                    .Replace('\u2013','-').Replace('\u2014','-').Replace('\u2212','-')
+                    .Replace('–','-').Replace('—','-').Replace('−','-')
+                    .Replace("  "," ");
+                MessageL(COLORS.gray, $"[normalized tonality='{tonStr}' ({sw.ElapsedMilliseconds} ms)");
+
+                var current = new Music.Tonalities(tonStr);
+                MessageL(COLORS.gray, $"parsed Tonalities ({sw.ElapsedMilliseconds} ms)");
+
+                if (current.Mode == Music.MODE.dur) current.Transport(6); else current.Transport(3);
+                MessageL(COLORS.gray, $"after transport ({sw.ElapsedMilliseconds} ms)");
+
+                int sf = current.Keysignatures();
+                int idx = sf + 7;
+                string[] majors = { "Ces","Ges","Des","As","Es","B","F","C","G","D","A","E","H","Fis","Cis" };
+                string[] minors = { "as","es","b","f","c","g","d","a","e","h","fis","cis","gis","dis","ais" };
+                string name = current.Mode == Music.MODE.dur
+                    ? (idx >= 0 && idx < majors.Length ? majors[idx] : current.Name())
+                    : (idx >= 0 && idx < minors.Length ? minors[idx] : current.Name());
+
+                var newTonality = $"{name}-{(current.Mode == Music.MODE.dur ? "dur" : "moll")}";
+                MessageL(COLORS.purple, $"new tonality is {newTonality}");
+
+                melody.Tonality = newTonality;
+                _context.Attach(melody);
+                _context.Entry(melody).Property(x => x.Tonality).IsModified = true;
+                await _context.SaveChangesAsync();
+                MessageL(COLORS.green, $"parsed Tonalities ({sw.ElapsedMilliseconds} ms)");
+
+                return new JsonResult(new { ok = true, tonality = newTonality });
+            }
+            catch (Exception ex)
+            {
+                MessageL(COLORS.red, $"error: {ex}");
+                return new JsonResult(new { ok = false, error = ex.Message });
+            }
+        }
+
         public async Task<IActionResult> OnPostAsync(IFormFile? fileupload)
         {
             MessageL(COLORS.yellow, "MELODIES/EDIT OnPost");
-            if (Melody is null) ErrorMessageL("Melody is null");
+            if (Melody is null) ErrorMessageL("MusicMelody is null");
             else GrayMessageL($"tempocorrected = {Tempocorrected}, FilePath = {Melody.FilePath}, Tempo = {Tempo}");
 
             if (!ModelState.IsValid)
@@ -147,7 +266,7 @@ namespace Melodies25.Pages.Melodies
                 await PrepareAudio(uploadsPath);
             }
 
-            foreach (var prop in new[] { "Title", "Year", "AuthorID", "Description", "IsFileEligible" })
+            foreach (var prop in new[] { "Title", "Year", "AuthorID", "Description", "IsFileEligible", "Tonality" })
             {
                 _context.Entry(Melody).Property(prop).IsModified = true;
             }
@@ -209,8 +328,190 @@ namespace Melodies25.Pages.Melodies
                 GrayMessageL($"Темп незмінний: {Tempo}");
             }
 
+            // ОНОВЛЕННЯ Key Signature за вибраною тональністю при натисканні "Зберегти"
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(Melody.Tonality) && !string.IsNullOrWhiteSpace(Melody.FilePath))
+                {
+                    var fullPath = Path.Combine(_environment.WebRootPath, "melodies", Melody.FilePath);
+                    MessageL(COLORS.olive, $"[CALL APPLYKS] {Melody.Tonality} -> {Melody.FilePath}");
+                    ApplyKeySignatureWierd(fullPath, Melody.Tonality);
+                }
+                else
+                {
+                    GrayMessageL("No tonality selected; Key Signature update skipped");
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessageL($"Failed to update Key Signature: {ex.Message}");
+            }
+
             return RedirectToPage("./Details", new { id = Melody.ID });
         }
+
+        // у OnPostUpdate перед викликом
+        public async Task<IActionResult> OnPostUpdate(int? id)
+        {
+            MessageL(Music.COLORS.yellow, "MELODY/EDIT OnPostUpdate method");
+
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var melody = await _context.Melody
+                .Include(m => m.Author)
+                .FirstOrDefaultAsync(m => m.ID == id);
+
+            if (melody == null)
+            {
+                return NotFound();
+            }
+
+            if (melody.FilePath is not null)
+            {
+                try
+                {
+                    // Update MIDI key signature based on selected tonality
+                    if (!string.IsNullOrWhiteSpace(melody.Tonality))
+                    {
+                        var fullPath = Path.Combine(_environment.WebRootPath, "melodies", melody.FilePath);
+                        MessageL(COLORS.olive, $"[CALL APPLYKS] {melody.Tonality} -> {melody.FilePath}");
+                        ApplyKeySignatureWierd(fullPath, melody.Tonality);
+                    }
+
+                    await PrepareMp3Async(_environment, melody.FilePath, false); // генеруємо з копією всередині
+                }
+                catch (Exception e)
+                {
+                    ErrorMessageL($"Failed to update key signature: {melody.FilePath} " + e.Message);
+
+                }
+            }
+
+            return RedirectToPage("Details", new { id = melody.ID });
+        }
+
+        private void ApplyKeySignature(string fullPath, string tonality)
+        {
+            MessageL(COLORS.olive, $"[APPLYKS ENTER] path={fullPath}, inputTon={tonality}");
+            if (!System.IO.File.Exists(fullPath)) { GrayMessageL($"MIDI not found: {fullPath}"); return; }
+
+            var tonStr = (tonality ?? "").Trim()
+                .Replace('\u2013','-').Replace('\u2014','-').Replace('\u2212','-')
+                .Replace('–','-').Replace('—','-').Replace('−','-')
+                .Replace("  "," ");
+            var tonal = new Music.Tonalities(tonStr);
+            int sharps = tonal.Keysignatures();
+            var mode = tonal.Mode;
+
+            MessageL(COLORS.olive, $"ApplyKeySignature: {tonStr} -> sf={sharps}, mode={mode}");
+
+            var midi = new MidiFile(fullPath);
+            var newMidiCollection = InsertKeySignatures(midi, sharps, mode);
+
+            // Обхідний перезапис тим самим іменем
+            ExportOverwrite(fullPath, newMidiCollection);
+
+            var verified = GetTonalities(new MidiFile(fullPath));
+            if (verified != null)
+                MessageL(COLORS.gray, $"[APPLYKS EXIT] verified sf={verified.GetSharpFlats()}, mode={verified.Mode}");
+            else
+                MessageL(COLORS.darkred, "[APPLYKS EXIT] verified: not found");
+        }
+
+        private void ApplyKeySignatureWierd(string fullPath, string tonality)
+        {
+            // Байтовий патч Key Signature: шукаємо FF 59 02 і переписуємо sf/mi під тим самим ім'ям файлу
+            try
+            {
+                MessageL(COLORS.olive, $"[APPLYKS-WIERD ENTER] path={fullPath}, inputTon={tonality}");
+                if (!System.IO.File.Exists(fullPath)) { GrayMessageL($"MIDI not found: {fullPath}"); return; }
+
+                // Нормалізація введеної тональності
+                var tonStr = (tonality ?? "").Trim()
+                    .Replace('\u2013','-').Replace('\u2014','-').Replace('\u2212','-')
+                    .Replace('–','-').Replace('—','-').Replace('−','-')
+                    .Replace("  "," ");
+                var tonal = new Music.Tonalities(tonStr);
+                int sharps = tonal.Keysignatures(); // -7..+7
+                var mode = tonal.Mode;               // MODE.dur / MODE.moll
+                byte mi = (byte)(mode == Music.MODE.moll ? 1 : 0);
+                byte sfByte = unchecked((byte)(sbyte)sharps);
+                MessageL(COLORS.olive, $"[APPLYKS-WIERD TARGET] sf={sharps}, mi={mi}");
+
+                // Читаємо байти файлу
+                var attrs = System.IO.File.GetAttributes(fullPath);
+                if ((attrs & System.IO.FileAttributes.ReadOnly) != 0)
+                    System.IO.File.SetAttributes(fullPath, attrs & ~System.IO.FileAttributes.ReadOnly);
+
+                byte[] bytes = System.IO.File.ReadAllBytes(fullPath);
+
+                // Логуємо наявні KS у байтах до патчу
+                int foundBefore = 0;
+                for (int i = 0; i + 4 < bytes.Length; i++)
+                {
+                    if (bytes[i] == 0xFF && bytes[i + 1] == 0x59 && bytes[i + 2] == 0x02)
+                    {
+                        sbyte oldSf = unchecked((sbyte)bytes[i + 3]);
+                        byte oldMi = bytes[i + 4];
+                        MessageL(COLORS.gray, $"[APPLYKS-WIERD BEFORE] pos=0x{i:X}, sf={oldSf}, mi={oldMi}");
+                        foundBefore++;
+                    }
+                }
+                if (foundBefore == 0)
+                {
+                    MessageL(COLORS.yellow, "[APPLYKS-WIERD] No KeySignature meta-events (FF 59 02) found to patch");
+                }
+
+                // Патчимо всі входження FF 59 02
+                int replaced = 0;
+                for (int i = 0; i + 4 < bytes.Length; i++)
+                {
+                    if (bytes[i] == 0xFF && bytes[i + 1] == 0x59 && bytes[i + 2] == 0x02)
+                    {
+                        bytes[i + 3] = sfByte;
+                        bytes[i + 4] = mi;
+                        replaced++;
+                    }
+                }
+
+                // Записуємо назад тим самим ім'ям
+                System.IO.File.WriteAllBytes(fullPath, bytes);
+                MessageL(COLORS.olive, $"[APPLYKS-WIERD WRITE] replaced={replaced}");
+
+                // Логуємо після запису
+                int foundAfter = 0;
+                var bytesAfter = System.IO.File.ReadAllBytes(fullPath);
+                for (int i = 0; i + 4 < bytesAfter.Length; i++)
+                {
+                    if (bytesAfter[i] == 0xFF && bytesAfter[i + 1] == 0x59 && bytesAfter[i + 2] == 0x02)
+                    {
+                        sbyte newSf = unchecked((sbyte)bytesAfter[i + 3]);
+                        byte newMi = bytesAfter[i + 4];
+                        MessageL(COLORS.gray, $"[APPLYKS-WIERD AFTER] pos=0x{i:X}, sf={newSf}, mi={newMi}");
+                        foundAfter++;
+                    }
+                }
+
+                // Додаткова верифікація через NAudio-парсер
+                var verified = GetTonalities(new MidiFile(fullPath));
+                if (verified != null)
+                {
+                    MessageL(COLORS.gray, $"[APPLYKS-WIERD EXIT] verified sf={verified.GetSharpFlats()}, mode={verified.Mode}, patched={replaced}, ksCountBefore={foundBefore}, ksCountAfter={foundAfter}");
+                }
+                else
+                {
+                    MessageL(COLORS.darkred, $"[APPLYKS-WIERD EXIT] verified: not found, patched={replaced}, ksCountBefore={foundBefore}, ksCountAfter={foundAfter}");
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessageL($"[APPLYKS-WIERD ERROR] {ex.Message}");
+            }
+        }
+
 
         private async Task PrepareAudio(string uploadsPath)
         {
@@ -224,8 +525,10 @@ namespace Melodies25.Pages.Melodies
                     return;
                 }
 
-                // Робоча копія
-                string workPath = Path.Combine(uploadsPath, "_work_" + Melody.FilePath);
+                // Робоча копія ТІЛЬКИ у temporary з унікальним префіксом, щоб не конфліктувати
+                string tempDir = Path.Combine(_environment.WebRootPath, "temporary");
+                Directory.CreateDirectory(tempDir);
+                string workPath = Path.Combine(tempDir, "_check_" + Path.GetFileName(Melody.FilePath));
                 System.IO.File.Copy(originalMidiPath, workPath, true);
 
                 var midiFile = new MidiFile(workPath);
@@ -236,19 +539,16 @@ namespace Melodies25.Pages.Melodies
 
                 if (ifeligible)
                 {
-                    MessageL(COLORS.standart, $"генеруємо mp3 з {workPath}");
+                    if (LoggingManager.CreateAudio)
+                    {
+                        MessageL(COLORS.standart, $"генеруємо mp3 з оригінала (не змінюючи його), тимчасові копії всередині PrepareMp3Async");
+                    }
                     try
                     {
-                        await PrepareMp3Async(_environment, "_work_" + Melody.FilePath, false); // передаємо ім'я копії
-                        ViewData["Message"] = "Файл успішно завантажено!";                        
+                        // Генерація MP3 на основі оригінального імені файлу (без префіксів)
+                        await PrepareMp3Async(_environment, Melody.FilePath, false);
+                        ViewData["Message"] = "Файл успішно завантажено!";
                         Melody.IsFileEligible = true;
-
-                        // Видаляємо робочу копію
-                        if (System.IO.File.Exists(workPath))
-                        {
-                            System.IO.File.Delete(workPath);
-                            MessageL(COLORS.cyan, "Temporary working copy deleted");
-                        }
                     }
                     catch
                     {
@@ -259,6 +559,13 @@ namespace Melodies25.Pages.Melodies
                 {
                     ViewData["Message"] = "Файл не є мелодією";
                     Melody.IsFileEligible = false;
+                }
+
+                // Видаляємо робочу копію з temporary
+                if (System.IO.File.Exists(workPath))
+                {
+                    System.IO.File.Delete(workPath);
+                    MessageL(COLORS.cyan, "Temporary working copy deleted");
                 }
             }
             catch (Exception ex)
@@ -312,42 +619,6 @@ namespace Melodies25.Pages.Melodies
         private bool MelodyExists(int id)
         {
             return _context.Melody.Any(e => e.ID == id);
-        }
-
-
-
-        public async Task<IActionResult> OnPostUpdate(int? id)
-        {
-            MessageL(Music.COLORS.yellow, "MELODY/EDIT OnPostUpdate method");
-
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var melody = await _context.Melody
-                .Include(m => m.Author)
-                .FirstOrDefaultAsync(m => m.ID == id);
-
-            if (melody == null)
-            {
-                return NotFound();
-            }
-
-            if (melody.FilePath is not null)
-            {
-                try
-                {
-                    await PrepareMp3Async(_environment, melody.FilePath, false); // генеруємо з копією всередині
-                }
-                catch (Exception e)
-                {
-                    ErrorMessageL(e.Message);
-
-                }
-            }
-
-            return RedirectToPage("Details", new { id = melody.ID });
         }
     }
 }

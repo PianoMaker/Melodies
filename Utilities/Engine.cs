@@ -508,6 +508,11 @@ namespace Music
             if (mode == MODE.moll) keysign -= 3;
             return keysign;
         }
+
+
+
+
+
         public static string noteaccname_from_alter(int alter)
         {
             switch (alter)

@@ -16,22 +16,33 @@ namespace Melodies25.Models
 
         
         [Required(ErrorMessage = "Назва є обов'язковою.")]
-        public string Title { get; set; }  
+        public string Title { get; set; }
+
+        public string? TitleEn { get; set; }
         public int? Year { get; set; }  
 
         public string? Description { get; set; }  
 
         public int AuthorID { get; set; }  
-        public Author? Author { get; set; }  // Автор пісні
+        public Author? Author { get; set; }
 
-       
+        public bool IfPublicDomain 
+        { 
+            get
+            {
+                if (Author == null) return false;
+                return Author.IfPublicDomain;
+            }
+        }   
+
+
         [Display(Name = "MIDI файл")]
         [NotMapped]
         public IFormFile? File { get; set; } 
 
         // власна розробка  для роботи з нотним текстом
         [NotMapped]
-        public Music.Melody? MidiMelody { get; set; } 
+        public MusicMelody? MidiMelody { get; set; } 
 
         [NotMapped]
         public string? Mp3Filepath 
@@ -44,5 +55,7 @@ namespace Melodies25.Models
                 return Path.ChangeExtension(FilePath, ".mp3");
             }
         }
+
+
     }
 }

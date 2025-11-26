@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Melodies25.Data;
 using Melodies25.Models;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Melodies25.Pages.Countries
 {
+    [Authorize]
     public class CreateModel : PageModel
     {
         private readonly Melodies25.Data.Melodies25Context _context;

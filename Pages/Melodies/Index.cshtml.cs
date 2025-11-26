@@ -33,7 +33,7 @@ namespace Melodies25.Pages.Melodies
         public string AuthorSort { get; set; } = default!;
         public string CurrentSort { get; set; } = default!;
 
-
+        public string? SelectedLetter { get; set; }
 
         public IndexModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
         {
@@ -41,7 +41,8 @@ namespace Melodies25.Pages.Melodies
             _environment = environment;
         }
 
-        public IList<Melody> Melody { get; set; } = default!;
+        // Ensure Melody is never null to avoid NullReferenceException in the Razor view
+        public IList<Melody> Melody { get; set; } = new List<Melody>();
 
 
 
@@ -75,47 +76,67 @@ namespace Melodies25.Pages.Melodies
             if (_context?.Melody == null)
             {
                 ErrorMessage("Помилка: База даних недоступна.");
+                Melody = new List<Melody>();
                 return Page();
             }
 
             if (_environment == null)
             {
                 ErrorMessage("Помилка: IWebHostEnvironment не ініціалізовано.");
+                Melody = await _context.Melody.Include(m => m.Author).ToListAsync();
                 return Page();
             }
 
-            var melodiesQuery = _context.Melody.ToList();
+            // Заповнюємо модель до обробки, щоб view завжди мала дані
+            Melody = await _context.Melody.Include(m => m.Author).ToListAsync();
 
-            foreach (var melody in melodiesQuery)
+            var errors = new List<string>();
+            var snapshot = Melody.ToList(); // працюємо зі знімком
+
+            foreach (var melody in snapshot)
             {
-                if (!string.IsNullOrEmpty(melody.FilePath))
+                if (string.IsNullOrEmpty(melody.FilePath))
+                    continue;
+
+                try
                 {
-                    try
+                    var path = Path.Combine(_environment.WebRootPath, "melodies", melody.FilePath);
+                    var ifeligible = IfMonody(path);
+                    if (ifeligible)
                     {
-                        var path = Path.Combine(_environment.WebRootPath, "melodies", melody.FilePath);
-                        var ifeligible = IfMonody(path);
-                        if (ifeligible)
-                        {
-                            await PrepareMp3Async(_environment, melody.FilePath, true);
-                            melody.IsFileEligible = true;
-                        }
-                        else
-                        {
-                            melody.IsFileEligible = false;
-                        }
+                        await PrepareMp3Async(_environment, melody.FilePath, true);
+                        melody.IsFileEligible = true;
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        ErrorMessage("\nНеможливо обробити файл:");
-                        GrayMessageL(ex.Message);
-                        return Page();
+                        melody.IsFileEligible = false;
                     }
+                }
+                catch (Exception ex)
+                {
+                    // Лог, але НЕ повертаємося — продовжуємо обробку інших файлів
+                    ErrorMessage($"\nНеможливо обробити файл: {melody.FilePath}");
+                    GrayMessageL(ex.Message);
+                    errors.Add($"{melody.Title}: {ex.Message}");
+                    continue;
                 }
             }
 
-            await _context.SaveChangesAsync(); // Винесли з циклу
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                GrayMessageL($"SaveChanges failed: {ex.Message}");
+                Errormsg = "Не вдалося зберегти зміни у базі даних.";
+            }
 
+            // Оновлюємо модель для відображення
             Melody = await _context.Melody.Include(m => m.Author).ToListAsync();
+
+            if (errors.Count > 0)
+                Errormsg = string.Join("; ", errors);
 
             return Page();
         }
@@ -160,6 +181,7 @@ namespace Melodies25.Pages.Melodies
 
         public async Task<IActionResult> OnPostFilterByLetter(string letter)
         {
+            SelectedLetter = letter;
             if (string.IsNullOrEmpty(letter) || letter.Length != 1 || !char.IsLetter(letter[0]))
             {
                 Melody = await _context.Melody.Include(m => m.Author).ToListAsync();

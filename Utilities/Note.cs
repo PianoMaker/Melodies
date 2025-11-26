@@ -1,10 +1,11 @@
-﻿using static Music.Engine;
-using static System.Console;
-using static System.Convert;
+﻿using Melodies25.Utilities;
+using NAudio.Midi;
+using System.Diagnostics.Metrics;
+using static Music.Engine;
 using static Music.Globals;
 using static Music.Messages;
-using System.Diagnostics.Metrics;
-using NAudio.Midi;
+using static System.Console;
+using static System.Convert;
 
 namespace Music
 {
@@ -47,10 +48,12 @@ namespace Music
         
         public int MidiDur { get { return duration.MidiDuration(PPQN); } }
 
+        public float RelDur { get { return (float)duration.RelDuration(); } }
         public string DurSymbol
         {
             get { return duration.Symbol(rest); }
         }
+
 
         public (string, string) DurName
         {
@@ -199,7 +202,7 @@ namespace Music
         }
 
 
-        public static Note GenerateRandomDistinctNote(Melody melody)
+        public static Note GenerateRandomDistinctNote(MusicMelody melody)
         {
             var rnd = new Random();
             int counter = 0;
@@ -516,7 +519,8 @@ namespace Music
             }
             catch (Exception e)
             {
-                ErrorMessage(e.Message);
+                if (LoggingManager.ReadMidi)
+                    ErrorMessage("Failed to set duration: " + e.Message);
             }
         }
 
@@ -530,7 +534,8 @@ namespace Music
             }
             catch (Exception e)
             {
-                ErrorMessage(e.Message);
+                if (LoggingManager.ReadMidi)
+                    ErrorMessage("Failed to set duration: " + e.Message);
             }
 
         }
