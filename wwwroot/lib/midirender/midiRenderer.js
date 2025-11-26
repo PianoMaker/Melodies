@@ -1688,81 +1688,40 @@ function processNoteElement(durationCode, key, accidental, clef = 'treble') {
 }
 
 // Decide clef for a measure based on pitch range.
-// Returns "bass" or "treble".
+// New rule:
+// - If any note > 65 -> "treble"
+// - Else if any note < 55 -> "bass"
+// - Else -> "treble"
 function decideClefForMeasure(measure) {
-    console.log("FOO: midiRenderer.js - decideClefForMeasure");
-    const bassThreshold = 60; // MIDI pitch threshold under which we prefer bass clef
-    let maxPitch = -1;
-    let minPitch = 128;
-
+    console.log("FOO: midiRenderer.js - decideClefForMeasure (updated)");
     if (!Array.isArray(measure) || measure.length === 0) {
         return "treble";
     }
+
+    let hasLow = false;   // any note < 55
+    let hasHigh = false;  // any note > 65
 
     for (const ev of measure) {
         if (ev && ev.type === 0x9 && Array.isArray(ev.data)) {
             const pitch = ev.data[0];
             if (typeof pitch === 'number') {
-                if (pitch < minPitch) minPitch = pitch;
-                if (pitch > maxPitch) maxPitch = pitch;
+                if (pitch < 55) hasLow = true;
+                if (pitch > 65) hasHigh = true;
+                // Early exit if both found
+                if (hasHigh) break;
             }
         }
     }
 
-    console.log(`Measure pitch range: min ${minPitch}, max ${maxPitch}`);
-
-    // Choose bass if any note is below threshold (you can tweak logic)
-    if (minPitch < bassThreshold) {
-        console.log("Choosing bass clef");
+    if (hasHigh) {
+        console.log("Choosing treble clef (found note > 65)");
+        return "treble";
+    }
+    if (hasLow) {
+        console.log("Choosing bass clef (found note < 55)");
         return "bass";
     }
-    console.log("Choosing treble clef");
+
+    console.log("Choosing treble clef (default)");
     return "treble";
 }
-
-function createNote(noteKey, duration, clef = 'treble') {
-    console.log("FOO: midiparser_ext.js - createNote");
-    const noteMatch = noteKey.match(/^([a-gA-G])(b|#)?(\d)?$/);
-    if (!noteMatch) {
-        console.error(`Invalid note key: ${noteKey}`);
-        return null;
-    }
-
-    const [, letter, accidental, octaveRaw] = noteMatch;
-    const octave = octaveRaw || '4'; // Default to octave 4
-    const key = `${letter.toLowerCase()}${accidental || ''}/${octave}`;
-    const isTriplet = duration.endsWith('t');
-    const isDotted = duration.endsWith('.');
-    const baseDuration = (isTriplet || isDotted) ? duration.slice(0, -1) : duration;
-
-    try {
-        // Передаємо clef у опціях StaveNote — це дозволяє VexFlow позиціонувати ноту відносно потрібного ключа
-        const staveNote = new Vex.Flow.StaveNote({
-            keys: [key],
-            duration: baseDuration,
-            clef: clef || 'treble'
-        });
-
-        if (accidental) {
-            staveNote.addAccidental(0, new Vex.Flow.Accidental(accidental));
-        }
-
-        if (isDotted && !isTriplet) {
-            staveNote.addDot(0); // Add dot if dotted
-        }
-        if (typeof staveNote.autoStem === 'function') {
-            staveNote.autoStem(); 
-        }
-
-        if (isTriplet) {
-            // Помітимо ноту як тріольну для швидкого складання Tuplet
-            staveNote.__isTriplet = true;
-            staveNote.__tripletBase = baseDuration; // 'q','8','16','32'
-            staveNote.__durationCode = duration;    // 'qt','8t','16t','32t'
-        }
-        return staveNote;
-    } catch (error) {
-        console.error(`Failed to create note with key: ${noteKey} and duration: ${duration}`, error);
-        return null; // Return null if creation fails
-    }
-};
