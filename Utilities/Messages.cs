@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using static System.Console;
 using static Music.Globals;
 
@@ -6,6 +7,22 @@ namespace Music
 {
     public class Messages
     {
+        // --- NEW: контролює чи виводити dev-повідомлення ---
+        // Автоматично вмикається коли ASPNETCORE_ENVIRONMENT == "Development"
+        // АБО коли змінна середовища MESSAGES_ENABLED = "1".
+        public static bool Enabled { get; private set; }
+
+        static Messages()
+        {
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var forced = Environment.GetEnvironmentVariable("MESSAGES_ENABLED");
+            Enabled = string.Equals(forced, "1", StringComparison.OrdinalIgnoreCase)
+                      || string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Дозволяє програмно вмикати/вимикати повідомлення (наприклад у Program.cs)
+        public static void SetEnabled(bool enable) => Enabled = enable;
+
         #region _A_  
         private const string above_en = " above ";
         private const string above_uk = " вищі ";
@@ -347,18 +364,21 @@ namespace Music
 
         public static void Color(int color)
         {
+            if (!Enabled) return;
             ForegroundColor = (ConsoleColor)color;
         }
 
         #region Messages
         public static void Message(int color, string msg)
         {
+            if (!Enabled) return;
             ForegroundColor = (ConsoleColor)color;
             Write(msg);
             ResetColor();
         }
         public static void GrayMessage(string msg)
         {
+            if (!Enabled) return;
             ForegroundColor = (ConsoleColor)COLORS.gray;
             Write(msg);
             ResetColor();
@@ -366,11 +386,13 @@ namespace Music
 
         public static void GrayMessageL(string msg)
         {
+            if (!Enabled) return;
             ForegroundColor = (ConsoleColor)COLORS.gray;
             WriteLine(msg);
             ResetColor();
         }
 
+        // Error messages are still always shown in production
         public static void ErrorMessage(string msg)
         {
             ForegroundColor = (ConsoleColor)COLORS.red;
@@ -386,6 +408,7 @@ namespace Music
         }
         public static void Header(string msg)
         {
+            if (!Enabled) return;
             ForegroundColor = (ConsoleColor)11;
             WriteLine(msg);
             ResetColor();
@@ -394,12 +417,14 @@ namespace Music
 
         public static void MessageL(COLORS color, string msg)
         {
+            if (!Enabled) return;
             ForegroundColor = (ConsoleColor)color;
             WriteLine(msg);
             ResetColor();
         }
         public static void Message(COLORS color, string msg)
         {
+            if (!Enabled) return;
             ForegroundColor = (ConsoleColor)color;
             Write(msg);
             ResetColor();
@@ -407,6 +432,7 @@ namespace Music
 
         public static void MessageL(int color, string msg)
         {
+            if (!Enabled) return;
             ForegroundColor = (ConsoleColor)color;
             WriteLine(msg);
             ResetColor();
