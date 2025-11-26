@@ -3,41 +3,66 @@
 
 @{
     ViewData["Title"] = "Мелодія - автори";
+    var lng = Model.SelectedLang;
 }
-
 <div class="infocontainer melody-width">
-<h1>Авторів у базі даних - @Model.Author.Count</h1>
-<div style="display:inline">
+    <h1>Авторів у базі даних - @Model.Author.Count</h1>
+    <div style="display:inline">
 
-    <a asp-page="Create"
-       class="btn-melody">
-        Додати автора
-    </a>
+        <a asp-page="Create" class="btn-melody">Додати автора</a>
 
-    <form method="post" asp-page-handler="translit" style="display:inline">
-        <button type="submit" class="btn-melody m-4">
-            Оновити
-        </button>
-    </form>
+        <form method="post" asp-page-handler="translit" style="display:inline">
+            <button type="submit" class="btn-melody m-4">Оновити</button>
+        </form>
+
+        <!-- Language toggle (left = Uk, right = En). -->
+        <form method="post" id="langform" style="display:inline; margin-left:8px;">
+            <label for="langSwitch" class="visually-hidden">Мова</label>
+            <input type="hidden" id="langHidden" name="SelectedLang" value="@Model.SelectedLang" />
+            <label class="lang-toggle">
+                <span class="lang-label">Uk</span>
+                <input
+                    type="checkbox"
+                    id="langSwitch"
+                    name="SelectedLang"
+                    value="en"
+                    @(Model.SelectedLang == "en" ? "checked" : "")
+                />
+                <span class="switch" role="presentation">
+                    <span class="knob" aria-hidden="true"></span>
+                </span>
+                <span class="lang-label">En</span>
+            </label>
+        </form>
+
+    </div>
 </div>
-</div>
+
 <table class="table">
     <thead>
         <tr>
             <th>
-                <a asp-page="./Index" asp-route-sortOrder="@Model.SurnameSort" class="link-light">
+                <a asp-page="./Index"
+                   asp-route-sortOrder="@Model.SurnameSort"
+                   asp-route-SelectedLang="@Model.SelectedLang"
+                   class="link-light">
                     Автор @(Model.SurnameSort == "title_asc" ? "▲" : "▼")
                 </a>
             </th>
+            <th>Роки життя</th>
             <th>
-                Роки життя
-            <th>
-                <a asp-page="./Index" asp-route-sortOrder="@Model.CountrySort" class="link-light">
+                <a asp-page="./Index"
+                   asp-route-sortOrder="@Model.CountrySort"
+                   asp-route-SelectedLang="@Model.SelectedLang"
+                   class="link-light">
                     Країна  @(Model.SurnameSort == "surname_asc" ? "▲" : "▼")
                 </a>
             </th>
             <th>
-                <a asp-page="./Index" asp-route-sortOrder="@Model.MelodiesCountSort" class="link-light">
+                <a asp-page="./Index"
+                   asp-route-sortOrder="@Model.MelodiesCountSort"
+                   asp-route-SelectedLang="@Model.SelectedLang"
+                   class="link-light">
                     Мелодій на сайті  @(Model.SurnameSort == "melody_asc" ? "▲" : "▼")
                 </a>
             </th>
@@ -45,27 +70,42 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Author) {
-        <tr>
-            <td>
-                    <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Name) @Html.DisplayFor(modelItem => item.Surname)</a>
-                
-            </td>
-            <td>
+        @foreach (var item in Model.Author)
+        {
+            <tr>
+                <td>
+                    @if (lng == "uk")
+                    {
+                        <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Name) @Html.DisplayFor(modelItem => item.Surname)</a>
+                    }
+                    else
+                    {
+                        <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.NameEn) @Html.DisplayFor(modelItem => item.SurnameEn)</a>
+                    }
+                </td>
+                <td>
                     @Html.DisplayFor(modelItem => item.DateOfBirth) - @Html.DisplayFor(modelItem => item.DateOfDeath)
-            </td>
-            <td>
-                    @(item.Country != null ? item.Country.Name : "Немає даних")
-            </td>
-            <td>
+                </td>
+                <td>
+                    @if (lng == "uk")
+                    {
+                        @(item.Country != null ? item.Country.Name : "Немає даних")
+                    }
+                    else
+                    {
+                        @(item.Country != null ? item.Country.NameEn : "unknown")
+                    }
+                </td>
+                <td>
                     @Html.DisplayFor(modelItem => item.MelodiesCount)
-            </td>
-            <td>
+                </td>
+                <td>
                     <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
                     <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
-            </td>
-        </tr>
-}
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+<script src="~/js/author-index.js" asp-append-version="true"></script>
 
