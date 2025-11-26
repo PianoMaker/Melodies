@@ -1176,3 +1176,76 @@ p {
     color: red;
     font-weight: bold;
 }
+
+
+/* Language toggle styles (moved from page inline to site.css) */
+.lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.lang-toggle .lang-label {
+    font-size: 0.9rem;
+    color: var(--bs-body-color, #000);
+}
+
+.lang-toggle .switch {
+    position: relative;
+    width: 56px;
+    height: 28px;
+    background: #e9ecef;
+    border-radius: 999px;
+    display: inline-block;
+    vertical-align: middle;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+}
+.lang-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+}
+.lang-toggle .knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 160ms ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+/* Ховаємо будь-який input у перемикачі (достатньо одного правила) */
+.lang-toggle input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+}
+
+/* Стан "Увімкнено" для поточного чекбокса (специфічно, без [type="checkbox"]) */
+#langSwitch:checked + .switch {
+    background: #0d6efd;
+}
+#langSwitch:checked + .switch .knob {
+    transform: translateX(28px);
+}
+
+/* Фокус (одне правило замість двох) */
+.lang-toggle input:focus + .switch {
+    outline: 3px solid var(--brand-green);
+    outline-offset: 2px;
+}
+
+/* Toggle brand color override: replace blue with --brand-green */
+.lang-toggle input[type="checkbox"]:checked + .switch,
+#langSwitch:checked + .switch {
+    background: var(--brand-green);
+}
+

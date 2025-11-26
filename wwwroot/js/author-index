@@ -1,0 +1,20 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const sel = document.getElementById('langSwitch');
+    if (!sel) return;
+
+    sel.addEventListener('change', function () {
+        try {
+            const val = sel.value || 'uk';
+            const url = new URL(window.location.href);
+            // set bound property name used by PageModel
+            url.searchParams.set('SelectedLang', val);
+            // optional: remove page fragment to avoid jumping
+            url.hash = '';
+            window.location.href = url.toString();
+        } catch (e) {
+            // fallback: submit the form if URL API not available
+            const form = document.getElementById('langform');
+            if (form) form.submit();
+        }
+    });
+});
