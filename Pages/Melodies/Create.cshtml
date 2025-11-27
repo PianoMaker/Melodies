@@ -77,9 +77,14 @@
             </div>
 
             <div class="form-group">
-                <label asp-for="Melody.AuthorID" id="selectAuthorLabel" class="control-label">Автор</label>
-                <select id="selectAuthor" asp-for="Melody.AuthorID" class="form-control" asp-items="ViewBag.AuthorID">
-                </select>
+                <label asp-for="Melody.AuthorID" class="control-label">Автор</label>
+
+                <input id="authorSearch" type="text" class="form-control" placeholder="Введіть ≥3 літери для пошуку автора" autocomplete="off" />
+
+                <input type="hidden" id="authorIdHidden" asp-for="Melody.AuthorID" />
+
+                <div id="authorResults" class="list-group mt-1" style="max-height: 240px; overflow-y: auto;"></div>
+                <span asp-validation-for="Melody.AuthorID" class="text-danger"></span>
             </div>
         <!-- СТВОРИТИ -->
             <div id="submitMelodyBtn" class="form-group" style="display:none; margin-top: 10px">
@@ -189,6 +194,7 @@
     <script src="~/js/createMelody.js" asp-append-version="true"></script>
     <script src="~/js/play.js"></script>
     <script src="~/js/openpiano.js"></script>
+    <script src="~/js/authorSearch.js"></script>
 }
 
 

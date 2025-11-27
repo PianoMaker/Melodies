@@ -681,8 +681,45 @@ namespace Melodies25.Pages.Melodies
             return new JsonResult(exists);
         }
 
+        // GET: /Melodies/Create?handler=AuthorSearch&q=...
+        public async Task<IActionResult> OnGetAuthorSearchAsync(string q)
+        {
+            q = (q ?? string.Empty).Trim();
+            if (q.Length < 3)
+                return new JsonResult(Array.Empty<object>());
+
+            // Case-insensitive contains across four fields
+            string like = $"%{q}%";
+
+            var authors = await _context.Author
+                .Where(a =>
+                    EF.Functions.Like(a.Name ?? string.Empty, like) ||
+                    EF.Functions.Like(a.Surname ?? string.Empty, like) ||
+                    EF.Functions.Like(a.NameEn ?? string.Empty, like) ||
+                    EF.Functions.Like(a.SurnameEn ?? string.Empty, like))
+                .OrderBy(a => a.Surname).ThenBy(a => a.Name)
+                .Take(20)
+                .Select(a => new
+                {
+                    id = a.ID,                 // use ID from your model
+                    name = a.Name,
+                    surname = a.Surname,
+                    nameEn = a.NameEn,
+                    surnameEn = a.SurnameEn,
+                    displayName = ((a.Surname ?? "") + " " + (a.Name ?? "")).Trim()
+                })
+                .ToListAsync();
+
+            return new JsonResult(authors);
+        }
     }
 }
+
+
+
+
+
+
 
 
 
