@@ -9,6 +9,11 @@ namespace Melodies25
 {
     public class Program
     {
+
+        // VisualStudio - локальна БД для розробки
+        // SQLExpress - додаткова БД для розробки
+        // Smarter - БД на сайті онлайн 
+
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +24,7 @@ namespace Melodies25
 
             // TARGET context: SQLExpress – destination for synchronization
             builder.Services.AddDbContext<Melodies25TargetContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("SQLExpress")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter")));
 
             // WORKING context (used by application pages): also SQLExpress now
             builder.Services.AddDbContext<Melodies25Context>(options =>
