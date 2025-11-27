@@ -33,6 +33,10 @@ public class DatabaseSyncService
 
         if (countries) await SyncCountriesAsync(); else _logger.LogInformation("Countries up-to-date.");
         if (authors) await SyncAuthorsAsync(); else _logger.LogInformation("Authors up-to-date.");
+
+        // NEW: Enrich English names in both databases (NameEn, SurnameEn) after author existence sync
+        await SyncAuthorEnglishNamesAsync();
+
         if (melodies) await SyncMelodiesAsync(); else _logger.LogInformation("Melodies up-to-date.");
 
         _logger.LogInformation("Synchronization finished.");
@@ -133,6 +137,107 @@ public class DatabaseSyncService
         }
         await _targetDb.SaveChangesAsync();
         _logger.LogInformation("Authors sync complete.");
+    }
+
+    // NEW: two-way enrichment of NameEn and SurnameEn
+    private async Task SyncAuthorEnglishNamesAsync()
+    {
+        _logger.LogInformation("Enriching English author names between SOURCE and TARGET ...");
+
+        // Load tracked entities for updates
+        var srcAuthors = await _sourceDb.Author.ToListAsync();
+        var trgAuthors = await _targetDb.Author.ToListAsync();
+
+        // Index by normalized (surname, name)
+        string Key(Author a)
+        {
+            var s = ((a.Surname ?? "").Trim().ToLower());
+            var n = ((a.Name ?? "").Trim().ToLower());
+            return $"{s}|{n}";
+        }
+
+        var srcMap = srcAuthors
+            .Where(a => !string.IsNullOrWhiteSpace(a.Surname) || !string.IsNullOrWhiteSpace(a.Name))
+            .ToDictionary(a => Key(a), a => a);
+
+        int updatedSrc = 0, updatedTrg = 0, conflicts = 0;
+
+        foreach (var t in trgAuthors)
+        {
+            var key = Key(t);
+            if (!srcMap.TryGetValue(key, out var s))
+                continue; // author not in source — skip
+
+            // Compare and fill when one side is empty and the other has data
+            var sNameEn = (s.NameEn ?? "").Trim();
+            var sSurnameEn = (s.SurnameEn ?? "").Trim();
+            var tNameEn = (t.NameEn ?? "").Trim();
+            var tSurnameEn = (t.SurnameEn ?? "").Trim();
+
+            bool trgChanged = false, srcChanged = false;
+
+            // NameEn
+            if (string.IsNullOrWhiteSpace(tNameEn) && !string.IsNullOrWhiteSpace(sNameEn))
+            {
+                t.NameEn = sNameEn;
+                trgChanged = true; updatedTrg++;
+            }
+            else if (string.IsNullOrWhiteSpace(sNameEn) && !string.IsNullOrWhiteSpace(tNameEn))
+            {
+                s.NameEn = tNameEn;
+                srcChanged = true; updatedSrc++;
+            }
+            else if (!string.IsNullOrWhiteSpace(tNameEn) && !string.IsNullOrWhiteSpace(sNameEn) && !string.Equals(tNameEn, sNameEn, StringComparison.Ordinal))
+            {
+                conflicts++;
+                AddCollision($"NameEn differs for '{t.Surname} {t.Name}': source='{sNameEn}', target='{tNameEn}'");
+            }
+
+            // SurnameEn
+            if (string.IsNullOrWhiteSpace(tSurnameEn) && !string.IsNullOrWhiteSpace(sSurnameEn))
+            {
+                t.SurnameEn = sSurnameEn;
+                if (!trgChanged) updatedTrg++;
+                trgChanged = true;
+            }
+            else if (string.IsNullOrWhiteSpace(sSurnameEn) && !string.IsNullOrWhiteSpace(tSurnameEn))
+            {
+                s.SurnameEn = tSurnameEn;
+                if (!srcChanged) updatedSrc++;
+                srcChanged = true;
+            }
+            else if (!string.IsNullOrWhiteSpace(tSurnameEn) && !string.IsNullOrWhiteSpace(sSurnameEn) && !string.Equals(tSurnameEn, sSurnameEn, StringComparison.Ordinal))
+            {
+                conflicts++;
+                AddCollision($"SurnameEn differs for '{t.Surname} {t.Name}': source='{sSurnameEn}', target='{tSurnameEn}'");
+            }
+        }
+
+        if (updatedTrg > 0)
+        {
+            await _targetDb.SaveChangesAsync();
+            _logger.LogInformation("Updated target English fields for {Count} authors.", updatedTrg);
+        }
+        else
+        {
+            _logger.LogInformation("No English fields updated in target.");
+        }
+
+        if (updatedSrc > 0)
+        {
+            await _sourceDb.SaveChangesAsync();
+            _logger.LogInformation("Updated source English fields for {Count} authors.", updatedSrc);
+        }
+        else
+        {
+            _logger.LogInformation("No English fields updated in source.");
+        }
+
+        if (conflicts > 0)
+        {
+            _logger.LogWarning("English name conflicts detected for {Count} authors. See collisions list.", conflicts);
+        }
+        _logger.LogInformation("English author names enrichment complete.");
     }
 
     private async Task SyncMelodiesAsync()
