@@ -1105,18 +1105,16 @@ function getMinorTonicPc(currentKeySig) {
 function midiNoteToVexFlowWithKey(midiNote, currentKeySig) {
     console.log("FOO: midiRenderer.js - midiNoteToVexFlowWithKey");
     const sharpNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    const flatNames  = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+    const flatNames = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
     const pc = midiNote % 12;
     const octaveRaw = Math.floor(midiNote / 12) - 1;
 
     const sf = currentKeySig && typeof currentKeySig.sf === 'number' ? currentKeySig.sf : 0;
-    const useFlats = sf < 0; // бемольні ключі -> flats, дієзні -> sharps, C (0) -> sharps
+    const useFlats = sf < 0;
 
-    // Базовий вибір написання за ключем
     let chosen = useFlats ? flatNames[pc] : sharpNames[pc];
     let outOctave = octaveRaw;
 
-    // Екстремальні ключі: зберегти правильну висоту октави та логіку написання
     if (sf <= -6 && pc === 11) {        // B -> Cb (октава +1)
         chosen = 'Cb';
         outOctave = octaveRaw + 1;
@@ -1124,30 +1122,47 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig) {
         chosen = 'Fb';
     } else if (sf >= 6 && pc === 5) {   // F -> E#
         chosen = 'E#';
+    } else if (sf >= 6 && pc === 0) {   // C -> B# (для C#-dur та ais-moll)        
+        chosen = 'B#';
+        outOctave = octaveRaw - 1;
     }
 
-    // МІНОР: IV, VI і VII підвищуються; I не понижується
     const isMinor = !!(currentKeySig && (currentKeySig.mi === 1 || (typeof currentKeySig.mi === 'number' && currentKeySig.mi !== 0)));
     if (isMinor) {
         const tonicPc = getMinorTonicPc(currentKeySig);
         if (typeof tonicPc === 'number') {
-            const raisedVI  = (tonicPc + 9)  % 12; // VI#
-            const raisedVII = (tonicPc + 11) % 12; // VII# (ввідний тон)
-            const raisedIV  = (tonicPc + 6)  % 12; // IV#
+            const raisedVI = (tonicPc + 9) % 12;
+            const raisedVII = (tonicPc + 11) % 12;
+            const raisedIV = (tonicPc + 6) % 12;
 
             if ((pc === raisedVI || pc === raisedVII || pc === raisedIV) && pc !== 11) {
-				console.log(`MR: Minor key alteration: pc=${pc}, tonicPc=${tonicPc}`);
+                console.log(`MR: Minor key alteration: pc=${pc}, tonicPc=${tonicPc}`);
                 const naive = sharpNames[pc];
-                if (!naive.includes('#')) {
-                    const prevMap = { 'C':'B','D':'C','E':'D','F':'E','G':'F','A':'G','B':'A' };
-                    const prev = prevMap[naive] || naive;
-                    const special = prev + '#';
-                    chosen = special;
-                    // Adjust octave for wrapped case: B# corresponds to previous octave
-                    outOctave = (prev === 'B') ? octaveRaw - 1 : octaveRaw;
-                } else {
-                    chosen = sharpNames[pc];
+
+                // If naive already contains '#', keep it.
+                if (naive.includes('#')) {
+                    chosen = naive;
                     outOctave = octaveRaw;
+                } else {
+                    // Build candidate prev+'#' but validate its pitch-class before using it.
+                    const prevMap = { 'C': 'B', 'D': 'C', 'E': 'D', 'F': 'E', 'G': 'F', 'A': 'G', 'B': 'A' };
+                    const prev = prevMap[naive] || naive;
+                    const candidate = prev + '#';
+
+                    // letter->pc map for validation
+                    const letterPc = { 'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11 };
+                    const prevBasePc = (letterPc[prev] !== undefined) ? letterPc[prev] : null;
+                    const prevSharpPc = (prevBasePc !== null) ? ((prevBasePc + 1) % 12) : null;
+
+                    if (prevSharpPc === pc) {
+                        // candidate matches required pitch-class — safe to use (e.g. C -> B#)
+                        chosen = candidate;
+                        outOctave = (prev === 'B') ? octaveRaw - 1 : octaveRaw;
+                    } else {
+                        // Fallback: use straightforward sharp spelling for this PC
+                        chosen = sharpNames[pc];
+                        outOctave = octaveRaw;
+                    }
                 }
             }
         }
@@ -1158,7 +1173,6 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig) {
     const accidental = chosen.includes('#') ? '#' : (chosen.includes('b') ? 'b' : null);
     return { key: `${chosen.replace(/[#b]/, '')}/${outOctave}`, accidental };
 }
-
 // --- updated setStave to accept clef parameter ---
 function setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, currentDenominator, isFirstMeasureInRow = false, timeSignatureChanged = false, keySignatureChanged = false, keySigName = null, clef = "treble") {
     console.log("FOO: midiRenderer.js - setStave");
