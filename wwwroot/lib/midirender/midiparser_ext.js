@@ -355,7 +355,8 @@ function createRest(duration) {
     try {
         const staveNote = new Vex.Flow.StaveNote({
             keys: ['b/4'], // ключ для паузи неважливий
-            duration: `${baseDuration}r` // Форматуємо тривалість як паузу
+            duration: `${baseDuration}r`, // Форматуємо тривалість як паузу
+            clef: clef
         });
 
         if (isDotted && !isTriplet) {
@@ -385,16 +386,24 @@ function createNote(noteKey, duration) {
     //console.log(`Creating note with noteKey ${noteKey} duration: ${duration}`);
     const noteMatch = noteKey.match(/^([a-gA-G])(b|#)?(\d)?$/);
     if (!noteMatch) {
-        console.error(`Invalid note key: ${noteKey}`);
+        console.error(`Invalid note key: ${noteKey} (normalized -> ${nk}). Expected e.g. c4, d#5, gb3, a-1`);
         return null;
     }
 
     const [, letter, accidental, octaveRaw] = noteMatch;
-    const octave = octaveRaw || '4'; // Default to octave 4
-    const key = `${letter.toLowerCase()}${accidental || ''}/${octave}`;
-    const isTriplet = duration.endsWith('t');
-    const isDotted = duration.endsWith('.');
-    const baseDuration = (isTriplet || isDotted) ? duration.slice(0, -1) : duration;
+    let octaveNum = typeof octaveRaw !== 'undefined' ? parseInt(octaveRaw, 10) : 4;
+    if (Number.isNaN(octaveNum)) octaveNum = 4;
+
+    // NOTE:
+    // Removed clef-based octave shifting here to avoid double/conflicting octave adjustments.
+    // Clef-aware octave logic should be handled consistently in one place (midiRenderer.js).
+    // (previous code added `octaveNum += 2` for 'bass' which caused notes to render on wrong lines)
+
+    const key = `${letter.toLowerCase()}${accidental || ''}/${octaveNum}`;
+
+    const isTriplet = typeof duration === 'string' && duration.endsWith('t');
+    const isDotted = typeof duration === 'string' && duration.endsWith('.');
+    const baseDuration = (isTriplet || isDotted) ? duration.slice(0, -1) : (duration || 'q');
 
     try {
         const staveNote = new Vex.Flow.StaveNote({
@@ -407,27 +416,26 @@ function createNote(noteKey, duration) {
         }
 
         if (isDotted && !isTriplet) {
-            staveNote.addDot(0); // Add dot if dotted
+            staveNote.addDot(0);
         }
+
         if (typeof staveNote.autoStem === 'function') {
-            staveNote.autoStem(); 
+            try { staveNote.autoStem(); } catch (e) { /* ignore */ }
         }
 
         if (isTriplet) {
-            // Помітимо ноту як тріольну для швидкого складання Tuplet
             staveNote.__isTriplet = true;
-            staveNote.__tripletBase = baseDuration; // 'q','8','16','32'
-            staveNote.__durationCode = duration;    // 'qt','8t','16t','32t'
+            staveNote.__tripletBase = baseDuration;
+            staveNote.__durationCode = duration;
         }
-        //        console.log(`Created note: ${key}, duration: ${baseDuration}`);
+
+        console.log(`createNote: created key='${key}' duration='${baseDuration}' clef='${clef}'`);
         return staveNote;
     } catch (error) {
-        console.error(`Failed to create note with key: ${noteKey} and duration: ${duration}`, error);
-        return null; // Return null if creation fails
+        console.error(`Failed to create note with key: ${noteKey} (normalized ${key}) and duration: ${duration}`, error);
+        return null;
     }
-};
-
-// // Аналіз нот із введеного рядку (ноти через коми)
+};// // Аналіз нот із введеного рядку (ноти через коми)
 function processNote(element) {
     console.log("FOO: midiparser_ext.js - processNote");
     const parts = element.split('/');
