@@ -89,7 +89,8 @@
                 <td>
                     @if (lng == "uk")
                     {
-                        @(item.Country != null ? item.Country.Name : "Немає даних")
+                        <a asp-page="../Countries/Details" asp-route-id="@item.Country?.ID" class="link-dark">
+                        @(item.Country != null ? item.Country.Name : "Немає даних")</a>
                     }
                     else
                     {

@@ -22,6 +22,8 @@ namespace Melodies25.Pages.Authors
         public Author Author { get; set; } = default!;
         public List<Melody> Melody { get; set; } = default!;
 
+        
+
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
