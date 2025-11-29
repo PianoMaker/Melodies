@@ -673,7 +673,7 @@ namespace Melodies25.Pages.Melodies
                 {
                     case "subsequence":
                         {
-                            if (LoggingManager.Comparing)
+                            if (LoggingManager.Comparing || LoggingManager.AlgorithmDiagnostics)
                                 MessageL(14, $"comparing subsequence for {title}");
                             // TEMPORARY: restrict subsequence search to songs whose Title starts with Cyrillic 'Ã'
                             /*
@@ -728,7 +728,7 @@ namespace Melodies25.Pages.Melodies
                         {
                             if (IfIntonation && !IfRhythm)
                             {
-                                if (LoggingManager.Comparing)
+                                if (LoggingManager.Comparing || LoggingManager.AlgorithmDiagnostics)
                                     MessageL(14, $"comparing substring for {title}");
                                 var match = MusicMelody.SimilarByIntervals(MelodyPattern, melody.MidiMelody);
                                 length = match.Length;
@@ -738,7 +738,7 @@ namespace Melodies25.Pages.Melodies
                             }
                             if (!IfIntonation && IfRhythm)
                             {
-                                if (LoggingManager.Comparing)
+                                if (LoggingManager.Comparing || LoggingManager.AlgorithmDiagnostics)
                                     MessageL(14, $"comparing substring for {title}");
                                 var match = MusicMelody.SimilarByRhythm(MelodyPattern, melody.MidiMelody);
                                 length = match.Length;
@@ -748,13 +748,16 @@ namespace Melodies25.Pages.Melodies
                             }
                             if (IfRhythm && IfIntonation)
                             {
-                                if (LoggingManager.Comparing)
+                                if (LoggingManager.Comparing || LoggingManager.AlgorithmDiagnostics)
                                     MessageL(14, $"comparing substring for {title}");
                                 var match = MusicMelody.SimilarByBoth(MelodyPattern, melody.MidiMelody);
                                 length = match.Length;
                                 position = match.Position;
                                 finalBestPairs = match.Pairs ?? new List<(int i1, int i2)>();
                                 bestshift = match.BestShift;
+
+                                if (LoggingManager.AlgorithmDiagnostics)
+                                    MessageL(COLORS.olive, $"Algorithm diagnostics for '{title}' finished: BestShift={bestshift}, Length={length}");
                                 break;
                             }
                             else
