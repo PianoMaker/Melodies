@@ -701,6 +701,8 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 		// ----------------------
 
 
+		// --- Replace: renderMeasure inner handler where activeNotes are assigned and removed ---
+		// Обробляємо кожну подію в такті
 		function renderMeasure() {
 			console.log("FOO: midiRenderer.js - renderMeasure");
 			let isFirstNoteInMeasure = true;
@@ -749,7 +751,12 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 					}
 					checkConcide(event, lastNoteOnTime);
 
-					activeNotes[pitch] = event.absTime;
+					// Ensure we preserve any existing lastRenderedNote (if we re-on the same pitch unexpectedly)
+					const prevEntry = activeNotes[pitch];
+					activeNotes[pitch] = {
+						startTime: event.absTime,
+						lastRenderedNote: prevEntry && prevEntry.lastRenderedNote ? prevEntry.lastRenderedNote : null
+					};
 					lastNoteOnTime = event.absTime;
 				}
 				else if (isNoteOff(event)) {
@@ -758,7 +765,8 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 					if (closedAtTick.has(key)) return; // дублікат
 					closedAtTick.add(key);
 
-					const startTime = activeNotes[pitch];
+					const entry = activeNotes[pitch];
+					const startTime = entry ? entry.startTime : undefined;
 					if (stepRead) stepRead.innerHTML += ` off ${pitch} <span class="tick">[${event.absTime}]</span>`;
 
 					if (startTime !== undefined) {
@@ -766,32 +774,38 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 						if (durationTicks > 0) {
 							const durationsCode = getDurationFromTicks(durationTicks, ticksPerBeat);
 							const { key: vexKey, accidental } = midiNoteToVexFlowWithKey(pitch, currentKeySig, clefChoice);
-							
+
 							const nominalTicksArr = durationsCode.map(dc => calculateTicksFromDuration(dc, ticksPerBeat));
 							const nominalSum = nominalTicksArr.reduce((a, b) => a + b, 0) || 1;
 
-							let previousNote = null;
+							let previousNote = entry && entry.lastRenderedNote ? entry.lastRenderedNote : null;
+							// If lastRenderedNote exists, it is the staveNote from previous measure — we must not duplicate it.
+							// But we still need to create pieces that cover from startTime .. event.absTime.
+							// Build pieces and tie them correctly: if previousNote exists, tie previousNote -> firstPiece.
+
+							let firstPiece = null;
 							durationsCode.forEach((durationCode, pieceIdx) => {
 								const accToDraw = decideAccidentalForNote(vexKey, accidental, currentKeySig, measureAccState, pieceIdx);
 								const note = processNoteElement(durationCode, vexKey, accToDraw, clefChoice);
 								applyAutoStem(note, durationCode);
-																
+
 								const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
 								note.__srcTicks = allocatedTicks;
 
 								notes.push(note);
 
-								// Якщо є попередня нота, додаємо лігу
+								// Tie from previousNote (could be from earlier piece in same measure or from previous measure)
 								AddTie(previousNote, ties, note);
 
 								previousNote = note;
+								if (firstPiece === null) firstPiece = note;
 							});
 
-
+							// After finishing, no longer active — clear entry (note ended)
+							// But keep previousNote for possible local ties array (we already pushed ties)
 						}
 						// lastNoteOffTime is absolute absTime (end of the note we just processed)
 						lastNoteOffTime = event.absTime;
-
 					}
 					else { console.log(`starttime for ${pitch} is ${startTime}`); }
 					if (activeNotes[pitch] !== undefined) {
@@ -896,55 +910,88 @@ function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat, clef) {
 	}
 }
 
+// --- Replace: processActiveNotesFromPreviousBar (preserve lastRenderedNote) ---
 function processActiveNotesFromPreviousBar(activeNotes, index, barStartAbsTime) {
 	console.log("FOO: midiRenderer.js - processActiveNotesFromPreviousBar");
 	if (Object.keys(activeNotes).length > 0 && index > 0) {
 		console.log("AN: active notes from previous bar:", activeNotes);
 		Object.keys(activeNotes).forEach(pitch => {
-			activeNotes[pitch] = barStartAbsTime;
+			const entry = activeNotes[pitch];
+			if (!entry) {
+				// legacy numeric value present -> normalize to object
+				activeNotes[pitch] = { startTime: barStartAbsTime, lastRenderedNote: null };
+			} else {
+				// preserve lastRenderedNote, but for rendering in this new measure
+				// we need startTime to be at measure start so drawActiveNotes will render duration from barStart -> measureEnd
+				// store originalStart only if needed later (not required currently)
+				entry.startTime = barStartAbsTime;
+				// leave entry.lastRenderedNote untouched
+			}
 		});
 	} else {
 		console.log("AN: no active notes from previous bar");
 	}
 }
-
+// --- Replace: drawActiveNotes to set and use lastRenderedNote for cross-bar ties ---
 function drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState, clef = 'treble') {
 	console.log("FOO: midiRenderer.js - drawActiveNotes");
 	// Домалювати всі ноти, які залишилися активними до кінця такту
-	Object.keys(activeNotes).forEach(pitch => {
+	Object.keys(activeNotes).forEach(pitchKey => {
 		const stepRead = document.getElementById("stepRead");
-		console.log(`AN: trying to process ${pitch}, measureEndTick = ${measureEndTick}`)
-		const startTime = activeNotes[pitch];
-		const durationTicks = measureEndTick - startTime;
+		const pitch = Number(pitchKey);
+		console.log(`AN: trying to process ${pitch}, measureEndTick = ${measureEndTick}`);
+		const entry = activeNotes[pitch];
+		const startTime = entry ? entry.startTime : undefined;
+		const prevRendered = entry ? entry.lastRenderedNote : null;
+
+		const durationTicks = (startTime !== undefined) ? (measureEndTick - startTime) : -1;
 		if (durationTicks >= 0) {
 			const durationsCode = getDurationFromTicks(durationTicks, ticksPerBeat);
-			const { key, accidental } = midiNoteToVexFlowWithKey(Number(pitch), currentKeySig, clef);
+			const { key, accidental } = midiNoteToVexFlowWithKey(pitch, currentKeySig, clef);
 			console.log(`AN: found activeNote ${pitch} (${key}${accidental})`);
 
 			const nominalTicksArr = durationsCode.map(dc => calculateTicksFromDuration(dc, ticksPerBeat));
 			const nominalSum = nominalTicksArr.reduce((a, b) => a + b, 0) || 1;
 
 			let previousNote = null;
+			let firstPiece = null;
 			durationsCode.forEach((durationCode, pieceIdx) => {
 				const accToDraw = decideAccidentalForNote(key, accidental, currentKeySig, measureAccState, pieceIdx);
 				const note = processNoteElement(durationCode, key, accToDraw, clef);
 				applyAutoStem(note, durationCode);
-						
-								const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
+
+				const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
 				note.__srcTicks = allocatedTicks;
 
+				// If this is the first piece in this measure and there was a note created in previous measure,
+				// tie from that previous measure's lastStaveNote to this first piece.
+				if (pieceIdx === 0 && prevRendered) {
+					try {
+						AddTie(prevRendered, ties, note);
+					} catch (e) {
+						console.warn("Failed to add cross-bar tie:", e);
+					}
+				}
+
 				notes.push(note);
+
+				// internal ties within this measure parts
 				AddTie(previousNote, ties, note);
+
 				previousNote = note;
+				if (!firstPiece) firstPiece = note;
 			});
-		}
-		else {
+
+			// Save last rendered stave note for future cross-bar tie (next measure)
+			if (entry) {
+				entry.lastRenderedNote = previousNote; // last piece's StaveNote
+			}
+		} else {
 			console.log(`AN: could not process activeNote, duration:  ${durationTicks} ticks`);
 			if (stepRead) stepRead.innerHTML += `=${durationTicks} ticks: ${measureEndTick} - ${startTime}`
 		}
 	});
 }
-
 function checkConcide(event, lastNoteOnTime) {
 	console.log("FOO: midiRenderer.js - checkConcide");
 	if (event.absTime == lastNoteOnTime) {
