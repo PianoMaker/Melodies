@@ -730,7 +730,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 					// Add starting rest only if the bar did NOT start with sustained notes
 					if (isFirstNoteInMeasure && !measureStartedWithActive) {
 						const relTime = event.absTime - barStartAbsTime;
-						if (relTime > thresholdGap) {
+						if (relTime > 0) {
 							AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime);
 							// mark timeline filled up to this first note (absolute time)
 							lastNoteOffTime = event.absTime;
@@ -1722,23 +1722,28 @@ function addRestsBetween(lastNoteOffTime, event, ticksPerBeat, thresholdGap, not
 function AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime) {
 	console.log("FOO: midiRenderer.js - AddStartRest");
 	const relTime = event.absTime - barStartAbsTime;
-	if (relTime > 0) {
-		const restDurations = (typeof ticksToCleanDurations === 'function')
-			? ticksToCleanDurations(relTime, ticksPerBeat)
-			: getDurationFromTicks(relTime, ticksPerBeat);
-		if (relTime > thresholdGap) {
-			console.log(`adding a starting rest ${relTime}`);
-			restDurations.forEach((restDuration) => {
-				const rest = createRest(restDuration);
-				notes.push(rest);
-				console.log(`MR: Rest added (AddStartRest) duration=${restDuration}`);
-			});
-		}
-	} else {
-		console.log("no rest needed");
+	if (relTime <= 0) {
+		console.log("AddStartRest: relTime <= 0, no leading rest needed");
+		return;
 	}
-}
 
+	// Convert leading gap into one or more rest durations
+	const restDurations = (typeof ticksToCleanDurations === 'function')
+		? ticksToCleanDurations(relTime, ticksPerBeat)
+		: getDurationFromTicks(relTime, ticksPerBeat);
+
+	console.log(`AddStartRest: inserting leading rest totalTicks=${relTime}, parts=[${restDurations.join(',')}]`);
+
+	restDurations.forEach(dur => {
+		const rest = createRest(dur);
+		if (rest) {
+			notes.push(rest);
+			console.log(`MR: Leading rest added duration=${dur}`);
+		} else {
+			console.warn(`AddStartRest: failed to create rest for duration=${dur}`);
+		}
+	});
+}
 // ----------------------
 // ФУНКЦІЯ ДЛЯ СТВОРЕННЯ НОТИ З ВИКОРИСТАННЯМ VEXFLOW
 // Параметри:

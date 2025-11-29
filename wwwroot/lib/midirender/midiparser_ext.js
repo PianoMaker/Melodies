@@ -345,31 +345,37 @@ const getDurationValueFromNote = (note) => {
 };
 
 
-function createRest(duration) {
+function createRest(duration, clef = 'treble') {
     console.log("FOO: midiparser_ext.js - createRest");
-    console.log("Creating rest with duration: ", duration);
-    const isDotted = duration.endsWith('.');
-    const isTriplet = duration.endsWith('t');
-    const baseDuration = (isDotted || isTriplet) ? duration.slice(0, -1) : duration;
-
     try {
-        const staveNote = new Vex.Flow.StaveNote({
-            keys: ['b/4'], // ключ для паузи неважливий
-            duration: `${baseDuration}r`, // Форматуємо тривалість як паузу
+        if (!duration || typeof duration !== 'string') {
+            console.warn('createRest: invalid duration', duration);
+            return null;
+        }
+
+        // Normalize duration: strip trailing 'r' if present to avoid 'qrr'
+        const hasDot = duration.endsWith('.');
+        const hasTriplet = duration.endsWith('t');
+        const raw = duration.replace(/r$/i, '');
+        const base = (hasDot || hasTriplet) ? raw.slice(0, -1) : raw;
+
+        // VexFlow rest notation requires trailing 'r'
+        const vexDur = `${base}r`;
+
+        const rest = new Vex.Flow.StaveNote({
+            keys: ['b/4'],     // ignored visually for rests
+            duration: vexDur,
             clef: clef
         });
 
-        if (isDotted && !isTriplet) {
-            console.log("Is dotted:", isDotted);
-            staveNote.addDot(0); // Додаємо крапку до паузи
+        if (hasDot && !hasTriplet) {
+            rest.addDot(0);
         }
 
-        // Позначку тріолі для rests не ставимо; Tuplet працює і без цього для нот
-
-        return staveNote;
+        return rest;
     } catch (error) {
         console.error(`Failed to create rest with duration: ${duration}`, error);
-        return null; // Return null if creation fails
+        return null;
     }
 }
 
@@ -546,7 +552,7 @@ function getKeySignature(midiEvents) {
                 const minors = ['Abm', 'Ebm', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm', 'Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m', 'A#m'];
                 const idx = sf + 7;
                 const name = (idx >= 0 && idx < majors.length) ? (mi === 0 ? majors[idx] : minors[idx]) : `sf=${sf}`;
-                decoded = { sf, mi, name, raw: bytes };
+                decoded = { sf, mi, name, raw: ev.data };
             }
         }
         // Fallback: param1 / param2 fields (MIDIFile library representation)
