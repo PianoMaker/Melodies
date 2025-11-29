@@ -1168,6 +1168,20 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	const useFlats = sf < 0;
 	let chosen = useFlats ? flatNames[pc] : sharpNames[pc];
 
+	// Minor leading-tone rule: in minor keys prefer sharp spelling for VII# (one semitone below tonic).
+	// Keep special case for C# minor: spell leading tone as B# (and adjust octave).
+	if (mi === 1 && tonicPc != null) {
+		const leadingPc = (tonicPc + 11) % 12;
+		if (tonicPc === 1 && pc === 0) {
+			// C# minor: C is spelled as B#
+			chosen = 'B#';
+			outOctave = outOctave - 1; // keep pitch correct for 'B' + '#'
+		} else if (pc === leadingPc) {
+			// General minor: force sharp spelling for leading tone (e.g., Dm -> C# not Db)
+			chosen = sharpNames[pc];
+		}
+	}
+
 	// Key-signature specific enharmonic adjustments (existing behaviour)
 	if (sf <= -6 && pc === 11) {        // B -> Cb (octave +1)
 		chosen = 'Cb';
@@ -1177,9 +1191,6 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	} else if (sf >= 6 && pc === 5) {   // F -> E#
 		chosen = 'E#';
 	} else if (sf >= 6 && pc === 0) {   // C -> B# (special)
-		chosen = 'B#';
-		outOctave = outOctave - 1;
-	} else if (mi === 1 && tonicPc === 1 && pc === 0) { // C# minor and pitch-class C
 		chosen = 'B#';
 		outOctave = outOctave - 1;
 	}

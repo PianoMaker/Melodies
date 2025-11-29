@@ -29,6 +29,7 @@ const reverseDurationMapping = {
 
  // --- Enharmonic support (minimal) ---
 let currentKeySignature = 0; // -7..+7 (sf)
+let currentKeyMode = 0;      // 0=major, 1=minor   <-- ADDED
 let enharmonicPreference = 'auto'; // 'auto' | 'sharps' | 'flats'
 function setEnharmonicPreference(pref) {
     console.log("FOO: midiparser_ext.js - setEnharmonicPreference");
@@ -92,33 +93,75 @@ function updateKeySignatureFromEvents(events) {
         currentKeySignature = ks.sf;
         // Extra safety
         ks.mi = (ks.mi === 0 || ks.mi === 1) ? ks.mi : (ks.mi ? 1 : 0);
+        currentKeyMode = ks.mi; // <-- ADDED: remember mode (major/minor)
         return { sf: ks.sf, mi: ks.mi };
     }
     return null;
 }
 
+// --- helpers to derive tonic pitch-class from sf/mi (for minor leading-tone logic) ---
+function keyNameFromSfMi(sf, mi) {
+    const majors = ['Cb','Gb','Db','Ab','Eb','Bb','F','C','G','D','A','E','B','F#','C#'];
+    const minors = ['Abm','Ebm','Bbm','Fm','Cm','Gm','Dm','Am','Em','Bm','F#m','C#m','G#m','D#m','A#m'];
+    const idx = (sf|0) + 7;
+    if (idx < 0 || idx >= majors.length) return null;
+    return mi === 1 ? minors[idx] : majors[idx];
+}
+function noteNameToPc(name) {
+    const map = {
+        'C':0,'B#':0,
+        'C#':1,'Db':1,
+        'D':2,
+        'D#':3,'Eb':3,
+        'E':4,'Fb':4,
+        'E#':5,'F':5,
+        'F#':6,'Gb':6,
+        'G':7,
+        'G#':8,'Ab':8,
+        'A':9,
+        'A#':10,'Bb':10,
+        'B':11,'Cb':11
+    };
+    return map[name] ?? null;
+}
+function tonicPcFromSfMi(sf, mi) {
+    const nm = keyNameFromSfMi(sf, mi);
+    if (!nm) return null;
+    const root = mi === 1 ? nm.replace(/m$/,'') : nm;
+    return noteNameToPc(root);
+}
 
 function midiNoteToVexFlow(midiNote) {
     console.log("FOO: midiparser_ext.js - midiNoteToVexFlow");
-    // Decide spelling based on preference / key signature
     const sharpNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    const flatNames = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-    const pc = midiNote % 12;// pitch class
-    const octaveRaw = Math.floor(midiNote / 12) - 1; // keep existing shift
+    const flatNames  = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+    const pc = midiNote % 12;
+    const octaveRaw = Math.floor(midiNote / 12) - 1;
 
-    // auto/sharps/flats preference
+    // default selection by global preference / sf sign
     let useFlats;
     if (enharmonicPreference === 'sharps') useFlats = false;
     else if (enharmonicPreference === 'flats') useFlats = true;
     else useFlats = currentKeySignature < 0;
 
-    // Default choice
     let chosen = useFlats ? flatNames[pc] : sharpNames[pc];
     let outOctave = octaveRaw;
 
-    // Extreme key signatures preference (only when auto):
-    // - more than 5 flats (sf <= -6): B -> Cb (next octave), E -> Fb (same octave)
-    // - more than 5 sharps (sf >= +6): F -> E# (same octave)
+    // Minor VII# rule: in minor, prefer sharp spelling for leading tone (one semitone below tonic)
+    try {
+        if (currentKeyMode === 1) { // minor
+            const tonicPc = tonicPcFromSfMi(currentKeySignature, 1);
+            if (tonicPc != null) {
+                const leadingPc = (tonicPc + 11) % 12;
+                if (pc === leadingPc) {
+                    // Force sharp spelling for the leading tone (e.g., Dm: pc=1 -> C# not Db)
+                    chosen = sharpNames[pc];
+                }
+            }
+        }
+    } catch (e) { /* safe fallback */ }
+
+    // Extreme key signatures (keep existing behavior)
     if (enharmonicPreference === 'auto') {
         if (typeof currentKeySignature === 'number') {
             if (currentKeySignature <= -6 && pc === 11) {
