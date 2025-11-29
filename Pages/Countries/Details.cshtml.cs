@@ -22,11 +22,12 @@ namespace Melodies25.Pages.Countries
         public Country Country { get; set; } = default!;
         public List<Author> Author { get; set; } = default!;
 
+        // Один хендлер, який приймає nullable id.
         public async Task<IActionResult> OnGetAsync(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
+        {            
+            if (id == null || id <= 0)
+            {                
+                return RedirectToPage("/Countries/Index");
             }
 
             var country = await _context.Country.FirstOrDefaultAsync(m => m.ID == id);

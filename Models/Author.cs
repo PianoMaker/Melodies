@@ -15,7 +15,7 @@ namespace Melodies25.Models
         public Country? Country { get; set; }  // Країна автора
         public int? CountryID { get; set; }
         public int? DateOfBirth { get; set; }  // Рік народження
-        public int? DateOfDeath { get; set; }  // Рік смерті (може бути null, якщо автор живий)
+        public int? DateOfDeath { get; set; }  // Рік смерті 
 
         public string? Description { get; set; }
 
