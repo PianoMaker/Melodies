@@ -766,8 +766,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 						if (durationTicks > 0) {
 							const durationsCode = getDurationFromTicks(durationTicks, ticksPerBeat);
 							const { key: vexKey, accidental } = midiNoteToVexFlowWithKey(pitch, currentKeySig, clefChoice);
-							console.log('DIAG map:', { midiPitch: pitch, vexKey, accidental, clefChoice, measureIndex: index, absTime: event.absTime });
-
+							
 							const nominalTicksArr = durationsCode.map(dc => calculateTicksFromDuration(dc, ticksPerBeat));
 							const nominalSum = nominalTicksArr.reduce((a, b) => a + b, 0) || 1;
 
@@ -1113,11 +1112,16 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	let outOctave = Math.floor(midiNote / 12) - 1;
 
 	const sf = currentKeySig && typeof currentKeySig.sf === 'number' ? currentKeySig.sf : 0;
-	const useFlats = sf < 0;
+	const mi = currentKeySig && typeof currentKeySig.mi === 'number' ? currentKeySig.mi : 0; // 0=major,1=minor
 
+	// minor tonic pitch-class helper (reuse existing util if available)
+	let tonicPc = null;
+	try { tonicPc = getMinorTonicPc ? getMinorTonicPc(currentKeySig) : null; } catch (e) { tonicPc = null; }
+
+	const useFlats = sf < 0;
 	let chosen = useFlats ? flatNames[pc] : sharpNames[pc];
 
-	// Key-signature specific enharmonic adjustments (keep existing behaviour)
+	// Key-signature specific enharmonic adjustments (existing behaviour)
 	if (sf <= -6 && pc === 11) {        // B -> Cb (octave +1)
 		chosen = 'Cb';
 		outOctave = outOctave + 1;
@@ -1128,17 +1132,14 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	} else if (sf >= 6 && pc === 0) {   // C -> B# (special)
 		chosen = 'B#';
 		outOctave = outOctave - 1;
+	} else if (mi === 1 && tonicPc === 1 && pc === 0) { // C# minor and pitch-class C
+		chosen = 'B#';
+		outOctave = outOctave - 1;
 	}
-
-	// NOTE: removed clef-based octave shifting here.
-	// Clef / octave visual adjustments must be applied in one place only.
-	// Having both this function and other createNote implementations shift octaves
-	// produced double/shifting errors and notes appearing on wrong staff lines.
 
 	const accidental = chosen.includes('#') ? '#' : (chosen.includes('b') ? 'b' : null);
 	return { key: `${chosen.replace(/[#b]/, '')}/${outOctave}`, accidental };
-}
-function createNote(noteKey, duration, clef = 'treble') {
+} function createNote(noteKey, duration, clef = 'treble') {
 	console.log("FOO: midiparser_ext.js - createNote", { noteKey, duration, clef });
 
 	if (typeof noteKey !== 'string') {
