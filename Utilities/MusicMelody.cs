@@ -24,6 +24,7 @@ namespace Music
         public MusicMelody() { }
         public MusicMelody(List<Note> nt) { this.notes = nt; }
 
+        // КОНСТРУКТОРИ
         public MusicMelody(List<string> notes) : base(notes)
         {
             Tempo = 120;
