@@ -1,12 +1,13 @@
 ﻿/* Design tokens for consistent feel */
 :root {
-    --brand-red: #be0000; /* старий яскравий */
-    --brand-green: #34620e; /* темно-зелений, використовується в мобільному меню/навігаційній панелі */
-    --brand-maincolor: #4b4f18; /* колір верхньої смуги, підсвітка клавіш */
-    --nav-height: 85px; /* висота навігаційної смуги */
-    --brand-gold: #ffd83d; /* акцент */
-    --surface: #fffcd1; /* світлий фон панелі */
-    --text-dark: #1f1f1f;
+    --brand-red: #be0000;               /* старий яскравий */
+    --brand-green: #34620e;             /* старий темно-зелений */
+    --brand-maincolor: #4b4f18;         /* колір верхньої смуги, підсвітка клавіш */
+    --brand-maincolor-light: #7a7e38;   /* колір верхньої смуги, підсвітка клавіш */
+    --nav-height: 85px;                 /* висота навігаційної смуги */
+    --brand-gold: #ffd83d;              /* акцент */
+    --surface: #fffcd1;                 /* світлий фон панелі */
+    --text-dark: #1f1f1с;               /* текстові надписи */
     --brand-border: #d9cf8d; /* border панелей/контейнерів */
     --brand-mobile-button: #ffd83d; /* яскравий золотий для кнопок мобільного меню */
     --radius-lg: 12px;
@@ -16,6 +17,9 @@
     --mainimage: url(../images/catplays3.png); /* головний малюнок */
     --footer-height: 30px; /* NEW */
 }
+
+
+
 
 
 html {
@@ -36,9 +40,10 @@ body {
     /* замінюємо margin-bottom -> padding-bottom для зарезервованого простору */
     margin: 0;
     padding: 0px;
-    padding-bottom: calc(var(--footer-height) + 16px); 
+    padding-bottom: calc(var(--footer-height) + 16px);
     width: 100%;
-    height: 100%;  
+    height: 100%;
+    color: var(--text-dark);
     background-color: #f0e68c; /* lightkhaki */
     background-attachment: fixed;
     background-repeat: no-repeat;
@@ -84,12 +89,21 @@ a.link-light:hover {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Надпис Мелодії з усього світу на одному сайті*/
 .homepagesubtitle {
-    color: #5a3d1c; /* Темно-коричневий */
+    color: var(--text-dark); /* Темно-коричневий */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
     font-size: 1.2em;
+    transition-duration: 0.2s;
 }
+
+.homepagesubtitle:hover {
+    color: var(--brand-green); 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    transition-duration: 0.2s;
+    font-size: 1.2em;
+}
+
 
 /* лівий контейнер*/
 #mainpageleftcontainer {
@@ -329,7 +343,7 @@ label, .form-label, .col-form-label {
         }
 
 table {
-    background-color: white;
+    background-color: white;    
     opacity: 0.9;
     font-family: 'Times New Roman';
     font-style: normal;
@@ -359,7 +373,7 @@ th, td {
 }
 
 th {
-    background: linear-gradient(to right, #4b4f18, #5a5e38);
+    background: linear-gradient(to right, var(--brand-maincolor), var(--brand-maincolor-light));
     color: white;
 }
 
@@ -544,11 +558,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     }
 }
 
-.homepagesubtitle {
-    color: #5a3d1c; /* Темно-коричневий */
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-    font-size: 1.2em;
-}
 
 
 .btn-index {
