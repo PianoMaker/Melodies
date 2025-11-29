@@ -1171,12 +1171,14 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	// Minor leading-tone rule: in minor keys prefer sharp spelling for VII# (one semitone below tonic).
 	// Keep special case for C# minor: spell leading tone as B# (and adjust octave).
 	if (mi === 1 && tonicPc != null) {
-		const leadingPc = (tonicPc + 11) % 12;
-		if (tonicPc === 1 && pc === 0) {
-			// C# minor: C is spelled as B#
+		const raised4 = (tonicPc + 6) % 12;  // #IV
+		const raised6 = (tonicPc + 9) % 12;  // #VI
+		const raised7 = (tonicPc + 11) % 12; // #VII (leading tone)
+
+		if (pc === 0 && (pc === raised4 || pc === raised6 || pc === raised7)) {
 			chosen = 'B#';
-			outOctave = outOctave - 1; // keep pitch correct for 'B' + '#'
-		} else if (pc === leadingPc) {
+			outOctave = outOctave - 1;
+		} else if (pc === raised7 || pc === raised4 || pc === raised6) {
 			// General minor: force sharp spelling for leading tone (e.g., Dm -> C# not Db)
 			chosen = sharpNames[pc];
 		}
