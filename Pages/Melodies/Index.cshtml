@@ -16,13 +16,14 @@
 }
 <div class="infocontainer">
     <h1>Мелодій у базі даних - @(Model.Melody?.Count ?? 0)</h1>
+    <!--Верхній прямокутник-->
     <div class="d-flex flex-row melody-index-flex">
-        <!-- Left column: search/add buttons -->
+        <!-- Кнопки ліворуч "Пошук", "Додати мелодію" -->
         <div id="operationbuttons" class="d-flex flex-column me-4">
             <a asp-page="search" class="btn-melody m-2 btn-compact-40 align-self-start">Розширений пошук</a>
             <a asp-page="Create" class="btn-melody m-2 btn-compact-40 align-self-start">Додати мелодію</a>
         </div>
-        <!-- Right column: letter filter buttons -->
+        <!-- Кнопки з літерами праворуч -->
         <div id="lettersbutton" class="d-flex flex-column">
             <div class="d-flex flex-wrap gap-1 mb-2 letters-row">
                 @foreach (var letter in Enumerable.Range('A', 26).Select(i => ((char)i).ToString()))
@@ -51,6 +52,7 @@
         </div>
     </div>
 </div>
+<!-- ТАБЛИЦЯ -->
 <div class="table-responsive-custom">
 <table class="table">
     <thead>
