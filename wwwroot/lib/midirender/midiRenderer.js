@@ -109,10 +109,7 @@ async function renderMidiSegmentFromUrl(
 		const uint8 = new Uint8Array(arrayBuf);
 
 		// Pre-parse to find measure index for the matched note
-		const midiData = MidiParser.Uint8(uint8);
-		const ticksPerBeat = Array.isArray(midiData.timeDivision) ? 480 : midiData.timeDivision;
-		let allEvents = SetEventsAbsoluteTime(midiData);
-		ensureEndEvent(allEvents);
+		var { allEvents, ticksPerBeat, isMidi0 } = extractEventsFromArray(uint8);
 
 		// ро
 		const measureMap = createMeasureMap(allEvents, ticksPerBeat);
@@ -126,10 +123,13 @@ async function renderMidiSegmentFromUrl(
 		// --- determine initial key signature active at targetAbsTime ---
 		let initialKeySig = getInitialKeySignatures(allEvents, targetAbsTime);
 
-		// Render the segment
+		// Render the segment		
+
 		const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
 		renderMidiFileToNotation(
-			uint8,
+			isMidi0,
+			allEvents,
+			ticksPerBeat,
 			ELEMENT_FOR_RENDERING,
 			GENERALWIDTH,
 			HEIGHT,
@@ -148,6 +148,8 @@ async function renderMidiSegmentFromUrl(
 		if (commentsDiv) commentsDiv.innerHTML = `Error loading MIDI: ${err.message}`;
 	}
 }
+
+
 
 
 /**
@@ -183,10 +185,12 @@ function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWID
 		reader.onload = function (e) {
 			console.log("drawScore: File read successfully");
 			const uint8 = new Uint8Array(e.target.result);
-
+			var { allEvents, ticksPerBeat, isMidi0 } = extractEventsFromArray(uint8);
 			try {
 				renderMidiFileToNotation(
-					uint8,
+					isMidi0,
+					allEvents,
+					ticksPerBeat,
 					ELEMENT_FOR_RENDERING,
 					GENERALWIDTH,
 					HEIGHT,
@@ -352,14 +356,12 @@ function hasNoteOn(measure) {
 // ---------------------
 
 
-function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, commentsDiv, maxBarsToRender = 1000, startAtMeasureIndex = 0, initialKeySig = null) {
+function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, commentsDiv, maxBarsToRender = 1000, startAtMeasureIndex = 0, initialKeySig = null) {
 	console.log("FOO: midiRenderer.js - renderMidiFileToNotation");
 	if (!ELEMENT_FOR_RENDERING) {
 		throw new Error(`Element with id ${ELEMENT_FOR_RENDERING} not found.`);
 	}
-	let midiData = MidiParser.Uint8(uint8);
-	let ticksPerBeat = Array.isArray(midiData.timeDivision) ? 480 : midiData.timeDivision;
-	let allEvents = SetEventsAbsoluteTime(midiData) || [];
+	
 
 	// Перевірка наявності EndTrack
 	ensureEndEvent(allEvents);
@@ -385,7 +387,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
 	console.info(`renderMidiFileToNotation: startIdx=${startIdx}, renderCount=${renderCount}, measuresWindow=${measuresWindow.length}`);
 
 	// For MIDI format 0: trim leading empty measures before the first NoteOn so no empty bars appear before music.
-	startIdx = adjustStartIdxForMidi0Format(midiData, measuresWindow, startIdx);
+	startIdx = adjustStartIdxForMidi0Format(isMidi0, measuresWindow, startIdx);
 
 
 	// Тримаємо лише ті такти, які містять Note On події
@@ -399,21 +401,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
 
 	// If nothing to render then bail out with a helpful comment
 	if (effectiveCount === 0) {
-		const msg = 'No notes to render: selected segment contains no NoteOn events.';
-		console.warn(`renderMidiFileToNotation: ${msg} measures.length=${measures.length} measuresWindow.length=${measuresWindow.length}`);
-		if (commentsDiv) {
-			commentsDiv.innerHTML = msg;
-		} else {
-			const target = document.getElementById(ELEMENT_FOR_RENDERING);
-			if (target) target.innerHTML = `<div class="small text-muted">${msg}</div>`;
-		}
-		return {
-			totalMeasures: measures.length,
-			renderedMeasures: 0,
-			limited: false,
-			maxBarsToRender,
-			startAtMeasureIndex: startIdx
-		};
+		return handleNoNotesToRender(commentsDiv, ELEMENT_FOR_RENDERING, measures, measuresWindow, maxBarsToRender, startIdx);
 	}
 
 	// створюємо новий measureMap для заданого діапазону
@@ -497,8 +485,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
 
 
 
-function adjustStartIdxForMidi0Format(midiData, measuresWindow, startIdx) {
-    const isMidi0 = midiData && (midiData.format === 0 || midiData.format === '0');
+function adjustStartIdxForMidi0Format(isMidi0, measuresWindow, startIdx) {    
     if (isMidi0) {
         let trimmedLeading = 0;
         while (measuresWindow.length > 0 && !hasNoteOn(measuresWindow[0])) {
@@ -796,9 +783,9 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 	});
 
 };
-// ----------------------
-// Допоміжні функції для обробки ключових знаків (key signatures)
-// ----------------------
+ // ----------------------
+ // Допоміжні функції для обробки ключових знаків (key signatures)
+ // ----------------------
 function getKeySignatureChanges(measure, currentKeySig) {
 	let ks = updateKeySignatureFromEvents(measure);
 	if (ks) { console.log(`ks: Tonality: ${ks.sf}, Mode: ${ks.mi}`); }
@@ -1238,7 +1225,7 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 		console.log(`createNote: created key='${key}' duration='${baseDuration}' clef='${clef}'`);
 		return staveNote;
 	} catch (error) {
-		console.error(`Failed to create note with key: ${noteKey} (normalized ${key}) and duration: ${duration}`, error);
+		console.error(`Failed to create note with key: ${noteKey} (normalized -> ${key}) and duration: ${duration}`, error);
 		return null;
 	}
 };// --- updated setStave to accept clef parameter ---
@@ -1658,7 +1645,7 @@ function getTimeSignature(measures) {
 // Параметри:
 // - previousNote: Попередня нота (Vex.Flow.StaveNote) або null.
 // - ties: Масив ліг (Vex.Flow.StaveTie) для рендерингу.
-// - note: Поточна нота (Vex.Flow.StaveNote).
+// - note: Поточний нота (Vex.Flow.StaveNote).
 // Повертає: void
 // ----------------------
 function AddTie(previousNote, ties, note) {
@@ -1852,4 +1839,44 @@ function decideClefForMeasure(measure) {
 
 	console.log("Choosing treble clef (default)");
 	return "treble";
+}
+
+function extractEventsFromArray(uint8) {
+	const midiData = MidiParser.Uint8(uint8);
+	const ticksPerBeat = Array.isArray(midiData.timeDivision) ? 480 : midiData.timeDivision;
+	let allEvents = SetEventsAbsoluteTime(midiData);
+	ensureEndEvent(allEvents);
+	const isMidi0 = midiData && (midiData.format === 0 || midiData.format === '0');
+	return { allEvents, ticksPerBeat, isMidi0 };
+}
+
+/**
+ * handleNoNotesToRender
+ * ---------------------
+ * Extracted helper to centralize behavior when a selected segment contains no NoteOn events.
+ *
+ * @param {HTMLElement|null} commentsDiv - element to write comments into (may be null)
+ * @param {string} ELEMENT_FOR_RENDERING - id of element to render into when commentsDiv absent
+ * @param {Array} measures - full measures array
+ * @param {Array} measuresWindow - the window/slice of measures considered for render
+ * @param {number} maxBarsToRender - original requested max bars to render
+ * @param {number} startIdx - computed start index for rendering
+ * @returns {Object} summary object compatible with renderMidiFileToNotation's return
+ */
+function handleNoNotesToRender(commentsDiv, ELEMENT_FOR_RENDERING, measures, measuresWindow, maxBarsToRender, startIdx) {
+	const msg = 'No notes to render: selected segment contains no NoteOn events.';
+	console.warn(`renderMidiFileToNotation: ${msg} measures.length=${measures.length} measuresWindow.length=${measuresWindow.length}`);
+	if (commentsDiv) {
+		commentsDiv.innerHTML = msg;
+	} else {
+		const target = document.getElementById(ELEMENT_FOR_RENDERING);
+		if (target) target.innerHTML = `<div class="small text-muted">${msg}</div>`;
+	}
+	return {
+		totalMeasures: measures.length,
+		renderedMeasures: 0,
+		limited: false,
+		maxBarsToRender,
+		startAtMeasureIndex: startIdx
+	};
 }
