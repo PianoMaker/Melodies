@@ -83,6 +83,10 @@ async function renderMidiFromUrl(
  * @returns {Promise<void>}
  * Usage example:
  *  await renderMidiSegmentFromUrl('/Uploads/example.mid', 10, 'notation', 'comments', 1200, 200, 20, 250, 60, 10, 12);
+  ====================
+  Механізм: 
+  1. обчислює startAtMeasureIndex, що вказує з якого такту стартує рендер 
+  2. запускає renderMidiFileToNotation із заданим тактом початку
  */
 async function renderMidiSegmentFromUrl(
 	midiUrl,
@@ -109,50 +113,18 @@ async function renderMidiSegmentFromUrl(
 		const ticksPerBeat = Array.isArray(midiData.timeDivision) ? 480 : midiData.timeDivision;
 		let allEvents = SetEventsAbsoluteTime(midiData);
 		ensureEndEvent(allEvents);
+
+		// ро
 		const measureMap = createMeasureMap(allEvents, ticksPerBeat);
-		const measures = groupEventsByMeasure(allEvents, measureMap);
 
-		// Find absTime of the startNoteIndex-th NoteOn (velocity > 0)
-		let targetAbsTime = 0;
-		let count = 0;
-		for (const ev of allEvents) {
-			if (ev && ev.type === 0x9 && Array.isArray(ev.data) && ev.data[1] > 0) {
-				if (count === (parseInt(startNoteIndex, 10) || 0)) {
-					targetAbsTime = ev.absTime || 0;
-					break;
-				}
-				count++;
-			}
-		}
+		// Знаходимо абсолютний час події, з якої починаємо
+		let targetAbsTime = getTargetAbsTime(allEvents, startNoteIndex);
 
-		// Determine measure index containing this absTime
-		const idxKeys = Object.keys(measureMap).map(k => parseInt(k, 10)).sort((a, b) => a - b);
-		let matchedMeasureIdx = 0;
-		for (let i = 0; i < idxKeys.length - 1; i++) {
-			const start = measureMap[idxKeys[i]];
-			const next = measureMap[idxKeys[i + 1]];
-			if (targetAbsTime >= start && targetAbsTime < next) { matchedMeasureIdx = idxKeys[i]; break; }
-		}
-		// Snap to nearest lower multiple of 4
-		let startAtMeasureIndex = matchedMeasureIdx - (matchedMeasureIdx % 4);
-		if (startAtMeasureIndex < 0) startAtMeasureIndex = 0;
+		// знаходимо з якого такту починаємо
+		let startAtMeasureIndex = getStartMeasuerIndex(measureMap, targetAbsTime);
 
-		// --- NEW: determine initial key signature active at targetAbsTime ---
-		let initialKeySig = null;
-		try {
-			// get all key signature events and pick the last one with absTime <= targetAbsTime
-			if (typeof getKeySignature === 'function') {
-				const keySigs = getKeySignature(allEvents); // returns array with absTime, sf, mode/name
-				if (Array.isArray(keySigs) && keySigs.length) {
-					const candidates = keySigs.filter(k => (k.absTime || 0) <= targetAbsTime);
-					const last = candidates.length ? candidates[candidates.length - 1] : null;
-					if (last) initialKeySig = { sf: last.sf, mi: last.mode ?? 0 };
-				}
-			}
-		} catch (ksErr) {
-			console.warn('Could not determine initialKeySig for segment:', ksErr);
-			initialKeySig = null;
-		}
+		// --- determine initial key signature active at targetAbsTime ---
+		let initialKeySig = getInitialKeySignatures(allEvents, targetAbsTime);
 
 		// Render the segment
 		const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
@@ -194,9 +166,7 @@ async function renderMidiSegmentFromUrl(
  * @param {number} [Xmargin=10] - The left margin for the score in pixels.
  * @param {number} [maxBarsToRender=1000] - Maximum number of measures to render (1000 means full rendering).
  *
- * Reads the provided MIDI file, parses its contents, and renders the musical notation using VexFlow.
- * Stores the resulting SVG and comments in sessionStorage for later retrieval.
- * Displays success or error messages in the comments element.
+ * Механізм - викликає renderMidiFileToNotation, додає повідомлення про успішний або провальний результат.
  */
 
 
@@ -373,7 +343,11 @@ function hasNoteOn(measure) {
 // - startAtMeasureIndex: Індекс такту, з якого починати рендеринг (вирівняний до кратного 4).
 // Повертає: void
 // ----------------------
-// Використовує SetEventsAbsoluteTime, createmeasureMap, groupEventsByMeasure та інші допоміжні функції.
+// Механізм роботи:
+// 1. SetEventsAbsoluteTime впорядковує midi - події,
+// 2. groupEventsByMeasure - впорядковує події по тактах
+// 3. renderMeasures - рендеринг тактів у циклі forEach
+
 // Рендеринг відбувається асинхронно з використанням setTimeout для уникнення блокування UI.
 // ---------------------
 
@@ -390,6 +364,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
 	// Перевірка наявності EndTrack
 	ensureEndEvent(allEvents);
 
+	//створюємо список подій по тактах
 	const measureMap = createMeasureMap(allEvents, ticksPerBeat);
 	const measures = groupEventsByMeasure(allEvents, measureMap);
 
@@ -397,10 +372,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
 	console.info(`renderMidiFileToNotation: allEvents=${allEvents.length}, measureMap_keys=${Object.keys(measureMap).length}, measures=${measures.length}, ticksPerBeat=${ticksPerBeat}`);
 
 	// обчислюємо індекс початкового такту, вирівняного до кратного 4
-	let startIdx = parseInt(startAtMeasureIndex, 10);
-	if (!isFinite(startIdx) || startIdx < 0) startIdx = 0;
-	startIdx = startIdx - (startIdx % 4);
-	if (startIdx > measures.length - 1) startIdx = Math.max(0, measures.length - 1);
+	let startIdx = getStartIdx(startAtMeasureIndex, measures);
 
 	// обчислюємо скільки тактів залишилось від startIdx до кінця
 	const remaining = Math.max(0, measures.length - startIdx);
@@ -413,16 +385,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
 	console.info(`renderMidiFileToNotation: startIdx=${startIdx}, renderCount=${renderCount}, measuresWindow=${measuresWindow.length}`);
 
 	// For MIDI format 0: trim leading empty measures before the first NoteOn so no empty bars appear before music.
-	const isMidi0 = midiData && (midiData.format === 0 || midiData.format === '0');
-	if (isMidi0) {
-		let trimmedLeading = 0;
-		while (measuresWindow.length > 0 && !hasNoteOn(measuresWindow[0])) {
-			measuresWindow.shift();
-			trimmedLeading++;
-			startIdx++;
-		}
-		if (trimmedLeading > 0) console.info(`renderMidiFileToNotation: trimmed ${trimmedLeading} leading empty measures for MIDI 0`);
-	}
+	startIdx = adjustStartIdxForMidi0Format(midiData, measuresWindow, startIdx);
 
 
 	// Тримаємо лише ті такти, які містять Note On події
@@ -485,8 +448,7 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
 		const context = factory.getContext();
 		const score = factory.EasyScore();
 
-		// РЕНДЕРИНГ ТАКТІВ
-		// передаємо initialKeySig у renderMeasures
+		// РЕНДЕРИНГ ТАКТІВ		
 		renderMeasures(slicedMap, measuresToRender, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, effectiveWidth, commentsDiv, initialKeySig);
 
 		// ----------------------
@@ -531,6 +493,22 @@ function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HE
 		maxBarsToRender,
 		startAtMeasureIndex: startIdx
 	};
+}
+
+
+
+function adjustStartIdxForMidi0Format(midiData, measuresWindow, startIdx) {
+    const isMidi0 = midiData && (midiData.format === 0 || midiData.format === '0');
+    if (isMidi0) {
+        let trimmedLeading = 0;
+        while (measuresWindow.length > 0 && !hasNoteOn(measuresWindow[0])) {
+            measuresWindow.shift();
+            trimmedLeading++;
+            startIdx++;
+        }
+        if (trimmedLeading > 0) console.info(`renderMidiFileToNotation: trimmed ${trimmedLeading} leading empty measures for MIDI 0`);
+    }
+    return startIdx;
 }
 
 // ФУНКЦІЯ РЕНДЕРИНГУ ТАКТІВ
@@ -1776,6 +1754,63 @@ function processNoteElement(durationCode, key, accidental, clef = 'treble') {
 	}
 	applyAutoStem(note, durationCode);
 	return note;
+}
+
+function getInitialKeySignatures(allEvents, targetAbsTime) {
+	let initialKeySig = null;
+	try {
+		// get all key signature events and pick the last one with absTime <= targetAbsTime
+		if (typeof getKeySignature === 'function') {
+			const keySigs = getKeySignature(allEvents); // returns array with absTime, sf, mode/name
+			if (Array.isArray(keySigs) && keySigs.length) {
+				const candidates = keySigs.filter(k => (k.absTime || 0) <= targetAbsTime);
+				const last = candidates.length ? candidates[candidates.length - 1] : null;
+				if (last) initialKeySig = { sf: last.sf, mi: last.mode ?? 0 };
+			}
+		}
+	} catch (ksErr) {
+		console.warn('Could not determine initialKeySig for segment:', ksErr);
+		initialKeySig = null;
+	}
+	return initialKeySig;
+}
+
+function getStartMeasuerIndex(measureMap, targetAbsTime) {
+	const idxKeys = Object.keys(measureMap).map(k => parseInt(k, 10)).sort((a, b) => a - b);
+	let matchedMeasureIdx = 0;
+	for (let i = 0; i < idxKeys.length - 1; i++) {
+		const start = measureMap[idxKeys[i]];
+		const next = measureMap[idxKeys[i + 1]];
+		if (targetAbsTime >= start && targetAbsTime < next) { matchedMeasureIdx = idxKeys[i]; break; }
+	}
+	// Snap to nearest lower multiple of 4
+	let startAtMeasureIndex = matchedMeasureIdx - (matchedMeasureIdx % 4);
+	if (startAtMeasureIndex < 0) startAtMeasureIndex = 0;
+	return startAtMeasureIndex;
+}
+
+
+function getTargetAbsTime(allEvents, startNoteIndex) {
+	let targetAbsTime = 0;
+	let count = 0;
+	for (const ev of allEvents) {
+		if (ev && ev.type === 0x9 && Array.isArray(ev.data) && ev.data[1] > 0) {
+			if (count === (parseInt(startNoteIndex, 10) || 0)) {
+				targetAbsTime = ev.absTime || 0;
+				break;
+			}
+			count++;
+		}
+	}
+	return targetAbsTime;
+}
+
+function getStartIdx(startAtMeasureIndex, measures) {
+	let startIdx = parseInt(startAtMeasureIndex, 10);
+	if (!isFinite(startIdx) || startIdx < 0) startIdx = 0;
+	startIdx = startIdx - (startIdx % 4);
+	if (startIdx > measures.length - 1) startIdx = Math.max(0, measures.length - 1);
+	return startIdx;
 }
 
 // Decide clef for a measure based on pitch range.
