@@ -41,7 +41,7 @@
         ? note.__durationCode
         : String(typeof note.getDuration === 'function' ? note.getDuration() : (note.duration || 'q'));
 
-        console.log(`utils: input: ${note.getDuration()}`);
+        console.debug(`Utils: input: ${note.getDuration()}`);
 
       codeStr = codeStr.replace(/r$/, '');
 
@@ -58,11 +58,11 @@
           let totalTicks = baseTicks;
           let add = Math.floor(baseTicks / 2);
             for (let i = 0; i < dots; i++) { totalTicks += add; add = Math.floor(add / 2); }
-            console.log(`Utils: getTotalTicksForNote: ${codeStr} -> ${totalTicks}`);
+            console.debug(`Utils: getTotalTicksForNote: ${codeStr} -> ${totalTicks}`);
           return totalTicks;
         }
       }
-        console.log(`Utils: getTotalTicksForNote: ${codeStr} -> ${baseTicks}`);
+        console.debug(`Utils: getTotalTicksForNote: ${codeStr} -> ${baseTicks}`);
       return baseTicks;
     } catch (e) {
       console.warn('getTotalTicksForNote failed:', e);
@@ -75,7 +75,7 @@
   function ticksToDurationList(ticks, ticksPerBeat, allowDotted = false) {
     try {
         if (!(ticks > 0) || !(ticksPerBeat > 0)) return [];
-        console.log(`Utils: ticksToDurationList input: ticks=${ticks}, tpb=${ticksPerBeat}, dots=${allowDotted}`);
+        console.debug(`Utils: ticksToDurationList input: ticks=${ticks}, tpb=${ticksPerBeat}, dots=${allowDotted}`);
 
         const q = ticksPerBeat;
         const cleanTable = [
@@ -92,7 +92,7 @@
             [0.09375*q, '64.'], [0.0625*q, '64']
         ];
         const table = allowDotted ? dottedTable : cleanTable;
-        console.log(`Utils: using ${allowDotted ? 'dotted' : 'clean'} table`);
+        console.debug(`Utils: using ${allowDotted ? 'dotted' : 'clean'} table`);
 
         const tol = q / 32; // допуск
         let rem = ticks;
@@ -104,13 +104,13 @@
                     out.push(code);
                     rem -= step;
                     picked = true;
-                    console.log(`Utils: picked ${code}, remaining=${rem}`);
+                    console.debug(`Utils: picked ${code}, remaining=${rem}`);
                     break;
                 }
             }
             if (!picked) break;
         }
-        console.log(`Utils: final result=${out.join(',')}`);
+        console.debug(`Utils: final result=${out.join(',')}`);
         return out;
     } catch (err) { 
         console.warn('ticksToDurationList failed:', err);

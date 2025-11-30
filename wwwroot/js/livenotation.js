@@ -119,6 +119,13 @@
         if (!restBtn) return;
         restBtn.addEventListener('click', () => setTimeout(scheduleRender, 0));
     }
+
+    function hookBackButton() {
+        const backBtn = document.getElementById('backtbn')
+        if (!backBtn) return;
+        backBtn.addEventListener('click', () => setTimeout(scheduleRender, 0));
+
+    }
     function hookTextareaInput() {
         if (!pianodisplay) return;
         pianodisplay.addEventListener('input', scheduleRender);
@@ -138,6 +145,7 @@
     if (depsAlreadyPresent) {
         hookPianoButtons();
         hookRestButton();
+        hookBackButton();
         hookTextareaInput();
         startPolling();
         renderOnLoad();
@@ -152,6 +160,7 @@
         .then(() => {
             hookPianoButtons();
             hookRestButton();
+            hookBackButton();
             hookTextareaInput();
             startPolling();
             renderOnLoad();
