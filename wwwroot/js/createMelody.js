@@ -150,6 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	let duration = '4';
 	const durationbuttons = document.querySelectorAll('.durationbutton');
 	const restBtn = document.getElementById('pausebutton');
+	const backBtn = document.getElementById('backbtn');
 	const dotBtn = document.getElementById('dotbutton');
 
 	durationbuttons.forEach((button, index) => {
@@ -167,6 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
 		});
 	}
+
 
 	// Допоміжна: чи активна крапка зараз
 	function isDottedActive() {
@@ -245,6 +247,46 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 	//----------------------------------
+	// обробник клавіші повернення
+	//----------------------------------
+
+	if (backBtn) {
+		backBtn.addEventListener('click', function () {
+			try {
+				let i = 0.0;
+				if (!pianodisplay || !pianodisplay.value) return;
+
+				while (pianodisplay.value.length > 0 && i < 4) {
+					const lastChar = pianodisplay.value.charAt(pianodisplay.value.length - 1);
+					console.log(`slice: val=${pianodisplay.value} lastChar=${lastChar} i=${i}`)
+					if (lastChar !== '_' && i > 0) {
+						pianodisplay.value = pianodisplay.value.slice(0, -1)
+						console.log(`slice: val=${pianodisplay.value} i=${i}`)
+						i++;
+					}
+					else if (lastChar === '_' && i === 0) {
+						pianodisplay.value = pianodisplay.value.slice(0, -1)
+						console.log(`slice: val=${pianodisplay.value} i=${i}`)
+						i++;
+					}
+					else {
+						console.log(`slice: val=${pianodisplay.value} i=${i} break`);
+						break;
+					}		
+				}
+				if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
+			}
+			catch (e) {
+				console.warn(`imposible to slice notes: ${e}`);
+			}
+		})
+		//перемалювати екран
+	}
+	else console.warn("no backBtn found");
+
+	
+
+	//----------------------------------
 	//Обробник кнопки "Відтворення"
 	//----------------------------------
 	if (playButton) {
@@ -264,6 +306,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			});
 		});
 	}
+	else console.warn("no playBtn found");
 	//------------------------------
 	//Обробник кнопки "Зберегти" (Create) або "попередній перегляд" (Search)
 	//------------------------------
@@ -334,6 +377,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			console.log("Налаштування скинуто до значень за замовчуванням.");
 		});
 	}
+	else console.warn("no reset button found");
 
 	//-------------------------
 	//ДЛЯ СТОРІНКИ CREATE
@@ -595,7 +639,8 @@ if (typeof window.setupLiveNotationOnCreate === 'function') {
         numeratorInput: document.getElementById('TimeSignatureNumerator'),
         denominatorInput: document.getElementById('TimeSignatureDenominator'),
         pianoKeysContainer: document.getElementById('pianoroll'),
-        restBtn: document.getElementById('pausebutton'),
+		restBtn: document.getElementById('pausebutton'),
+		backBtn: document.getElementById('backbtn'),
         noNotesMsg: document.getElementById('noNotesMsg')
     });
 } else {
