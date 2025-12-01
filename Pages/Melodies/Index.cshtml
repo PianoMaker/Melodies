@@ -57,13 +57,22 @@
 <table class="table">
     <thead>
         <tr>
+            <!-- ENSURE SORT LINKS RESET TO PAGE 1, AND PAGINATION LINKS CARRY CURRENT SORT -->
             <th>
-                <a asp-page="./Index" asp-route-sortOrder="@(Model.TitleSort)" asp-route-letter="@Model.SelectedLetter" class="link-light">
+                <a asp-page="./Index"
+                   asp-route-sortOrder="@(Model.TitleSort)"
+                   asp-route-letter="@Model.SelectedLetter"
+                   asp-route-pageIndex="1"
+                   class="link-light">
                     Назва  @(Model.TitleSort == "title_asc" ? "▲" : "▼")
                 </a>
             </th>
             <th>
-                <a asp-page="./Index" asp-route-sortOrder="@(Model.AuthorSort)" asp-route-letter="@Model.SelectedLetter" class="link-light">
+                <a asp-page="./Index"
+                   asp-route-sortOrder="@(Model.AuthorSort)"
+                   asp-route-letter="@Model.SelectedLetter"
+                   asp-route-pageIndex="1"
+                   class="link-light">
                     Автор @(Model.AuthorSort == "title_asc" ? "▲" : "▼")
                 </a>
             </th>
