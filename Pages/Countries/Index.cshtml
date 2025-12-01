@@ -29,7 +29,10 @@
                 <th class="w-25">
                     Мелодій у базі даних
                 </th>
-                <th class="w-50">Редагування/Вилучення</th>
+                @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                {
+                    <th class="w-50">Редагування/Вилучення</th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -44,10 +47,13 @@
                     <td>
                         @Html.DisplayFor(modelItem => item.MelodiesCount)
                     </td>
-                <td>
-                        <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
-                        <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
-                </td>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                    {
+                        <td>
+                            <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
+                            <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
+                        </td>
+                    }
             </tr>
 }
         </tbody>

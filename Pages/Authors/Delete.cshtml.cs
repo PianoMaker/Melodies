@@ -23,6 +23,7 @@ namespace Melodies25.Pages.Authors
         {
             _context = context;
             _userManager = userManager;
+            
         }
 
         [BindProperty]
