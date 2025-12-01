@@ -11,7 +11,7 @@ const allowDotted = false;
 (function() {
 
     function makeBeams(measure, ticksPerBeat, timeSignature) {
-        console.log(`FOO: MB: makeBeams`);
+        console.debug(`FOO: MB: makeBeams`);
         if (typeof ENABLE_BEAMS !== 'undefined' && !ENABLE_BEAMS) {
             console.warn('MB: Beaming is disabled by global flag ENABLE_BEAMS=false');
             return { beamGroups: [], beams: [] };
@@ -63,7 +63,7 @@ const allowDotted = false;
             note.endTick = note.startTick + noteTicks;
             note.endBeat = note.endTick / localTicksPerBeat;
 
-            console.log(`MB: startTick=${note.startTick}, ticks=${noteTicks}, endTick=${note.endTick} (beats start=${note.startBeat}, end=${note.endBeat})`);
+            console.debug(`MB: startTick=${note.startTick}, ticks=${noteTicks}, endTick=${note.endTick} (beats start=${note.startBeat}, end=${note.endBeat})`);
 
             // 3a. Властивості елемента та сильні долі
             const dr = durationResolver(note);
@@ -182,10 +182,10 @@ const allowDotted = false;
             lastRestStartOnBeat = false;
         });
 
-        console.log(`MB: return results summary:\n - beamGroups: ${beamGroups.length} groups\n - beams: ${beams.length} beam objects`);
+        console.debug(`MB: return results summary:\n - beamGroups: ${beamGroups.length} groups\n - beams: ${beams.length} beam objects`);
 
         beamGroups.forEach((group, index) => {
-            console.log(`MB: beamGroup[${index}]:`, {
+            console.debug(`MB: beamGroup[${index}]:`, {
                 notesCount: group.notes.length,
                 startIndex: group.startIndex,
                 endIndex: group.startIndex + group.notes.length - 1,
@@ -196,7 +196,7 @@ const allowDotted = false;
     }
 
     function defaultDurationResolver(note) {
-        //console.log(`FOO: MB: defaultDurationResolver`);
+        console.debug(`FOO: MB: defaultDurationResolver`);
         // Надійніше зчитування параметрів із VexFlow StaveNote
         if (note && note.vexNote) {
             const vn = note.vexNote;
@@ -285,7 +285,7 @@ const allowDotted = false;
     }
 
     function closeGroup(current, beamGroups, beams, reason) {
-        console.log("MB: closeGroup method starts");
+        console.debug("MB: closeGroup method starts");
         if (current.notes.length >= minGroupSize) {
             const first = current.notes[0];
             const last = current.notes[current.notes.length - 1];
@@ -298,7 +298,7 @@ const allowDotted = false;
                 endIndex: current.startIndex + current.notes.length - 1,
                 reasonEnded: reason
             });
-            console.log(`MB: closegroup, beamGroups length=${beamGroups.length}`)
+            console.debug(`MB: closegroup, beamGroups length=${beamGroups.length}`)
 
             if (typeof Vex !== 'undefined' && Vex.Flow && Vex.Flow.Beam) {
                 try {
@@ -330,24 +330,24 @@ const allowDotted = false;
     }
 
     function startGroup(currentGroup, note, idx, noteTicks) {
-        console.log(`MB: startGroup method starts, idx=${idx}`);
+        console.debug(`MB: startGroup method starts, idx=${idx}`);
         currentGroup.notes = [note];
         currentGroup.startIndex = idx;
         currentGroup.ticksAccum = noteTicks;
     }
 
     function addToGroup(currentGroup, note, noteTicks) {
-        console.log("MB: addToGroup method starts");
+        console.debug("MB: addToGroup method starts");
         currentGroup.notes.push(note);
         currentGroup.ticksAccum += noteTicks;
     }
 
     if (typeof window !== 'undefined') {
         window.makeBeams = makeBeams;
-        console.log(`MB: makeBeams function is loaded and available as window.makeBeams`);
+        console.debug(`MB: makeBeams function is loaded and available as window.makeBeams`);
     } else if (typeof globalThis !== 'undefined') {
         globalThis.makeBeams = makeBeams;
-        console.log(`MB: makeBeams function is loaded and available as globalThis.makeBeams`);
+        console.debug(`MB: makeBeams function is loaded and available as globalThis.makeBeams`);
     }
 
     function CheckSplitOnBeat(note, timeSignature) {
@@ -383,12 +383,12 @@ const allowDotted = false;
         const result = timeSignature.beatPositions.some(bp => Math.abs(bp - roundedEndBeat) < 1e-6);
 
         try {
-            console.log(
+            console.debug(
                 `MB: CheckSplitOnBeat | idx=${note.idx}, pitch=${note.pitch || note.name || '?'}, dur=${note.duration || '?'}, ` +
                 `endTick=${note.endTick}, endBeat=${noteEndBeat}, roundedEndBeat=${roundedEndBeat}, beatPositions=[${timeSignature.beatPositions.join(', ')}] => ${result}`
             );
         } catch (e) {
-            console.log(`MB: CheckSplitOnBeat | logging failed: ${e}`);
+            console.warn(`MB: CheckSplitOnBeat | logging failed: ${e}`);
         }
 
         return result;
@@ -535,7 +535,7 @@ const allowDotted = false;
     function applyAutoStem(note, durationCode) {
         try {
             if (!note) return;
-            console.log('applyAutoStem is working');
+            console.debug('MB: applyAutoStem is working');
             if (typeof durationCode === 'string' && /r$/.test(durationCode)) return; // skip rests
             if (typeof note.autoStem === 'function') {
                 note.autoStem();

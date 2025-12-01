@@ -174,15 +174,12 @@
         return;
       }
 
-		const midiData = MidiParser.Uint8(uint8);                                   //парсинг міді-файлу у список міді-подій
-		let allEvents = SetEventsAbsoluteTime(midiData) || [];                      //встановлення абсолютного часу подій міді-подій
-		if (typeof ensureEndEvent === "function") ensureEndEvent(allEvents);        // додавання кінцевої події, якщо відсутня
-
-        let ticksPerBeat = getTicksPerBeat(midiData);                               //визначає TPQN
-      
-		let { numerator, denominator } = extractTimeSignature(allEvents) || {};     //отримує музичний розмір такту
-
-      
+		const parsed = parseMidiPreferMIDIFile(uint8);          // парсинг міді-файлу
+        const midiData = parsed.midiObj;                        //отримання об'єкту міді
+		let allEvents = SetEventsAbsoluteTime(midiData) || [];  //отримання всіх міді-подій з абсолютним часом
+		ensureEndEvent(allEvents);                              // додавання кінцевої події, якщо відсутня
+        let ticksPerBeat = getTicksPerBeat(midiData);           //визначає TPQN      
+		let { numerator, denominator } = extractTimeSignature(allEvents) || {};     //отримує музичний розмір такту              
 
 		allEvents.sort((a, b) => (a.absTime - b.absTime) || (rank(a) - rank(b)));     // сортування подій за абсолютним часом та типом (NoteOff передує NoteOn)
 
