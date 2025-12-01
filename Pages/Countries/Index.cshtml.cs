@@ -1,24 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Melodies25.Data;
+using Melodies25.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Melodies25.Data;
-using Melodies25.Models;
-using static Music.Messages;
 using Music;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using static Music.Messages;
 
 namespace Melodies25.Pages.Countries
 {
     public class IndexModel : PageModel
     {
-        private readonly Melodies25.Data.Melodies25Context _context;
-
-        public IndexModel(Melodies25.Data.Melodies25Context context)
+        private readonly Melodies25Context _context;
+                
+        public IndexModel(Melodies25Context context)
         {
-            _context = context;
+            _context = context;         
         }
 
         public IList<Country> Country { get;set; } = default!;

@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Мелодія - автори";
     var lng = Model.SelectedLang;
+    
 }
 <div class="infocontainer melody-width">
     <h1>Авторів у базі даних - @Model.Author.Count</h1>
@@ -66,7 +67,10 @@
                     Мелодій на сайті  @(Model.SurnameSort == "melody_asc" ? "▲" : "▼")
                 </a>
             </th>
-            <th>Редагувати/Вилучити</th>
+            @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+            {
+                <th>Редагувати/Вилучити</th>
+            }
         </tr>
     </thead>
     <tbody>
@@ -100,10 +104,13 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.MelodiesCount)
                 </td>
-                <td>
-                    <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
-                    <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
-                </td>
+                @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                {
+                    <td>
+                        <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
+                        <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
+                    </td>
+                }
             </tr>
         }
     </tbody>

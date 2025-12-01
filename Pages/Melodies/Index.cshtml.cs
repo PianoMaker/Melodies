@@ -1,29 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
+﻿using Azure;
 using Melodies25.Data;
 using Melodies25.Models;
-using static Music.MidiConverter;
-using static Music.Messages;
+using Melodies25.Pages.Account;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
+using Music;
+using NAudio.Midi;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using static Melodies25.Utilities.PrepareFiles;
 using static Melodies25.Utilities.WaveConverter;
-using NAudio.Midi;
-using System.IO;
-using Music;
+using static Music.Messages;
+using static Music.MidiConverter;
 using Melody = Melodies25.Models.Melody;
-using Microsoft.Data.SqlClient;
-using System.Diagnostics.CodeAnalysis;
-using Azure;
 
 namespace Melodies25.Pages.Melodies
 {
     public class IndexModel : PageModel
     {
-        private readonly Melodies25.Data.Melodies25Context _context;
+        private readonly Melodies25Context _context;
         private readonly IWebHostEnvironment _environment;
         public string Msg { get; set; } = default!;
         public string Errormsg { get; set; } = default!;
@@ -40,11 +44,16 @@ namespace Melodies25.Pages.Melodies
         public int PageSize { get; } = 50;
         public int TotalCount { get; set; } = 0;
 
-        public IndexModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
+        public readonly UserManager<IdentityUser> _userManager;
+
+        public IndexModel(Melodies25Context context, IWebHostEnvironment environment, UserManager<IdentityUser> userManager)
         {
+            
             _context = context;
             _environment = environment;
+            _userManager = userManager;
         }
+        
 
         // Ensure Melody is never null to avoid NullReferenceException in the Razor view
         public IList<Melody> Melody { get; set; } = new List<Melody>();
@@ -59,6 +68,7 @@ namespace Melodies25.Pages.Melodies
             CurrentSort = sortOrder;
 
             SelectedLetter = letter;
+            
 
             var melodiesQuery = _context.Melody.Include(m => m.Author).AsQueryable();
 

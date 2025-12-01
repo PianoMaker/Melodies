@@ -10,6 +10,7 @@
             alert('@message');
         </script>
     }
+    var user = Model.User;
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
@@ -79,9 +80,12 @@
             <th>
                 Файл
             </th>
-
-            <th class="col-actions">Редагувати/Вилучити</th>
+                @if (user.IsInRole("Admin") || user.IsInRole("Moderator"))
+                {
+                    <th class="col-actions">Редагувати/Вилучити</th>
+                }
         </tr>
+            
     </thead>
     <tbody>
         @foreach (var item in Model.Melody ?? Enumerable.Empty<Melodies25.Models.Melody>())
@@ -154,11 +158,13 @@
                     }
                 </td>
                 <!-- ОПЕРАЦІЇ -->
-
-                <td class="col-actions">
-                    <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
-                    <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
-                </td>
+                    @if (user.IsInRole("Admin") || user.IsInRole("Moderator"))
+                    {
+                        <td class="col-actions">
+                            <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
+                            <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
+                        </td>
+                    }
             </tr>
         }
     </tbody>
