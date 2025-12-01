@@ -278,7 +278,7 @@ document.addEventListener("DOMContentLoaded", function () {
 					else {
 						console.log(`slice: val=${pianodisplay.value} i=${i} break`);
 						break;
-					}
+					}		
 				}
 				if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
 			}
@@ -290,7 +290,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 	else console.warn("no backBtn found");
 
-
+	
 
 	//----------------------------------
 	//Обробник кнопки "Відтворення"
