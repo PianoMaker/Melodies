@@ -200,19 +200,13 @@ namespace Melodies25.Pages.Melodies
             return RedirectToPage(new { pageIndex = 1 });
         }
 
-        // keep POST filter but redirect to GET so paging works via querystring
-        public IActionResult OnPostFilterByLetter(string letter)
-        {
-            SelectedLetter = letter;
-            // redirect to GET with letter => pageIndex will default to 1
-            return RedirectToPage(new { letter = letter, pageIndex = 1 });
-        }
+
 
         // Add sortOrder to the Filter POST and include it in redirect so paging preserves current sort.
-        public IActionResult OnPostFilterByLetter(string letter, string? sortOrder)
+        public IActionResult OnPostFilterByLetter(string letter, string? sortOrder = null)
         {
             SelectedLetter = letter;
-            // Redirect to GET carrying current sortOrder and reset to first page
+            // Redirect to GET carrying current sortOrder (if any) and reset to first page
             return RedirectToPage(new { letter = letter, sortOrder = sortOrder, pageIndex = 1 });
         }
     }

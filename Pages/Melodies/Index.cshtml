@@ -30,7 +30,7 @@
                 @foreach (var letter in Enumerable.Range('A', 26).Select(i => ((char)i).ToString()))
                 {
                     var isSelected = Model.SelectedLetter == letter;
-                    <form asp-page-handler="FilterByLetter" asp-route-letter="@letter" method="post">
+                    <form asp-page-handler="FilterByLetter" asp-route-letter="@letter" asp-route-sortOrder="@Model.CurrentSort" method="post">
                         <button type="submit" class="letter btn-melody @(isSelected ? "selected-letter" : "")">@letter</button>
                     </form>
                 }               
