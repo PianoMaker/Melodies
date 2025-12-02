@@ -6,9 +6,13 @@ document.addEventListener("DOMContentLoaded", function () {
 	console.log("createMelody.js starts.");
 
 
-	const pianokeys = document.querySelectorAll('#pianoroll button');		// клавіші фортепіано
+	
 	const audioPlayer = document.getElementById('audioPlayer');			// аудіоплеєр
-	const audioSource = document.getElementById('audioSource');			// джерело для аудіофайлу     
+	const audioSource = document.getElementById('audioSource');			// джерело для аудіофайлу
+	//------------------
+	// клавіатура
+	//------------------
+	const pianokeys = document.querySelectorAll('#pianoroll button');		// клавіші фортепіано
 	let pianodisplay = document.getElementById("pianodisplay");			// 
 	const keysInput_save = document.getElementById("keysInput-save")
 	const keysInput_search = document.getElementById("keysInput-search")//прихований input для збереження нотного рядку перед відправкою форми
@@ -460,6 +464,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		showSubmitBtn();
 	}
 
+	// Оновлення видимості кнопок
 	function updateButtons() {
 
 		let selectAuthor = document.getElementById("selectAuthor");
@@ -468,7 +473,6 @@ document.addEventListener("DOMContentLoaded", function () {
 			console.log("selectAuthor error");
 			return;
 		}
-
 
 		let createAuthorBtn = document.getElementById("createAuthorBtn");//кнопка додати автора  
 
@@ -491,6 +495,10 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 
 	}
+
+	//-----------------------------------
+	//Обробник поля введення автора, пошук на наявність подібного
+	//------------------------------------
 
 	function searchAuthor() {
 		console.log("try to search author");
@@ -682,9 +690,9 @@ function hideSubmitBtn() {
 
 
 
-//
+//========================================
 // Audio helpers and token→MIDI mapping
-//
+//========================================
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 let __audioCtx = null;
 
@@ -799,38 +807,6 @@ if (pianoArea) {
 	}, { once: true, passive: true });
 }
 
-// Replace existing click handlers with pointerdown for immediate feedback & reliable user gesture
-buttons.forEach(button => {
-	button.addEventListener('pointerdown', function (ev) {
-		try {
-			const key = this.getAttribute('data-key');
-			console.log(`[piano]: key pressed: ${key} ready to start playNoteFromKey`);
-			// Play sound (1 second guaranteed)
-			const notePlayed = playNoteFromKey(key);
-			if (notePlayed) {
-				console.log(`[piano]: ready to start playNoteFromKey`);
-			} else {
-				console.warn(`[piano]: failed to play note for key: ${key}`);
-			}
 
-			// existing behaviour: append to pianodisplay and update UI
-			const dotSuffix = isDottedActive() ? '.' : '';
-			pianodisplay.value += `${key}${duration}${dotSuffix}_`;
-
-			if (createMIDIButton) createMIDIButton.style.background = "lightgreen";
-			if (playButton) {
-				playButton.style.background = "lightgray";
-				const playIcon = document.querySelector('.fas.fa-play');
-				if (playIcon) playIcon.style.color = "gray";
-			}
-			if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
-
-			// update message
-			if (ifNotesEntered) ifNotesEntered.innerText = "для створення MIDI-файлу натисніть 'зберегти'";
-		} catch (err) {
-			console.error('[createMelody] piano key handler error', err);
-		}
-	}, { passive: true });
-});
 
 
