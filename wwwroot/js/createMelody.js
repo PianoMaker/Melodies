@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	console.log("createMelody.js starts.");
 
 
-	const buttons = document.querySelectorAll('#pianoroll button');		// клавіші фортепіано
+	const pianokeys = document.querySelectorAll('#pianoroll button');		// клавіші фортепіано
 	const audioPlayer = document.getElementById('audioPlayer');			// аудіоплеєр
 	const audioSource = document.getElementById('audioSource');			// джерело для аудіофайлу     
 	let pianodisplay = document.getElementById("pianodisplay");			// 
@@ -178,10 +178,12 @@ document.addEventListener("DOMContentLoaded", function () {
 	//----------------------------------
 	// обробники клавіш фортепіано
 	//----------------------------------
-	buttons.forEach(button => {
+	pianokeys.forEach(button => {
 		button.addEventListener('click', function () {
 			const key = this.getAttribute('data-key');
-			// ... програвання звуку ...
+			console.log(`[piano]: key pressed: ${key}`);
+			// програвання звуку 
+			playNoteFromKey(key);
 
 			// Додаємо крапку до тривалості, якщо активна
 			const dotSuffix = isDottedActive() ? '.' : '';
@@ -218,7 +220,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			if (window.__scheduleLiveNotationRender) {
 				window.__scheduleLiveNotationRender();
 				console.log('[createMelody]: Scheduled live notation render after numerator change');
-			}	
+			}
 		});
 
 	}
@@ -272,7 +274,7 @@ document.addEventListener("DOMContentLoaded", function () {
 					else {
 						console.log(`slice: val=${pianodisplay.value} i=${i} break`);
 						break;
-					}		
+					}
 				}
 				if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
 			}
@@ -284,7 +286,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 	else console.warn("no backBtn found");
 
-	
+
 
 	//----------------------------------
 	//Обробник кнопки "Відтворення"
@@ -629,53 +631,206 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 	}
 
-//-------------
+	//-------------
 	// ІНІЦІАЛІЗАЦІЯ НОТНОГО РЯДКУ (працює з midirender/setupLiveNotationCreate.js)
-//-------------
-if (typeof window.setupLiveNotationOnCreate === 'function') {
-    window.setupLiveNotationOnCreate({
-        container: document.getElementById('innerNotesContainer'),
-        pianodisplay: document.getElementById('pianodisplay'),
-        numeratorInput: document.getElementById('TimeSignatureNumerator'),
-        denominatorInput: document.getElementById('TimeSignatureDenominator'),
-        pianoKeysContainer: document.getElementById('pianoroll'),
-		restBtn: document.getElementById('pausebutton'),
-		backBtn: document.getElementById('backbtn'),
-        noNotesMsg: document.getElementById('noNotesMsg')
-    });
-} else {
-    console.warn('[createMelody]: setupLiveNotationOnCreate is not loaded. Ensure /lib/midirender/setupLiveNotationCreate.js is included before createMelody.js.');
-}
+	//-------------
+	if (typeof window.setupLiveNotationOnCreate === 'function') {
+		window.setupLiveNotationOnCreate({
+			container: document.getElementById('innerNotesContainer'),
+			pianodisplay: document.getElementById('pianodisplay'),
+			numeratorInput: document.getElementById('TimeSignatureNumerator'),
+			denominatorInput: document.getElementById('TimeSignatureDenominator'),
+			pianoKeysContainer: document.getElementById('pianoroll'),
+			restBtn: document.getElementById('pausebutton'),
+			backBtn: document.getElementById('backbtn'),
+			noNotesMsg: document.getElementById('noNotesMsg')
+		});
+	} else {
+		console.warn('[createMelody]: setupLiveNotationOnCreate is not loaded. Ensure /lib/midirender/setupLiveNotationCreate.js is included before createMelody.js.');
+	}
 });
 
 //----------------------------
 // safe helper to set element.style.display if element exists
 //----------------------------
 function safeStyleDisplay(el, display) {
-    if (!el) return;
-    try {
-        el.style.display = display;
-    } catch (e) {
-        console.warn('[createMelody] safeStyleDisplay failed', e);
-    }
+	if (!el) return;
+	try {
+		el.style.display = display;
+	} catch (e) {
+		console.warn('[createMelody] safeStyleDisplay failed', e);
+	}
 }
 
 //----------------------------
 // показує кнопку "Додати мелодію", якщо файл готовий   
 //----------------------------
 function showSubmitBtn() {
-    if (fileIsReady) {
-        safeStyleDisplay(submitMelodyBtn, 'inline-block');
-        safeStyleDisplay(midiIsNotReady, 'none');
-        safeStyleDisplay(midiIsReady, 'inline');
-    }
+	if (fileIsReady) {
+		safeStyleDisplay(submitMelodyBtn, 'inline-block');
+		safeStyleDisplay(midiIsNotReady, 'none');
+		safeStyleDisplay(midiIsReady, 'inline');
+	}
 }
 
 function hideSubmitBtn() {
-    // Only hide when submit button exists and file is not ready
-    if (!fileIsReady) {
-        safeStyleDisplay(submitMelodyBtn, 'none');
-    }
+	// Only hide when submit button exists and file is not ready
+	if (!fileIsReady) {
+		safeStyleDisplay(submitMelodyBtn, 'none');
+	}
 }
+
+
+
+//
+// Audio helpers and token→MIDI mapping
+//
+const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+let __audioCtx = null;
+
+function ensureAudioContext() {
+	try {
+		if (!__audioCtx) __audioCtx = new AudioContextClass();
+		console.log('[createMelody] ensureAudioContext -> state:', __audioCtx.state);
+		return __audioCtx;
+	} catch (e) {
+		console.warn('[createMelody] cannot create AudioContext', e);
+		return null;
+	}
+}
+
+function midiToFrequency(midi) {
+	return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+// Map piano token (site tokens: c, cis, d, dis, e, f, fis, g, gis, a, b, h and apostrophes or explicit octave like a4)
+// Returns MIDI number or null
+function pianoTokenToMidi(token) {
+	if (!token) return null;
+
+	const apostrophes = (token.match(/['’]+/g) || []).join('').length;
+	const baseToken = token.replace(/['’]+/g, '').toLowerCase();
+
+	// site tokens mapping (matches _pianoKeys.cshtml)
+	const tokenMap = {
+		c: 0, cis: 1, d: 2, dis: 3, e: 4,
+		f: 5, fis: 6, g: 7, gis: 8, a: 9,
+		b: 10, // 'b' mapped to A# in tone.js mapping used in project
+		h: 11
+	};
+
+	if (!(baseToken in tokenMap)) return null;
+
+	const semitone = tokenMap[baseToken];
+	const BASE_OCTAVE = 4; // UI labels show C1 first row; adjust if you want different default
+	const octave = BASE_OCTAVE + apostrophes;
+	console.debug('[createMelody][piano] final MIDI number', (octave + 1) * 12 + semitone);
+	return (octave + 1) * 12 + semitone;
+}
+
+function playTone(freq, duration = 1.0, type = 'sine', volume = 0.82) {
+	try {
+		const ctx = ensureAudioContext();
+		if (!ctx) { console.debug('[createMelody][piano] no AudioContext'); return; }
+		const osc = ctx.createOscillator();
+		const gain = ctx.createGain();
+		osc.type = type;
+		osc.frequency.value = freq;
+		gain.gain.value = volume;
+		osc.connect(gain);
+		gain.connect(ctx.destination);
+		const now = ctx.currentTime;
+		osc.start(now);
+		// smooth release
+		gain.gain.setValueAtTime(volume, now);
+		gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+		osc.stop(now + duration + 0.02);
+		console.debug('[createMelody][piano] playTone', { freq: +freq.toFixed(2), duration, type });
+	} catch (e) {
+		console.warn('[createMelody][piano] playTone failed', e);
+	}
+}
+
+function playNoteFromKey(key) {
+	try {
+		console.debug('[createMelody][piano] playNoteFromKey token=', key);
+		const midi = pianoTokenToMidi(key);
+		if (midi !== null) {
+			const freq = midiToFrequency(midi);
+			// play exactly 1 second per requirement
+			playTone(freq, 2.0, 'sine', 0.82);
+			return true;
+		}
+
+		// fallback: play audio file if provided on button
+		const btn = document.querySelector(`#pianoroll button[data-key="${key}"]`);
+		if (btn) {
+			const src = btn.getAttribute('data-audiosrc');
+			if (src && audioPlayer && audioSource) {
+				audioSource.src = src;
+				audioPlayer.currentTime = 0;
+				audioPlayer.play().catch(err => console.warn('[createMelody] audio fallback play failed', err));
+				return true;
+			}
+		}
+
+		console.warn('[createMelody] cannot resolve token to note:', key);
+		return false;
+	} catch (e) {
+		console.error('[createMelody] playNoteFromKey error', e);
+		return false;
+	}
+}
+
+//
+// Handlers: resume AudioContext on first user gesture and play on pointerdown
+//
+const pianoArea = document.getElementById('pianoroll');
+if (pianoArea) {
+	pianoArea.addEventListener('pointerdown', function () {
+		try {
+			const ctx = ensureAudioContext();
+			if (ctx && ctx.state === 'suspended') {
+				ctx.resume().then(() => console.debug('[createMelody] AudioContext resumed on pointerdown')).catch(e => console.warn(e));
+			} else {
+				console.debug('[createMelody] AudioContext state:', ctx ? ctx.state : 'none');
+			}
+		} catch (e) { /* ignore */ }
+	}, { once: true, passive: true });
+}
+
+// Replace existing click handlers with pointerdown for immediate feedback & reliable user gesture
+buttons.forEach(button => {
+	button.addEventListener('pointerdown', function (ev) {
+		try {
+			const key = this.getAttribute('data-key');
+			console.log(`[piano]: key pressed: ${key} ready to start playNoteFromKey`);
+			// Play sound (1 second guaranteed)
+			const notePlayed = playNoteFromKey(key);
+			if (notePlayed) {
+				console.log(`[piano]: ready to start playNoteFromKey`);
+			} else {
+				console.warn(`[piano]: failed to play note for key: ${key}`);
+			}
+
+			// existing behaviour: append to pianodisplay and update UI
+			const dotSuffix = isDottedActive() ? '.' : '';
+			pianodisplay.value += `${key}${duration}${dotSuffix}_`;
+
+			if (createMIDIButton) createMIDIButton.style.background = "lightgreen";
+			if (playButton) {
+				playButton.style.background = "lightgray";
+				const playIcon = document.querySelector('.fas.fa-play');
+				if (playIcon) playIcon.style.color = "gray";
+			}
+			if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
+
+			// update message
+			if (ifNotesEntered) ifNotesEntered.innerText = "для створення MIDI-файлу натисніть 'зберегти'";
+		} catch (err) {
+			console.error('[createMelody] piano key handler error', err);
+		}
+	}, { passive: true });
+});
 
 
