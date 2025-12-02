@@ -298,18 +298,22 @@ document.addEventListener("DOMContentLoaded", function () {
 	if (playButton) {
 		playButton.addEventListener('click', function (e) {
 
-			const previewMp3path = document.getElementById('previewMp3path')
-			if (!previewMp3path) return;
-			var filepath = previewMp3path.textContent.trim();
-			var audioPlayer = document.getElementById('audioPlayer');
-			const audioSource = document.getElementById('audioSource');
-			if (!audioPlayer || !audioSource) return;
-			audioSource.src = filepath;
-			console.log(`Play.js play preview from ${audioSource.src}`);
-			audioPlayer.load();
-			audioPlayer.play().catch(err => {
-				console.error("Помилка при програванні:", err);
-			});
+			e.preventDefault();
+			console.log("Play button clicked, playing pianodisplay");
+			playPianodisplay();
+
+			//const previewMp3path = document.getElementById('previewMp3path')
+			//if (!previewMp3path) return;
+			//var filepath = previewMp3path.textContent.trim();
+			//var audioPlayer = document.getElementById('audioPlayer');
+			//const audioSource = document.getElementById('audioSource');
+			//if (!audioPlayer || !audioSource) return;
+			//audioSource.src = filepath;
+			//console.log(`Play.js play preview from ${audioSource.src}`);
+			//audioPlayer.load();
+			//audioPlayer.play().catch(err => {
+			//	console.error("Помилка при програванні:", err);
+			//});
 		});
 	}
 	else console.warn("no playBtn found");
@@ -758,6 +762,82 @@ function playTone(freq, duration = 1.0, type = 'sine', volume = 0.82) {
 		console.warn('[createMelody][piano] playTone failed', e);
 	}
 }
+
+// Play all notes from `pianodisplay.value` sequentially.
+// Expected token format (as used elsewhere): <note><duration><optionalDot>_
+// Examples: "c4_", "cis8._", "r4_" (rest), "a4'4_" (apostrophes or explicit octave supported)
+function playPianodisplay() {
+	try {
+		if (!pianodisplay) {
+			console.warn('[createMelody] playPianodisplay: pianodisplay not found');
+			return;
+		}
+		const raw = (pianodisplay.value || '').trim();
+		if (!raw) {
+			console.debug('[createMelody] playPianodisplay: nothing to play');
+			return;
+		}
+
+		// Ensure AudioContext ready
+		const ctx = ensureAudioContext();
+		if (ctx && ctx.state === 'suspended') {
+			ctx.resume().catch(e => console.warn('[createMelody] resume audio failed', e));
+		}
+
+		// tokens separated by underscore; ignore empty tokens
+		const tokens = raw.split('_').map(t => t.trim()).filter(t => t.length > 0);
+		if (tokens.length === 0) {
+			console.debug('[createMelody] no tokens parsed');
+			return;
+		}
+
+		const quarterSeconds = 1.0; // quarter note = 1.0s (adjust if you want different tempo)
+		let elapsedMs = 0;
+
+		tokens.forEach(token => {
+			// parse duration at end: digits possibly followed by dot
+			const m = token.match(/(\d+)(\.)?$/);
+			if (!m) {
+				console.warn('[createMelody] cannot parse token duration:', token);
+				return;
+			}
+			const durationNum = parseInt(m[1], 10);
+			const dotted = !!m[2];
+			const notePart = token.slice(0, m.index);
+
+			// compute seconds length: durations are expressed like 1(whole),2(half),4(quarter),8(eighth)...
+			let seconds = (4 / durationNum) * quarterSeconds;
+			if (dotted) seconds *= 1.5;
+
+			// schedule play or rest
+			if (notePart && notePart.startsWith('r')) {
+				// rest: nothing to play, just advance time
+				console.debug('[createMelody] scheduling rest', { token, seconds });
+			} else {
+				const midi = pianoTokenToMidi(notePart);
+				if (midi === null) {
+					console.warn('[createMelody] unknown note token:', notePart);
+				} else {
+					const freq = midiToFrequency(midi);
+					// schedule call to playTone at the right elapsed time
+					setTimeout(() => {
+						playTone(freq, seconds, 'sine', 0.82);
+					}, elapsedMs);
+					console.debug('[createMelody] scheduled note', { notePart, midi, freq: +freq.toFixed(2), seconds, startInMs: elapsedMs });
+				}
+			}
+
+			// advance elapsed time by this note/rest duration (ms)
+			elapsedMs += Math.round(seconds * 1000);
+		});
+	} catch (e) {
+		console.error('[createMelody] playPianodisplay error', e);
+	}
+}
+
+// Expose to global for easy calling from console or other scripts
+window.playPianodisplay = playPianodisplay;
+
 
 function playNoteFromKey(key) {
 	try {
