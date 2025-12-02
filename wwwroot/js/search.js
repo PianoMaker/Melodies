@@ -147,4 +147,34 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+	// UI adjustments
+    console.log("adjusting NoteSearch UI");
+    const saveButton = document.getElementById("createMIDI");
+    if (saveButton) {
+        saveButton.textContent = "попередній перегляд";
+    }
+
+    // Bind LCS gap display and enable/disable based on algorithm
+    const gap = document.getElementById('lcsGap');
+    const gapVal = document.getElementById('lcsGapVal');
+    const algSub = document.getElementById('algSubstring');
+    const algSeq = document.getElementById('algSubsequence');
+
+    function updateGapEnabled() {
+        const enabled = algSeq && algSeq.checked;
+        if (gap) gap.disabled = !enabled;
+        const labelWrap = gap ? gap.nextElementSibling : null; // span with value
+        if (labelWrap) {
+            if (enabled) labelWrap.classList.remove('text-muted');
+            else labelWrap.classList.add('text-muted');
+        }
+    }
+
+    if (gap && gapVal) {
+        gap.addEventListener('input', () => gapVal.textContent = gap.value);
+    }
+    if (algSub) algSub.addEventListener('change', updateGapEnabled);
+    if (algSeq) algSeq.addEventListener('change', updateGapEnabled);
+    updateGapEnabled();
 });
