@@ -18,22 +18,32 @@
             return;
         }
         items.forEach(a => {
-            const div = document.createElement('button');
-            div.type = 'button';
-            div.className = 'list-group-item list-group-item-action';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action';
             const full = [a.surname, a.name].filter(Boolean).join(' ') || a.displayName || '';
             const en = [a.surnameEn, a.nameEn].filter(Boolean).join(' ');
-            div.innerHTML = `
+            btn.innerHTML = `
                 <div class="d-flex justify-content-between align-items-center">
                     <span>${full}</span>
                     <small class="text-muted">${en}</small>
                 </div>`;
-            div.addEventListener('click', () => {
+            btn.addEventListener('click', () => {
+                // Записуємо ЧИСЛОВИЙ id у приховане поле та текст у видиме поле
                 hiddenId.value = a.id;
                 input.value = full;
                 results.innerHTML = '';
+
+                // Зберігаємо обидва в sessionStorage (щоб пережити проміжний POST)
+                try {
+                    sessionStorage.setItem("selectedAuthorId", String(a.id));
+                    sessionStorage.setItem("selectedAuthorName", full);
+                    console.log('[authorSearch] saved selection', a.id, full);
+                } catch (e) {
+                    console.warn('[authorSearch] sessionStorage failed', e);
+                }
             });
-            results.appendChild(div);
+            results.appendChild(btn);
         });
     }
 
@@ -58,11 +68,49 @@
         clearTimeout(debounceTimer);
         if (q.length < 3) {
             results.innerHTML = '';
+            // при редагуванні очищаємо раніше вибраний id
+            if (hiddenId.value) {
+                hiddenId.value = '';
+                try {
+                    sessionStorage.removeItem("selectedAuthorId");
+                    sessionStorage.removeItem("selectedAuthorName");
+                } catch (e) { /* ignore */ }
+            }
             return;
         }
         debounceTimer = setTimeout(() => searchAuthors(q), 200);
+
+        // захисне очищення
+        if (hiddenId.value) {
+            hiddenId.value = '';
+            try {
+                sessionStorage.removeItem("selectedAuthorId");
+                sessionStorage.removeItem("selectedAuthorName");
+            } catch (e) { /* ignore */ }
+        }
     });
 
-    // Clear selection when the user edits the query
-    input.addEventListener('keydown', () => { hiddenId.value = ''; });
+    // також очищуємо при keydown (сумісність)
+    input.addEventListener('keydown', () => {
+        if (hiddenId.value) {
+            hiddenId.value = '';
+            try {
+                sessionStorage.removeItem("selectedAuthorId");
+                sessionStorage.removeItem("selectedAuthorName");
+            } catch (e) { /* ignore */ }
+        }
+    });
+
+    // restore selection on load if present
+    try {
+        const savedId = sessionStorage.getItem("selectedAuthorId");
+        const savedName = sessionStorage.getItem("selectedAuthorName");
+        if (savedId && savedName) {
+            hiddenId.value = savedId;
+            input.value = savedName;
+            console.log('[authorSearch] restored selection from sessionStorage', savedId, savedName);
+        }
+    } catch (e) {
+        /* ignore storage errors */
+    }
 })();

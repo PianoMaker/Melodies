@@ -442,7 +442,7 @@ namespace Music
             foreach (var track in eventCollection)
             {
                 var newTrack = new List<MidiEvent>();
-                Dictionary<int, long> activenotes = [];
+                var activenotes = new Dictionary<int, Stack<long>>(); // noteNumber -> stack of start times
 
                 foreach (var me in track)
                 {
@@ -457,20 +457,24 @@ namespace Music
                         if (IfNoteOn(ne))
                         {
                             currentstarttime = ne.AbsoluteTime;
-
-                            if (!activenotes.ContainsValue(ne.AbsoluteTime))
+                            // ensure stack exists and push start time (supports overlapping same-pitch NoteOn)
+                            if (!activenotes.TryGetValue(ne.NoteNumber, out var stack))
                             {
-                                newTrack.Add(ne);
-                                activenotes.Add(ne.NoteNumber, ne.AbsoluteTime);
+                                stack = new Stack<long>();
+                                activenotes[ne.NoteNumber] = stack;
                             }
-                            else { MessageL(COLORS.darkred, $"removing {ne.NoteNumber}"); }
-
+                            newTrack.Add(ne);
+                            stack.Push(ne.AbsoluteTime);
                         }
                         else if (IfNoteOff(ne))
                         {
-                            if (activenotes.ContainsKey(ne.NoteNumber))
+                            // match NoteOff to the latest NoteOn for this note number
+                            if (activenotes.TryGetValue(ne.NoteNumber, out var stack) && stack.Count > 0)
+                            {
                                 newTrack.Add(ne);
-                            activenotes.Remove(ne.NoteNumber);
+                                stack.Pop();
+                                if (stack.Count == 0) activenotes.Remove(ne.NoteNumber);
+                            }
                         }
                     }
                     else
@@ -556,6 +560,7 @@ namespace Music
                     else
                     {
                         // Message(COLORS.gray, ".");
+
                         newTrack.Add(me); // Копіюємо інші події
                     }
 
@@ -625,7 +630,7 @@ namespace Music
                     }
                 }
 
-                // Гарантуємо наявність KS на abs=0 для треку0 та всіх нотних треків
+                // Гарантуємо наявність KS на abs=0 для треку0 та всіх нотних треках
                 if ((t == 0 || isNoteTrack[t]) && !hasKsAtZero)
                 {
                     newTrack.Insert(0, new KeySignatureEvent(0, sharps, mi));
