@@ -33,7 +33,7 @@ namespace Melodies25.Pages.Melodies
         public bool ShowAuthor { get; set; } = default!;
 
         [BindProperty]
-        public string TempAuthor { get; set; } = default!;
+        public string? TempAuthor { get; set; } = default!;
 
         [BindProperty]
         public Models.Melody Melody { get; set; } = default!;
@@ -47,7 +47,7 @@ namespace Melodies25.Pages.Melodies
 
         /*Для роботи MelodyForm*/
         [BindProperty]
-        public string Keys { get; set; } = default!;
+        public string? Keys { get; set; } = default!;
 
         public MusicMelody NewPattern { get; set; }
         internal string TempMidiFilePath { get; set; }
@@ -255,28 +255,42 @@ namespace Melodies25.Pages.Melodies
 
             MessageL(COLORS.yellow, "MELODIES/CREATE OnPostAsync");
 
+            // add/replace right after the existing Request.* diagnostics block in OnPostCreateAsync
             try
             {
-                MessageL(COLORS.gray, $"Request.HasFormContentType = {Request.HasFormContentType}");
-                MessageL(COLORS.gray, $"Request.ContentType = {Request.ContentType}");
-                var filesCount = Request.HasFormContentType ? (Request.Form?.Files?.Count ?? 0) : 0;
-                MessageL(COLORS.gray, $"Request.Form?.Files?.Count = {filesCount}");
-                _logger?.LogInformation("Create.OnPostCreateAsync: Files.Count={Count}", filesCount);
+                // log current Melody values that matter for validation
+                MessageL(COLORS.gray, $"Melody.Title = '{Melody?.Title ?? "<null>"}', Melody.AuthorID = {Melody?.AuthorID}");
+                _logger?.LogInformation("Create.OnPostCreateAsync: Melody.Title={Title}, Melody.AuthorID={AuthorId}", Melody?.Title, Melody?.AuthorID);
 
-                // fallback: if model binder didn't populate fileupload but Request contains files — take first
-                if (fileupload == null && filesCount > 0)
+                if (!ModelState.IsValid)
                 {
-                    var fallback = Request.Form.Files[0];
-                    if (fallback != null)
+                    MessageL(COLORS.red, "ModelState is INVALID — dumping errors:");
+                    _logger?.LogWarning("ModelState is INVALID. Dumping errors.");
+
+                    foreach (var entry in ModelState)
                     {
-                        MessageL(COLORS.yellow, $"fileupload was null — fallback to Request.Form.Files[0].FileName = {fallback.FileName}");
-                        fileupload = fallback;
+                        var key = entry.Key ?? "(null)";
+                        var errors = entry.Value.Errors;
+                        if (errors != null && errors.Count > 0)
+                        {
+                            var combined = string.Join(" | ", errors.Select(e =>
+                                !string.IsNullOrEmpty(e.ErrorMessage) ? e.ErrorMessage :
+                                (e.Exception != null ? $"Exception: {e.Exception.Message}" : "<unknown error>")
+                            ));
+                            MessageL(COLORS.red, $"ModelState[{key}] => {combined}");
+                            _logger?.LogWarning("ModelState[{Key}] => {Errors}", key, combined);
+                        }
                     }
+                }
+                else
+                {
+                    MessageL(COLORS.gray, "ModelState is valid at diagnostic checkpoint.");
                 }
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning(ex, "Diagnostics in OnPostCreateAsync failed");
+                _logger?.LogError(ex, "Failed to dump ModelState diagnostics");
+                MessageL(COLORS.red, $"Failed to dump ModelState diagnostics: {ex.Message}");
             }
 
             //ModelState.Remove(nameof(TempAuthor));
