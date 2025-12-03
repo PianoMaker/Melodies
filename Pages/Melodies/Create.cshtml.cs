@@ -33,7 +33,7 @@ namespace Melodies25.Pages.Melodies
         public bool ShowAuthor { get; set; } = default!;
 
         [BindProperty]
-        public string TempAuthor { get; set; } = default!;
+        public string? TempAuthor { get; set; } = default!;
 
         [BindProperty]
         public Models.Melody Melody { get; set; } = default!;
@@ -47,7 +47,7 @@ namespace Melodies25.Pages.Melodies
 
         /*Для роботи MelodyForm*/
         [BindProperty]
-        public string Keys { get; set; } = default!;
+        public string? Keys { get; set; } = default!;
 
         public MusicMelody NewPattern { get; set; }
         internal string TempMidiFilePath { get; set; }
@@ -255,15 +255,59 @@ namespace Melodies25.Pages.Melodies
 
             MessageL(COLORS.yellow, "MELODIES/CREATE OnPostAsync");
 
-            // тест на валідність моделі
-            if (!ModelState.IsValid)
+            // add/replace right after the existing Request.* diagnostics block in OnPostCreateAsync
+            try
             {
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                // log current Melody values that matter for validation
+                MessageL(COLORS.gray, $"Melody.Title = '{Melody?.Title ?? "<null>"}', Melody.AuthorID = {Melody?.AuthorID}");
+                _logger?.LogInformation("Create.OnPostCreateAsync: Melody.Title={Title}, Melody.AuthorID={AuthorId}", Melody?.Title, Melody?.AuthorID);
+
+                if (!ModelState.IsValid)
                 {
-                    _logger.LogError("MELODIES/CREATE OnPostAsync " + error.ErrorMessage);
+                    MessageL(COLORS.red, "ModelState is INVALID — dumping errors:");
+                    _logger?.LogWarning("ModelState is INVALID. Dumping errors.");
+
+                    foreach (var entry in ModelState)
+                    {
+                        var key = entry.Key ?? "(null)";
+                        var errors = entry.Value.Errors;
+                        if (errors != null && errors.Count > 0)
+                        {
+                            var combined = string.Join(" | ", errors.Select(e =>
+                                !string.IsNullOrEmpty(e.ErrorMessage) ? e.ErrorMessage :
+                                (e.Exception != null ? $"Exception: {e.Exception.Message}" : "<unknown error>")
+                            ));
+                            MessageL(COLORS.red, $"ModelState[{key}] => {combined}");
+                            _logger?.LogWarning("ModelState[{Key}] => {Errors}", key, combined);
+                        }
+                    }
+                }
+                else
+                {
+                    MessageL(COLORS.gray, "ModelState is valid at diagnostic checkpoint.");
                 }
                 //return Page();
             }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to dump ModelState diagnostics");
+                MessageL(COLORS.red, $"Failed to dump ModelState diagnostics: {ex.Message}");
+            }
+
+            //ModelState.Remove(nameof(TempAuthor));
+            if (Melody.AuthorID <= 0)
+            {
+                ModelState.AddModelError("Melody.AuthorID", "Автор обов'язковий.");
+                
+            }
+            if (!ModelState.IsValid)
+            {
+                Console.WriteLine("ModelState is not valid!");
+                GetAuthorsData();
+                GetTonalitiesData();
+                return Page();
+            }
+            MessageL(COLORS.gray, "ModelState is valid");
 
             TempMidiFilePath = TempData["TempMidiFilePath"] as string ?? "";
 
