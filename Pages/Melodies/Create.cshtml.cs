@@ -255,14 +255,16 @@ namespace Melodies25.Pages.Melodies
 
             MessageL(COLORS.yellow, "MELODIES/CREATE OnPostAsync");
 
-            // тест на валідність моделі
+            ModelState.Remove(nameof(TempAuthor));
+            if (Melody.AuthorID <= 0)
+            {
+                ModelState.AddModelError("Melody.AuthorID", "Автор обов'язковий.");
+            }
             if (!ModelState.IsValid)
             {
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    _logger.LogError("MELODIES/CREATE OnPostAsync " + error.ErrorMessage);
-                }
-                //return Page();
+                GetAuthorsData();
+                GetTonalitiesData();
+                return Page();
             }
 
             TempMidiFilePath = TempData["TempMidiFilePath"] as string ?? "";
