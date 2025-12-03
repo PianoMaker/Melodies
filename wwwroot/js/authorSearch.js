@@ -1,4 +1,8 @@
-﻿(function () {
+﻿//------------------------------------------------------
+// Автодоповнення для вибору автора у формі створення мелодії
+// Використовує Fetch API для запитів до сервера
+//------------------------------------------------------
+(function () {
     const input = document.getElementById('authorSearch');
     const results = document.getElementById('authorResults');
     const hiddenId = document.getElementById('authorIdHidden');
@@ -8,6 +12,9 @@
     let lastQuery = '';
     let debounceTimer = null;
 
+    //------------------------------------------------
+    // Функції для пошуку авторів та відображення результатів
+	//------------------------------------------------
     function renderResults(items) {
         results.innerHTML = '';
         if (!Array.isArray(items) || items.length === 0) {
@@ -59,6 +66,9 @@
             renderResults([]);
         }
     }
+	//------------------------------------------------
+    // Обробка вводу з затримкою (debounce)
+	//------------------------------------------------
 
     input.addEventListener('input', () => {
         const q = (input.value || '').trim();
@@ -101,7 +111,9 @@
         }
     });
 
-    // restore selection on load if present
+    //------------------------------------------------
+    // Відновлення вибору при завантаженні, якщо він присутній
+    //------------------------------------------------
     try {
         const savedId = sessionStorage.getItem("selectedAuthorId");
         const savedName = sessionStorage.getItem("selectedAuthorName");

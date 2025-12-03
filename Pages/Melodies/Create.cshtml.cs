@@ -255,17 +255,44 @@ namespace Melodies25.Pages.Melodies
 
             MessageL(COLORS.yellow, "MELODIES/CREATE OnPostAsync");
 
-            ModelState.Remove(nameof(TempAuthor));
+            try
+            {
+                MessageL(COLORS.gray, $"Request.HasFormContentType = {Request.HasFormContentType}");
+                MessageL(COLORS.gray, $"Request.ContentType = {Request.ContentType}");
+                var filesCount = Request.HasFormContentType ? (Request.Form?.Files?.Count ?? 0) : 0;
+                MessageL(COLORS.gray, $"Request.Form?.Files?.Count = {filesCount}");
+                _logger?.LogInformation("Create.OnPostCreateAsync: Files.Count={Count}", filesCount);
+
+                // fallback: if model binder didn't populate fileupload but Request contains files — take first
+                if (fileupload == null && filesCount > 0)
+                {
+                    var fallback = Request.Form.Files[0];
+                    if (fallback != null)
+                    {
+                        MessageL(COLORS.yellow, $"fileupload was null — fallback to Request.Form.Files[0].FileName = {fallback.FileName}");
+                        fileupload = fallback;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Diagnostics in OnPostCreateAsync failed");
+            }
+
+            //ModelState.Remove(nameof(TempAuthor));
             if (Melody.AuthorID <= 0)
             {
                 ModelState.AddModelError("Melody.AuthorID", "Автор обов'язковий.");
+                
             }
             if (!ModelState.IsValid)
             {
+                Console.WriteLine("ModelState is not valid!");
                 GetAuthorsData();
                 GetTonalitiesData();
                 return Page();
             }
+            MessageL(COLORS.gray, "ModelState is valid");
 
             TempMidiFilePath = TempData["TempMidiFilePath"] as string ?? "";
 
