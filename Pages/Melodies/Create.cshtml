@@ -31,9 +31,13 @@
 
     <!--ЛІВОРУЧ-->
     <div class="searchleftcontainer">        
-        <form method="post" asp-page-handler="create" enctype="multipart/form-data">
+        <form id="createForm" method="post" asp-page-handler="create" enctype="multipart/form-data">
             <div id="authorSaver" style="display:none">@Model.TempData["AuthorID"]</div>
             <div id="titleSaver" style="display:none">@Model.TempData["Title"]</div>
+
+            <!-- new: hidden Keys so the create-handler receives it -->
+            <input type="hidden" asp-for="Keys" id="keysInput-create" />
+
             @if (fileCreated)
             {
                 <div class="form-group">
@@ -191,6 +195,7 @@
     <script src="~/js/newAuthor.js"></script>
     <script src="~/lib/midirender/rendererUtils.js"></script> <!-- added; must come before any script using its helpers -->
     <script src="~/lib/midirender/setupLiveNotationCreate.js" asp-append-version="true"></script>
+    <script src="~/js/audioHelpers.js" asp-append-version="true"></script>
     <script src="~/js/createMelody.js" asp-append-version="true"></script>
     <script src="~/js/play.js"></script>
     <script src="~/js/openpiano.js"></script>
@@ -218,6 +223,9 @@
     }
 </div>
 -->
+
+
+
 
 
 
