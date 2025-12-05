@@ -1,0 +1,37 @@
+﻿@page
+@model Melodies25.Pages.Melodies.PreviewModel
+@{
+    var path = Model.FilePath;
+    var title = Model.FileName; 
+}
+
+<div class="infocontainer">
+<h2>Попередній перегляд</h2>
+    <p class="mt-2">Назва мелодії: <b>@title</b></p> <!-- Display the melody title -->
+    <a href="../Admin/Incoming" class="btn btn-melody">Повернутись</a>    
+    <div id="notation"></div>
+    <div id="comments" class="small text-muted mt-2"></div>
+    
+    <a href="../Admin/Incoming" class="btn btn-melody">Повернутись</a>
+    
+    <p id="midiError" class="text-danger mt-2" style="display:none;"></p> <!-- Display error message for MIDI rendering -->
+
+</div>
+
+
+
+<script src="~/lib/midirender/midifile.bundle.js"></script>
+<script src="~/lib/midirender/vexflow.js"></script>
+<script src="~/lib/midirender/midiparser.js"></script>
+<script src="~/lib/midirender/midiparser_ext.js"></script>
+<script src="~/lib/midirender/makeBeams.js"></script>
+<script src="~/lib/midirender/rendererUtils.js"></script>
+<script src="~/lib/midirender/midiRenderer.js"></script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var midiUrl = "@path"; 
+        renderMidiFromUrl(midiUrl, 1000, 'notation', 'comments')
+    });
+</script>
