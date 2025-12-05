@@ -284,6 +284,23 @@ namespace Melodies25.Pages.Experimental
             Page();
         }
 
+        public async Task<IActionResult> OnPostPreviewAsync(int id)
+        {
+
+            // Placeholder for future POST handling
+            Console.WriteLine($"Preview requested for incoming melody ID: {id}");
+            IncomingMelodies = GetIncomingMelodies();
+            var melodyToPreview = IncomingMelodies[id];
+            var incomingMelody = melodyToPreview.Item1;
+            if (incomingMelody is null)
+            {
+                Console.WriteLine("Incoming melody not found for preview");
+                TempData["Message"] = "Мелодію не знайдено для попереднього перегляду";
+                return Page();
+            }
+            // Redirect to a preview page with the melody details
+            return RedirectToPage("/Melodies/Preview", new { path = incomingMelody.FilePath, name = incomingMelody.Title });
+        }
 
 
         private void DeleteFileFromWebDirectory(int id)
