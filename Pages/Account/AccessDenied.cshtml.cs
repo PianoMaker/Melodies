@@ -1,7 +1,8 @@
+using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Melodies25.Pages.Shared
+namespace Melodies25.Pages.Account
 {
     public class AccessDeniedModel : PageModel
     {
@@ -10,8 +11,8 @@ namespace Melodies25.Pages.Shared
         public void OnGet(string? returnUrl)
         {
             Console.WriteLine("AccessDeniedModel OnGet called");
-
-            if (returnUrl != null && returnUrl.Contains("Edit"))
+                        
+            if(returnUrl != null && returnUrl.Contains("Edit"))
                 returnUrl = returnUrl.Replace("Edit", "Details");
             if (returnUrl != null && returnUrl.Contains("Delete"))
                 returnUrl = returnUrl.Replace("Delete", "Details");
