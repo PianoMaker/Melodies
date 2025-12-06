@@ -111,6 +111,7 @@ async function renderMidiSegmentFromUrl(
 		// Pre-parse to find measure index for the matched note
 		var { allEvents, ticksPerBeat, isMidi0 } = extractEventsFromArray(uint8);
 
+
 		// ро
 		const measureMap = createMeasureMap(allEvents, ticksPerBeat);
 
@@ -185,6 +186,8 @@ function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWID
 		reader.onload = function (e) {			
 			const uint8 = new Uint8Array(e.target.result);
 			var { allEvents, ticksPerBeat, isMidi0 } = extractEventsFromArray(uint8);
+			const initialKeySig = getInitialKeySignatures(allEvents, 0);
+
 			try {
 				renderMidiFileToNotation(
 					isMidi0,
@@ -199,7 +202,8 @@ function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWID
 					Xmargin,
 					commentsDiv,
 					maxBarsToRender,
-					0 // startAtMeasureIndex (default from beginning)
+					0, // startAtMeasureIndex (default from beginning)
+					initialKeySig
 				);
 
 				const svg = notationDiv.querySelector("svg");
@@ -1098,11 +1102,14 @@ function ksNoteNameToPc(name) {
 }
 
 function getMinorTonicPc(currentKeySig) {
+	console.debug(`FOO: getMinorTonicPc, Key sig = ${currentKeySig.sf} - ${currentKeySig.mi}`);
 	if (!currentKeySig) return null;
 	const name = mapKeySignatureName(currentKeySig.sf, currentKeySig.mi); // напр. 'Am','Ebm'
 	if (!name) return null;
 	const root = name.replace(/m$/, ''); // прибрати 'm' у мінорі
-	return ksNoteNameToPc(root);
+	const tonicPc = ksNoteNameToPc(root);
+	console.debug(`tonic = ${tonicPc}, current pc = ${root}. Chosen spelling before KS adjustments: ${name}`);
+	return tonicPc;
 }
 
 //  ----------------------
@@ -1132,6 +1139,8 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	const useFlats = sf < 0;
 	let chosen = useFlats ? flatNames[pc] : sharpNames[pc];
 
+	
+
 	// Minor leading-tone rule: in minor keys prefer sharp spelling for VII# (one semitone below tonic).
 	// Keep special case for C# minor: spell leading tone as B# (and adjust octave).
 	if (mi === 1 && tonicPc != null) {
@@ -1148,10 +1157,12 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 		}
 	}
 
-	const lowered2 = (tonicPc + 1) % 12; // bVII
-	if (tonicPc != null && pc === lowered2) {		
+	const lowered2 = (tonicPc + 1) % 12;
+	if (pc === lowered2) {
 		chosen = flatNames[pc];
 	}
+
+
 
 	// Key-signature specific enharmonic adjustments (existing behaviour)
 	if (sf <= -6 && pc === 11) {        // B -> Cb (octave +1)
@@ -1165,6 +1176,8 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 		chosen = 'B#';
 		outOctave = outOctave - 1;
 	}
+
+	console.debug(`tonic = ${tonicPc}, current pc = ${pc}. Chosen spelling before KS adjustments: ${chosen}`);
 
 	const accidental = chosen.includes('#') ? '#' : (chosen.includes('b') ? 'b' : null);
 	return { key: `${chosen.replace(/[#b]/, '')}/${outOctave}`, accidental };
@@ -1752,17 +1765,51 @@ function processNoteElement(durationCode, key, accidental, clef = 'treble') {
 function getInitialKeySignatures(allEvents, targetAbsTime) {
 	let initialKeySig = null;
 	try {
-		// get all key signature events and pick the last one with absTime <= targetAbsTime
+		// First, try existing helper if available
 		if (typeof getKeySignature === 'function') {
-			const keySigs = getKeySignature(allEvents); // returns array with absTime, sf, mode/name
-			if (Array.isArray(keySigs) && keySigs.length) {
-				const candidates = keySigs.filter(k => (k.absTime || 0) <= targetAbsTime);
-				const last = candidates.length ? candidates[candidates.length - 1] : null;
-				if (last) initialKeySig = { sf: last.sf, mi: last.mode ?? 0 };
+			try {
+				const keySigs = getKeySignature(allEvents); // expected array with { absTime, sf, mode } or similar
+				console.debug('getInitialKeySignatures: helper getKeySignature returned', keySigs);
+				if (Array.isArray(keySigs) && keySigs.length) {
+					const candidates = keySigs.filter(k => (k.absTime || 0) <= (targetAbsTime || 0));
+					const last = candidates.length ? candidates[candidates.length - 1] : null;
+					if (last) {
+						initialKeySig = { sf: last.sf, mi: last.mode ?? last.mi ?? 0 };
+						console.debug('getInitialKeySignatures: chosen from helper', initialKeySig, 'absTime=', last.absTime);
+						return initialKeySig;
+					}
+				}
+			} catch (hErr) {
+				console.warn('getInitialKeySignatures: getKeySignature helper failed', hErr);
 			}
 		}
+
+		// Fallback: scan raw allEvents for key signature meta events (metaType 0x59)
+		if (Array.isArray(allEvents) && allEvents.length) {
+			const keyEvents = allEvents
+				.filter(e => e && e.type === 0xFF && (e.metaType === 0x59 || e.metaTypeName === 'KeySignature'))
+				.map(e => {
+					// e.data expected: [sf, mi] per MIDI spec, but some parsers vary
+					const sf = (Array.isArray(e.data) && typeof e.data[0] === 'number') ? e.data[0] : (e.sf ?? e.sharps ?? null);
+					const mi = (Array.isArray(e.data) && typeof e.data[1] === 'number') ? e.data[1] : (e.mode ?? e.mi ?? 0);
+					return { absTime: e.absTime ?? 0, sf: sf ?? 0, mi: mi ?? 0, raw: e };
+				})
+				.sort((a, b) => (a.absTime || 0) - (b.absTime || 0));
+
+			console.debug('getInitialKeySignatures: scanned keyEvents:', keyEvents);
+
+			const candidates = keyEvents.filter(k => (k.absTime || 0) <= (targetAbsTime || 0));
+			const last = candidates.length ? candidates[candidates.length - 1] : (keyEvents.length ? keyEvents[0] : null);
+			if (last) {
+				initialKeySig = { sf: last.sf, mi: last.mi };
+				console.debug('getInitialKeySignatures: chosen fallback', initialKeySig, 'absTime=', last.absTime);
+				return initialKeySig;
+			}
+		}
+
+		// nothing found
 	} catch (ksErr) {
-		console.warn('Could not determine initialKeySig for segment:', ksErr);
+		console.warn('Could not determine initialKeySig for segment (exception):', ksErr);
 		initialKeySig = null;
 	}
 	return initialKeySig;
