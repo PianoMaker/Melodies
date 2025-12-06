@@ -269,17 +269,76 @@ namespace Melodies25.Pages.Account
         // Обробник для видалення користувача
         public async Task<IActionResult> OnPostDeleteUserAsync(string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user != null)
+            if (string.IsNullOrEmpty(userId))
             {
-                var result = await _userManager.DeleteAsync(user);
-                if (result.Succeeded)
+                return NotFound();
+            }
+
+            var target = await _userManager.FindByIdAsync(userId);
+            if (target == null)
+            {
+                return NotFound();
+            }
+
+            // Забороняємо видаляти себе
+            var current = await _userManager.GetUserAsync(User);
+            if (current != null && current.Id == target.Id)
+            {
+                TempData["ErrorMessage"] = "Ви не можете видалити свій власний обліковий запис.";
+                return RedirectToPage();
+            }
+
+            // Не дозволяємо видалити останнього адміністратора
+            if (await _userManager.IsInRoleAsync(target, "Admin"))
+            {
+                var admins = await _userManager.GetUsersInRoleAsync("Admin");
+                if (admins.Count <= 1)
                 {
-                    // Успішне видалення
+                    TempData["ErrorMessage"] = "Неможливо видалити останнього адміністратора.";
                     return RedirectToPage();
                 }
             }
-            return BadRequest("Не вдалося видалити користувача.");
+
+            try
+            {
+                // Видаляємо зовнішні логіни
+                var logins = await _userManager.GetLoginsAsync(target);
+                foreach (var l in logins)
+                {
+                    await _userManager.RemoveLoginAsync(target, l.LoginProvider, l.ProviderKey);
+                }
+
+                // Видаляємо claims
+                var claims = await _userManager.GetClaimsAsync(target);
+                foreach (var c in claims)
+                {
+                    await _userManager.RemoveClaimAsync(target, c);
+                }
+
+                // Видаляємо ролі
+                var roles = await _userManager.GetRolesAsync(target);
+                if (roles.Count > 0)
+                {
+                    await _userManager.RemoveFromRolesAsync(target, roles);
+                }
+
+                var result = await _userManager.DeleteAsync(target);
+                if (result.Succeeded)
+                {
+                    TempData["SuccessMessage"] = $"Користувача {target.Email} успішно видалено.";
+                    return RedirectToPage();
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = string.Join("; ", result.Errors.Select(e => e.Description));
+                    return RedirectToPage();
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Помилка при видаленні користувача: " + ex.Message;
+                return RedirectToPage();
+            }
         }
 
         // NEW: Unlock user (clear lockout)
