@@ -371,7 +371,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	//Обробник кнопки "Зберегти" (Create) або "попередній перегляд" (Search)
 	//------------------------------
 	if (createMIDIButton && titleInput && authorSearchInput && submitMelodyBtn) {
-		// Create page behavior
+		
 		createMIDIButton.addEventListener('click', function (event) {
 			event.preventDefault();
 
@@ -539,7 +539,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		console.debug(`[updateButtons] titleInput.value='${titleInput ? titleInput.value : 'N/A'}', authorSearch.value='${authorSearchInput ? authorSearchInput.value : 'N/A'}', fileIsReady=${fileIsReady}`);
 
 		if (titleInput && authorSearchInput && submitMelodyBtn) {
-			if (titleInput.value.length > 2 && authorSearchInput.value && fileIsReady) {
+			if (titleInput.value.length > 2 && authorSearchInput.value !== '' && fileIsReady) {
 				showSubmitBtn();
 				console.log(`[updateButtons] Showing submit button`);
 			} else {
@@ -634,6 +634,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			safeStyleDisplay(submitMelodyBtn, 'inline-block');
 			safeStyleDisplay(midiIsNotReady, 'none');
 			safeStyleDisplay(midiIsReady, 'inline');
+			warningField.textContent = '';
 		}
 	}
 
