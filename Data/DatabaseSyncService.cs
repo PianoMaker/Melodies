@@ -156,9 +156,20 @@ public class DatabaseSyncService
             return $"{s}|{n}";
         }
 
-        var srcMap = srcAuthors
+        // Build grouped map to avoid duplicate-key exception when multiple source rows normalize to same key.
+        var grouped = srcAuthors
             .Where(a => !string.IsNullOrWhiteSpace(a.Surname) || !string.IsNullOrWhiteSpace(a.Name))
-            .ToDictionary(a => Key(a), a => a);
+            .GroupBy(a => Key(a));
+
+        // Log duplicates and create dictionary choosing first entry per key
+        var duplicates = grouped.Where(g => g.Count() > 1).ToList();
+        foreach (var g in duplicates)
+        {
+            AddCollision($"Duplicate normalized author key in SOURCE: '{g.Key}' ({g.Count()} entries). Using the first occurrence.");
+            _logger.LogDebug("Duplicate group members: {Members}", string.Join(" | ", g.Select(x => $"{x.Surname} {x.Name} (Id={x.ID})")));
+        }
+
+        var srcMap = grouped.ToDictionary(g => g.Key, g => g.First());
 
         int updatedSrc = 0, updatedTrg = 0, conflicts = 0;
 
