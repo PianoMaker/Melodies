@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using static Music.Messages;
@@ -13,12 +14,14 @@ namespace Melodies25.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmailSender _emailSender;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly ILogger<LoginModel> _logger;
 
-        public LoginModel(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, IEmailSender emailSender)
+        public LoginModel(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, IEmailSender emailSender, ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _emailSender = emailSender;
+            _logger = logger;
         }
 
         [BindProperty]
@@ -50,33 +53,58 @@ namespace Melodies25.Pages.Account
             var user = await _userManager.FindByEmailAsync(Input.Email);
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Користувача з таким email не існує.");
+                _logger.LogWarning("Login failed: user not found for email {Email}", Input.Email);
+                TempData["ErrorMessage"] = "Користувача з таким email не існує.";
                 return Page();
             }
 
-            // Use CheckPasswordSignInAsync with the found user to avoid username/email mismatches
-            var result = await _signInManager.CheckPasswordSignInAsync(user, Input.Password, lockoutOnFailure: true);
+            // Diagnostic info
+            TempData["Debug_UserId"] = user.Id;
+            TempData["Debug_UserName"] = user.UserName ?? "<null>";
+            TempData["Debug_EmailConfirmed"] = user.EmailConfirmed.ToString();
+            TempData["Debug_HasPasswordHash"] = (!string.IsNullOrEmpty(user.PasswordHash)).ToString();
+            _logger.LogInformation("Attempting login for userId={UserId}, userName={UserName}, emailConfirmed={EmailConfirmed}, hasPasswordHash={HasHash}",
+                user.Id, user.UserName, user.EmailConfirmed, !string.IsNullOrEmpty(user.PasswordHash));
 
-            if (result.Succeeded)
-                return RedirectToPage("/Index");
-            if (result.RequiresTwoFactor)
+            // Quick direct password check (returns bool) to see if password verification works
+            bool passwordValid = await _userManager.CheckPasswordAsync(user, Input.Password);
+            TempData["Debug_PasswordValid"] = passwordValid.ToString();
+            _logger.LogInformation("Password valid check for {Email}: {Valid}", Input.Email, passwordValid);
+
+            if (!passwordValid)
             {
-                ModelState.AddModelError(string.Empty, "Потрібна двофакторна автентифікація.");
-                return Page();
-            }
-            if (result.IsLockedOut)
-            {
-                ModelState.AddModelError(string.Empty, "Обліковий запис заблоковано.");
-                return Page();
-            }
-            if (result.IsNotAllowed)
-            {
-                ModelState.AddModelError(string.Empty, "Вхід наразі не дозволено.");
+                // As a fallback, try PasswordSignIn with user.UserName (some configs rely on username)
+                var fallback = await _signInManager.PasswordSignInAsync(user.UserName ?? Input.Email, Input.Password, isPersistent: false, lockoutOnFailure: true);
+                _logger.LogInformation("Fallback PasswordSignInAsync result: {Result}", fallback);
+                if (fallback.Succeeded)
+                {
+                    return RedirectToPage("/Index");
+                }
+
+                if (fallback.RequiresTwoFactor)
+                {
+                    ModelState.AddModelError(string.Empty, "Потрібна двофакторна автентифікація.");
+                    return Page();
+                }
+                if (fallback.IsLockedOut)
+                {
+                    ModelState.AddModelError(string.Empty, "Обліковий запис заблоковано.");
+                    return Page();
+                }
+                if (fallback.IsNotAllowed)
+                {
+                    ModelState.AddModelError(string.Empty, "Вхід наразі не дозволено.");
+                    return Page();
+                }
+
+                ModelState.AddModelError(string.Empty, "Невірний пароль.");
                 return Page();
             }
 
-            ModelState.AddModelError(string.Empty, "Невірний пароль.");
-            return Page();
+            // If password is valid, sign in directly with the user object
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            _logger.LogInformation("User {Email} signed in.", Input.Email);
+            return RedirectToPage("/Index");
         }
 
         public async Task<IActionResult> OnPostRecoverPasswordAsync()
