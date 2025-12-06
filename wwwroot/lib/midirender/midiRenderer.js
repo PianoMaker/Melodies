@@ -1137,7 +1137,7 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	if (mi === 1 && tonicPc != null) {
 		const raised4 = (tonicPc + 6) % 12;  // #IV
 		const raised6 = (tonicPc + 9) % 12;  // #VI
-		const raised7 = (tonicPc + 11) % 12; // #VII (leading tone)
+		const raised7 = (tonicPc + 11) % 12; // #VII (leading tone)		
 
 		if (pc === 0 && (pc === raised4 || pc === raised6 || pc === raised7)) {
 			chosen = 'B#';
@@ -1146,6 +1146,11 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 			// General minor: force sharp spelling for leading tone (e.g., Dm -> C# not Db)
 			chosen = sharpNames[pc];
 		}
+	}
+
+	const lowered2 = (tonicPc + 1) % 12; // bVII
+	if (tonicPc != null && pc === lowered2) {		
+		chosen = flatNames[pc];
 	}
 
 	// Key-signature specific enharmonic adjustments (existing behaviour)
