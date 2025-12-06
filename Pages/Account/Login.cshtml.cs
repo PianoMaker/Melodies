@@ -54,7 +54,8 @@ namespace Melodies25.Pages.Account
                 return Page();
             }
 
-            var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, false, lockoutOnFailure: true);
+            // Use CheckPasswordSignInAsync with the found user to avoid username/email mismatches
+            var result = await _signInManager.CheckPasswordSignInAsync(user, Input.Password, lockoutOnFailure: true);
 
             if (result.Succeeded)
                 return RedirectToPage("/Index");
