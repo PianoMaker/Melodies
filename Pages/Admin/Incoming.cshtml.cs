@@ -273,8 +273,7 @@ namespace Melodies25.Pages.Experimental
 
         // Видалення вхідної мелодії
         public async Task OnPostDelete(int id)
-        {
-            // Placeholder for future POST handling
+        {            
             Console.WriteLine($"Delete requested for incoming melody ID: {id}");
             IncomingMelodies.RemoveAll(item => item.Item1.ID == id);
             DeleteFileFromWebDirectory(id);
@@ -286,8 +285,7 @@ namespace Melodies25.Pages.Experimental
 
         public async Task<IActionResult> OnPostPreviewAsync(int id)
         {
-
-            // Placeholder for future POST handling
+                        
             Console.WriteLine($"Preview requested for incoming melody ID: {id}");
             IncomingMelodies = GetIncomingMelodies();
             var melodyToPreview = IncomingMelodies[id];
