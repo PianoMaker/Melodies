@@ -31,9 +31,14 @@
 
     <!--ЛІВОРУЧ-->
     <div class="searchleftcontainer">        
-        <form method="post" asp-page-handler="create" enctype="multipart/form-data">
+        <form id="createForm" method="post" asp-page-handler="create" enctype="multipart/form-data">
+            <!-- приховане - автор ID -->
             <div id="authorSaver" style="display:none">@Model.TempData["AuthorID"]</div>
-            <div id="titleSaver" style="display:none">@Model.TempData["Title"]</div>
+            <!-- приховане - назва -->
+            <div id="titleSaver" style="display:none">@Model.TempData["Title"]</div>                
+            <!-- приховане - послідовність нот -->
+            <input type="hidden" asp-for="Keys" id="keysInput-create" />
+            <!-- поле завантаження файлу-->
             @if (fileCreated)
             {
                 <div class="form-group">
@@ -48,13 +53,13 @@
                 </div>
 
             }
-            
+            <!-- тональність -->
             <select asp-for="Melody.Tonality" class="form-control mt-2" asp-items="ViewBag.Tonalities">
                 <option value="">-- Тональність, в якій завантажено MIDI --</option>
             </select>
             <span asp-validation-for="Melody.Tonality" class="text-danger"></span>
 
-            
+            <!-- Назва -->
             <div id="savedTitle" style="display:none"> savedtitle = @TempData["Title"]</div>
             <div class="form-group">
                 <label asp-for="Melody.Title" class="control-label" id="titleLabel">Назва</label>
@@ -65,26 +70,28 @@
             <button id="copyBtn" type="button" onclick="copytitle(event)" 
                 class="btn btn-primary btn-outline-dark bg-light" style="display:none">
                 копіювати з файлу </button>
+            <!-- Рік -->
             <div class="form-group">
                 <label asp-for="Melody.Year" class="control-label">Рік</label>
                 <input asp-for="Melody.Year" class="form-control" />
                 <span asp-validation-for="Melody.Year" class="text-danger"></span>
             </div>
+            <!-- Примітки -->
             <div class="form-group">
                 <label asp-for="Melody.Description" class="control-label">Примітки</label>
                 <input asp-for="Melody.Description" class="form-control" />
                 <span asp-validation-for="Melody.Description" class="text-danger"></span>
             </div>
-
+            <!-- Автор -->
             <div class="form-group">
                 <label asp-for="Melody.AuthorID" class="control-label">Автор</label>
 
                 <input id="authorSearch" type="text" class="form-control" placeholder="Введіть ≥3 літери для пошуку автора" autocomplete="off" />
-
+                
                 <input type="hidden" id="authorIdHidden" asp-for="Melody.AuthorID" />
 
                 <div id="authorResults" class="list-group mt-1" style="max-height: 240px; overflow-y: auto;"></div>
-                <span asp-validation-for="Melody.AuthorID" class="text-danger"></span>
+                <span asp-validation-for="Melody.AuthorID" class="text-danger" id="authorWarning"></span> <!-- Updated to include the id for warnings -->
             </div>
         <!-- СТВОРИТИ -->
             <div id="submitMelodyBtn" class="form-group" style="display:none; margin-top: 10px">
@@ -191,6 +198,7 @@
     <script src="~/js/newAuthor.js"></script>
     <script src="~/lib/midirender/rendererUtils.js"></script> <!-- added; must come before any script using its helpers -->
     <script src="~/lib/midirender/setupLiveNotationCreate.js" asp-append-version="true"></script>
+    <script src="~/js/audioHelpers.js" asp-append-version="true"></script>
     <script src="~/js/createMelody.js" asp-append-version="true"></script>
     <script src="~/js/play.js"></script>
     <script src="~/js/openpiano.js"></script>
@@ -218,6 +226,9 @@
     }
 </div>
 -->
+
+
+
 
 
 

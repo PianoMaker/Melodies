@@ -81,11 +81,13 @@
                        disabled="@((Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true) ? null : "disabled")" />
                 <span class="small ms-1 @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? null : "text-muted")">gap: <span id="lcsGapVal">@Model.MaxGap</span></span>
             </div>
-            <div class="form-check d-flex align-items-center gap-2">                                
+        </div>
+        <div class="d-flex align-items-center gap-3 my-2">
+            <div class="form-check d-flex align-items-center gap-2">
                 <input asp-for="IfIntonation" class="form-check-input" id="ifIntonation" form="notesearchForm" checked="checked" />
                 <label class="form-check-label" for="ifIntonation">Мелодичний малюнок</label>
             </div>
-            <div class="form-check d-flex align-items-center gap-2">                
+            <div class="form-check d-flex align-items-center gap-2">
                 <input asp-for="IfRhythm" class="form-check-input" id="ifRhythm" form="notesearchForm" />
                 <label class="form-check-label" for="ifRhythm">Ритм</label>
             </div>
@@ -139,7 +141,7 @@
         </div>
         <script type="module" src="~/js/noteTable.js"></script>
 
-        
+
         <!--АУДІО-->
 
         <audio id="audioPlayer" controls autoplay style="display: none">
@@ -212,7 +214,7 @@
                                 else
                                 {
                                     <text>@songPattern[j] </text>
-                                }                                
+                                }
                             }
                             else
                             {
@@ -225,7 +227,7 @@
                                 {
                                     <text>@songPattern[j] </text>
                                 }
-                            }                         
+                            }
                         }
                     </p>
                     <!--ТРАНСПОЗИЦІЯ-->
@@ -431,6 +433,7 @@
 </div>
 
 
+<script src="~/js/audioHelpers.js" asp-append-version="true"></script>
 <script src="~/js/play.js" asp-append-version="true"></script>
 <script src="~/js/search.js" asp-append-version="true"></script>
 <script src="~/js/createMelody.js" asp-append-version="true"></script>

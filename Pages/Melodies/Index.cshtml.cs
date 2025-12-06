@@ -1,32 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
+﻿using Azure;
 using Melodies25.Data;
 using Melodies25.Models;
-using static Music.MidiConverter;
-using static Music.Messages;
+using Melodies25.Pages.Account;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
+using Music;
+using NAudio.Midi;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using static Melodies25.Utilities.PrepareFiles;
 using static Melodies25.Utilities.WaveConverter;
-using NAudio.Midi;
-using System.IO;
-using Music;
+using static Music.Messages;
+using static Music.MidiConverter;
 using Melody = Melodies25.Models.Melody;
-using Microsoft.Data.SqlClient;
-using System.Diagnostics.CodeAnalysis;
-using Azure;
 
 namespace Melodies25.Pages.Melodies
 {
     public class IndexModel : PageModel
     {
-        private readonly Melodies25.Data.Melodies25Context _context;
+        private readonly Melodies25Context _context;
         private readonly IWebHostEnvironment _environment;
         public string Msg { get; set; } = default!;
-
         public string Errormsg { get; set; } = default!;
 
         public string TitleSort { get; set; } = default!;
@@ -35,18 +38,28 @@ namespace Melodies25.Pages.Melodies
 
         public string? SelectedLetter { get; set; }
 
-        public IndexModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment environment)
+        // Pagination properties
+        public int PageIndex { get; set; } = 1;
+        public int TotalPages { get; set; } = 1;
+        public int PageSize { get; } = 50;
+        public int TotalCount { get; set; } = 0;
+
+        public readonly UserManager<IdentityUser> _userManager;
+
+        public IndexModel(Melodies25Context context, IWebHostEnvironment environment, UserManager<IdentityUser> userManager)
         {
+            
             _context = context;
             _environment = environment;
+            _userManager = userManager;
         }
+        
 
         // Ensure Melody is never null to avoid NullReferenceException in the Razor view
         public IList<Melody> Melody { get; set; } = new List<Melody>();
 
-
-
-        public async Task OnGetAsync(string sortOrder)
+        // GET supports sort, letter filter and paging
+        public async Task OnGetAsync(string sortOrder, string? letter, int? pageIndex)
         {
             MessageL(COLORS.yellow, $"MELODY/INDEX -  OnGET");
 
@@ -54,19 +67,39 @@ namespace Melodies25.Pages.Melodies
             AuthorSort = sortOrder == "author_asc" ? "author_desc" : "author_asc";
             CurrentSort = sortOrder;
 
+            SelectedLetter = letter;
+            
+
             var melodiesQuery = _context.Melody.Include(m => m.Author).AsQueryable();
 
+            // Apply letter filter (if any)
+            if (!string.IsNullOrEmpty(letter))
+            {
+                melodiesQuery = melodiesQuery.Where(m => m.Title.StartsWith(letter));
+            }
+
+            // Count total items for pagination
+            TotalCount = await melodiesQuery.CountAsync();
+            PageIndex = pageIndex.HasValue && pageIndex.Value > 0 ? pageIndex.Value : 1;
+            TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
+            if (TotalPages < 1) TotalPages = 1;
+            if (PageIndex > TotalPages) PageIndex = TotalPages;
+
+            // Apply sorting
             melodiesQuery = sortOrder switch
             {
                 "title_asc" => melodiesQuery.OrderBy(m => m.Title),
                 "title_desc" => melodiesQuery.OrderByDescending(m => m.Title),
                 "author_asc" => melodiesQuery.OrderBy(m => m.Author.Surname).ThenBy(m => m.Author.Name),
                 "author_desc" => melodiesQuery.OrderByDescending(m => m.Author.Surname).ThenByDescending(m => m.Author.Name),
-                _ => melodiesQuery // Якщо немає сортування, залишаємо список без змін
+                _ => melodiesQuery.OrderBy(m => m.ID) // stable default ordering
             };
 
-            Melody = await melodiesQuery.ToListAsync();
-
+            // Apply paging
+            Melody = await melodiesQuery
+                .Skip((PageIndex - 1) * PageSize)
+                .Take(PageSize)
+                .ToListAsync();
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -132,15 +165,9 @@ namespace Melodies25.Pages.Melodies
                 Errormsg = "Не вдалося зберегти зміни у базі даних.";
             }
 
-            // Оновлюємо модель для відображення
-            Melody = await _context.Melody.Include(m => m.Author).ToListAsync();
-
-            if (errors.Count > 0)
-                Errormsg = string.Join("; ", errors);
-
-            return Page();
+            // Оновлюємо модель для відображення (reset to first page)
+            return RedirectToPage(new { pageIndex = 1 });
         }
-
 
         public async Task<IActionResult> OnPostKilldupesAsync()
         {
@@ -158,7 +185,6 @@ namespace Melodies25.Pages.Melodies
             {
                 var duplicateList = duplicateGroup.ToList();
 
-
                 // Залишаємо перший елемент і видаляємо решту
                 for (int i = 1; i < duplicateList.Count; i++)
                 {
@@ -167,34 +193,21 @@ namespace Melodies25.Pages.Melodies
                 }
             }
 
-
-
             // Зберігаємо зміни
             await _context.SaveChangesAsync();
 
-            Melody = await _context.Melody.Include(m => m.Author).ToListAsync();
-
-            // Після завершення операції можна редіректити назад
-            return Page();
+            // Redirect to first page after deletion
+            return RedirectToPage(new { pageIndex = 1 });
         }
 
 
-        public async Task<IActionResult> OnPostFilterByLetter(string letter)
+
+        // Add sortOrder to the Filter POST and include it in redirect so paging preserves current sort.
+        public IActionResult OnPostFilterByLetter(string letter, string? sortOrder = null)
         {
             SelectedLetter = letter;
-            if (string.IsNullOrEmpty(letter) || letter.Length != 1 || !char.IsLetter(letter[0]))
-            {
-                Melody = await _context.Melody.Include(m => m.Author).ToListAsync();
-                return Page();
-            }
-
-            MessageL(COLORS.yellow, $"MELODY/INDEX -  FilterByLetter {letter}");
-
-            Melody = await _context.Melody.Include(m => m.Author).Where(m => m.Title.StartsWith(letter)).ToListAsync();
-
-            return Page();
+            // Redirect to GET carrying current sortOrder (if any) and reset to first page
+            return RedirectToPage(new { letter = letter, sortOrder = sortOrder, pageIndex = 1 });
         }
     }
 }
-
-    

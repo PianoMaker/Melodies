@@ -1,0 +1,13 @@
+﻿@page
+@model Melodies25.Pages.Account.AccessDeniedModel
+
+@{
+    var returnUrl = Model.ReturnUrl;
+}
+
+<div class="infocontainer">
+    <p>Недостатньо прав для здійсненя цієї дії</p>
+
+    <a class="btn btn-melody" href="./Login">Увійти / Зареєструватись</a>
+    <a class="btn btn-melody" href=@returnUrl>Повернутись</a>
+</div>

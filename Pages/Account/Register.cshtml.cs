@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Melodies25.Models;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using static Music.Messages;
 
@@ -23,40 +24,39 @@ namespace Melodies25.Pages.Account
 
         public class InputModel
         {
+            [Required]
+            [EmailAddress]
             public string Email { get; set; }
+
+            [Required]
+            [DataType(DataType.Password)]
             public string Password { get; set; }
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var user = new IdentityUser { UserName = Input.Email, Email = Input.Email };
-                var result = await _userManager.CreateAsync(user, Input.Password);
+                return Page();
+            }
 
-                if (result.Succeeded)
-                {
-                    //Автоматично входимо якщо зареєструвалися
+            var user = new IdentityUser { UserName = Input.Email, Email = Input.Email };
+            var result = await _userManager.CreateAsync(user, Input.Password);
 
-                    var login = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, false, false);
+            if (result.Succeeded)
+            {
+                // Sign the user in directly after successful creation.
+                // Using SignInAsync avoids a second lookup by name that can fail in some edge cases.
+                await _signInManager.SignInAsync(user, isPersistent: false);
 
-                    if (login.Succeeded)
-                    {
-                     MessageL(Music.COLORS.green, "logged in as " + Input.Password);
-                        return RedirectToPage("/Index"); // Перехід після входу
-                    }
+                MessageL(Music.COLORS.green, "User registered and signed in.");
+                return RedirectToPage("/Index");
+            }
 
-                    if (login.IsLockedOut)
-                    {
-                        ErrorMessage("Account is locked out.");
-                    }
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                    ErrorMessage(error.Description);
-                }
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+                ErrorMessage(error.Description);
             }
 
             return Page();

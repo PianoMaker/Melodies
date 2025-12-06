@@ -34,6 +34,7 @@
             {
                 <tr>
                     <td>@user.Email</td>
+                    <!--Ролі-->
                     <td>
                         @foreach (var role in Model.UserRoles[user.Id])
                         {
@@ -44,6 +45,7 @@
                             <span class="badge bg-danger">Заблоковано</span>
                         }
                     </td>
+                    <!--Дії-->
                     <td>
                         @if (!Model.UserRoles[user.Id].Contains("Admin"))
                         {
@@ -84,7 +86,7 @@
                         <form method="post" asp-page-handler="ResetPassword" asp-route-userId="@user.Id" class="d-inline">
                             <button type="submit" class="btn btn-outline-primary btn-sm">ResetPwd</button>
                         </form>
-                        @if (!Model.UserRoles[user.Id].Contains("Admin") && Model.UserRoles[user.Id].Count > 1)
+                        @if (!Model.UserRoles[user.Id].Contains("Admin"))
                         {
                             <form method="post" asp-page-handler="DeleteUser" asp-route-userId="@user.Id" class="d-inline">
                                 <button type="submit" class="btn btn-danger btn-sm">Видалити</button>
