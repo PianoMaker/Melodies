@@ -423,20 +423,45 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 	// rendererUtils.js
 	const rowsHeight = calculateRequiredHeight(measuresToRender, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
+	const RESPONSIVE_THRESHOLD = 800;
+	const scaleFactor = (containerWidth > 0 && containerWidth <= RESPONSIVE_THRESHOLD) ? 0.5 : 1;
+
+	// If we scale the context by scaleFactor, we must allocate a larger renderer
+	const rendererWidth = Math.max(Math.round(effectiveWidth / scaleFactor), 200);
+	const rendererHeight = Math.max(Math.round(rowsHeight / scaleFactor), 100);
+
+
 	setTimeout(() => {
 		const factory = new Vex.Flow.Factory({
 			renderer: {
 				elementId: ELEMENT_FOR_RENDERING,
-				width: effectiveWidth,
-				height: rowsHeight
+				width: rendererWidth,
+				height: rendererHeight
 			}
 		});
 
 		const context = factory.getContext();
 		const score = factory.EasyScore();
 
+		try {
+			if (scaleFactor !== 1 && typeof context.scale === 'function') {
+				context.scale(scaleFactor, scaleFactor);
+			}
+			// Reduce font proportionally if API available
+			if (typeof context.setFont === 'function') {
+				const baseFont = 10;
+				context.setFont("Arial", Math.max(6, Math.round(baseFont * scaleFactor)), "normal");
+			}			
+		} catch (e) {
+			console.warn("Scaling failed:", e);
+		}
+		console.debug(`renderMidiFileToNotation: renderer ${rendererWidth}x${rendererHeight}, scaleFactor=${scaleFactor}`);
+
+		scaledWidth = effectiveWidth/ scaleFactor;
+		scaledBARWIDTH = BARWIDTH / scaleFactor;
+		
 		// РЕНДЕРИНГ ТАКТІВ		
-		renderMeasures(slicedMap, measuresToRender, ticksPerBeat, score, context, Xmargin, TOPPADDING, BARWIDTH, CLEFZONE, HEIGHT, effectiveWidth, commentsDiv, initialKeySig);
+		renderMeasures(slicedMap, measuresToRender, ticksPerBeat, score, context, Xmargin, TOPPADDING, scaledBARWIDTH, CLEFZONE, HEIGHT, scaledWidth, commentsDiv, initialKeySig);
 
 		// ----------------------
 		// ПІСЛЯ-ОБРОБКА SVG
@@ -449,6 +474,7 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 				const adjust = () => {
 					const bbox = svg.getBBox();
 					const contentH = Math.max(rowsHeight, Math.ceil((bbox ? bbox.height : 0) + 10));
+					contentH = 0;
 					if (contentH > 0) {
 						const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
 						const vbW = vb && vb.width ? vb.width : (parseFloat(svg.getAttribute('width')) || effectiveWidth);
@@ -465,10 +491,9 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 						}
 					}
 				};
-				// run multiple times to ensure everything settles
 				adjust();
 				if (typeof requestAnimationFrame === 'function') requestAnimationFrame(adjust);
-				setTimeout(adjust, 50);  // one more time after a short delay
+				setTimeout(adjust, 50);
 			}
 		} catch (e) { console.warn('post-fix svg size failed', e); }
 	}, 0);
@@ -1119,7 +1144,7 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	console.debug("FOO: midiRenderer.js - midiNoteToVexFlowWithKey", { midiNote, currentKeySig, clef });
 	const sharpNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 	const flatNames = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-	const pc = midiNote % 12;
+	const pc = ((typeof midiNote === 'number') ? midiNote : 0) % 12;
 	let outOctave = Math.floor(midiNote / 12) - 1;
 
 	const sf = currentKeySig && typeof currentKeySig.sf === 'number' ? currentKeySig.sf : 0;
@@ -1127,34 +1152,34 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 
 	// minor tonic pitch-class helper (reuse existing util if available)
 	let tonicPc = null;
-	try { tonicPc = getMinorTonicPc ? getMinorTonicPc(currentKeySig) : null; } catch (e) { tonicPc = null; }
-	const raised4 = (tonicPc + 6) % 12;  // #IV
-	const raised6 = (tonicPc + 9) % 12;  // #VI
-	const raised7 = (tonicPc + 11) % 12; // #VII (leading tone)	
-	const lowered2 = (tonicPc + 1) % 12;  // bII
-	console.debug(`Key tonicPc=${tonicPc}, mi = ${mi}, raised4=${raised4}, raised6=${raised6}, raised7=${raised7}, lowered2=${lowered2}`);
+	try { tonicPc = (typeof getMinorTonicPc === 'function') ? getMinorTonicPc(currentKeySig) : null; } catch (e) { tonicPc = null; }
 
 	const useFlats = sf < 0;
 	let chosen = useFlats ? flatNames[pc] : sharpNames[pc];
 
-	// Minor leading-tone rule: in minor keys prefer sharp spelling for VII# (one semitone below tonic).
-	// Keep special case for C# minor: spell leading tone as B# (and adjust octave).
+	// If minor, apply common minor-key enharmonic preferences (leading-tone sharpenings, lowered II, etc.)
 	if (mi === 1 && tonicPc != null) {
+		const raised4 = (tonicPc + 6) % 12;  // #IV
+		const raised6 = (tonicPc + 9) % 12;  // #VI
+		const raised7 = (tonicPc + 11) % 12; // #VII (leading tone)
+		const lowered2 = (tonicPc + 1) % 12; // bII
 
-
-		if (pc === 0 && (pc === raised4 || pc === raised6 || pc === raised7)) {
-			chosen = 'B#';
-			outOctave = outOctave - 1;
-		} else if (pc === raised7 || pc === raised4 || pc === raised6) {
-			// General minor: force sharp spelling for leading tone (e.g., Dm -> C# not Db)
+		// Leading tone: prefer sharps for the leading tone
+		if (pc === raised7) {
 			chosen = sharpNames[pc];
-		} 
+		}
 
-		if (tonicPc != null && pc === lowered2) {
+		// Common raised scale degrees in minor: prefer sharps
+		if (pc === raised4 || pc === raised6) {
+			chosen = sharpNames[pc];
+		}
+
+		// lowered II -> prefer flat spelling
+		if (pc === lowered2) {
 			chosen = flatNames[pc];
 		}
 
-		// Key-signature specific enharmonic adjustments (existing behaviour)
+		// Some extreme key-signature adjustments (preserve original behaviour)
 		if (sf <= -6 && pc === 11) {        // B -> Cb (octave +1)
 			chosen = 'Cb';
 			outOctave = outOctave + 1;
@@ -1165,16 +1190,28 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 		} else if (sf >= 6 && pc === 0) {   // C -> B# (special)
 			chosen = 'B#';
 			outOctave = outOctave - 1;
-		} else if (sf === 3 && mi === 1 && pc === 5) {  // F -> Eis
+		}
+	} else {
+		// For major (or no tonic info) still apply extreme KS adjustments like original code
+		if (sf <= -6 && pc === 11) {        // B -> Cb (octave +1)
+			chosen = 'Cb';
+			outOctave = outOctave + 1;
+		} else if (sf <= -6 && pc === 4) {  // E -> Fb
+			chosen = 'Fb';
+		} else if (sf >= 6 && pc === 5) {   // F -> E#
 			chosen = 'E#';
-		}
-		else if (sf === 4 && mi === 1 && pc === 0) {  // C -> His
+		} else if (sf >= 6 && pc === 0) {   // C -> B# (special)
 			chosen = 'B#';
+			outOctave = outOctave - 1;
 		}
-
-		const accidental = chosen.includes('#') ? '#' : (chosen.includes('b') ? 'b' : null);
-		return { key: `${chosen.replace(/[#b]/, '')}/${outOctave}`, accidental };
 	}
+
+	// Compute accidental for display: '#' or 'b' or null
+	const accidental = (typeof chosen === 'string' && chosen.includes('#')) ? '#' : ((typeof chosen === 'string' && chosen.includes('b')) ? 'b' : null);
+
+	// Ensure returned key uses VexFlow format like "C/4"
+	const letterOnly = (typeof chosen === 'string') ? chosen.replace(/[#b]/g, '') : sharpNames[pc].replace(/[#b]/g, '');
+	return { key: `${letterOnly}/${outOctave}`, accidental };
 }
 function createNote(noteKey, duration, clef = 'treble') {
 		console.debug("FOO: midiparser_ext.js - createNote", { noteKey, duration, clef });
