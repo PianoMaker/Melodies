@@ -428,8 +428,8 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 
 	// If we scale the context by scaleFactor, we must allocate a larger renderer
 	const rendererWidth = Math.max(Math.round(effectiveWidth / scaleFactor), 200);
-	const rendererHeight = Math.max(Math.round(rowsHeight / scaleFactor), 100);
-
+	const rendererHeight = Math.max(Math.round(rowsHeight * scaleFactor * scaleFactor), 100);
+	console.log(`renderMidiFileToNotation: rowsHeight = ${rowsHeight}, containerWidth=${containerWidth}, effectiveWidth=${effectiveWidth}, renderer ${rendererWidth}x${rendererHeight}, scaleFactor=${scaleFactor}`);
 
 	setTimeout(() => {
 		const factory = new Vex.Flow.Factory({
