@@ -1126,85 +1126,69 @@ function getMinorTonicPc(currentKeySig) {
 
 // Updated midiNoteToVexFlowWithKey to accept clef and removed clef-based octave adjustment from createNote
 
+// Replaced implementation for midiNoteToVexFlowWithKey — safe, complete, returns { key, accidental }.
+// Replaced midiNoteToVexFlowWithKey: return key WITHOUT embedded accidental.
+// Accidental is returned separately so rendering logic (decideAccidentalForNote / processNoteElement)
+// controls whether an accidental is drawn (prevents repeating KS accidentals next to notes).
 function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
-	console.debug(`FOO: midiRenderer.js - midiNoteToVexFlowWithKey, midiNote = ${midiNote} currentKeySig = ${currentKeySig.sf} : ${currentKeySig.mi}`);
+	console.debug("FOO: midiRenderer.js - midiNoteToVexFlowWithKey, midiNote =", midiNote, "currentKeySig=", currentKeySig);
 
+	// Normalize midiNote
+	const m = Number.isFinite(Number(midiNote)) ? Number(midiNote) : 0;
 	const sharpNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 	const flatNames = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-	const pc = ((typeof midiNote === 'number') ? midiNote : 0) % 12;
-	let outOctave = Math.floor(midiNote / 12) - 1;
+	const pc = ((m % 12) + 12) % 12;
+	let outOctave = Math.floor(m / 12) - 1;
 
+	// Safe key-signature extraction (avoid reading properties of null)
 	const sf = currentKeySig && typeof currentKeySig.sf === 'number' ? currentKeySig.sf : 0;
 	const mi = currentKeySig && typeof currentKeySig.mi === 'number' ? currentKeySig.mi : 0; // 0=major,1=minor
 
-
-	// minor tonic pitch-class helper (reuse existing util if available)
-	let tonicPc = null;	
+	// Helper: minor tonic pitch-class (may return null)
+	let tonicPc = null;
 	try { tonicPc = (typeof getMinorTonicPc === 'function') ? getMinorTonicPc(currentKeySig) : null; } catch (e) { tonicPc = null; }
 
-	const raised4 = (tonicPc + 6) % 12;  // #IV
-	const raised6 = (tonicPc + 9) % 12;  // #VI
-	const raised7 = (tonicPc + 11) % 12; // #VII (leading tone)
-	const lowered2 = (tonicPc + 1) % 12; // bII
+	// Default choice: prefer flats for negative sf, sharps for non-negative
+	let chosen = (sf < 0) ? flatNames[pc] : sharpNames[pc];
 
-	console.debug(`AN: tonicPc = ${tonicPc}, raised4 = ${raised4}, raised7 = ${raised7}, lowered2 = ${lowered2}`);
-
-	const useFlats = sf < 0;
-	let chosen = useFlats ? flatNames[pc] : sharpNames[pc];
-
-	// If minor, apply common minor-key enharmonic preferences (leading-tone sharpenings, lowered II, etc.)
+	// Minor-key enharmonic preferences (if minor tonic known)
 	if (mi === 1 && tonicPc != null) {
+		const raised4 = (tonicPc + 6) % 12;  // #IV
+		const raised6 = (tonicPc + 9) % 12;  // #VI
+		const raised7 = (tonicPc + 11) % 12; // #VII (leading tone)
+		const lowered2 = (tonicPc + 1) % 12; // bII
 
-		// Leading tone: prefer sharps for the leading tone
-		if (pc === raised7) {
-			chosen = sharpNames[pc];
-		}
+		if (pc === raised7) chosen = sharpNames[pc];
+		if (pc === raised4 || pc === raised6) chosen = sharpNames[pc];
+		if (pc === lowered2) chosen = flatNames[pc];
 
-		// Common raised scale degrees in minor: prefer sharps
-		if (pc === raised4 || pc === raised6) {
-			chosen = sharpNames[pc];
-		}
-
-		// lowered II -> prefer flat spelling
-		if (pc === lowered2) {
-			chosen = flatNames[pc];
-		}
-
-		// Some extreme key-signature adjustments (preserve original behaviour)
-		if (sf <= -6 && pc === 11) {        // B -> Cb (octave +1)
-			chosen = 'Cb';
-			outOctave = outOctave + 1;
-		} else if (sf <= -6 && pc === 4) {  // E -> Fb
-			chosen = 'Fb';
-		} else if (sf >= 6 && pc === 5) {   // F -> E#
-			chosen = 'E#';
-		} else if (sf >= 6 && pc === 0) {   // C -> B# (special)
-			chosen = 'B#';
-			outOctave = outOctave - 1;
-		}
-	} 
-		
-	if (sf <= -6 && pc === 11) {        // B -> Cb (octave +1)
-		chosen = 'Cb';
-		outOctave = outOctave + 1;
-	} else if (sf <= -6 && pc === 4) {  // E -> Fb
-		chosen = 'Fb';
-	} else if (sf >= 6 && pc === 5) {   // F -> E#
-		chosen = 'E#';
-	} else if (sf >= 6 && pc === 0) {   // C -> B# 
-		chosen = 'B#';
-		outOctave = outOctave - 1;
-	}		
-	if (sf === 3 && mi === 1 && pc === 5) {   // F -> E#
-		chosen = 'E#';
+		// Extreme key-signature edge cases preserved
+		if (sf <= -6 && pc === 11) { chosen = 'Cb'; outOctave = outOctave + 1; }
+		else if (sf <= -6 && pc === 4) { chosen = 'Fb'; }
+		else if (sf >= 6 && pc === 5) { chosen = 'E#'; }
+		else if (sf >= 6 && pc === 0) { chosen = 'B#'; outOctave = outOctave - 1; }
+		else if (sf === 3 && mi === 1 && pc === 5) { chosen = 'E#' }
 	}
 
-	// Compute accidental for display: '#' or 'b' or null
-	const accidental = (typeof chosen === 'string' && chosen.includes('#')) ? '#' : ((typeof chosen === 'string' && chosen.includes('b')) ? 'b' : null);
+	// Additional general-edge adjustments (matching legacy behaviour)
+	if (sf <= -6 && pc === 11) { chosen = 'Cb'; outOctave = outOctave + 1; }
+	else if (sf <= -6 && pc === 4) { chosen = 'Fb'; }
+	else if (sf >= 6 && pc === 5) { chosen = 'E#'; }
+	else if (sf >= 6 && pc === 0) { chosen = 'B#'; outOctave = outOctave - 1; }
 
-	// Ensure returned key uses VexFlow format like "C/4"
-	const letterOnly = (typeof chosen === 'string') ? chosen.replace(/[#b]/g, '') : sharpNames[pc].replace(/[#b]/g, '');
-	return { key: `${letterOnly}/${outOctave}`, accidental };
+	// Determine spelled accidental (if any) but DO NOT embed it into returned key string.
+	let spelledAcc = null;
+	const accMatch = chosen.match(/^([A-G])(#{0,1}|b{0,1})/i);
+	const letterPart = accMatch ? accMatch[1].toUpperCase() : 'C';
+	const accChar = accMatch && accMatch[2] ? accMatch[2] : '';
+	if (accChar === '#') spelledAcc = '#';
+	else if (accChar === 'b') spelledAcc = 'b';
+
+	// Return key WITHOUT accidental (letter + octave). Accidental returned separately.
+	const key = `${letterPart}/${outOctave}`;
+
+	console.debug(`midiNoteToVexFlowWithKey -> key=${key}, spelledAcc=${spelledAcc}, clef=${clef}`);
+	return { key, accidental: spelledAcc };
 }
 function createNote(noteKey, duration, clef = 'treble') {
 		console.debug("FOO: midiparser_ext.js - createNote", { noteKey, duration, clef });
