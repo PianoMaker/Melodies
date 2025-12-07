@@ -39,19 +39,20 @@
                 var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
                 var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
 
-                <div style="display:inline-flex">
-
-                    <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: inline; width:500px;">
+                <div class="d-flex d-md-inline-flex align-items-center gap-2" style="flex-wrap:wrap;">
+                    <audio id="audioPlayer_@item.FilePath" class="audioPlayer flex-shrink-0" controls style="max-width:500px; width:100%;">
                         <source src="@mp3filepath" type="audio/mpeg" />
                         Your browser does not support the audio element.
                     </audio>
-                    <a href="@midifilepath" download class="btn btn-outline-dark light-background">
-                        Завантажити Midi <i class="fas fa-download"></i>
-                    </a>
-                    <a href="@mp3filepath" download class="btn btn-outline-dark light-background">
-                        Завантажити mp3 <i class="fas fa-download"></i>
-                    </a>
 
+                    <div class="btn-group" role="group" aria-label="downloads">
+                        <a href="@midifilepath" download class="btn btn-outline-dark light-background" aria-label="Download MIDI">
+                            <span class="d-none d-md-inline">Завантажити </span>Midi <i class="fas fa-download"></i>
+                        </a>
+                        <a href="@mp3filepath" download class="btn btn-outline-dark light-background" aria-label="Download MP3">
+                            <span class="d-none d-md-inline">Завантажити </span>mp3 <i class="fas fa-download"></i>
+                        </a>
+                    </div>
                 </div>
                 @if (!string.IsNullOrEmpty(Model.Melody.Tonality))
                 {

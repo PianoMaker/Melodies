@@ -424,7 +424,7 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 	const rowsHeight = calculateRequiredHeight(measuresToRender, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
 	const RESPONSIVE_THRESHOLD = 800;
-	const scaleFactor = (containerWidth > 0 && containerWidth <= RESPONSIVE_THRESHOLD) ? 0.5 : 1;
+	const scaleFactor = (containerWidth > 0 && containerWidth <= RESPONSIVE_THRESHOLD) ? 0.6 : 1;
 
 	// If we scale the context by scaleFactor, we must allocate a larger renderer
 	const rendererWidth = Math.max(Math.round(effectiveWidth / scaleFactor), 200);
@@ -457,8 +457,8 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 		}
 		console.debug(`renderMidiFileToNotation: renderer ${rendererWidth}x${rendererHeight}, scaleFactor=${scaleFactor}`);
 
-		scaledWidth = effectiveWidth/ scaleFactor;
-		scaledBARWIDTH = BARWIDTH / scaleFactor;
+		const scaledWidth = effectiveWidth / scaleFactor;
+		const scaledBARWIDTH = BARWIDTH;
 		
 		// РЕНДЕРИНГ ТАКТІВ		
 		renderMeasures(slicedMap, measuresToRender, ticksPerBeat, score, context, Xmargin, TOPPADDING, scaledBARWIDTH, CLEFZONE, HEIGHT, scaledWidth, commentsDiv, initialKeySig);
@@ -472,24 +472,8 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 			const svg = container && container.querySelector('svg');
 			if (svg && typeof svg.getBBox === 'function') {
 				const adjust = () => {
-					const bbox = svg.getBBox();
-					const contentH = Math.max(rowsHeight, Math.ceil((bbox ? bbox.height : 0) + 10));
-					contentH = 0;
-					if (contentH > 0) {
-						const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
-						const vbW = vb && vb.width ? vb.width : (parseFloat(svg.getAttribute('width')) || effectiveWidth);
-						if (vbW > 0) svg.setAttribute('viewBox', `0 0 ${vbW} ${contentH}`);
-						svg.setAttribute('height', String(contentH));
-						if (svg.style) {
-							svg.style.height = contentH + 'px';
-							svg.style.maxHeight = 'none';
-						}
-						if (container && container.style) {
-							container.style.minHeight = contentH + 'px';
-							container.style.height = contentH + 'px';
-							container.style.maxHeight = 'none';
-						}
-					}
+					const bbox = svg.getBBox();					
+					svg.setAttribute('height', bbox.height);
 				};
 				adjust();
 				if (typeof requestAnimationFrame === 'function') requestAnimationFrame(adjust);
@@ -1127,7 +1111,9 @@ function getMinorTonicPc(currentKeySig) {
 	const name = mapKeySignatureName(currentKeySig.sf, currentKeySig.mi); // напр. 'Am','Ebm'
 	if (!name) return null;
 	const root = name.replace(/m$/, ''); // прибрати 'm' у мінорі
-	return ksNoteNameToPc(root);
+	const tonicPc = ksNoteNameToPc(root);
+	console.debug(`Tonic pitch-class for ${root}: ${tonicPc}`);
+	return tonicPc;
 }
 
 //  ----------------------
@@ -1141,7 +1127,8 @@ function getMinorTonicPc(currentKeySig) {
 // Updated midiNoteToVexFlowWithKey to accept clef and removed clef-based octave adjustment from createNote
 
 function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
-	console.debug("FOO: midiRenderer.js - midiNoteToVexFlowWithKey", { midiNote, currentKeySig, clef });
+	console.debug(`FOO: midiRenderer.js - midiNoteToVexFlowWithKey, midiNote = ${midiNote} currentKeySig = ${currentKeySig.sf} : ${currentKeySig.mi}`);
+
 	const sharpNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 	const flatNames = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
 	const pc = ((typeof midiNote === 'number') ? midiNote : 0) % 12;
@@ -1150,19 +1137,23 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	const sf = currentKeySig && typeof currentKeySig.sf === 'number' ? currentKeySig.sf : 0;
 	const mi = currentKeySig && typeof currentKeySig.mi === 'number' ? currentKeySig.mi : 0; // 0=major,1=minor
 
+
 	// minor tonic pitch-class helper (reuse existing util if available)
-	let tonicPc = null;
+	let tonicPc = null;	
 	try { tonicPc = (typeof getMinorTonicPc === 'function') ? getMinorTonicPc(currentKeySig) : null; } catch (e) { tonicPc = null; }
+
+	const raised4 = (tonicPc + 6) % 12;  // #IV
+	const raised6 = (tonicPc + 9) % 12;  // #VI
+	const raised7 = (tonicPc + 11) % 12; // #VII (leading tone)
+	const lowered2 = (tonicPc + 1) % 12; // bII
+
+	console.debug(`AN: tonicPc = ${tonicPc}, raised4 = ${raised4}, raised7 = ${raised7}, lowered2 = ${lowered2}`);
 
 	const useFlats = sf < 0;
 	let chosen = useFlats ? flatNames[pc] : sharpNames[pc];
 
 	// If minor, apply common minor-key enharmonic preferences (leading-tone sharpenings, lowered II, etc.)
 	if (mi === 1 && tonicPc != null) {
-		const raised4 = (tonicPc + 6) % 12;  // #IV
-		const raised6 = (tonicPc + 9) % 12;  // #VI
-		const raised7 = (tonicPc + 11) % 12; // #VII (leading tone)
-		const lowered2 = (tonicPc + 1) % 12; // bII
 
 		// Leading tone: prefer sharps for the leading tone
 		if (pc === raised7) {
@@ -1191,19 +1182,21 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 			chosen = 'B#';
 			outOctave = outOctave - 1;
 		}
-	} else {
-		// For major (or no tonic info) still apply extreme KS adjustments like original code
-		if (sf <= -6 && pc === 11) {        // B -> Cb (octave +1)
-			chosen = 'Cb';
-			outOctave = outOctave + 1;
-		} else if (sf <= -6 && pc === 4) {  // E -> Fb
-			chosen = 'Fb';
-		} else if (sf >= 6 && pc === 5) {   // F -> E#
-			chosen = 'E#';
-		} else if (sf >= 6 && pc === 0) {   // C -> B# (special)
-			chosen = 'B#';
-			outOctave = outOctave - 1;
-		}
+	} 
+		
+	if (sf <= -6 && pc === 11) {        // B -> Cb (octave +1)
+		chosen = 'Cb';
+		outOctave = outOctave + 1;
+	} else if (sf <= -6 && pc === 4) {  // E -> Fb
+		chosen = 'Fb';
+	} else if (sf >= 6 && pc === 5) {   // F -> E#
+		chosen = 'E#';
+	} else if (sf >= 6 && pc === 0) {   // C -> B# 
+		chosen = 'B#';
+		outOctave = outOctave - 1;
+	}		
+	if (sf === 3 && mi === 1 && pc === 5) {   // F -> E#
+		chosen = 'E#';
 	}
 
 	// Compute accidental for display: '#' or 'b' or null
