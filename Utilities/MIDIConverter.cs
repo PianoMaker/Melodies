@@ -584,6 +584,7 @@ namespace Music
         }
 
 
+        // Replaced InsertKeySignatures methods for robust insertion/export of KeySignature meta-events.
         public static MidiEventCollection InsertKeySignatures(MidiFile midiFile, int sharps, MODE mode)
         {
             // Clamp sf to [-7..7] ; mi:0=dur,1=moll
@@ -595,7 +596,7 @@ namespace Music
 
             var newEventCollection = new MidiEventCollection(midiFile.FileFormat, midiFile.DeltaTicksPerQuarterNote);
 
-            // Наперед визначимо, які треки «нотні» 
+            // Determine which tracks contain notes
             bool[] isNoteTrack = new bool[midiFile.Events.Tracks];
             for (int t = 0; t < midiFile.Events.Tracks; t++)
             {
@@ -606,41 +607,46 @@ namespace Music
             {
                 var oldTrack = midiFile.Events[t];
                 var newTrack = new List<MidiEvent>();
-                bool hadKS = false;
                 bool hasKsAtZero = false;
 
                 foreach (var ev in oldTrack)
                 {
                     if (ev is KeySignatureEvent oldKs)
                     {
-                        hadKS = true;
-                        var abs = ev.AbsoluteTime;
-                        int absInt = abs > int.MaxValue ? int.MaxValue : (int)abs;
-
-                        var replaced = new KeySignatureEvent(absInt, sharps, mi);
-                        if (absInt == 0) hasKsAtZero = true;
+                        // preserve AbsoluteTime location, but create a fresh KeySignatureEvent with correct typed args
+                        long abs = oldKs.AbsoluteTime;
+                        long absClamped = abs > int.MaxValue ? int.MaxValue : abs;
+                        // Ensure correct ctor usage and typed casting: (absoluteTime, sharps, mi)
+                        var replaced = new KeySignatureEvent((int)absClamped, (sbyte)sharps, (byte)mi);
+                        if (absClamped == 0) hasKsAtZero = true;
 
                         string oldName = MapKsToName(oldKs.SharpsFlats, oldKs.MajorMinor);
-                        MessageL(COLORS.cyan, $"KS update: track={t}, abs={absInt}, {oldName} -> {newName}");
+                        MessageL(COLORS.cyan, $"KS update: track={t}, abs={absClamped}, {oldName} -> {newName}");
                         newTrack.Add(replaced);
                     }
                     else
                     {
+                        // copy other events untouched
                         newTrack.Add(ev);
                     }
                 }
 
-                // Гарантуємо наявність KS на abs=0 для треку0 та всіх нотних треках
+                // Guarantee a KeySignature at abs=0 for track 0 and all note tracks if missing
                 if ((t == 0 || isNoteTrack[t]) && !hasKsAtZero)
                 {
-                    newTrack.Insert(0, new KeySignatureEvent(0, sharps, mi));
-                    MessageL(COLORS.cyan, $"KS inserted at track {t}:0 -> {newName}");
-                    hadKS = true; // тепер вважається як наявний
+                    var ksAtZero = new KeySignatureEvent((int)0L, (sbyte)sharps, (byte)mi);
+                    newTrack.Insert(0, ksAtZero);
+                    MessageL(COLORS.cyan, $"KS {sharps}:{mi} inserted at track {t}:0 -> {newName}");
                 }
 
-                newEventCollection.AddTrack(newTrack);
+                // Add events into the MidiEventCollection using AddEvent (ensures proper internal handling)
+                foreach (var ne in newTrack)
+                {
+                    newEventCollection.AddEvent(ne, t);
+                }
             }
 
+            // Prepare and return
             newEventCollection.PrepareForExport();
             MessageL(COLORS.olive, "InsertKeySignatures: PrepareForExport done");
             return newEventCollection;
@@ -649,9 +655,10 @@ namespace Music
         public static void InsertKeySignatures(string midiFilePath, Tonalities tonality)
         {
             var midiFile = new MidiFile(midiFilePath);
-            var Midicollection = InsertKeySignatures(midiFile, tonality.GetSharpFlats(), tonality.Mode);
-            Midicollection.PrepareForExport();
-            MidiFile.Export(midiFilePath, Midicollection);
+            var midicollection = InsertKeySignatures(midiFile, tonality.GetSharpFlats(), tonality.Mode);
+            // Ensure PrepareForExport called before export
+            midicollection.PrepareForExport();
+            MidiFile.Export(midiFilePath, midicollection);
 
         }
 
