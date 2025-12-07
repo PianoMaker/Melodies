@@ -6,7 +6,8 @@
     var lng = Model.SelectedLang;
     
 }
-<div class="infocontainer melody-width">
+<div class="infocontainer melody-width hideformenu">
+    <div class="spaceformenu"></div>
     <h1>Авторів у базі даних - @Model.Author.Count</h1>
     <div style="display:inline">
 
@@ -50,7 +51,7 @@
                     Автор @(Model.SurnameSort == "title_asc" ? "▲" : "▼")
                 </a>
             </th>
-            <th>Роки життя</th>
+            <th class="d-none d-md-flex">Роки життя</th>
             <th>
                 <a asp-page="./Index"
                    asp-route-sortOrder="@Model.CountrySort"
@@ -87,7 +88,7 @@
                         <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.NameEn) @Html.DisplayFor(modelItem => item.SurnameEn)</a>
                     }
                 </td>
-                <td>
+                <td class="d-none d-md-flex">
                     @Html.DisplayFor(modelItem => item.DateOfBirth) - @Html.DisplayFor(modelItem => item.DateOfDeath)
                 </td>
                 <td>

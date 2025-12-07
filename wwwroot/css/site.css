@@ -422,7 +422,9 @@ table, th, td {
 /* частина зі слоном */
 .mainpage {
     height: 100%;
-    background: linear-gradient(217deg, rgba(255,100,100,.8), rgba(255,100,0,0) 70.71%), linear-gradient(127deg, rgba(255,255,100,.8), rgba(255,255,0,0) 70.71%), linear-gradient(336deg, rgba(100,100,255,.8), rgba(255,255,255,0) 70.71%);
+    background: 
+        linear-gradient(217deg, var(--brand-gold), var(--brand-maincolor-light) 80.71%),         
+        linear-gradient(336deg, var(--brand-maincolor), var(--brand-green) 70.71%);
     margin: 0;
 }
 
@@ -626,6 +628,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 .infocontainer {
     display: block;
 }
+
 
 .searchrightcontainer {
     /*display: inline-block;*/
@@ -832,7 +835,12 @@ p {
     }
 
     .commoncontainer {
-        padding-top: 12rem !important; /* ~21px at 14px base font-size */
+        padding-top: 2rem !important; /* ~21px at 14px base font-size */
+    }
+
+    body.menu-open .commoncontainer {
+        padding-top: 12em !important;
+        transition: padding-top 200ms ease;
     }
 }
 
@@ -848,13 +856,7 @@ p {
         flex: 0 0 auto;
         width: 100%;
     }
-
-    @media (min-width: 992px) {
-        .halfpagecontainer {
-            flex: 0 0 auto;
-            width: 50%;
-        }
-    }
+}
 
     @media (max-width: 480px) {
         .ifnarrowscreen {
@@ -984,11 +986,21 @@ p {
         }
 }
 
+.show-mobile {
+}
+
+@media (min-width: 900px) {
+    .show-mobile {
+        display: none !important;
+    }
+}
+
+
 @media (max-width: 900px) {
     .hide-mobile {
-        display: none !important;
-        nt;
+        display: none !important;        
     }
+    
 
     .table {
         width: 100% !important;
@@ -1258,3 +1270,38 @@ p {
     background: var(--brand-green);
 }
 
+/* Простір для розкриття гамбургера */
+
+.hideformenu {
+    max-height: 400px; /* достатньо для висоти вмісту; підлаштуйте при необхідності */
+    opacity: 1;
+    overflow: hidden;
+    transform: none;
+    transition: max-height 280ms ease, opacity 220ms ease, transform 240ms ease;
+    will-change: max-height, opacity, transform;
+    pointer-events: auto;
+}
+
+.spaceformenu {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-8px);
+    transition: max-height 280ms ease, opacity 220ms ease, transform 240ms ease;
+    will-change: max-height, opacity, transform;
+}
+
+@media (max-width: 800px) {
+    body.menu-open .hideformenu {
+        height: 200px !important;
+        opacity: 0 !important;
+        transform: translateY(-6px) !important;
+        pointer-events: none !important;
+    }
+    body.menu-open .spaceformenu {
+        max-height: 240px !important; /* підлаштуйте висоту під реальний вміст */
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        pointer-events: auto !important;
+    }
+}

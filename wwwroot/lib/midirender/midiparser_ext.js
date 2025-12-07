@@ -52,7 +52,7 @@ if (typeof window !== 'undefined') window.setEnharmonicPreference = setEnharmoni
 // ---------------------------------------------------------------------
 
 function updateKeySignatureFromEvents(events) {
-	console.debug("FOO: midiparser_ext.js - updateKeySignatureFromEvents");
+	console.debug("FOO: [KS] midiparser_ext.js - updateKeySignatureFromEvents");
 	if (!Array.isArray(events)) return null;
 	let ks = null;
 	for (let i = 0; i < events.length; i++) {
@@ -77,6 +77,7 @@ function updateKeySignatureFromEvents(events) {
 			const miRaw = bytes[1];
 			const mi = (miRaw === 0 || miRaw === 1) ? miRaw : (miRaw ? 1 : 0);
 			ks = { sf, mi };
+			
 		}
 
 		// Fallback 2: param1/param2
@@ -86,6 +87,7 @@ function updateKeySignatureFromEvents(events) {
 			const mi = (miRaw === 0 || miRaw === 1) ? miRaw : (miRaw ? 1 : 0);
 			ks = { sf, mi };
 		}
+		console.log("[KS]Parsed key signature from data bytes:", ks.sf + ":" + ks.mi);
 
 		if (ks) break;
 	}
@@ -94,6 +96,7 @@ function updateKeySignatureFromEvents(events) {
 		// Extra safety
 		ks.mi = (ks.mi === 0 || ks.mi === 1) ? ks.mi : (ks.mi ? 1 : 0);
 		currentKeyMode = ks.mi; // <-- ADDED: remember mode (major/minor)
+		console.log(`[KS]Updated key signature: ${currentKeySignature}, mode: ${currentKeyMode}`); // <-- ADDED
 		return { sf: ks.sf, mi: ks.mi };
 	}
 	return null;
@@ -129,54 +132,6 @@ function tonicPcFromSfMi(sf, mi) {
 	if (!nm) return null;
 	const root = mi === 1 ? nm.replace(/m$/, '') : nm;
 	return noteNameToPc(root);
-}
-
-function midiNoteToVexFlow(midiNote) {
-	console.debug("FOO: midiparser_ext.js - midiNoteToVexFlow");
-	const sharpNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-	const flatNames = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-	const pc = midiNote % 12;
-	const octaveRaw = Math.floor(midiNote / 12) - 1;
-
-	// default selection by global preference / sf sign
-	let useFlats;
-	if (enharmonicPreference === 'sharps') useFlats = false;
-	else if (enharmonicPreference === 'flats') useFlats = true;
-	else useFlats = currentKeySignature < 0;
-
-	let chosen = useFlats ? flatNames[pc] : sharpNames[pc];
-	let outOctave = octaveRaw;
-
-	// Minor VII# rule: in minor, prefer sharp spelling for leading tone (one semitone below tonic)
-	try {
-		if (currentKeyMode === 1) { // minor
-			const tonicPc = tonicPcFromSfMi(currentKeySignature, 1);
-			if (tonicPc != null) {
-				const leadingPc = (tonicPc + 11) % 12;
-				if (pc === leadingPc) {
-					// Force sharp spelling for the leading tone (e.g., Dm: pc=1 -> C# not Db)
-					chosen = sharpNames[pc];
-				}
-			}
-		}
-	} catch (e) { /* safe fallback */ }
-
-	// Extreme key signatures (keep existing behavior)
-	if (enharmonicPreference === 'auto') {
-		if (typeof currentKeySignature === 'number') {
-			if (currentKeySignature <= -6 && pc === 11) {
-				chosen = 'Cb';
-				outOctave = octaveRaw + 1;
-			} else if (currentKeySignature <= -6 && pc === 4) {
-				chosen = 'Fb';
-			} else if (currentKeySignature >= 6 && pc === 5) {
-				chosen = 'E#';
-			}
-		}
-	}
-
-	const accidental = chosen.includes('#') ? '#' : (chosen.includes('b') ? 'b' : null);
-	return { key: `${chosen.replace(/[#b]/, '')}/${outOctave}`, accidental };
 }
 
 function splitEventsIntoMeasures(midiEvents, ticksPerBeat) {
@@ -1086,6 +1041,7 @@ function decodeKeySignature(ev) {
 	const minors = ['Abm', 'Ebm', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm', 'Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m', 'A#m'];
 	const idx = sf + 7;
 	const name = (idx >= 0 && idx < majors.length) ? (mi === 0 ? majors[idx] : minors[idx]) : `sf=${sf}`;
+	console.debug(`[KS]Decoded Key Signature: sf=${sf}, mi=${mi}, name=${name}`);
 	return { sf, mi, name, raw: ev.data };
 }
 

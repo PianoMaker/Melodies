@@ -265,10 +265,10 @@
   }
 
   /* Mobile: navbar uses solid brand-red background */
-  #navbarstrip.bg-sky {
-    background: var(--brand-red) !important;
-    background-image: none !important;
-  }
+    #navbarstrip.bg-sky {
+        background: var(--brand-maincolor) !important;
+        background-image: none !important;
+    }
 
   /* ЗНАЙДИ СХОЖУ МЕЛОДІЮ */
   .homepagetitle 
