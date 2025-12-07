@@ -94,3 +94,17 @@
 .infocontainer.actions-container {
     border-color: var(--brand-border) !important;
 }
+
+/* ensure notation container and svg collapse to content on narrow screens */
+#notation, .panel-notes {
+	min-height: 0 !important;
+	height: auto !important;
+}
+
+/* make embedded SVG behave like block and scale responsively */
+#notation svg {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: none;
+}
