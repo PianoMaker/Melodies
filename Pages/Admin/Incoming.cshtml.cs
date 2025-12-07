@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.IO;
 using System.Text.Json;
+using static Music.Messages;
 
 namespace Melodies25.Pages.Experimental
 {
@@ -139,22 +140,19 @@ namespace Melodies25.Pages.Experimental
                 var melodyToSave = IncomingMelodies[id];
 
                 var incomingMelody = melodyToSave.Item1;
-
-
                 if (incomingMelody is null)
                 {
                     Console.WriteLine("Incoming melody not found");
-                    TempData["Message"] = "Мелодію не знайдено";
+                    TempData["Message"] = "Файл не знайдено";
                     return Page();
                 }
-
 
                 bool exists = _context.Melody.Any(m => m.Title == incomingMelody.Title);
                 if (exists)
                 {
                     Console.WriteLine("MusicMelody already exists in DB");
-                    TempData["Message"] = "Мелодія вже існує в базі";
-                    DeleteFileFromWebDirectory(id); // опціонально
+                    TempData["Message"] = "Мелодія вже є в базі";
+                    DeleteFileFromWebDirectory(id);
                     return RedirectToPage();
                 }
 
@@ -162,7 +160,8 @@ namespace Melodies25.Pages.Experimental
                 {
                     Title = incomingMelody.Title,
                     Description = incomingMelody.Description,
-                    Tonality = incomingMelody.Tonality
+                    Tonality = incomingMelody.Tonality,
+                    FilePath = incomingMelody.FilePath
                 };
 
                 if (incomingMelody.Author is not null && !string.IsNullOrWhiteSpace(incomingMelody.Author.Surname))
@@ -174,7 +173,6 @@ namespace Melodies25.Pages.Experimental
                     }
                     else
                     {
-                        // або створити нового автора (обережно з дублями)
                         var newAuthor = new Author
                         {
                             Surname = incomingMelody.Author.Surname,
@@ -185,15 +183,18 @@ namespace Melodies25.Pages.Experimental
                         entity.AuthorID = newAuthor.ID;
                     }
                 }
+
                 _context.Melody.Add(entity);
-                
                 await _context.SaveChangesAsync();
 
-                // Фалй MIDI переміщуємо після збереження сутності
+                // Move MIDI file and ensure entity.FilePath is set
                 MoveMidiFile(incomingMelody, entity);
 
+                // Persist the FilePath change (MoveMidiFile sets entity.FilePath when move succeeds)
+                await _context.SaveChangesAsync();
+
                 Console.WriteLine($"Saving melody: {entity.Title}");
-                TempData["Message"] = $"Мелодію '{entity.Title}' збережено";
+                TempData["Message"] = $"Мелодія '{entity.Title}' збережена";
 
                 DeleteFileFromWebDirectory(id);
             }
@@ -210,6 +211,7 @@ namespace Melodies25.Pages.Experimental
             return Page();
         }
 
+        // Update MoveMidiFile to assign entity.FilePath when the file is moved successfully
         private void MoveMidiFile(Melody incomingMelody, Melody entity)
         {
             try
@@ -219,16 +221,13 @@ namespace Melodies25.Pages.Experimental
                 var targetFolder = Path.Combine(webRoot, "melodies");
                 Directory.CreateDirectory(targetFolder);
 
-                // Get the file name from the web-relative path we built when listing incoming files
                 var fileName = Path.GetFileName(incomingMelody.FilePath ?? string.Empty);
 
                 if (!string.IsNullOrWhiteSpace(fileName))
                 {
-                                       
                     var sourcePath = Path.Combine(incomingFolder, fileName);
                     if (!System.IO.File.Exists(sourcePath))
                     {
-                        // Fallback: try force .mid
                         var baseName = Path.GetFileNameWithoutExtension(fileName);
                         var altSource = Path.Combine(incomingFolder, $"{baseName}.mid");
                         if (System.IO.File.Exists(altSource))
@@ -251,8 +250,10 @@ namespace Melodies25.Pages.Experimental
                         }
 
                         System.IO.File.Move(sourcePath, destPath);
+                        MessageL(Music.COLORS.cyan, $"MIDI moved to: {destPath}");
 
-                        Console.WriteLine($"MIDI moved to: {destPath}");
+                        // IMPORTANT: update the entity with the final filename (DB stores filename only)
+                        entity.FilePath = fileName;
                     }
                     else
                     {
