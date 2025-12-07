@@ -1128,16 +1128,19 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	// minor tonic pitch-class helper (reuse existing util if available)
 	let tonicPc = null;
 	try { tonicPc = getMinorTonicPc ? getMinorTonicPc(currentKeySig) : null; } catch (e) { tonicPc = null; }
+	const raised4 = (tonicPc + 6) % 12;  // #IV
+	const raised6 = (tonicPc + 9) % 12;  // #VI
+	const raised7 = (tonicPc + 11) % 12; // #VII (leading tone)	
+	const lowered2 = (tonicPc + 1) % 12;  // bII
+	console.debug(`Key tonicPc=${tonicPc}, mi = ${mi}, raised4=${raised4}, raised6=${raised6}, raised7=${raised7}, lowered2=${lowered2}`);
 
 	const useFlats = sf < 0;
 	let chosen = useFlats ? flatNames[pc] : sharpNames[pc];
 
 	// Minor leading-tone rule: in minor keys prefer sharp spelling for VII# (one semitone below tonic).
 	// Keep special case for C# minor: spell leading tone as B# (and adjust octave).
-	if (mi === 1 && tonicPc != null) {
-		const raised4 = (tonicPc + 6) % 12;  // #IV
-		const raised6 = (tonicPc + 9) % 12;  // #VI
-		const raised7 = (tonicPc + 11) % 12; // #VII (leading tone)		
+	if (mi === 1 && tonicPc != null) {	
+		
 
 		if (pc === 0 && (pc === raised4 || pc === raised6 || pc === raised7)) {
 			chosen = 'B#';
@@ -1145,10 +1148,13 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 		} else if (pc === raised7 || pc === raised4 || pc === raised6) {
 			// General minor: force sharp spelling for leading tone (e.g., Dm -> C# not Db)
 			chosen = sharpNames[pc];
+		} else if (sf === 3 && mi === 1 && pc === 5) {  // F -> Eis
+			chosen = 'E#';
 		}
+		else if (sf === 4 && mi === 1 && pc === 0) {  // C -> His
+			chosen = 'B#';
 	}
 
-	const lowered2 = (tonicPc + 1) % 12; // bVII
 	if (tonicPc != null && pc === lowered2) {		
 		chosen = flatNames[pc];
 	}
@@ -1164,7 +1170,7 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	} else if (sf >= 6 && pc === 0) {   // C -> B# (special)
 		chosen = 'B#';
 		outOctave = outOctave - 1;
-	}
+	} 
 
 	const accidental = chosen.includes('#') ? '#' : (chosen.includes('b') ? 'b' : null);
 	return { key: `${chosen.replace(/[#b]/, '')}/${outOctave}`, accidental };
