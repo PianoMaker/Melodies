@@ -182,18 +182,20 @@
     <script src="~/js/mobileMenu.js" asp-append-version="true"></script>
 
     <!-- Hamburger button (в хедері) -->
-<button id="mobileMenuToggle" class="btn btn-menu" aria-label="Toggle menu">
-  <i class="fas fa-bars"></i>
-</button>
+    <button id="mobileMenuToggle" class="btn btn-menu" aria-label="Toggle menu">
+      <i class="fas fa-bars"></i>
+    </button>
 
-<!-- Мобільне overlay меню -->
-<div id="mobileMenuOverlay" class="mobile-menu-overlay" role="dialog" aria-hidden="true">
-  <!-- тут ваші кнопки/посилання -->
-</div>
+    <!-- Мобільне overlay меню -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay" role="dialog" aria-hidden="true">
+      <!-- тут ваші кнопки/посилання -->
+    </div>
 
-<!-- Backdrop (можна опціонально) -->
-<div id="mobileMenuBackdrop" class="page-backdrop" aria-hidden="true"></div>
+    <!-- Backdrop (можна опціонально) -->
+    <div id="mobileMenuBackdrop" class="page-backdrop" aria-hidden="true"></div>
 
+    @* Render optional page-level Scripts section here *@
+    @await RenderSectionAsync("Scripts", required: false)
 
 </body>
 </html>

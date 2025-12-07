@@ -986,11 +986,21 @@ p {
         }
 }
 
+.show-mobile {
+}
+
+@media (min-width: 900px) {
+    .show-mobile {
+        display: none !important;
+    }
+}
+
+
 @media (max-width: 900px) {
     .hide-mobile {
-        display: none !important;
-        nt;
+        display: none !important;        
     }
+    
 
     .table {
         width: 100% !important;

@@ -22,9 +22,16 @@
     <div class="d-flex flex-row melody-index-flex">
         <!-- Кнопки ліворуч "Пошук", "Додати мелодію" -->
         <div id="operationbuttons" class="d-flex flex-column me-4">
-            <a asp-page="search" class="btn-melody m-2 btn-compact-40 align-self-start">Розширений пошук</a>
-            <a asp-page="Create" class="btn-melody m-2 btn-compact-40 align-self-start">Додати мелодію</a>
+            <a asp-page="search" class="btn-melody m-2 btn-compact-40 align-self-start"><span class="hide-mobile">Розширений пошук</span> <span class="show-mobile">Пошук</span></a>
+            <a asp-page="Create" class="btn-melody m-2 btn-compact-40 align-self-start">Додати <span class="hide-mobile">мелодію</span></a>
         </div>
+
+        <!-- гамбургер (поза блоком літер) -->
+        <button id="lettersToggleBtn" class="letters-hamburger" type="button"
+                aria-controls="lettersbutton" aria-expanded="false" title="Показати/Сховати літери">
+            ☰ Літери
+        </button>
+
         <!-- Кнопки з літерами праворуч -->
         <div id="lettersbutton" class="d-flex flex-column">
             <div class="d-flex flex-wrap gap-1 mb-2 letters-row">
@@ -217,4 +224,4 @@
 </div>
 
 <script src="~/js/play.js"></script>
-<script src="~/js/index.js" asp-append-version="true"></script>
+<script src="~/js/melody-index.js" asp-append-version="true"></script>

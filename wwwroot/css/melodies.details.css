@@ -95,15 +95,141 @@
     border-color: var(--brand-border) !important;
 }
 
-/* ensure notation container and svg collapse to content on narrow screens */
-#notation, .panel-notes {
-	min-height: 0 !important;
-	height: auto !important;
+/* ensure notation container collapses to content on narrow screens */
+/* Note: removed .panel-notes from this rule so we can set a sensible min-height for desktop */
+#notation {
+    min-height: 0 !important;
+    height: auto !important;
+}
+
+/* Make panel-notes taller on desktop so bottom letter buttons (including "ÿ") are visible */
+.melody-details .panel-notes {
+    /* Give more vertical space and a little extra bottom padding */
+    min-height: 360px;
+    padding-bottom: 18px;
+}
+
+/* Small spacing for letters container so it doesn't touch edges */
+.melody-details #lettersbutton {
+    margin-bottom: 8px;
 }
 
 /* make embedded SVG behave like block and scale responsively */
 #notation svg {
-	display: block;
-	width: 100%;
-	height: auto;	
+    display: block;
+    width: 100%;
+    height: auto;	
+}
+
+/* Mobile hamburger for letters - initial state: letters hidden on small screens */
+
+/* By default (desktop) show letters and hide hamburger */
+.letters-hamburger {
+  display: none;
+}
+
+/* Mobile rules */
+@media (max-width: 768px) {
+  /* Hide the whole letters block by default on mobile */
+  #lettersbutton {
+    display: none !important;
+  }
+
+  /* Show hamburger on mobile */
+  .letters-hamburger {
+    display: inline-flex !important;
+    align-items: center;
+    gap: .5rem;
+    padding: .35rem .6rem;
+    border-radius: 8px;
+    /* light-gray styling for the hamburger button */
+    background: #e9e9e9;
+    color: #222;
+    font-weight: 600;
+    cursor: pointer;
+    margin: .2rem 0;
+    border: 1px solid #d0d0d0;
+  }
+
+  /* Mobile: ensure letter buttons fit when hamburger opened */
+  #lettersbutton.open {
+    display: block !important;
+    margin-top: .5rem;
+    max-height: calc(100vh - 160px); /* leave space for header/controls */
+    overflow-y: auto;
+    padding: .35rem;
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+  }
+
+  /* On small screens restore collapse behavior for panel-notes */
+  .melody-details .panel-notes {
+    min-height: 0 !important;
+    padding-bottom: 12px;
+  }
+
+  /* force rows to wrap cleanly and center content */
+  #lettersbutton .letters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* keep each form compact so buttons don't stretch to full width */
+  #lettersbutton .letters-row form {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
+  /* smaller, tighter letter buttons on mobile so more fit per row */
+  #lettersbutton .letter.btn-melody {
+    padding: .2rem .45rem;
+    font-size: .9rem;
+    min-width: 36px;
+    line-height: 1;
+    box-sizing: border-box;
+    white-space: nowrap;
+  }
+
+  /* very narrow screens: reduce size a bit more */
+  @media (max-width: 360px) {
+    #lettersbutton .letter.btn-melody {
+      padding: .18rem .35rem;
+      font-size: .82rem;
+      min-width: 32px;
+    }
+  }
+}
+
+/* Keep hamburger hidden on larger screens */
+@media (min-width: 769px) {
+  .letters-hamburger {
+    display: none !important;
+  }
+}
+
+/* ----------------------
+   New: expand infocontainer when letters are opened
+   ---------------------- */
+
+.infocontainer.letters-expanded {
+    /* Allow the container to grow to viewport space so all letters fit.
+       Change the calc(...) value if you need more/less free space. */
+    max-height: calc(100vh - 120px) !important;
+    overflow: visible !important;
+    transition: max-height 280ms ease;
+}
+
+/* Slightly different behavior on small screens: prefer scrolling inside container */
+@media (max-width: 768px) {
+    .infocontainer.letters-expanded {
+        max-height: calc(100vh - 160px) !important;
+        overflow-y: auto !important;
+    }
+}
+
+/* Ensure the letters panel open rule still displays buttons */
+#lettersbutton.open {
+    display: block !important;
 }
