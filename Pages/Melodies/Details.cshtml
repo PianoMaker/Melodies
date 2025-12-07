@@ -18,7 +18,7 @@
             @if (@item.Author is not null && !@item.Author.Surname.Contains("народна"))
             {
                 <h4>автор - <a asp-page="/Authors/Details" asp-route-id="@item.AuthorID">@item.Author.Name @item.Author.Surname</a></h4>
-                <p>(@item.Author.DateOfBirth - @item.Author.DateOfDeath)</p>
+                <p class="d-none d-md-inline">(@item.Author.DateOfBirth - @item.Author.DateOfDeath)</p>
             }
             else if (@item.Author is not null)
             {
@@ -27,7 +27,7 @@
             }
             @if (item.Year is not null)
             {
-                <p>Написана у @item.Year році</p>
+                <p class="d-none d-md-inline">Написана у @item.Year році</p>
             }
         </div>
         <p><i>@item.Description</i></p>
@@ -56,7 +56,7 @@
                 </div>
                 @if (!string.IsNullOrEmpty(Model.Melody.Tonality))
                 {
-                    <p>MIDI файл завантажено в тональності @Model.Melody.Tonality</p>
+                    <p><span class="d-none d-md-inline">MIDI файл завантажено в тональності @Model.Melody.Tonality</span></p>
                 }
                 else
                 {
