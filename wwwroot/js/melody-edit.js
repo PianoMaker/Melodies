@@ -1,4 +1,8 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
+
+    // ---------------------
+    // ВСТАНОВЛЕННЯ ТЕМПУ
+    // ---------------------
     var tempoChange = document.getElementById("tempoChange");
     var tempoChangeHidden = document.getElementById("tempoChangeHidden");
     if (tempoChange && tempoChangeHidden) {
@@ -7,9 +11,9 @@
             console.log("tempoChangeHidden.value = true");
         });
     }
-});
-
-document.addEventListener("DOMContentLoaded", function () {
+    // -------------------------------------
+    // ВСТАНОВЛЕННЯ ТОНАЛЬНОСТІ з MIDI-файлу
+    // -------------------------------------
     var getTonalityButton = document.getElementById("getTonality");
     if (getTonalityButton) {
         getTonalityButton.addEventListener("click", async function (event) {
@@ -61,8 +65,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
+    //---------------------------
     // ПАРАЛЕЛЬНА ТОНАЛЬНІСТЬ
+    //---------------------------
     var parallelBtn = document.getElementById("paralellTonality");
     if (parallelBtn) {
         parallelBtn.addEventListener("click", async function (e) {

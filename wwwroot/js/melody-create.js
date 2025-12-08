@@ -3,10 +3,7 @@
 
 document.addEventListener("DOMContentLoaded", function () {
 
-	console.log("createMelody.js starts.");
-
-
-
+	console.log("melody-create.js starts.");
 
 
 	//------------------
@@ -86,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	const searchAlgorithmInput = document.getElementById("searchAlgorithmInput");	//вибір алгоритму пошуку
 
 	if (!pianodisplay) {
-		console.warn('[createMelody]: pianodisplay element not found – aborting createMelody.js initialization');
+		console.warn('[createMelody]: pianodisplay element not found – aborting melody-create.js initialization');
 		return; // без нотного поля немає сенсу виконувати далі
 	}
 
@@ -709,7 +706,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			noNotesMsg: document.getElementById('noNotesMsg')
 		});
 	} else {
-		console.warn('[createMelody]: setupLiveNotationOnCreate is not loaded. Ensure /lib/midirender/setupLiveNotationCreate.js is included before createMelody.js.');
+		console.warn('[createMelody]: setupLiveNotationOnCreate is not loaded. Ensure /lib/midirender/setupLiveNotationCreate.js is included before melody-create.js.');
 	}
 
 

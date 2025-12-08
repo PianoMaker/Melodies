@@ -21,12 +21,12 @@
         <!--ПОШУК-->
         <form id="notesearchForm" method="post" asp-page-handler="notesearch" class="d-inline-block m-1">
             <input type="hidden" name="Keys" id="keysInput-search" /><!--зберігає код натиснутих клавіш у поле Keys-->
-            <button id="searchBtn" type="submit" class="btn-melody">Пошук</button><!--відправка через createMelody.js-->
+            <button id="searchBtn" type="submit" class="btn-melody">Пошук</button><!--відправка через melody-create.js-->
         </form>
         <!--ЗБЕРЕГТИ-->
         <form id="melodyForm" method="post" asp-page-handler="melody" class="d-inline-block m-1">
             <input type="hidden" name="Keys" id="keysInput-save" /><!--зберігає код натиснутих клавіш у поле Keys-->
-            <button id="createMIDI" type="submit" class="btn-melody">Зберегти</button><!--відправка через createMelody.js-->
+            <button id="createMIDI" type="submit" class="btn-melody">Зберегти</button><!--відправка через melody-create.js-->
         </form>
         <div id="previewMp3path" style="display:none"> @Model.TempMp3FilePath</div>
         @if (TempData["HighlightPlayButton"] is not null)

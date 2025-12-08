@@ -56,6 +56,7 @@
         '/lib/midirender/midiparser_ext.js',
         '/lib/midirender/makeBeams.js',
         '/lib/midirender/rendererUtils.js',
+        '/lib/midirender/mr-calculate-rows.js',
         '/lib/midirender/midiRenderer.js',
         '/lib/midirender/patternRenderer.js'
     ];

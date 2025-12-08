@@ -1,7 +1,7 @@
 ﻿//========================================
 // Audio helpers and token→MIDI mapping
 //========================================
-// NOTE: extracted from createMelody.js to a shared module to be reused across pages.
+// NOTE: extracted from melody-create.js to a shared module to be reused across pages.
 
 
 

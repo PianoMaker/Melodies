@@ -1158,34 +1158,6 @@ function getNumberOfNotes(measure) {
 if (typeof window !== 'undefined') window.getNumberOfNotes = getNumberOfNotes;
 
 
-// Розраховує середню ширину такту на основі кількості нот у кожному такті
-function GetMeanBarWidth(BARWIDTH, measures) {
-
-	// If measures is not a non-empty array — just return default BARWIDTH without noisy warnings
-	if (!Array.isArray(measures) || measures.length === 0) {
-		console.debug("meanBarWidth: measures empty or invalid, using BARWIDTH fallback");
-		return BARWIDTH;
-	}
-
-	console.debug("FOO: midiparser_ext.js - meanBarWidth");
-	let meanBarWidth = BARWIDTH;
-	let sumBarWidth = 0;
-	let currentWidth;
-
-	measures.forEach((m) => {
-		let notesamount = getNumberOfNotes(m);
-		if (notesamount !== undefined) {
-			currentWidth = meanBarWidth / 3 + meanBarWidth * notesamount / 7;
-			sumBarWidth += currentWidth;
-		}
-	});
-
-	meanBarWidth = sumBarWidth / measures.length;
-	console.log(`meanBarWidth total: ${meanBarWidth}`);
-
-	return meanBarWidth;
-}
-if (typeof window !== 'undefined') window.GetMeanBarWidth = GetMeanBarWidth;
 
 // Detection of NoteOn events extracted to reusable function
 /**

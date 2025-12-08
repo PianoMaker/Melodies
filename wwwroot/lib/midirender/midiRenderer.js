@@ -539,33 +539,16 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
 	// Initialize currentKeySig from provided initialKeySig when rendering slice
 	let currentKeySig = initialKeySig ? { sf: initialKeySig.sf, mi: initialKeySig.mi } : null;
-	if (currentKeySig) {
-		console.debug(`MR: initialKeySig applied for slice -> sf:${currentKeySig.sf} mi:${currentKeySig.mi}`);
-	}
-
-	const activeNotes = {};
+	let meanBarWidth = GetMeanBarWidth(BARWIDTH, measures);
 	let isFirstMeasureInRow = true;
-	let meanBarWidth;
-	try {
-		if (Array.isArray(measures) && measures.length > 0) {
-			meanBarWidth = GetMeanBarWidth(BARWIDTH, measures);
-		} else {
-			meanBarWidth = BARWIDTH;
-			console.debug("MR: measures empty — using BARWIDTH as meanBarWidth");
-		}
-	} catch (e) {
-		console.warn("MR: GetMeanBarWidth failed, falling back to BARWIDTH", e);
-		meanBarWidth = BARWIDTH;
-	}
+	const activeNotes = {};
 
 	// determine global clef (existing logic)
-	let globalClefChoice = "treble";
-	try {
-		const firstWithNotes = (Array.isArray(measures) && measures.length) ? measures.find(m => hasNoteOn(m)) : null;
-		const basisMeasure = firstWithNotes || (measures && measures[0]) || [];
-		globalClefChoice = decideClefForMeasure(basisMeasure) || "treble";
-	} catch (e) { console.warn("MR: Failed to determine global clef, fallback to treble", e); globalClefChoice = "treble"; }
+	let globalClefChoice = decideClefForMeasure(measures);
+
 	console.debug(`MR: Global clef for melody determined from first measure => ${globalClefChoice}`);
+	if (currentKeySig)
+		console.debug(`MR: initialKeySig applied for slice -> sf:${currentKeySig.sf} mi:${currentKeySig.mi}`);
 
 	// iterate measures (rest of original implementation unchanged)...
 	measures.forEach((measure, index) => {
@@ -1133,41 +1116,42 @@ function getMinorTonicPc(currentKeySig) {
 function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	console.debug("FOO: midiRenderer.js - midiNoteToVexFlowWithKey, midiNote =", midiNote, "currentKeySig=", currentKeySig);
 
-	// Normalize midiNote
 	const m = Number.isFinite(Number(midiNote)) ? Number(midiNote) : 0;
 	const sharpNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 	const flatNames = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
 	const pc = ((m % 12) + 12) % 12;
 	let outOctave = Math.floor(m / 12) - 1;
 
-	// Safe key-signature extraction (avoid reading properties of null)
+	// Safe key-signature extraction
 	const sf = currentKeySig && typeof currentKeySig.sf === 'number' ? currentKeySig.sf : 0;
 	const mi = currentKeySig && typeof currentKeySig.mi === 'number' ? currentKeySig.mi : 0; // 0=major,1=minor
 
-	// Helper: minor tonic pitch-class (may return null)
+	// Minor tonic pitch-class (optional)
 	let tonicPc = null;
 	try { tonicPc = (typeof getMinorTonicPc === 'function') ? getMinorTonicPc(currentKeySig) : null; } catch (e) { tonicPc = null; }
 
-	// Default choice: prefer flats for negative sf, sharps for non-negative
-	let chosen = (sf < 0) ? flatNames[pc] : sharpNames[pc];
+	// Defaults
+	let chosenSharp = sharpNames[pc];
+	let chosenFlat = flatNames[pc];
+	let chosen = (sf < 0) ? chosenFlat : chosenSharp;
 
-	// Minor-key enharmonic preferences (if minor tonic known)
+	// Minor-key enharmonic preferences (preserve previous heuristics)
 	if (mi === 1 && tonicPc != null) {
 		const raised4 = (tonicPc + 6) % 12;  // #IV
 		const raised6 = (tonicPc + 9) % 12;  // #VI
-		const raised7 = (tonicPc + 11) % 12; // #VII (leading tone)
+		const raised7 = (tonicPc + 11) % 12; // #VII
 		const lowered2 = (tonicPc + 1) % 12; // bII
 
-		if (pc === raised7) chosen = sharpNames[pc];
-		if (pc === raised4 || pc === raised6) chosen = sharpNames[pc];
-		if (pc === lowered2) chosen = flatNames[pc];
+		if (pc === raised7) chosen = chosenSharp;
+		if (pc === raised4 || pc === raised6) chosen = chosenSharp;
+		if (pc === lowered2) chosen = chosenFlat;
 
-		// Extreme key-signature edge cases preserved
+		// Extreme edge cases preserved
 		if (sf <= -6 && pc === 11) { chosen = 'Cb'; outOctave = outOctave + 1; }
 		else if (sf <= -6 && pc === 4) { chosen = 'Fb'; }
 		else if (sf >= 6 && pc === 5) { chosen = 'E#'; }
 		else if (sf >= 6 && pc === 0) { chosen = 'B#'; outOctave = outOctave - 1; }
-		else if (sf === 3 && mi === 1 && pc === 5) { chosen = 'E#' }
+		else if (sf === 3 && mi === 1 && pc === 5) { chosen = 'E#'; }
 	}
 
 	// Additional general-edge adjustments (matching legacy behaviour)
@@ -1176,18 +1160,28 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	else if (sf >= 6 && pc === 5) { chosen = 'E#'; }
 	else if (sf >= 6 && pc === 0) { chosen = 'B#'; outOctave = outOctave - 1; }
 
-	// Determine spelled accidental (if any) but DO NOT embed it into returned key string.
+	// Robust accidental detection:
 	let spelledAcc = null;
-	const accMatch = chosen.match(/^([A-G])(#{0,1}|b{0,1})/i);
-	const letterPart = accMatch ? accMatch[1].toUpperCase() : 'C';
-	const accChar = accMatch && accMatch[2] ? accMatch[2] : '';
-	if (accChar === '#') spelledAcc = '#';
-	else if (accChar === 'b') spelledAcc = 'b';
+	if (typeof chosen === 'string') {
+		if (chosen.indexOf('#') !== -1) spelledAcc = '#';
+		else if (chosen.indexOf('b') !== -1) spelledAcc = 'b';
+	}
 
-	// Return key WITHOUT accidental (letter + octave). Accidental returned separately.
+	// Fallback: if chosen has no explicit accidental, prefer flat/sharp based on key-signature preference
+	if (!spelledAcc) {
+		// If key signature strongly suggests flats, and flatNames has 'b' for this pc, prefer 'b'
+		if (sf < 0 && flatNames[pc].indexOf('b') !== -1) spelledAcc = 'b';
+		// Else if key signature non-negative and sharpNames has '#', prefer '#'
+		else if (sf >= 0 && sharpNames[pc].indexOf('#') !== -1) spelledAcc = '#';
+		// else leave null (natural)
+	}
+
+	// Ensure we return letter (without accidental) + octave as key string for createNote
+	const letterMatch = (typeof chosen === 'string') ? chosen.match(/^([A-G])/i) : null;
+	const letterPart = letterMatch ? letterMatch[1].toUpperCase() : 'C';
 	const key = `${letterPart}/${outOctave}`;
 
-	console.debug(`midiNoteToVexFlowWithKey -> key=${key}, spelledAcc=${spelledAcc}, clef=${clef}`);
+	console.debug(`midiNoteToVexFlowWithKey -> chosen=${chosen}, key=${key}, spelledAcc=${spelledAcc}, clef=${clef}`);
 	return { key, accidental: spelledAcc };
 }
 function createNote(noteKey, duration, clef = 'treble') {
@@ -1839,70 +1833,77 @@ function decideClefForMeasure(measure) {
 		return "treble";
 	}
 
-	let hasLow = false;   // any note < 55
-	let hasHigh = false;  // any note > 65
+	try {
+		const firstWithNotes = (Array.isArray(measures) && measures.length) ? measures.find(m => hasNoteOn(m)) : null;
 
-	for (const ev of measure) {
-		if (ev && ev.type === 0x9 && Array.isArray(ev.data)) {
-			const pitch = ev.data[0];
-			if (typeof pitch === 'number') {
-				if (pitch < 55) hasLow = true;
-				if (pitch > 65) hasHigh = true;
-				// Early exit if both found
-				if (hasHigh) break;
+		let hasLow = false;   // any note < 55
+		let hasHigh = false;  // any note > 65
+
+		for (const ev of firstWithNotes) {
+			if (ev && ev.type === 0x9 && Array.isArray(ev.data)) {
+				const pitch = ev.data[0];
+				if (typeof pitch === 'number') {
+					if (pitch < 55) hasLow = true;
+					if (pitch > 65) hasHigh = true;
+					// Early exit if both found
+					if (hasHigh) break;
+				}
 			}
 		}
-	}
 
-	if (hasHigh) {
-		console.log("Choosing treble clef (found note > 65)");
+		if (hasHigh) {
+			console.log("Choosing treble clef (found note > 65)");
+			return "treble";
+		}
+		if (hasLow) {
+			console.log("Choosing bass clef (found note < 55)");
+			return "bass";
+		}
+		console.log("Choosing treble clef (default)");
 		return "treble";
 	}
-	if (hasLow) {
-		console.log("Choosing bass clef (found note < 55)");
-		return "bass";
+	catch (e) {
+		console.warn("MR: Failed to determine global clef, fallback to treble", e);
+		return "treble";
+	}
+}
+
+	function extractEventsFromArray(uint8) {
+		const midiData = MidiParser.Uint8(uint8);
+		const ticksPerBeat = Array.isArray(midiData.timeDivision) ? 480 : midiData.timeDivision;
+		let allEvents = SetEventsAbsoluteTime(midiData);
+		ensureEndEvent(allEvents);
+		const isMidi0 = midiData && (midiData.format === 0 || midiData.format === '0');
+		return { allEvents, ticksPerBeat, isMidi0 };
 	}
 
-	console.log("Choosing treble clef (default)");
-	return "treble";
-}
-
-function extractEventsFromArray(uint8) {
-	const midiData = MidiParser.Uint8(uint8);
-	const ticksPerBeat = Array.isArray(midiData.timeDivision) ? 480 : midiData.timeDivision;
-	let allEvents = SetEventsAbsoluteTime(midiData);
-	ensureEndEvent(allEvents);
-	const isMidi0 = midiData && (midiData.format === 0 || midiData.format === '0');
-	return { allEvents, ticksPerBeat, isMidi0 };
-}
-
-/**
- * handleNoNotesToRender
- * ---------------------
- * Extracted helper to centralize behavior when a selected segment contains no NoteOn events.
- *
- * @param {HTMLElement|null} commentsDiv - element to write comments into (may be null)
- * @param {string} ELEMENT_FOR_RENDERING - id of element to render into when commentsDiv absent
- * @param {Array} measures - full measures array
- * @param {Array} measuresWindow - the window/slice of measures considered for render
- * @param {number} maxBarsToRender - original requested max bars to render
- * @param {number} startIdx - computed start index for rendering
- * @returns {Object} summary object compatible with renderMidiFileToNotation's return
- */
-function handleNoNotesToRender(commentsDiv, ELEMENT_FOR_RENDERING, measures, measuresWindow, maxBarsToRender, startIdx) {
-	const msg = 'No notes to render: selected segment contains no NoteOn events.';
-	console.warn(`renderMidiFileToNotation: ${msg} measures.length=${measures.length} measuresWindow.length=${measuresWindow.length}`);
-	if (commentsDiv) {
-		commentsDiv.innerHTML = msg;
-	} else {
-		const target = document.getElementById(ELEMENT_FOR_RENDERING);
-		if (target) target.innerHTML = `<div class="small text-muted">${msg}</div>`;
+	/**
+	 * handleNoNotesToRender
+	 * ---------------------
+	 * Extracted helper to centralize behavior when a selected segment contains no NoteOn events.
+	 *
+	 * @param {HTMLElement|null} commentsDiv - element to write comments into (may be null)
+	 * @param {string} ELEMENT_FOR_RENDERING - id of element to render into when commentsDiv absent
+	 * @param {Array} measures - full measures array
+	 * @param {Array} measuresWindow - the window/slice of measures considered for render
+	 * @param {number} maxBarsToRender - original requested max bars to render
+	 * @param {number} startIdx - computed start index for rendering
+	 * @returns {Object} summary object compatible with renderMidiFileToNotation's return
+	 */
+	function handleNoNotesToRender(commentsDiv, ELEMENT_FOR_RENDERING, measures, measuresWindow, maxBarsToRender, startIdx) {
+		const msg = 'No notes to render: selected segment contains no NoteOn events.';
+		console.warn(`renderMidiFileToNotation: ${msg} measures.length=${measures.length} measuresWindow.length=${measuresWindow.length}`);
+		if (commentsDiv) {
+			commentsDiv.innerHTML = msg;
+		} else {
+			const target = document.getElementById(ELEMENT_FOR_RENDERING);
+			if (target) target.innerHTML = `<div class="small text-muted">${msg}</div>`;
+		}
+		return {
+			totalMeasures: measures.length,
+			renderedMeasures: 0,
+			limited: false,
+			maxBarsToRender,
+			startAtMeasureIndex: startIdx
+		};
 	}
-	return {
-		totalMeasures: measures.length,
-		renderedMeasures: 0,
-		limited: false,
-		maxBarsToRender,
-		startAtMeasureIndex: startIdx
-	};
-}
