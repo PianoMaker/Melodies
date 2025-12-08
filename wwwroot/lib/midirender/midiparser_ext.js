@@ -53,8 +53,12 @@ if (typeof window !== 'undefined') window.setEnharmonicPreference = setEnharmoni
 
 function updateKeySignatureFromEvents(events) {
 	console.debug("FOO: [KS] midiparser_ext.js - updateKeySignatureFromEvents");
-	if (!Array.isArray(events)) return null;
+	if (!Array.isArray(events)) {
+		console.warn('[KS] no events for update KS detected')
+		return null;
+	}
 	let ks = null;
+	console.debug("[KS] midiparser_ext.js starts");
 	for (let i = 0; i < events.length; i++) {
 		let ev = events[i];
 		// Нормалізуємо meta події для стабільного поля data
@@ -98,6 +102,9 @@ function updateKeySignatureFromEvents(events) {
 		currentKeyMode = ks.mi; // <-- ADDED: remember mode (major/minor)
 		console.log(`[KS]Updated key signature: ${currentKeySignature}, mode: ${currentKeyMode}`); // <-- ADDED
 		return { sf: ks.sf, mi: ks.mi };
+	}
+	else {
+		console.log(`[KS] current key signature: ${currentKeySignature}, mode: ${currentKeyMode}`); // <-- ADDED
 	}
 	return null;
 }
