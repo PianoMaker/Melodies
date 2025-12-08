@@ -13,8 +13,6 @@ git restore --source=possible-production-config E:\Programming\Melodies\Pages\Ac
 git restore --source=possible-production-config E:\Programming\Melodies\wwwroot\css
 git restore --source=master E:\Programming\Melodies\wwwroot\js
 
-        string adminEmail = "admin@example.com";
-        string adminPassword = "Admin123!";
 
         Add-Migration EnNames_nullable -Context Melodies25Context
         Update-Database -Context Melodies25Context
