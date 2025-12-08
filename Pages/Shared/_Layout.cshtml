@@ -33,6 +33,8 @@
     <link rel="stylesheet" href="~/css/contextMenu.css" asp-append-version="true" />
 
     @await RenderSectionAsync("Styles", required: false)
+
+
 </head>
 <body class="@ViewData["BodyClass"]">
 
@@ -180,6 +182,8 @@
     <script src="~/lib/vexflow.js"></script> <!-- ноти -->
     <script src="~/lib/midifile/midifile.bundle.js"></script> <!-- MIDI -->
     <script src="~/js/mobileMenu.js" asp-append-version="true"></script>
+    <script src="~/lib/midirender/mr-calculate-rows-helper.js"></script>
+    <script src="~/lib/midirender/mr-key-signatures-helper.js"></script>
 
     <!-- Hamburger button (в хедері) -->
     <button id="mobileMenuToggle" class="btn btn-menu" aria-label="Toggle menu">

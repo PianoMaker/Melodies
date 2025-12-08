@@ -86,7 +86,7 @@ window.setupLiveNotationOnCreate = function ({
     // Залежності midirender
     const deps = [
         '/lib/midirender/midiparser_ext.js',
-        '/lib/midirender/makeBeams.js',
+        '/lib/midirender/mr-beams-helper.js',
         '/lib/midirender/rendererUtils.js',
         '/lib/midirender/midiRenderer.js',
         '/lib/midirender/patternRenderer.js'

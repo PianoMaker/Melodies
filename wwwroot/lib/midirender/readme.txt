@@ -18,7 +18,7 @@ How to use:
 <script src="~/lib/midirender/vexflow.js"></script>
 <script src="~/lib/midirender/midiparser.js"></script>
 <script src="~/lib/midirender/midiparser_ext.js"></script>
-<script src="~/lib/midirender/mr-calculate-rows.js"></script>
+<script src="~/lib/midirender/mr-calculate-rows-helper.js"></script>
 <script src="~/lib/midirender/midiRenderer.js"></script>
 
 2) Create a div element in your HTML file for rendering MIDI notation and comments:

@@ -121,7 +121,7 @@ async function renderMidiSegmentFromUrl(
 		let startAtMeasureIndex = getStartMeasuerIndex(measureMap, targetAbsTime);
 
 		// --- determine initial key signature active at targetAbsTime ---
-		let initialKeySig = getInitialKeySignatures(allEvents, targetAbsTime);
+		let initialKeySig = getInitialKeySignatures(allEvents, targetAbsTime, uint8);
 
 		// Render the segment		
 
@@ -774,23 +774,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 	});
 
 };
-// ----------------------
-// Допоміжні функції для обробки ключових знаків (key signatures)
-// ----------------------
-function getKeySignatureChanges(measure, currentKeySig) {
-	let ks = updateKeySignatureFromEvents(measure);
-	if (ks) { console.log(`ks: Tonality: ${ks.sf}, Mode: ${ks.mi}`); }
-	let keySignatureChanged = false;
-	if (ks) {
-		if (!currentKeySig || currentKeySig.sf !== ks.sf || currentKeySig.mi !== ks.mi) {
-			currentKeySig = ks;
-			keySignatureChanged = true;
-			console.log(`Key signature changed -> sf:${ks.sf} mi:${ks.mi}`);
-		}
-	}
-	const keySigName = currentKeySig ? mapKeySignatureName(currentKeySig.sf, currentKeySig.mi) : null;
-	return { keySignatureChanged, keySigName, currentKeySig };
-}
+
 
 // ----------------------
 // Допоміжні функції для рендеринга нотного стану з MIDI файлу
@@ -960,34 +944,6 @@ function CalculateTicksPerMeasure(currentNumerator, ticksPerBeat, currentDenomin
 	return currentNumerator * ticksPerBeat * 4 / currentDenominator;
 }
 
-// Мапінг sf/mi у рядок для VexFlow addKeySignature
-function mapKeySignatureName(sf, mi) {
-	// sf: -7..+7 (кількість бемолів (від'ємні) або дієзів (додатні)), mi: 0=major,1=minor
-	const majors = ['Cb', 'Gb', 'Db', 'Ab', 'Eb', 'Bb', 'F', 'C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#'];
-	const minors = ['Abm', 'Ebm', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm', 'Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m', 'A#m'];
-	const idx = sf + 7;
-	if (idx < 0 || idx >= majors.length) return null;
-	return mi === 0 ? majors[idx] : minors[idx];
-}
-
-// Побудова карти знаків при ключі для sf (-7..+7)
-function buildKeySignatureMap(sf) {
-	console.debug("FOO: midiRenderer.js - buildKeySignatureMap");
-	const sharpOrder = ['f', 'c', 'g', 'd', 'a', 'e', 'b'];
-	const flatOrder = ['b', 'e', 'a', 'd', 'g', 'c', 'f'];
-	const map = {};
-	if (sf > 0) {
-		for (let i = 0; i < sf && i < sharpOrder.length; i++) {
-			map[sharpOrder[i]] = '#';
-		}
-	} else if (sf < 0) {
-		const count = Math.min(-sf, flatOrder.length);
-		for (let i = 0; i < count; i++) {
-			map[flatOrder[i]] = 'b';
-		}
-	}
-	return map;
-}
 
 // Повертає accidental для відображення з урахуванням key signature
 // Якщо знак збігається з ключем — повертає null (не показувати)
@@ -1068,36 +1024,6 @@ function decideAccidentalForNote(key, spelledAccidental, currentKeySig, measureA
 	return toPrint; // '#', 'b', 'n' or null
 }
 
-// ----------------------
-// УТИЛІТИ для визначення тоніки і PC з назви ключа (для мінорної енгармонізації)
-// ----------------------
-function ksNoteNameToPc(name) {
-	const map = {
-		'C': 0, 'B#': 0,
-		'C#': 1, 'Db': 1,
-		'D': 2,
-		'D#': 3, 'Eb': 3,
-		'E': 4, 'Fb': 4,
-		'E#': 5, 'F': 5,
-		'F#': 6, 'Gb': 6,
-		'G': 7,
-		'G#': 8, 'Ab': 8,
-		'A': 9,
-		'A#': 10, 'Bb': 10,
-		'B': 11, 'Cb': 11
-	};
-	return map[name] ?? null;
-}
-
-function getMinorTonicPc(currentKeySig) {
-	if (!currentKeySig) return null;
-	const name = mapKeySignatureName(currentKeySig.sf, currentKeySig.mi); // напр. 'Am','Ebm'
-	if (!name) return null;
-	const root = name.replace(/m$/, ''); // прибрати 'm' у мінорі
-	const tonicPc = ksNoteNameToPc(root);
-	console.debug(`Tonic pitch-class for ${root}: ${tonicPc}`);
-	return tonicPc;
-}
 
 //  ----------------------
 // ФУНКЦІЯ ПЕРЕТВОРЕННЯ MIDI НОТИ У ФОРМАТ VEXFLOW
@@ -1444,7 +1370,7 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
 
 // ----------------------
 // ФУНКЦІЯ ДЛЯ ОБРОБКИ І ОБЧИСЛЕННЯ НОТНИХ РЕБЕР (BEAMS) З ОБРОБКОЮ ПОМИЛОК
-// використовує makeBeams.js 
+// використовує mr-beams-helper.js 
 // ----------------------
 function calculateBeams(validNotes, ticksPerBeat, index, currentNumerator, currentDenominator) {
 	let beams = [];
@@ -1765,24 +1691,6 @@ function processNoteElement(durationCode, key, accidental, clef = 'treble') {
 	return note;
 }
 
-function getInitialKeySignatures(allEvents, targetAbsTime) {
-	let initialKeySig = null;
-	try {
-		// get all key signature events and pick the last one with absTime <= targetAbsTime
-		if (typeof getKeySignature === 'function') {
-			const keySigs = getKeySignature(allEvents); // returns array with absTime, sf, mode/name
-			if (Array.isArray(keySigs) && keySigs.length) {
-				const candidates = keySigs.filter(k => (k.absTime || 0) <= targetAbsTime);
-				const last = candidates.length ? candidates[candidates.length - 1] : null;
-				if (last) initialKeySig = { sf: last.sf, mi: last.mode ?? 0 };
-			}
-		}
-	} catch (ksErr) {
-		console.warn('Could not determine initialKeySig for segment:', ksErr);
-		initialKeySig = null;
-	}
-	return initialKeySig;
-}
 
 function getStartMeasuerIndex(measureMap, targetAbsTime) {
 	const idxKeys = Object.keys(measureMap).map(k => parseInt(k, 10)).sort((a, b) => a - b);

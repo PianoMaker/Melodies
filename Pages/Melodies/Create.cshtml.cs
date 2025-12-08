@@ -120,7 +120,7 @@ namespace Melodies25.Pages.Melodies
 
         // СТВОРЕННЯ МЕЛОДІЇ ВРУЧНУ //
         //зберігає в тимчасовий midi та mp3
-        //викликається з CreateMelody.js
+        //викликається з melody-create.js
         //
         public async Task<IActionResult> OnPostMelody()
         {
@@ -715,7 +715,7 @@ namespace Melodies25.Pages.Melodies
         }
 
 
-        // для createMelody.js
+        // для melody-create.js
         public async Task<JsonResult> OnGetCheckItemExistsAsync(string title, int authorId)
         {
             bool exists = await _context.Melody
