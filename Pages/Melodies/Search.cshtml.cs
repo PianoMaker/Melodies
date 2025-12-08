@@ -101,6 +101,9 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public bool IfRhythm { get; set; }
 
+        [BindProperty]
+        public bool FromFindSimilar { get; set; }
+
         private static readonly char[] separator = new char[] { ' ', '_' };
 
         public void OnGetAsync(string search, int? numerator, int? denominator)
@@ -226,7 +229,7 @@ namespace Melodies25.Pages.Melodies
         {
             NoteSearch = false;
 
-            MessageL(COLORS.yellow, "SEARCH - OnPostSearchAsync method");
+            MessageL(COLORS.yellow, "SEARCH - OnPostSearchAsync method");//+" num="+TimeSignatureNumerator+", den="+TimeSignatureDenominator);
 
 
             // Очищення попередніх результатів

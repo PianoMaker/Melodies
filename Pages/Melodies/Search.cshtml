@@ -102,8 +102,22 @@
         <!--ТАБЛО НОТ ВНИЗУ -->
         <div id="innerNotesContainer">
             <!-- LIVE notation (stays on top, updated as user types/clicks)-->
-            <div id="liveNotation" class="mb-3"></div>
+            @if (Model.FromFindSimilar == false)
+            {
+
+                <div id="liveNotation" class="mb-3"></div>
+            }
+
             <div id="patternComments" style="display:none"></div>
+
+            @if (Model.FromFindSimilar)
+            {
+                <script>
+                    // Signal client-side live-notation initializer to skip initial render.
+                    window.__suppressInitialLiveNotation = true;
+                    console.debug("Search: suppress initial liveNotation because request came from find-similar");
+                </script>
+            }
 
             @if (@Model.NewPattern is not null)
             {
@@ -195,7 +209,7 @@
                         <button id="previoussong" type="button" class="btn btn-outline-secondary song-nav prev" aria-label="previous">
                             <i class="fas fa-chevron-left" aria-hidden="true"></i>
                         </button>
-                        <p class="mb-0">Пісня: <span class="matchedsongname">@title</span></p>
+                        <p class="mb-0">Мелодія: <span class="matchedsongname">@title</span></p>
                         <button id="nextsong" type="button" class="btn btn-outline-secondary song-nav next" aria-label="next">
                             <i class="fas fa-chevron-right" aria-hidden="true"></i>
                         </button>

@@ -1001,7 +1001,7 @@ if (typeof window !== 'undefined') window.getNumberOfNotes = getNumberOfNotes;
  * Returns { midiNote, isNoteOn, velocity }
  */
 function detectNoteOn(event) {
-	console.debug("FOO: midiparser_ext.js - detectNoteOn");
+
 	let isNoteOn = false, midiNote = null, velocity = null;
 	if (!event) return { midiNote, isNoteOn, velocity };
 

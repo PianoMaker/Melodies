@@ -420,6 +420,7 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 
 	// ВИКОРИСТАТИ ФАКТИЧНУ ШИРИНУ КОНТЕЙНА
 	const MIN_SCORE_WIDTH = Math.max(320, CLEFZONE + BARWIDTH + Xmargin * 2);
+	const SCALINGFACTOR = 0.5; // залишено для сумісності, але не використовується
 
 	const target = document.getElementById(ELEMENT_FOR_RENDERING);
 	const containerWidth = (target && target.clientWidth) ? target.clientWidth : 0;
@@ -433,7 +434,7 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 	const rowsHeight = calculateRequiredHeight(measuresToRender, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
 	const RESPONSIVE_THRESHOLD = 800;
-	const scaleFactor = (containerWidth > 0 && containerWidth <= RESPONSIVE_THRESHOLD) ? 0.6 : 1;
+	const scaleFactor = (containerWidth > 0 && containerWidth <= RESPONSIVE_THRESHOLD) ? SCALINGFACTOR : 1;
 
 	// If we scale the context by scaleFactor, we must allocate a larger renderer
 	const rendererWidth = Math.max(Math.round(effectiveWidth / scaleFactor), 200);
