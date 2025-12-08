@@ -419,7 +419,7 @@ table, th, td {
 
 
 /* ГОЛОВНА СТОРІНКА */
-/* частина зі слоном */
+/* частина з малюнком */
 .mainpage {
     height: 100%;
     background: linear-gradient(217deg, rgba(255,100,100,.8), rgba(255,100,0,0) 70.71%), linear-gradient(127deg, rgba(255,255,100,.8), rgba(255,255,0,0) 70.71%), linear-gradient(336deg, rgba(100,100,255,.8), rgba(255,255,255,0) 70.71%);
@@ -606,7 +606,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
     100% {
         transform: translateX(var(--randomHorizontalEnd, 0)) translateY(var(--randomVerticalEnd, 0)) scale(0.4) rotate(var(--randomRotate, 0deg));
-        ;
+        
     }
 }
 
