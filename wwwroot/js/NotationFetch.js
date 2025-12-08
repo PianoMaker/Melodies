@@ -131,14 +131,7 @@ function getTimeSignatures(midiFile) {
 }
 
 
-function mapKeyToHuman(sf, mi) {
-    // Align with server-side MapKsToName in C#
-    const majors = ["Ces","Ges","Des","As","Es","B","F","C","G","D","A","E","H","Fis","Cis"];
-    const minors = ["as","es","b","f","c","g","d","a","e","h","fis","cis","gis","dis","ais"];
-    const idx = sf + 7;
-    if (idx < 0 || idx >= majors.length) return `sf=${sf}, mi=${mi}`;
-    return mi === 0 ? `${majors[idx]}-dur` : `${minors[idx]}-moll`;
-}
+
 
 // Читання нотних подій
 const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];

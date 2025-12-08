@@ -1,4 +1,4 @@
-// rendererUtils.js
+// mr-durations-helper 
 
 // Safe dot counter that checks both duration string and VexFlow modifiers
 function safeDotCount(note, durationStr) {

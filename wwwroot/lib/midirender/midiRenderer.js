@@ -53,7 +53,11 @@ async function renderMidiFromUrl(
 		const blob = await resp.blob();
 		const filename = midiUrl.split('/').pop() || 'remote.mid';
 		const file = new File([blob], filename, { type: blob.type || 'audio/midi' });
+
 		drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin, maxBarsToRender);
+
+
+
 	} catch (err) {
 		console.error('renderMidiFromUrl error:', err);
 		const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
@@ -62,6 +66,85 @@ async function renderMidiFromUrl(
 		}
 	}
 }
+
+
+
+
+/**
+ * drawScore
+ * ----------
+ * Renders a musical score from a MIDI file and displays it in the specified HTML element.
+ *
+ * @param {File} file - The MIDI file to render.
+ * @param {string} ELEMENT_FOR_RENDERING - The ID of the HTML element where the score SVG will be rendered.
+ * @param {string} ELEMENT_FOR_COMMENTS - The ID of the HTML element where status or error messages will be displayed.
+ * @param {number} [GENERALWIDTH=1200] - The width of the rendered score in pixels.
+ * @param {number} [HEIGHT=200] - The height of each stave row in pixels.
+ * @param {number} [TOPPADDING=20] - The top padding for the score in pixels.
+ * @param {number} [BARWIDTH=250] - The width of each measure/bar in pixels.
+ * @param {number} [CLEFZONE=60] - The width reserved for the clef and time signature zone in pixels.
+ * @param {number} [Xmargin=10] - The left margin for the score in pixels.
+ * @param {number} [maxBarsToRender=1000] - Maximum number of measures to render (1000 means full rendering).
+ *
+ * Механізм - викликає renderMidiFileToNotation, додає повідомлення про успішний або провальний результат.
+ */
+function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, maxBarsToRender = 1000) {
+	console.debug("FOO: midiRenderer.js - drawScore");
+	const notationDiv = document.getElementById(ELEMENT_FOR_RENDERING);
+	const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
+
+	if (file) {
+		console.debug("drawScore: File selected:", file);
+		const reader = new FileReader();
+		notationDiv.innerHTML = "";
+		commentsDiv.innerHTML = "";
+		reader.onload = function (e) {
+			const uint8 = new Uint8Array(e.target.result);						
+			var { allEvents, ticksPerBeat, isMidi0 } = extractEventsFromArray(uint8);
+			let initialKeySig = getKeySignatures(allEvents, uint8);
+			try {
+				renderMidiFileToNotation(
+					isMidi0,
+					allEvents,
+					ticksPerBeat,
+					ELEMENT_FOR_RENDERING,
+					GENERALWIDTH,
+					HEIGHT,
+					TOPPADDING,
+					BARWIDTH,
+					CLEFZONE,
+					Xmargin,
+					commentsDiv,
+					maxBarsToRender,
+					0, // star from measure idx 0
+					initialKeySig
+				);
+
+				const svg = notationDiv.querySelector("svg");
+				if (svg) {
+					sessionStorage.setItem("notationSVG", svg.outerHTML);
+				}
+
+				// Message depends on maxBarsToRender value
+				const msg = (maxBarsToRender === 1000)
+					? "нотне зображення виведено повністю"
+					: `нотне зображення виведено з обмеженням у ${maxBarsToRender} тактів`;
+				commentsDiv.innerHTML += msg;
+				sessionStorage.setItem("comment", commentsDiv.innerHTML);
+			}
+			catch (error) {
+				console.error("drawScore: Error rendering MIDI file:", error);
+				commentsDiv.innerHTML = `Error rendering MIDI file ${error}`;
+				sessionStorage.setItem("comment", commentsDiv.innerHTML);
+			}
+		};
+		reader.readAsArrayBuffer(file);
+	}
+}
+
+
+
+
 
 /**
  * renderMidiSegmentFromUrl
@@ -140,7 +223,7 @@ async function renderMidiSegmentFromUrl(
 			commentsDiv,
 			barsToRender,
 			startAtMeasureIndex,
-			initialKeySig // <-- pass initial key signature (may be null)
+			initialKeySig 
 		);
 	} catch (err) {
 		console.error('renderMidiSegmentFromUrl error:', err);
@@ -149,80 +232,6 @@ async function renderMidiSegmentFromUrl(
 	}
 }
 
-
-
-
-/**
- * drawScore
- * ----------
- * Renders a musical score from a MIDI file and displays it in the specified HTML element.
- *
- * @param {File} file - The MIDI file to render.
- * @param {string} ELEMENT_FOR_RENDERING - The ID of the HTML element where the score SVG will be rendered.
- * @param {string} ELEMENT_FOR_COMMENTS - The ID of the HTML element where status or error messages will be displayed.
- * @param {number} [GENERALWIDTH=1200] - The width of the rendered score in pixels.
- * @param {number} [HEIGHT=200] - The height of each stave row in pixels.
- * @param {number} [TOPPADDING=20] - The top padding for the score in pixels.
- * @param {number} [BARWIDTH=250] - The width of each measure/bar in pixels.
- * @param {number} [CLEFZONE=60] - The width reserved for the clef and time signature zone in pixels.
- * @param {number} [Xmargin=10] - The left margin for the score in pixels.
- * @param {number} [maxBarsToRender=1000] - Maximum number of measures to render (1000 means full rendering).
- *
- * Механізм - викликає renderMidiFileToNotation, додає повідомлення про успішний або провальний результат.
- */
-
-
-function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, maxBarsToRender = 1000) {
-	console.debug("FOO: midiRenderer.js - drawScore");
-	const notationDiv = document.getElementById(ELEMENT_FOR_RENDERING);
-	const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
-
-	if (file) {
-		console.debug("drawScore: File selected:", file);
-		const reader = new FileReader();
-		notationDiv.innerHTML = "";
-		commentsDiv.innerHTML = "";
-		reader.onload = function (e) {
-			const uint8 = new Uint8Array(e.target.result);
-			var { allEvents, ticksPerBeat, isMidi0 } = extractEventsFromArray(uint8);
-			try {
-				renderMidiFileToNotation(
-					isMidi0,
-					allEvents,
-					ticksPerBeat,
-					ELEMENT_FOR_RENDERING,
-					GENERALWIDTH,
-					HEIGHT,
-					TOPPADDING,
-					BARWIDTH,
-					CLEFZONE,
-					Xmargin,
-					commentsDiv,
-					maxBarsToRender,
-					0 // startAtMeasureIndex (default from beginning)
-				);
-
-				const svg = notationDiv.querySelector("svg");
-				if (svg) {
-					sessionStorage.setItem("notationSVG", svg.outerHTML);
-				}
-
-				// Message depends on maxBarsToRender value
-				const msg = (maxBarsToRender === 1000)
-					? "нотне зображення виведено повністю"
-					: `нотне зображення виведено з обмеженням у ${maxBarsToRender} тактів`;
-				commentsDiv.innerHTML += msg;
-				sessionStorage.setItem("comment", commentsDiv.innerHTML);
-			}
-			catch (error) {
-				console.error("drawScore: Error rendering MIDI file:", error);
-				commentsDiv.innerHTML = `Error rendering MIDI file ${error}`;
-				sessionStorage.setItem("comment", commentsDiv.innerHTML);
-			}
-		};
-		reader.readAsArrayBuffer(file);
-	}
-}
 
 
 /**
@@ -420,7 +429,7 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 		containerWidth || GENERALWIDTH || 1200
 	);
 
-	// rendererUtils.js
+	// mr-durations-helper.js
 	const rowsHeight = calculateRequiredHeight(measuresToRender, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
 	const RESPONSIVE_THRESHOLD = 800;
@@ -1110,71 +1119,6 @@ function midiNoteToVexFlowWithKey(midiNote, currentKeySig, clef = 'treble') {
 	console.debug(`midiNoteToVexFlowWithKey -> chosen=${chosen}, key=${key}, spelledAcc=${spelledAcc}, clef=${clef}`);
 	return { key, accidental: spelledAcc };
 }
-function createNote(noteKey, duration, clef = 'treble') {
-	console.debug("FOO: midiparser_ext.js - createNote", { noteKey, duration, clef });
-
-	if (typeof noteKey !== 'string') {
-		console.error("createNote: invalid noteKey type", noteKey);
-		return null;
-	}
-
-	// Normalize input: accept "c/4", "c4", "c-1", "C#10", "gb3"
-	let nk = noteKey.trim();
-	if (nk.includes('/')) nk = nk.replace('/', '');
-
-	// Match: letter, optional accidental, optional signed/multi-digit octave
-	// If octave missing, fallback to 4
-	const noteMatch = nk.match(/^([a-gA-G])(b|#)?(-?\d+)?$/);
-	if (!noteMatch) {
-		console.error(`Invalid note key: ${noteKey} (normalized -> ${nk}). Expected e.g. c4, d#5, gb3, a-1`);
-		return null;
-	}
-
-	const [, letter, accidental, octaveRaw] = noteMatch;
-	let octaveNum = typeof octaveRaw !== 'undefined' ? parseInt(octaveRaw, 10) : 4;
-	if (Number.isNaN(octaveNum)) octaveNum = 4;
-
-	// NOTE: removed clef-based octave changes here.
-	// Clef-aware octave shifting is performed in midiNoteToVexFlowWithKey (so keys passed to createNote already reflect clef).
-
-	const key = `${letter.toLowerCase()}${accidental || ''}/${octaveNum}`;
-
-	const isTriplet = typeof duration === 'string' && duration.endsWith('t');
-	const isDotted = typeof duration === 'string' && duration.endsWith('.');
-	const baseDuration = (isTriplet || isDotted) ? duration.slice(0, -1) : (duration || 'q');
-
-	try {
-		const staveNote = new Vex.Flow.StaveNote({
-			keys: [key],
-			duration: baseDuration,
-			clef: clef
-		});
-
-		if (accidental) {
-			staveNote.addAccidental(0, new Vex.Flow.Accidental(accidental));
-		}
-
-		if (isDotted && !isTriplet) {
-			staveNote.addDot(0);
-		}
-
-		if (typeof staveNote.autoStem === 'function') {
-			try { staveNote.autoStem(); } catch (e) { /* ignore */ }
-		}
-
-		if (isTriplet) {
-			staveNote.__isTriplet = true;
-			staveNote.__tripletBase = baseDuration;
-			staveNote.__durationCode = duration;
-		}
-
-		console.log(`createNote: created key='${key}' duration='${baseDuration}' clef='${clef}'`);
-		return staveNote;
-	} catch (error) {
-		console.error(`Failed to create note with key: ${noteKey} (normalized -> ${key}) and duration: ${duration}`, error);
-		return null;
-	}
-};// --- updated setStave to accept clef parameter ---
 function setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, currentDenominator, isFirstMeasureInRow = false, timeSignatureChanged = false, keySignatureChanged = false, keySigName = null, clef = "treble") {
 	console.debug("FOO: midiRenderer.js - setStave");
 	const stave = new Vex.Flow.Stave(Xposition, Yposition, STAVE_WIDTH);

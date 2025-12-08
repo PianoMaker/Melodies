@@ -3,6 +3,7 @@
 //----------------------
 
 function getInitialKeySignatures(allEvents, targetAbsTime, rawData) {
+	console.debug("FOO: [KS] mr-key-signatures-helper.js - getInitialKeySignatures");
 	let initialKeySig = null;
 	try {
 		// get all key signature events and pick the last one with absTime <= targetAbsTime
@@ -15,7 +16,7 @@ function getInitialKeySignatures(allEvents, targetAbsTime, rawData) {
 			}
 		}
 	} catch (ksErr) {
-		console.warn('Could not determine initialKeySig for segment:', ksErr);
+		console.warn('[KS] Could not determine initialKeySig for segment:', ksErr);
 		initialKeySig = null;
 	}
 	return initialKeySig;
@@ -27,7 +28,7 @@ function getInitialKeySignatures(allEvents, targetAbsTime, rawData) {
 // ----------------------
 function getKeySignatureChanges(measure, currentKeySig) {
 	let ks = updateKeySignatureFromEvents(measure);
-	if (ks) { console.log(`ks: Tonality: ${ks.sf}, Mode: ${ks.mi}`); }
+	if (ks) { console.log(`[KS]: Tonality: ${ks.sf}, Mode: ${ks.mi}`); }
 	let keySignatureChanged = false;
 	if (ks) {
 		if (!currentKeySig || currentKeySig.sf !== ks.sf || currentKeySig.mi !== ks.mi) {
@@ -67,7 +68,7 @@ function getMinorTonicPc(currentKeySig) {
 	if (!name) return null;
 	const root = name.replace(/m$/, ''); // прибрати 'm' у мінорі
 	const tonicPc = ksNoteNameToPc(root);
-	console.debug(`Tonic pitch-class for ${root}: ${tonicPc}`);
+	console.debug(`[KS] Tonic pitch-class for ${root}: ${tonicPc}`);
 	return tonicPc;
 }
 
@@ -202,7 +203,7 @@ function isKeySignatureEvent(ev) {
 
 function getKeySignatures(midiFile, rawBytes) {
 	const keys = [];
-
+	console.debug("FOO: mr-key-signatures.js - getKeySignatures");
 	const pushKs = (sf, mi) => {
 		if (sf == null || mi == null) return;
 		// normalize signed [-7..7]
@@ -212,20 +213,77 @@ function getKeySignatures(midiFile, rawBytes) {
 		keys.push({ sf: clamped, mi: mode, human: mapKeyToHuman(clamped, mode) });
 	};
 
-	// 1) Primary: через MIDIFile події (підтримка різних форм)
-	midiFile.tracks.forEach((_, index) => {
-		const events = midiFile.getTrackEvents(index);
-		events.forEach(ev => {
-			const isKs = (ev.subtype === 0x59) || (ev.type === 0xFF && ev.metaType === 0x59);
-			if (!isKs) return;
-
-			if (ev.data && ev.data.length >= 2) {
-				pushKs(ev.data[0], ev.data[1]); // data[0]=sf, data[1]=mi
-			} else if (typeof ev.key !== 'undefined' && typeof ev.scale !== 'undefined') {
-				pushKs(ev.key, ev.scale); // деякі збірки MIDIFile
+	// Defensive: determine track count / iterate tracks in a robust way
+	let trackCount = 0;
+	try {
+		if (!midiFile) {
+			console.warn('getKeySignatures: midiFile is falsy');
+			trackCount = 0;
+		}
+		// Common case: MIDIFile instance with .tracks array
+		else if (Array.isArray(midiFile.tracks)) {
+			trackCount = midiFile.tracks.length;
+		}
+		// Some parsers expose .track (array) instead
+		else if (Array.isArray(midiFile.track)) {
+			trackCount = midiFile.track.length;
+		}
+		// Some MIDIFile implementations expose header.getTracks()
+		else if (midiFile.header && typeof midiFile.header.getTracks === 'function') {
+			trackCount = midiFile.header.getTracks();
+		}
+		// If getTrackEvents exists but no explicit count, probe until undefined/exception (limited)
+		else if (typeof midiFile.getTrackEvents === 'function') {
+			for (let i = 0; i < 256; i++) {
+				try {
+					const evs = midiFile.getTrackEvents(i);
+					// Stop if parser signals out-of-range by returning null/undefined
+					if (evs == null) break;
+					// If it returns an array (even empty), count it as a track
+					trackCount++;
+				} catch (e) {
+					// parser threw for out-of-range index -> stop probing
+					break;
+				}
 			}
-		});
-	});
+		} else {
+			console.warn('getKeySignatures: unknown midiFile shape', midiFile);
+		}
+	} catch (tcErr) {
+		console.warn('getKeySignatures: failed to determine trackCount', tcErr);
+	}
+
+	// 1) Primary: iterate tracks via getTrackEvents when available
+	if (trackCount > 0 && typeof midiFile.getTrackEvents === 'function') {
+		for (let index = 0; index < trackCount; index++) {
+			let events;
+			try {
+				events = midiFile.getTrackEvents(index);
+			} catch (e) {
+				console.warn(`getKeySignatures: getTrackEvents(${index}) threw:`, e);
+				events = null;
+			}
+			// Normalize events to an array
+			if (!Array.isArray(events)) {
+				// Some parsers wrap under { event: [...] } or similar
+				if (events && Array.isArray(events.event)) events = events.event;
+				else events = [];
+			}
+			events.forEach(ev => {
+				const isKs = (ev && (ev.subtype === 0x59)) || (ev && ev.type === 0xFF && ev.metaType === 0x59);
+				if (!isKs) return;
+
+				if (ev.data && ev.data.length >= 2) {
+					pushKs(ev.data[0], ev.data[1]); // data[0]=sf, data[1]=mi
+				} else if (typeof ev.key !== 'undefined' && typeof ev.scale !== 'undefined') {
+					pushKs(ev.key, ev.scale); // some MIDIFile builds
+				}
+			});
+		}
+	} else {
+		// If no trackCount or getTrackEvents not available, try parsing rawBytes fallback directly below
+		console.debug('getKeySignatures: skipping primary track scan, falling back to raw-bytes scan');
+	}
 
 	// 2) Fallback: якщо нічого не знайдено — скануємо сирі байти на FF 59 02
 	if (keys.length === 0 && rawBytes && rawBytes.length > 5) {
@@ -252,6 +310,7 @@ function getKeySignatures(midiFile, rawBytes) {
 			prev = sig;
 		}
 	}
+	console.log(`[KS] Detected key signatures:`, result);
 	return result;
 }
 
@@ -269,7 +328,7 @@ function getKeySignatures(midiFile, rawBytes) {
 // ---------------------------------------------------------------------
 
 function updateKeySignatureFromEvents(events) {
-	console.debug("FOO: [KS] midiparser_ext.js - updateKeySignatureFromEvents");
+	console.debug("FOO: [KS] mr-key-signatures-helper.js - updateKeySignatureFromEvents");
 	if (!Array.isArray(events)) {
 		console.warn('[KS] no events for update KS detected')
 		return null;
@@ -356,4 +415,13 @@ function tonicPcFromSfMi(sf, mi) {
 	if (!nm) return null;
 	const root = mi === 1 ? nm.replace(/m$/, '') : nm;
 	return noteNameToPc(root);
+}
+
+function mapKeyToHuman(sf, mi) {
+	// Align with server-side MapKsToName in C#
+	const majors = ["Ces", "Ges", "Des", "As", "Es", "B", "F", "C", "G", "D", "A", "E", "H", "Fis", "Cis"];
+	const minors = ["as", "es", "b", "f", "c", "g", "d", "a", "e", "h", "fis", "cis", "gis", "dis", "ais"];
+	const idx = sf + 7;
+	if (idx < 0 || idx >= majors.length) return `sf=${sf}, mi=${mi}`;
+	return mi === 0 ? `${majors[idx]}-dur` : `${minors[idx]}-moll`;
 }

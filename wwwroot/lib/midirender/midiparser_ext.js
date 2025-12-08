@@ -1,5 +1,5 @@
 // Глобальне визначення durationMapping
-const durationMapping = {
+var durationMapping = {
 	1: 'w',
 	w: 'w',
 	2: 'h',
@@ -12,7 +12,7 @@ const durationMapping = {
 	64: '64'
 };
 
-const reverseDurationMapping = {
+var reverseDurationMapping = {
 	w: 1,
 	"1": 1,
 	h: 2,
@@ -292,11 +292,21 @@ function createRest(duration, clef = 'treble') {
 // duration: 'q', 'h.', '8t' і т.д.
 // повертає Vex.Flow.StaveNote або null
 // --------------------------------
+function createNote(noteKey, duration, clef = 'treble') {
+	console.debug("FOO: midiparser_ext.js - createNote", { noteKey, duration, clef });
 
-function createNote(noteKey, duration) {
-	console.debug("FOO: midiparser_ext.js - createNote");
-	//console.log(`Creating note with noteKey ${noteKey} duration: ${duration}`);
-	const noteMatch = noteKey.match(/^([a-gA-G])(b|#)?(\d)?$/);
+	if (typeof noteKey !== 'string') {
+		console.error("createNote: invalid noteKey type", noteKey);
+		return null;
+	}
+
+	// Normalize input: accept "c/4", "c4", "c-1", "C#10", "gb3"
+	let nk = noteKey.trim();
+	if (nk.includes('/')) nk = nk.replace('/', '');
+
+	// Match: letter, optional accidental, optional signed/multi-digit octave
+	// If octave missing, fallback to 4
+	const noteMatch = nk.match(/^([a-gA-G])(b|#)?(-?\d+)?$/);
 	if (!noteMatch) {
 		console.error(`Invalid note key: ${noteKey} (normalized -> ${nk}). Expected e.g. c4, d#5, gb3, a-1`);
 		return null;
@@ -306,10 +316,8 @@ function createNote(noteKey, duration) {
 	let octaveNum = typeof octaveRaw !== 'undefined' ? parseInt(octaveRaw, 10) : 4;
 	if (Number.isNaN(octaveNum)) octaveNum = 4;
 
-	// NOTE:
-	// Removed clef-based octave shifting here to avoid double/conflicting octave adjustments.
-	// Clef-aware octave logic should be handled consistently in one place (midiRenderer.js).
-	// (previous code added `octaveNum += 2` for 'bass' which caused notes to render on wrong lines)
+	// NOTE: removed clef-based octave changes here.
+	// Clef-aware octave shifting is performed in midiNoteToVexFlowWithKey (so keys passed to createNote already reflect clef).
 
 	const key = `${letter.toLowerCase()}${accidental || ''}/${octaveNum}`;
 
@@ -320,7 +328,8 @@ function createNote(noteKey, duration) {
 	try {
 		const staveNote = new Vex.Flow.StaveNote({
 			keys: [key],
-			duration: baseDuration
+			duration: baseDuration,
+			clef: clef
 		});
 
 		if (accidental) {
@@ -341,13 +350,14 @@ function createNote(noteKey, duration) {
 			staveNote.__durationCode = duration;
 		}
 
-		console.debug(`createNote: created key='${key}' duration='${baseDuration}' clef='${clef}'`);
+		console.log(`createNote: created key='${key}' duration='${baseDuration}' clef='${clef}'`);
 		return staveNote;
 	} catch (error) {
-		console.error(`Failed to create note with key: ${noteKey} (normalized ${key}) and duration: ${duration}`, error);
+		console.error(`Failed to create note with key: ${noteKey} (normalized -> ${key}) and duration: ${duration}`, error);
 		return null;
 	}
-};// // Аналіз нот із введеного рядку (ноти через коми)
+};// --- updated setStave to accept clef parameter ---
+
 function processNote(element) {
 	console.debug("FOO: midiparser_ext.js - processNote");
 	const parts = element.split('/');
@@ -399,14 +409,22 @@ function getTimeSignatureAndTicksPerMeasure(midiFile) {
  * @returns {boolean}
  */
 const isMidiFormat0 = (midiData) => {
+	let result = false;
+
 	if (!midiData) return false;
 	// explicit fields some parsers use
-	if (midiData.format === 0 || midiData.format === '0') return true;
-	if (midiData.fileFormat === 0 || midiData.fileFormat === '0') return true;
-	if (midiData.header && (midiData.header.format === 0 || midiData.header.format === '0')) return true;
+	if (midiData.format === 0 || midiData.format === '0') result = true;
+	if (midiData.fileFormat === 0 || midiData.fileFormat === '0') result = true;
+	if (midiData.header && (midiData.header.format === 0 || midiData.header.format === '0')) result = true;
 	// fallback heuristic: single track => likely format 0
-	if (Array.isArray(midiData.track) && midiData.track.length === 1) return true;
-	return false;
+	if (Array.isArray(midiData.track) && midiData.track.length === 1) result = true;
+
+	if (result) {
+		console.warn("MidiFormat0 detected - possible lost Key Signatures [KS]");
+		return true;
+	}
+
+	return result;
 };
 
 //---------------------------------------------------------------------
@@ -436,19 +454,26 @@ function buildMidiDataFromMIDIFile(input) {
             const e = {};
             e.deltaTime = ev.delta ?? ev.deltaTime ?? 0;
 
-            // Meta events
-            if (ev.type === 0xFF || ev.subtype !== undefined || ev.metaType !== undefined || ev.meta === true) {
+            // Meta events - robust detection:
+            // Treat as meta only when ev.type explicitly equals 0xFF, or the library marks ev.meta === true,
+            // or ev.metaType is present / status byte 0x59 (key signature) is used.
+            // IMPORTANT: do NOT treat ev.subtype !== undefined alone as meta, some parsers use .subtype for channel events.
+            if (ev.type === 0xFF || ev.meta === true || ev.metaType !== undefined || ev.type === 0x59) {
                 e.type = 0xFF;
-                e.metaType = ev.subtype ?? ev.metaType;
+                // unify metaType detection: prefer explicit subtype/metaType, else accept flattened status byte 0x59
+                e.metaType = (ev.subtype ?? ev.metaType ?? (ev.type === 0x59 ? 0x59 : undefined));
                 // prefer array-like data; some libraries use ev.data (Array) or ev.param1/param2
                 if (Array.isArray(ev.data)) e.data = ev.data.slice();
                 else if (typeof ev.data === 'number') e.data = [ev.data];
                 else if (ev.param1 !== undefined || ev.param2 !== undefined) e.data = [ev.param1 ?? 0, ev.param2 ?? 0];
-                else e.data = ev.data ?? [];
+                else if (ev.rawBytes && Array.isArray(ev.rawBytes)) {
+                    // try to extract bytes for meta events (fallback)
+                    e.data = ev.rawBytes.slice(-2);
+                } else e.data = ev.data ?? [];
             } else {
                 // Channel / regular events: many parsers supply .type (4-bit), .channel, and .param1/.param2
-                // Keep type as-is (0x9, 0x8 etc) when present
-                e.type = (typeof ev.type === 'number') ? ev.type : (typeof ev.subtype === 'number' ? ev.subtype : ev.type);
+                // Keep type as-is (0x9, 0x8 etc) when present. If parser uses 'subtype' for channel type, accept it.
+                e.type = (typeof ev.type === 'number' && ev.type < 0xF0) ? ev.type : (typeof ev.subtype === 'number' ? ev.subtype : ev.type);
                 if (ev.channel !== undefined) e.channel = ev.channel;
                 if (Array.isArray(ev.data)) e.data = ev.data.slice();
                 else if (ev.param1 !== undefined || ev.param2 !== undefined) e.data = [ev.param1 ?? 0, ev.param2 ?? 0];
@@ -471,7 +496,15 @@ function buildMidiDataFromMIDIFile(input) {
         else if (midiFile.header && midiFile.header.ticksPerBeat) timeDivision = midiFile.header.ticksPerBeat;
     } catch { /* ignore */ }
 
-    return { track: tracks, timeDivision, format: 0 };
+    // attempt to preserve original MIDI format if available (avoid forcing format 0)
+    let format = 0;
+    try {
+        if (midiFile && typeof midiFile.getFormat === 'function') format = midiFile.getFormat();
+        else if (midiFile && midiFile.format !== undefined) format = midiFile.format;
+        else if (midiFile.header && midiFile.header.format !== undefined) format = midiFile.header.format;
+    } catch { /* ignore */ }
+
+    return { track: tracks, timeDivision, format };
 }
 
 //---------------------------------------------------------------------
