@@ -133,8 +133,9 @@
 
 @media (max-width: 900px) {
   .searchcontainer { display: block; }
-  .searchleftcontainer { width: 100%; }
-  .notesinfo { width: 73vh; }
+  .searchleftcontainer { width: 100%; padding-left: 0; padding-right: 0; margin: 0; box-sizing: border-box; }
+  /* use fluid width (not vh) and set consistent side padding so left edges align */
+  .notesinfo { width: 100%; padding-left: 12px; padding-right: 12px; box-sizing: border-box; margin: 0; }
   .whitepianobutton { width: 45px; }
   .blackpianobutton { width: 37px; }
   .cis1 { top: 0px; left: 35px; }
@@ -147,12 +148,16 @@
   .fis2 { top: 0px; left: 490px; }
   .gis2 { top: 0px; left: 535px; }
   .b2  { top: 0px; left: 580px; }
+
+  /* ensure right column uses same box model and no stray left offset */
+  .notesearchrightcontainer, .searchrightcontainer { padding-left: 0; padding-right: 0; margin: 0; box-sizing: border-box; }
 }
 
 @media (max-width: 768px) {
   .searchcontainer { display: block; }
-  .searchleftcontainer { width: 100%; }
-  .notesinfo { width: 65vh; }
+  .searchleftcontainer { width: 100%; padding-left: 0; padding-right: 0; margin: 0; box-sizing: border-box; }
+  /* use fluid width on narrow screens */
+  .notesinfo { width: 100%; padding-left: 12px; padding-right: 12px; box-sizing: border-box; margin: 0; }
   .whitepianobutton { width: 45px; }
   .blackpianobutton { width: 37px; }
   .c3 { display:none; }
@@ -348,30 +353,3 @@
     min-height: 44px;
   }
 }
-
-@media (max-width: 576px) {
-  /* Slightly more compact duration buttons on narrow screens */
-  .durbtn {
-    width: 34px !important;
-    height: 34px !important;
-    margin: 4px !important;
-    border-radius: 3px !important;
-  }
-
-  .durbtn img {
-    height: 20px !important;
-    vertical-align: middle !important;
-  }
-
-  /* Reduce surrounding spacing so the group fits tighter */
-  #durationbuttons, #durationspanel {
-    gap: 6px !important;
-  }
-
-  /* If buttons contain text, reduce font slightly */
-  .durbtn span, .durbtn .btn-text {
-    font-size: 0.85rem !important;
-    line-height: 1 !important;
-  }
-}
-
