@@ -56,15 +56,18 @@
   }
 
   function init(){
-    // Початковий рендеринг
-    setTimeout(rerenderAllNotations, 100);
+    // ---- закоментовано автоматичний масовий рендер (викликає дублювання з search.js) ----
+    // setTimeout(rerenderAllNotations, 100);
     
-    // Перерендеринг при зміні розміру вікна
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(rerenderAllNotations, 300);
-    });
+    // Замість автоматичного масового рендера, можна викликати вручну при потребі:
+    // window.MelodySearch && window.MelodySearch.rerenderAllNotations && window.MelodySearch.rerenderAllNotations();
+
+    // ---- закоментовано автоматичний resize-trigger, щоб не повторювати rerender ----
+    // let resizeTimer;
+    // window.addEventListener('resize', () => {
+    //   clearTimeout(resizeTimer);
+    //   resizeTimer = setTimeout(rerenderAllNotations, 300);
+    // });
   }
 
   if (document.readyState === 'loading') {

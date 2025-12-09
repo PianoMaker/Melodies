@@ -1,7 +1,7 @@
 ﻿// ----------------------
 // Розраховує кількість рядків для нотного стану
 // ----------------------
-function calculateRows(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
+function calculateRows(measures, GENERALWIDTH, BARWIDTH, CLEFZONE = 60, Xmargin = 10) {
 	try {
 		let rows = 1;
 		let x = Xmargin;
@@ -86,7 +86,7 @@ function calculateRowsFixedWidth(measuresArr, generalWidth, fixedBarWidth, clefZ
 // Розраховує необхідну висоту для нотного стану на основі кількості рядків
 // ----------------------
 function calculateRequiredHeight(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
-	const rows = calculateRows(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
+	const rows = calculateRows(measures, GENERALWIDTH, BARWIDTH, CLEFZONE, Xmargin);
 	return Math.ceil(rows * HEIGHT) + TOPPADDING;
 }
 

@@ -369,42 +369,20 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 	if (!ELEMENT_FOR_RENDERING) {
 		throw new Error(`Element with id ${ELEMENT_FOR_RENDERING} not found.`);
 	}
-
-
 	// Перевірка наявності EndTrack
 	ensureEndEvent(allEvents);
 
+	const MIN_SCORE_WIDTH = Math.max(320, CLEFZONE + BARWIDTH + Xmargin * 2);
+	const SCALINGFACTOR = 0.5; 
+
 	//створюємо список подій по тактах
 	const measureMap = createMeasureMap(allEvents, ticksPerBeat);
-	const measures = groupEventsByMeasure(allEvents, measureMap);
-
-	// Diagnostics: log counts so we can see why measures may be empty
-	console.info(`renderMidiFileToNotation: allEvents=${allEvents.length}, measureMap_keys=${Object.keys(measureMap).length}, measures=${measures.length}, ticksPerBeat=${ticksPerBeat}`);
-
-	// обчислюємо індекс початкового такту, вирівняного до кратного 4
-	let startIdx = getStartIdx(startAtMeasureIndex, measures);
-
-	// обчислюємо скільки тактів залишилось від startIdx до кінця
-	const remaining = Math.max(0, measures.length - startIdx);
-	const renderCount = (typeof maxBarsToRender === 'number' && isFinite(maxBarsToRender) && maxBarsToRender !== 1000)
-		? Math.min(remaining, maxBarsToRender)
-		: remaining;
-
-	// Витягуємо вікно тактів для рендерингу
-	const measuresWindow = measures.slice(startIdx, startIdx + renderCount);
-	console.info(`renderMidiFileToNotation: startIdx=${startIdx}, renderCount=${renderCount}, measuresWindow=${measuresWindow.length}`);
-
-	// For MIDI format 0: trim leading empty measures before the first NoteOn so no empty bars appear before music.
-	startIdx = adjustStartIdxForMidi0Format(isMidi0, measuresWindow, startIdx);
+	const measures = groupEventsByMeasure(allEvents, measureMap);	
+	var { measuresWindow, startIdx, remaining } = GetScope(startAtMeasureIndex, measures, maxBarsToRender, isMidi0);
+	const { measuresToRender, effectiveCount } = GetBarsWithNotes(measuresWindow);
+	const slicedMap = GetSlicedMap(effectiveCount, measureMap, startIdx);
 
 
-	// Тримаємо лише ті такти, які містять Note On події
-	const measuresToRender = [...measuresWindow];
-	while (measuresToRender.length > 0 && !hasNoteOn(measuresToRender[measuresToRender.length - 1])) {
-		console.log("Pruning trailing empty measure without Note On events (pre-height)");
-		measuresToRender.pop();
-	}
-	const effectiveCount = measuresToRender.length;
 	console.info(`renderMidiFileToNotation: measuresToRender=${measuresToRender.length}, effectiveCount=${effectiveCount}`);
 
 	// If nothing to render then bail out with a helpful comment
@@ -412,24 +390,10 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 		return handleNoNotesToRender(commentsDiv, ELEMENT_FOR_RENDERING, measures, measuresWindow, maxBarsToRender, startIdx);
 	}
 
-	// створюємо новий measureMap для заданого діапазону
-	const slicedMap = {};
-	for (let i = 0; i <= effectiveCount; i++) {
-		slicedMap[i] = measureMap[startIdx + i];
-	}
+	// Ширина контейнера та рядків
+	const { effectiveWidth, containerWidth } = GetWidths(ELEMENT_FOR_RENDERING, MIN_SCORE_WIDTH, GENERALWIDTH);
 
-	// ВИКОРИСТАТИ ФАКТИЧНУ ШИРИНУ КОНТЕЙНА
-	const MIN_SCORE_WIDTH = Math.max(320, CLEFZONE + BARWIDTH + Xmargin * 2);
-	const SCALINGFACTOR = 0.5; // залишено для сумісності, але не використовується
-
-	const target = document.getElementById(ELEMENT_FOR_RENDERING);
-	const containerWidth = (target && target.clientWidth) ? target.clientWidth : 0;
-
-	const effectiveWidth = Math.max(
-		MIN_SCORE_WIDTH,
-		containerWidth || GENERALWIDTH || 1200
-	);
-
+	// Висота рядків
 	// mr-durations-helper.js
 	const rowsHeight = calculateRequiredHeight(measuresToRender, effectiveWidth, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin);
 
@@ -452,14 +416,8 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 
 		const context = factory.getContext();
 		const score = factory.EasyScore();
+		scaleContext(scaleFactor, context);
 
-		try {
-			if (scaleFactor !== 1 && typeof context.scale === 'function') {
-				context.scale(scaleFactor, scaleFactor);
-			}
-		} catch (e) {
-			console.warn("Scaling failed:", e);
-		}
 		console.debug(`renderMidiFileToNotation: renderer ${rendererWidth}x${rendererHeight}, scaleFactor=${scaleFactor}`);
 
 		const scaledWidth = effectiveWidth / scaleFactor;
@@ -475,15 +433,7 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 		try {
 			const container = document.getElementById(ELEMENT_FOR_RENDERING);
 			const svg = container && container.querySelector('svg');
-			if (svg && typeof svg.getBBox === 'function') {
-				const adjust = () => {
-					const bbox = svg.getBBox();
-					svg.setAttribute('height', bbox.height);
-				};
-				adjust();
-				if (typeof requestAnimationFrame === 'function') requestAnimationFrame(adjust);
-				setTimeout(adjust, 50);
-			}
+			adjustSVG(svg);
 		} catch (e) { console.warn('post-fix svg size failed', e); }
 	}, 0);
 
@@ -497,6 +447,66 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 }
 
 
+function adjustSVG(svg) {
+    if (svg && typeof svg.getBBox === 'function') {
+        const adjust = () => {
+            const bbox = svg.getBBox();
+            svg.setAttribute('height', bbox.height);
+        };
+        adjust();
+        if (typeof requestAnimationFrame === 'function') requestAnimationFrame(adjust);
+        setTimeout(adjust, 50);
+    }
+}
+
+
+
+function GetWidths(ELEMENT_FOR_RENDERING, MIN_SCORE_WIDTH, GENERALWIDTH) {
+    const target = document.getElementById(ELEMENT_FOR_RENDERING);
+    const containerWidth = (target && target.clientWidth) ? target.clientWidth : 0;
+
+    const effectiveWidth = Math.max(
+        MIN_SCORE_WIDTH,
+        containerWidth || GENERALWIDTH || 1200
+    );
+    return { effectiveWidth, containerWidth };
+}
+
+function GetSlicedMap(effectiveCount, measureMap, startIdx) {
+    const slicedMap = {};
+    for (let i = 0; i <= effectiveCount; i++) {
+        slicedMap[i] = measureMap[startIdx + i];
+    }
+    return slicedMap;
+}
+
+function GetBarsWithNotes(measuresWindow) {
+    const measuresToRender = [...measuresWindow];
+    while (measuresToRender.length > 0 && !hasNoteOn(measuresToRender[measuresToRender.length - 1])) {
+        console.log("Pruning trailing empty measure without Note On events (pre-height)");
+        measuresToRender.pop();
+    }
+    const effectiveCount = measuresToRender.length;
+    return { measuresToRender, effectiveCount };
+}
+
+function GetScope(startAtMeasureIndex, measures, maxBarsToRender, isMidi0) {
+    let startIdx = getStartIdx(startAtMeasureIndex, measures);
+
+    // обчислюємо скільки тактів залишилось від startIdx до кінця
+    const remaining = Math.max(0, measures.length - startIdx);
+    const renderCount = (typeof maxBarsToRender === 'number' && isFinite(maxBarsToRender) && maxBarsToRender !== 1000)
+        ? Math.min(remaining, maxBarsToRender)
+        : remaining;
+
+    // Витягуємо вікно тактів для рендерингу
+    const measuresWindow = measures.slice(startIdx, startIdx + renderCount);
+    console.info(`renderMidiFileToNotation: startIdx=${startIdx}, renderCount=${renderCount}, measuresWindow=${measuresWindow.length}`);
+
+    // For MIDI format 0: trim leading empty measures before the first NoteOn so no empty bars appear before music.
+    startIdx = adjustStartIdxForMidi0Format(isMidi0, measuresWindow, startIdx);
+    return { measuresWindow, startIdx, remaining };
+}
 
 function adjustStartIdxForMidi0Format(isMidi0, measuresWindow, startIdx) {
 	if (isMidi0) {
