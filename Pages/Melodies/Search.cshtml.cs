@@ -1,4 +1,3 @@
-
 using Melodies25.Models;
 using Melodies25.Utilities;
 using Microsoft.AspNetCore.Mvc;
@@ -101,7 +100,7 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public bool IfRhythm { get; set; }
 
-        [BindProperty]
+        [TempData]
         public bool FromFindSimilar { get; set; }
 
         private static readonly char[] separator = new char[] { ' ', '_' };
@@ -378,14 +377,28 @@ namespace Melodies25.Pages.Melodies
         //--------------------------------
         public async Task OnPostNotesearch()
         {
-            // Diagnostics: log incoming form, bound properties and ModelState
-            //DiagnosticNoteSearch();
-
             MessageL(COLORS.yellow, $"SEARCH - OnPostNotesearch method, Keys = {Keys}, TimeSin={TimeSignatureNumerator}/{TimeSignatureDenominator}, Intonation = {IfIntonation}, Rhythm = {IfRhythm}");
+
+            // Read FromFindSimilar from the posted form (cover cases when model binding didn't set it)
+            if (Request.Form.TryGetValue("FromFindSimilar", out var ff))
+            {
+                var s = ff.ToString();
+                FromFindSimilar = s == "1" || string.Equals(s, "true", StringComparison.OrdinalIgnoreCase) || string.Equals(s, "on", StringComparison.OrdinalIgnoreCase);
+                MessageL(COLORS.olive, $"find similar = {FromFindSimilar}");
+
+            }
+
+            var vaste = "g,,,,,1.";
+            if ( Keys.Contains(vaste))
+            {
+                var vasteidx = Keys.IndexOf(vaste);
+                Console.WriteLine($"vaste found, idx= {vasteidx}");
+                var totalvaste = Keys.Substring(vasteidx, 2);   
+                Keys = Keys.Remove(vasteidx);
+            }
 
             /*включаємо відображення за нотним пошуком*/
             NoteSearch = true;
-
 
             /*ІНІЦІАЛІЗАЦІЯ БАЗИ*/
             await NotesSearchInitialize();
@@ -398,7 +411,6 @@ namespace Melodies25.Pages.Melodies
             TempData["Keys"] = Keys;
             TempData["Numerator"] = TimeSignatureNumerator;
             TempData["Denominator"] = TimeSignatureDenominator;
-
 
 
             if (Keys is not null)
@@ -459,7 +471,7 @@ namespace Melodies25.Pages.Melodies
                 Console.WriteLine("no pattern");
                 Description = "Помилка розпізнавання введеної мелодії для пошуку";
             }
-            MessageL(COLORS.cyan, $"finishing SEARCH method");
+            MessageL(COLORS.cyan, $"finishing SEARCH method, findsimilar = {FromFindSimilar}");
         }
 
         private void LogNotesearch(MusicMelody MelodyPattern)

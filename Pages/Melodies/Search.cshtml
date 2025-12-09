@@ -100,27 +100,18 @@
         @await Html.PartialAsync("_durationsTable")
 
         <!--ТАБЛО НОТ ВНИЗУ -->
-        <div id="innerNotesContainer">
+        @if (Model.FromFindSimilar == false)
+        {
+            <p>find sim= @Model.FromFindSimilar</p>
+            <div id="innerNotesContainer">
             <!-- LIVE notation (stays on top, updated as user types/clicks)-->
-            @if (Model.FromFindSimilar == false)
-            {
-
-                <div id="liveNotation" class="mb-3"></div>
-            }
-
+             <div id="liveNotation" class="mb-3"></div>
+            
             <div id="patternComments" style="display:none"></div>
-
-            @if (Model.FromFindSimilar)
-            {
-                <script>
-                    // Signal client-side live-notation initializer to skip initial render.
-                    window.__suppressInitialLiveNotation = true;
-                    console.debug("Search: suppress initial liveNotation because request came from find-similar");
-                </script>
-            }
 
             @if (@Model.NewPattern is not null)
             {
+                   
                 @for (int index = 0; index < @Model.NewPattern.Count(); index++)
                 {
                     var note = @Model.NewPattern[index];
@@ -153,6 +144,8 @@
                 <p id="noNotesMsg">жодної ноти не введено</p>
             }
         </div>
+        }
+        else {<p>___</p>}
         <script type="module" src="~/js/noteTable.js"></script>
 
 

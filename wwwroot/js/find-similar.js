@@ -33,17 +33,25 @@
 		return false;
 	}
 
+	// Створення і відправка форми з параметрами пошуку
+	// actionUrl - URL для відправки форми
+	// keys - рядок з ключами нот
+	// numerator/denominator - музичний розмір
 	function postKeysToSearch(actionUrl, keys, numerator, denominator) {
 		console.log("FOO: [FS] find-similar.js - postKeysToSearch");
 		const form = document.createElement("form");
 		form.method = "post";
 		form.action = actionUrl;
 
+		// ПЕРЕДАЧА параметра Keys
+
 		const inputKeys = document.createElement("input");
 		inputKeys.type = "hidden";
 		inputKeys.name = "Keys";
 		inputKeys.value = keys;
 		form.appendChild(inputKeys);
+
+		// ПЕРЕДАЧА параметра TimeSignatureNumerator
 
 		if (typeof numerator !== "undefined") {
 			const inNum = document.createElement("input");
@@ -52,6 +60,7 @@
 			inNum.value = String(numerator);
 			form.appendChild(inNum);
 		}
+		// ПЕРЕДАЧА параметра TimeSignatureDenominator
 
 		if (typeof denominator !== "undefined") {
 			const inDen = document.createElement("input");
@@ -60,6 +69,22 @@
 			inDen.value = String(denominator);
 			form.appendChild(inDen);
 		}
+
+		// ПЕРЕДАЧА параметра handler для виклику OnPostNotesearch
+		
+		const handlerInput = document.createElement("input");
+		handlerInput.type = "hidden";
+		handlerInput.name = "handler";
+		handlerInput.value = "Notesearch";
+		form.appendChild(handlerInput);
+
+		// ПЕРЕДАЧА параметра FromFindSimilar для позначки пошуку з цієї кнопки
+
+		const fromInput = document.createElement("input");
+		fromInput.type = "hidden";
+		fromInput.name = "FromFindSimilar";
+		fromInput.value = "1";
+		form.appendChild(fromInput);
 
 		appendAntiForgeryToken(form);
 
