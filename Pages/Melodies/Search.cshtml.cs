@@ -369,6 +369,10 @@ namespace Melodies25.Pages.Melodies
         {
             MessageL(COLORS.yellow, $"SEARCH - OnPostReset method");
             Keys = string.Empty;
+
+            // Clear the "FromFindSimilar" flag so subsequent searches are not treated as "find similar"
+            FromFindSimilar = false;
+
             Page();
         }
         //--------------------------------

@@ -203,3 +203,175 @@
     max-width: 100%;
     overflow-x: hidden;
 }
+
+/* --- Compact controls for mobile (Search page) --- */
+/* Keep these rules at the end of notes.css so they override defaults */
+
+@media (max-width: 576px) {
+  /* make algorithm radios and melody/rythm checkboxes compact */
+  .compact-controls {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px !important;
+    align-items: center !important;
+    margin: 0.25rem 0 !important;
+  }
+
+  .compact-controls .form-check {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+    min-width: 0 !important; /* allow flex shrinking */
+  }
+
+  .compact-controls .form-check-input {
+    margin: 0 !important;
+    width: 18px !important;
+    height: 18px !important;
+    flex: 0 0 auto !important;
+  }
+
+  .compact-controls .form-check-label {
+    display: inline-block !important;
+    width: auto !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Slightly reduce the slider width on mobile when visible */
+  .compact-controls .form-range,
+  .compact-controls input[type="range"] {
+    width: 100px !important;
+    margin-left: 6px !important;
+    margin-right: 6px !important;
+  }
+
+  /* reduce gap between elements that were using gap-3 */
+  .compact-controls.gap-3 { gap: 8px !important; }
+
+  /* ensure hide-mobile keeps hiding on mobile */
+  .hide-mobile { display: none !important; }
+
+  /* minimal spacing for containing right-column controls */
+  .notesearchrightcontainer .d-flex.my-2 { margin-top: 0.25rem !important; margin-bottom: 0.25rem !important; }
+}
+
+/* Fallback for small tablets */
+@media (min-width: 577px) and (max-width: 768px) {
+  .compact-controls .form-check-label { font-size: 1rem !important; }
+  .compact-controls .form-check-input { width: 19px !important; height: 19px !important; }
+}
+
+/* Piano scroll wrapper: enable horizontal scrolling on narrow screens */
+@media (max-width: 900px) {
+  .piano-scroll-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+    padding-bottom: 6px; /* space for scrollbar */
+  }
+
+  /* Ensure inner keyboard keeps its intended layout/width so wrapper scrolls */
+  .piano-scroll-wrapper .piano-scroll-inner {
+    min-width: 800px; /* matches current piano natural width */
+  }
+
+  /* Light scrollbar styling */
+  .piano-scroll-wrapper::-webkit-scrollbar {
+    height: 8px;
+  }
+  .piano-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.22);
+    border-radius: 4px;
+  }
+  .piano-scroll-wrapper {
+    -ms-overflow-style: auto;
+    scrollbar-width: thin;
+  }
+}
+
+/* Responsive notesinfo: ensure it fits narrow screens */
+.notesinfo {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  padding: 8px;
+  overflow: hidden;
+}
+
+/* letters / textarea: use full width inside notesinfo */
+.notesinfo #lettersdisplay,
+.notesinfo #lettersdisplay textarea,
+.notesinfo #pianodisplay {
+  width: 100% !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* button area: flexible, wrap when narrow */
+.notesinfo #buttonarea {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  width: auto !important; /* override inline width:60% if present */
+  box-sizing: border-box;
+  margin-top: 6px;
+}
+
+/* keep buttons compact and prevent overflow */
+.notesinfo #buttonarea .btn-melody {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* small adjustments for very narrow screens */
+@media (max-width: 480px) {
+  .notesinfo {
+    padding: 6px;
+  }
+  .notesinfo #buttonarea {
+    gap: 4px;
+  }
+  .notesinfo #buttonarea .btn-melody {
+    font-size: 0.95rem;
+    padding: 6px 8px;
+  }
+  /* ensure textarea rows remain usable */
+  .notesinfo #pianodisplay {
+    height: auto;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Slightly more compact duration buttons on narrow screens */
+  .durbtn {
+    width: 34px !important;
+    height: 34px !important;
+    margin: 4px !important;
+    border-radius: 3px !important;
+  }
+
+  .durbtn img {
+    height: 20px !important;
+    vertical-align: middle !important;
+  }
+
+  /* Reduce surrounding spacing so the group fits tighter */
+  #durationbuttons, #durationspanel {
+    gap: 6px !important;
+  }
+
+  /* If buttons contain text, reduce font slightly */
+  .durbtn span, .durbtn .btn-text {
+    font-size: 0.85rem !important;
+    line-height: 1 !important;
+  }
+}
+
