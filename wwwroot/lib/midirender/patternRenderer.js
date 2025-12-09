@@ -350,6 +350,18 @@
 			const context = factory.getContext();
 			const score = factory.EasyScore();
 
+			const RESPONSIVE_THRESHOLD = 800;
+			const SCALINGFACTOR = 0.5;
+			const scaleFactor = (containerWidth > 0 && containerWidth <= RESPONSIVE_THRESHOLD) ? SCALINGFACTOR : 1;
+
+			try {
+				if (scaleFactor !== 1 && typeof context.scale === 'function') {
+					context.scale(scaleFactor, scaleFactor);
+				}
+			} catch (e) {
+				console.warn("Scaling failed:", e);
+			}
+
 			// Render measure by measure similar to renderMeasures
 			let Xposition = Xmargin;
 			let Yposition = TOPPADDING;

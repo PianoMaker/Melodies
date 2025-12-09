@@ -102,9 +102,9 @@
         <!--ТАБЛО НОТ ВНИЗУ -->
         @if (Model.FromFindSimilar == false)
         {
-            <p>find sim= @Model.FromFindSimilar</p>
+            @* <p>find sim= @Model.FromFindSimilar</p> *@
             <div id="innerNotesContainer">
-            <!-- LIVE notation (stays on top, updated as user types/clicks)-->
+            <!-- LIVE notation заповнюється melody-search.js -->
              <div id="liveNotation" class="mb-3"></div>
             
             <div id="patternComments" style="display:none"></div>
@@ -452,3 +452,4 @@
 
 <!-- thin wrapper that calls setupLiveNotationOnCreate -->
 <script src="~/js/livePatternRenderer.js" asp-append-version="true"></script>
+<script src="~/js/melody-search.js" asp-append-version="true"></script>

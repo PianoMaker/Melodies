@@ -158,11 +158,48 @@
   .c3 { display:none; }
 }
 
-@media (max-width: 712px) {
-    .highnote {
-        display: none;
+/* Додати до існуючого файлу */
+
+/* Адаптивне масштабування для нотних блоків */
+.melody-block [id^="notation_"] svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+}
+
+/* Додати для правильного масштабування на Search сторінці */
+.melody-block [id^="notation_match_"] {
+    width: 100%;
+    max-width: 100%;
+}
+
+.melody-block [id^="notation_match_"] svg {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+}
+
+/* Забезпечити правильні розміри контейнера для containerWidth розрахунку */
+.melody-block {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 800px) {
+    .melody-block {
+        padding: 8px;
     }
-    .notesinfo {
-        width: 100%;
+    
+    .melody-block [id^="notation_match_"] {
+        /* Переконатися що containerWidth правильно розраховується */
+        min-width: 0;
     }
+}
+
+/* Контейнер результатів */
+#matchedMelodiesContainer {
+    max-width: 100%;
+    overflow-x: hidden;
 }

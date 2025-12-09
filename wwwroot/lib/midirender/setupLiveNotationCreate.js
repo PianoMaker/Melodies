@@ -36,17 +36,23 @@ window.setupLiveNotationOnCreate = function ({
 }, options = {}) {
     // Inject live notation containers if missing (same ids as on Search)
     if (container) {
-        if (!document.getElementById('liveNotation')) {
-            const live = document.createElement('div');
-            live.id = 'liveNotation';
-            live.className = 'mb-3';
-            container.prepend(live);
-        }
-        if (!document.getElementById('patternComments')) {
-            const comments = document.createElement('div');
-            comments.id = 'patternComments';
-            comments.style.display = 'none';
-            container.insertBefore(comments, container.children[1] || null);
+        // Respect server-side suppression flag if present
+        if (window.__suppressInitialLiveNotation) {
+            console.debug('setupLiveNotationOnCreate: suppressed initial liveNotation by server');
+        } else {
+            console.debug('setupLiveNotationOnCreate: populate liveNotation');
+            if (!document.getElementById('liveNotation')) {
+                const live = document.createElement('div');
+                live.id = 'liveNotation';
+                live.className = 'mb-3';
+                container.prepend(live);
+            }
+            if (!document.getElementById('patternComments')) {
+                const comments = document.createElement('div');
+                comments.id = 'patternComments';
+                comments.style.display = 'none';
+                container.insertBefore(comments, container.children[1] || null);
+            }
         }
     }
 
@@ -65,7 +71,9 @@ window.setupLiveNotationOnCreate = function ({
         return window[key];
     }
 
+    // -----------------------
     // функція для завантаження VexFlow з можливими шляхами
+    // -----------------------
     function ensureVexFlow() {
         if (window.Vex && window.Vex.Flow) return Promise.resolve();
         // Try correct path used by Search page

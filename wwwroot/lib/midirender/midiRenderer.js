@@ -457,11 +457,6 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 			if (scaleFactor !== 1 && typeof context.scale === 'function') {
 				context.scale(scaleFactor, scaleFactor);
 			}
-			// Reduce font proportionally if API available
-			if (typeof context.setFont === 'function') {
-				const baseFont = 10;
-				context.setFont("Arial", Math.max(6, Math.round(baseFont * scaleFactor)), "normal");
-			}
 		} catch (e) {
 			console.warn("Scaling failed:", e);
 		}
