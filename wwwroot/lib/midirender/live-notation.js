@@ -25,7 +25,7 @@
 // ==========================
 
 
-window.setupLiveNotationOnCreate = function ({
+window.`setupLiveNotationOnCreate = function ({
     container,
     pianodisplay,
     numeratorInput,
@@ -35,6 +35,7 @@ window.setupLiveNotationOnCreate = function ({
     noNotesMsg
 }, options = {}) {
     // Inject live notation containers if missing (same ids as on Search)
+    console.log('[LNS] setupLiveNotationCreate.js...');
     if (container) {
         // Respect server-side suppression flag if present
         if (window.__suppressInitialLiveNotation) {
@@ -56,49 +57,13 @@ window.setupLiveNotationOnCreate = function ({
         }
     }
 
-    // завантажує скрипт лише один раз
-    function loadScriptOnce(src) {
-        if (!src) return Promise.resolve();
-        const key = `__loaded_${src}`;
-        if (window[key]) return window[key];
-        window[key] = new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = src;
-            s.onload = () => resolve();
-            s.onerror = (e) => reject(e);
-            document.body.appendChild(s);
-        });
-        return window[key];
-    }
+	// Обюробники подій для тригера рендеру
+    restBtn.addEventListener('click', () => setTimeout(scheduleRender, 0));
+    pianoKeysContainer.addEventListener('click', () => setTimeout(scheduleRender, 0));
+    pianodisplay.addEventListener('input', scheduleRender);
+    pianodisplay.addEventListener('keyup', scheduleRender);
+    pianodisplay.addEventListener('change', scheduleRender);
 
-    // -----------------------
-    // функція для завантаження VexFlow з можливими шляхами
-    // -----------------------
-    function ensureVexFlow() {
-        if (window.Vex && window.Vex.Flow) return Promise.resolve();
-        // Try correct path used by Search page
-        return loadScriptOnce('/lib/midirender/vexflow.js')
-            .catch(() => Promise.resolve())
-            .then(() => {
-                if (window.Vex && window.Vex.Flow) return;
-                // Fallback to layout path, in case it's present there
-                return loadScriptOnce('/lib/vexflow.js').catch(() => {/* ignore */ });
-            })
-            .then(() => {
-                if (!(window.Vex && window.Vex.Flow)) {
-                    console.warn('VexFlow could not be loaded');
-                }
-            });
-    }
-
-    // Залежності midirender
-    const deps = [
-        '/lib/midirender/midiparser_ext.js',
-        '/lib/midirender/mr-beams-helper.js',
-        '/lib/midirender/rendererUtils.js',
-        '/lib/midirender/midiRenderer.js',
-        '/lib/midirender/patternRenderer.js'
-    ];
 
     // Render helpers (mirroring livePatternRenderer.js)
     let lastRenderKey = null;
@@ -169,20 +134,10 @@ window.setupLiveNotationOnCreate = function ({
         }
     }
 
-    function hookPianoButtons() {
-        if (!pianoKeysContainer) return;
-        pianoKeysContainer.addEventListener('click', () => setTimeout(scheduleRender, 0));
-    }
-    function hookRestButton() {
-        if (!restBtn) return;
-        restBtn.addEventListener('click', () => setTimeout(scheduleRender, 0));
-    }
-    function hookTextareaInput() {
-        if (!pianodisplay) return;
-        pianodisplay.addEventListener('input', scheduleRender);
-        pianodisplay.addEventListener('keyup', scheduleRender);
-        pianodisplay.addEventListener('change', scheduleRender);
-    }
+
+
+
+
 
     // optional guarded polling (not started by default, kept for debug/fallback)
     let _pollIntervalId = null;
@@ -234,29 +189,8 @@ window.setupLiveNotationOnCreate = function ({
         options.observeIds.forEach(id => addMutationObserverById(id));
     }
 
-    if (depsAlreadyPresent) {
-        hookPianoButtons();
-        hookRestButton();
-        hookTextareaInput();
-        // do not start polling by default; caller can request it via options.startPolling === true
-        if (options && options.startPolling) startPolling();
-        renderOnLoad();
-        window.__scheduleLiveNotationRender = scheduleRender;
-        return;
-    }
 
-    // Load Vex first, then deps, then bind and render
-    Promise.resolve()
-        .then(() => ensureVexFlow())
-        .then(() => deps.reduce((p, src) => p.then(() => loadScriptOnce(src)), Promise.resolve()))
-        .then(() => {
-            hookPianoButtons();
-            hookRestButton();
-            hookTextareaInput();
-            if (options && options.startPolling) startPolling();
-            renderOnLoad();
-        })
-        .catch(err => console.warn('Failed to init live notation on Create:', err));
+    
 
     // Expose scheduleRender to other handlers below
     window.__scheduleLiveNotationRender = scheduleRender;

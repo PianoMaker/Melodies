@@ -4,11 +4,11 @@
 
 function addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, ticksPerBeat, barStartAbsTime) {
 	// If barStartAbsTime provided, convert absolute lastNoteOffTime -> relative offset inside the bar
-	let relLastOff;
+	let relLastOff = 0;
 	if (typeof barStartAbsTime === 'number') {
 		relLastOff = Number(lastNoteOffTime) - Number(barStartAbsTime);
 	} else {
-		relLastOff = Number(lastNoteOffTime);
+		relLastOff = Number(lastNoteOffTime) || 0;
 	}
 
 	// Defensive clamp

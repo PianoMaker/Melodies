@@ -693,7 +693,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 	//-------------
-	// ІНІЦІАЛІЗАЦІЯ НОТНОГО РЯДКУ (працює з midirender/setupLiveNotationCreate.js)
+	// ІНІЦІАЛІЗАЦІЯ НОТНОГО РЯДКУ (працює з midirender/live-notation.js)
 	//-------------
 	if (typeof window.setupLiveNotationOnCreate === 'function') {
 		window.setupLiveNotationOnCreate({
@@ -707,7 +707,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			noNotesMsg: document.getElementById('noNotesMsg')
 		});
 	} else {
-		console.warn('[createMelody]: setupLiveNotationOnCreate is not loaded. Ensure /lib/midirender/setupLiveNotationCreate.js is included before melody-create.js.');
+		console.warn('[createMelody]: setupLiveNotationOnCreate is not loaded. Ensure /lib/midirender/live-notation.js is included before melody-create.js.');
 	}
 
 
