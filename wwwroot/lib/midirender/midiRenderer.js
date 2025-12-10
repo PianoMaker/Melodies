@@ -658,7 +658,8 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
 		// Якщо остання нота не доходить до кінця такту, додаємо паузу
 		if (Object.keys(activeNotes).length === 0) {
-			addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, ticksPerBeat);
+			// pass barStartAbsTime so addMissingRests computes relative offset within the bar
+			addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, ticksPerBeat, barStartAbsTime);
 		}
 
 		// Перевіряємо, чи потрібно скоротити останню ноту/паузу, якщо вона виходить за межі такту
@@ -1419,44 +1420,7 @@ function drawBeams(beams, context, index) {
 	}
 }
 
-// ----------------------
-// ФУНКЦІЯ ДЛЯ СТВОРЕННЯ ПАУЗИ (REST) З ВИКОРИСТАННЯМ VEXFLOW
-// Параметри:
-// - durationCode: Рядок тривалості паузи (наприклад, "q", "h", "8", "16." тощо).
-// Повертає: Об'єкт Vex.Flow.StaveNote, що представляє собою паузу, або null у разі помилки.
-// ----------------------
 
-function addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, ticksPerBeat) {
-	// Захист від некоректних значень
-	if (lastNoteOffTime >= ticksPerMeasure) {
-		console.debug('MR: lastNoteOffTime >= measure, no rests needed');
-		return;
-	}
-
-	const remainingTicks = ticksPerMeasure - lastNoteOffTime;
-	if (remainingTicks <= thresholdGap) {
-		console.debug('MR: remaining ticks too small, skipping');
-		return;
-	}
-
-	console.debug(`MR: need rest for ${remainingTicks} ticks`);
-	const restDurations = (typeof ticksToCleanDurations === 'function')
-		? ticksToCleanDurations(remainingTicks, ticksPerBeat)
-		: getDurationFromTicks(remainingTicks, ticksPerBeat);
-
-	console.debug(`MR: got durations: ${restDurations.join(',')}`);
-
-	let timeadded = 0;
-	restDurations.forEach((restDuration) => {
-		notes.push(createRest(restDuration));
-		const ticks = calculateTicksFromDuration(restDuration, ticksPerBeat);
-		timeadded += ticks;
-		console.debug(`MR: added rest ${restDuration} (${ticks} ticks)`);
-	});
-
-	lastNoteOffTime += timeadded;
-	console.debug(`MR: total added ${timeadded} ticks, lastNoteOffTime=${lastNoteOffTime}`);
-}
 // //----------------------
 // ФУНКЦІЯ ДЛЯ ОНОВЛЕННЯ РОЗМІРУ ТАКТУ ЗА ПОДІЯМИ TIME SIGNATURE
 // шукає подію TimeSignature в такті
@@ -1545,70 +1509,6 @@ function AddTie(previousNote, ties, note) {
 	}
 }
 
-// ----------------------
-// ФУНКЦІЯ ДЛЯ ДОДАВАННЯ ПАУЗ МІЖ НОТАМИ
-// якщо є розрив між останнім закінченням ноти і наступним початком ноти
-// Параметри:
-// - lastNoteOffTime: Абсолютний час закінчення останньої ноти.
-// - event: Поточна подія ноти.
-// - ticksPerBeat: Кількість тіків на чвертну ноту.
-// - thresholdGap: Мінімальна кількість тіків для додавання паузи.
-// - notes: Масив нот для рендерингу.
-// Повертає: void
-// ----------------------
-
-function addRestsBetween(lastNoteOffTime, event, ticksPerBeat, thresholdGap, notes) {
-	console.debug("MR: FOO: midiRenderer.js - addRestsBetween");
-	if (lastNoteOffTime > 0 && event.absTime > lastNoteOffTime) {
-		const gapTicks = event.absTime - lastNoteOffTime;
-		const restDurations = (typeof ticksToCleanDurations === 'function')
-			? ticksToCleanDurations(gapTicks, ticksPerBeat)
-			: getDurationFromTicks(gapTicks, ticksPerBeat);
-		if (gapTicks > thresholdGap) {
-			restDurations.forEach((restDuration) => {
-				console.log(`Rest added: current event abs time ${event.absTime} vs lastNoteOffTime: ${lastNoteOffTime}: rest is needed: ${restDuration}`);
-				notes.push(createRest(restDuration));
-			});
-		}
-	}
-}
-
-// ----------------------
-// ФУНКЦІЯ ДЛЯ ДОДАВАННЯ ПАУЗИ НА ПОЧАТКУ ТАКТУ
-// якщо перша подія в такті починається не з 0
-// Параметри:
-// - event: Перша подія в такті.
-// - ticksPerBeat: Кількість тіків на чвертну ноту.
-// - thresholdGap: Мінімальна кількість тіків для додавання паузи.
-// - notes: Масив нот для рендерингу.
-// - barStartAbsTime: Абсолютний час початку такту.
-// Повертає: void
-// ----------------------
-function AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime) {
-	console.debug("MR: FOO: midiRenderer.js - AddStartRest");
-	const relTime = event.absTime - barStartAbsTime;
-	if (relTime <= 0) {
-		console.log("AddStartRest: relTime <= 0, no leading rest needed");
-		return;
-	}
-
-	// Convert leading gap into one or more rest durations
-	const restDurations = (typeof ticksToCleanDurations === 'function')
-		? ticksToCleanDurations(relTime, ticksPerBeat)
-		: getDurationFromTicks(relTime, ticksPerBeat);
-
-	console.log(`AddStartRest: inserting leading rest totalTicks=${relTime}, parts=[${restDurations.join(',')}]`);
-
-	restDurations.forEach(dur => {
-		const rest = createRest(dur);
-		if (rest) {
-			notes.push(rest);
-			console.log(`MR: Leading rest added duration=${dur}`);
-		} else {
-			console.warn(`AddStartRest: failed to create rest for duration=${dur}`);
-		}
-	});
-}
 // ----------------------
 // ФУНКЦІЯ ДЛЯ СТВОРЕННЯ НОТИ З ВИКОРИСТАННЯМ VEXFLOW
 // Параметри:
