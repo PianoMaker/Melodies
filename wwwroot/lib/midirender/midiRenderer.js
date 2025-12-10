@@ -3,16 +3,19 @@
 /**
  * screen log if stepReadEl exists
  */
-const logEvent = (msg) => {
-	try {
-		const stepReadEl = document.getElementById("stepRead");
-		if (stepReadEl) {
-			stepReadEl.innerHTML += msg;
+
+if (typeof window.logEvent === 'undefined') {
+	window.logEvent = function (msg) {
+		try {
+			const stepReadEl = document.getElementById("stepRead");
+			if (stepReadEl) {
+				stepReadEl.innerHTML += msg;
+			}
+		} catch (e) {
+			console.warn('logEvent failed:', e);
 		}
-	} catch (e) {
-		console.warn('logEvent failed:', e);
-	}
-};
+	};
+}
 
 
 /**

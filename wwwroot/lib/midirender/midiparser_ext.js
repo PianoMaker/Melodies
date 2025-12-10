@@ -28,7 +28,7 @@ var reverseDurationMapping = {
 // NOTE: getAllEvents moved to the bottom (after helper meta functions) to avoid referencing MidiMeta before it is defined.
 
 // --- Enharmonic support (minimal) ---
-//let currentKeySignature = 0; // -7..+7 (sf)
+let currentKeySignature = 0; // -7..+7 (sf)
 let currentKeyMode = 0;      // 0=major, 1=minor   <-- ADDED
 let enharmonicPreference = 'auto'; // 'auto' | 'sharps' | 'flats'
 function setEnharmonicPreference(pref) {

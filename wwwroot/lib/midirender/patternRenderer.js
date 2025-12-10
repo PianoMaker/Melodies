@@ -259,7 +259,7 @@
 			// 1) Єдиний bar width для всієї сесії рендера
 			// МІНІМАЛЬНА ШИРИНА ТАКТУ, щоб не були вузькими
 			const MIN_BARWIDTH = 240; // налаштовуване значення
-			const naiveBarWidth = GetMeanBarWidth(BARWIDTH, measures.map(m => m.notes));
+			const naiveBarWidth = GetMeanBarWidth(BARWIDTH, GEN_WIDTH);
 			const actualBarWidth = Math.max(MIN_BARWIDTH, naiveBarWidth);
 
 			// 2) Локальний підрахунок кількості рядків за вже обчисленим actualBarWidth (спільна утиліта)

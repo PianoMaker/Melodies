@@ -30,13 +30,13 @@ function calculateRows(measures, GENERALWIDTH, BARWIDTH, CLEFZONE = 60, Xmargin 
 // ----------------------
 function GetMeanBarWidth(BARWIDTH, effectiveWidth) {
 	// Обчислюємо доступну ширину для тактів без CLEFZONE
-	
-	const measuresPerRow = Math.floor(effectiveWidth / BARWIDTH) || 1;
 
-	// Розподіляємо ширину рівномірно
+	const measuresPerRow = Math.floor(effectiveWidth / BARWIDTH) || 1;	
+
+	// Розподіляємо ширину рівномірно	
 	const meanBarWidth = Math.floor(effectiveWidth / measuresPerRow);
 
-	console.warn(`MR: GetMeanBarWidth = ${meanBarWidth}, effectiveWidth=${effectiveWidth}, measuresPerRow=${measuresPerRow}`);
+	console.debug(`MR: GetMeanBarWidth = ${meanBarWidth}, effectiveWidth=${effectiveWidth}, measuresPerRow=${measuresPerRow}`);
 	return meanBarWidth;
 }
 if (typeof window !== 'undefined') window.GetMeanBarWidth = GetMeanBarWidth;
