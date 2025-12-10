@@ -177,4 +177,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (algSub) algSub.addEventListener('change', updateGapEnabled);
     if (algSeq) algSeq.addEventListener('change', updateGapEnabled);
     updateGapEnabled();
+
+    // Hide loading and show results after DOM is ready
+    const loadingEl = document.getElementById('searchLoading');
+    const resultsEls = document.querySelectorAll('.notescontainer, .table');
+    if (loadingEl) loadingEl.style.display = 'none';
+    resultsEls.forEach(el => el.classList.remove('hide'));
 });
