@@ -80,7 +80,11 @@ window.setupLiveNotationOnCreate = function ({
         try {
             const { num, den } = getSearchTimeSignature();
             console.log('live notation render:', { pattern, num, den });
-            if (typeof window.renderPatternString !== 'function') return;
+            if (typeof window.renderPatternString !== 'function') {
+                console.error(`live-notation.js renderPatternString() is not found`) 
+                // patternRenderer.js
+                return;
+            }
             const renderEl = document.getElementById('liveNotation');
             const commentsEl = document.getElementById('patternComments');
             if (!renderEl || !commentsEl) return;

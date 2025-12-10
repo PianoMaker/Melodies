@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 startPos,
                 notationEl.id,
                 commentsElId,
-                900,  // GENERALWIDTH (keep as before)
+                1200,  // GENERALWIDTH (keep as before)
                 200,  // HEIGHT -> match Details (was 130)
                 20,   // TOPPADDING -> match Details (was 10)
                 250,  // BARWIDTH

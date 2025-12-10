@@ -187,7 +187,7 @@
 
     @if (melodyPattern != null)
     {
-        <p>
+        <p class="hide-mobile">
             Введено мелодію:
             @foreach (var notes in melodyPattern)
             {
@@ -229,7 +229,7 @@
                     </div>
 
                     <!--ПЕРЕЛІК НОТ-->
-                    <p id="noteslist">
+                    <p id="noteslist" class="hide-mobile">
                         @for (int j = 0; j < songPattern.Count; j++)
                         {
                             if (isSubseq)

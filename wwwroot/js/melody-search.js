@@ -1,6 +1,7 @@
 (function(){
   function calcAdaptiveWidth(){
-    const w = window.innerWidth || 1200;
+      const w = window.innerWidth || 1200;
+      console.debug(`calcAdaptiveWidth: GW = ${w}`)
     return Math.min(1200, Math.max(320, w - 40)); // 40px для відступів
   }
 
@@ -22,7 +23,8 @@
 // Оновити рендеринг для всіх нотних блоків на сторінці
 //--------------------
   async function rerenderAllNotations(){
-    const notationElements = document.querySelectorAll('[id^="notation_match_"]');
+      const notationElements = document.querySelectorAll('[id^="notation_match_"]');
+    console.debug("FOO renderAllNotations - melody-search.js")
     
     for (const el of notationElements) {
       const midiUrl = el.dataset.midiUrl;

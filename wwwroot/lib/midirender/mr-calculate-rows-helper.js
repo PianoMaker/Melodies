@@ -28,30 +28,15 @@ function calculateRows(measures, GENERALWIDTH, BARWIDTH, CLEFZONE = 60, Xmargin 
 // ----------------------
 // Розраховує середню ширину такту на основі кількості нот у кожному такті
 // ----------------------
-function GetMeanBarWidth(BARWIDTH, measures) {
+function GetMeanBarWidth(BARWIDTH, effectiveWidth) {
+	// Обчислюємо доступну ширину для тактів без CLEFZONE
+	
+	const measuresPerRow = Math.floor(effectiveWidth / BARWIDTH) || 1;
 
-	// If measures is not a non-empty array — just return default BARWIDTH without noisy warnings
-	if (!Array.isArray(measures) || measures.length === 0) {
-		console.debug("meanBarWidth: measures empty or invalid, using BARWIDTH fallback");
-		return BARWIDTH;
-	}
+	// Розподіляємо ширину рівномірно
+	const meanBarWidth = Math.floor(effectiveWidth / measuresPerRow);
 
-	console.debug("MR: FOO: midiparser_ext.js - meanBarWidth");
-	let meanBarWidth = BARWIDTH;
-	let sumBarWidth = 0;
-	let currentWidth;
-
-	measures.forEach((m) => {
-		let notesamount = getNumberOfNotes(m);
-		if (notesamount !== undefined) {
-			currentWidth = meanBarWidth / 3 + meanBarWidth * notesamount / 7;
-			sumBarWidth += currentWidth;
-		}
-	});
-
-	meanBarWidth = sumBarWidth / measures.length;
-	console.log(`meanBarWidth total: ${meanBarWidth}`);
-
+	console.warn(`MR: GetMeanBarWidth = ${meanBarWidth}, effectiveWidth=${effectiveWidth}, measuresPerRow=${measuresPerRow}`);
 	return meanBarWidth;
 }
 if (typeof window !== 'undefined') window.GetMeanBarWidth = GetMeanBarWidth;

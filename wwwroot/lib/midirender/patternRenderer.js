@@ -289,6 +289,7 @@
 			let Yposition = TOPPADDING;
 			let isFirstMeasureInRow = true;
 
+			//РЕНДЕР КОЖНОГО ТАКТУ
 			for (let i = 0; i < measures.length; i++) {
 				const previousY = Yposition;
 				({ Xposition, Yposition } = adjustXYposition(
@@ -302,44 +303,21 @@
 				stave.setContext(context).draw();
 
 				const ties = measures[i].ties || [];
-				drawMeasure(measures[i].notes, actualBarWidth, context, stave, ties, i, commentsDiv || { innerHTML: '' }, numerator, denominator, 480);
+				drawMeasure(measures[i].notes, actualBarWidth, context, stave, ties, i, commentsDiv || { innerHTML: '' }, numerator, denominator, 480); // midiRenderer.js
 
 				Xposition += STAVE_WIDTH;
 				isFirstMeasureInRow = false;
 			}
 
-			// Post‑adjust: висоту доводимо до max(totalHeight, bbox.height + extra)
+			// ----------------------
+			// ПІСЛЯ-ОБРОБКА SVG
+			// ----------------------
+			// Динамічно підганяє висоту SVG під фактичний вміст, щоб уникнути зайвих відступів.
 			try {
 				const container = document.getElementById(ELEMENT_FOR_RENDERING);
 				const svg = container && container.querySelector('svg');
-				if (svg && typeof svg.getBBox === 'function') {
-					const adjust = () => {
-						const bbox = svg.getBBox();
-						const contentH = Math.max(totalHeight, Math.ceil((bbox ? bbox.height : 0) + extra));
-						if (contentH > 0) {
-							const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
-							const vbW = vb && vb.width ? vb.width : (parseFloat(svg.getAttribute('width')) || GEN_WIDTH);
-							if (vbW > 0) svg.setAttribute('viewBox', `0 0 ${vbW} ${contentH}`);
-							svg.setAttribute('height', String(contentH));
-							if (svg.style) {
-								svg.style.height = contentH + 'px';
-								svg.style.maxHeight = 'none';
-							}
-							if (container && container.style) {
-								container.style.minHeight = contentH + 'px';
-								container.style.height = contentH + 'px';
-								container.style.maxHeight = 'none';
-								container.style.overflow = 'visible';
-							}
-						}
-					};
-					adjust();
-					if (typeof requestAnimationFrame === 'function') requestAnimationFrame(adjust);
-					setTimeout(adjust, 50);
-				}
-			} catch (e) {
-				console.warn('patternRenderer post-fix svg size failed', e);
-			}
+				adjustSVG(svg);
+			} catch (e) { console.warn('post-fix svg size failed', e); }
 
 			if (commentsDiv) {
 				commentsDiv.innerHTML += `Рядок нот успішно згенеровано (${measures.length} тактів)`;

@@ -193,6 +193,7 @@ async function renderMidiSegmentFromUrl(
 	RESPONSIVE_THRESHOLD = 800
 ) {
 	try {
+		console.info(`MR: FOO: renderMidiSegmentFromUrl GW = ${GENERALWIDTH}`)
 		if (!midiUrl) throw new Error('midiUrl is required');
 		const resp = await fetch(midiUrl);
 		if (!resp.ok) throw new Error(`Failed to fetch MIDI (${resp.status})`);
@@ -374,7 +375,7 @@ function hasNoteOn(measure) {
 
 
 function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, commentsDiv, maxBarsToRender = 1000, startAtMeasureIndex = 0, initialKeySig = null, RESPONSIVE_THRESHOLD = 800) {
-	console.debug("MR: FOO: midiRenderer.js - renderMidiFileToNotation");
+	console.debug(`MR: FOO: midiRenderer.js - renderMidiFileToNotation GW = ${GENERALWIDTH}`);
 	if (!ELEMENT_FOR_RENDERING) {
 		throw new Error(`Element with id ${ELEMENT_FOR_RENDERING} not found.`);
 	}
@@ -395,7 +396,7 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 
 function renderMeasuresToNotation(startAtMeasureIndex, measures, maxBarsToRender, isMidi0, measureMap, ELEMENT_FOR_RENDERING, MIN_SCORE_WIDTH, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin, RESPONSIVE_THRESHOLD, SCALINGFACTOR, ticksPerBeat, commentsDiv, initialKeySig) {
 
-	console.debug(`MR: FOO: renderMeasuerToNotation: start from ${startAtMeasureIndex}, length = ${measures.length}, GEN_WIDTH = ${GENERALWIDTH}, Scaling = ${SCALINGFACTOR}`)
+	console.debug(`MR: FOO: renderMeasuerToNotation: start from ${startAtMeasureIndex}, length = ${measures.length}, GW = ${GENERALWIDTH}, Scaling = ${SCALINGFACTOR}`)
 
 
     var { measuresWindow, startIdx, remaining } = GetScope(startAtMeasureIndex, measures, maxBarsToRender, isMidi0);
@@ -429,7 +430,9 @@ function renderMeasuresToNotation(startAtMeasureIndex, measures, maxBarsToRender
         console.debug(`renderMidiFileToNotation: renderer ${rendererWidth}x${rendererHeight}, scaleFactor=${scaleFactor}`);
 
         const scaledWidth = effectiveWidth / scaleFactor;
-        const scaledBARWIDTH = BARWIDTH;
+		const scaledBARWIDTH = BARWIDTH;
+
+		console.debug(`scaledWidth [RW] = ${scaledWidth} `);
 
         // РЕНДЕРИНГ ТАКТІВ		
         renderMeasures(slicedMap, measuresToRender, ticksPerBeat, score, context, Xmargin, TOPPADDING, scaledBARWIDTH, CLEFZONE, HEIGHT, scaledWidth, commentsDiv, initialKeySig);
@@ -483,6 +486,13 @@ function GetWidths(ELEMENT_FOR_RENDERING, MIN_SCORE_WIDTH, GENERALWIDTH) {
 		MIN_SCORE_WIDTH,
 		containerWidth || GENERALWIDTH || 1200
 	);
+	// ДІАГНОСТИКА: перевірка computed styles
+	if (target) {
+		const computed = window.getComputedStyle(target);
+		console.debug(`MR: Container #${ELEMENT_FOR_RENDERING} - clientWidth=${containerWidth}, computed width=${computed.width}, padding=${computed.paddingLeft}+${computed.paddingRight}`);
+	}
+
+
 	console.debug(`MR: FOO: GetWidth: ${effectiveWidth}, ${containerWidth}`)
 	return { effectiveWidth, containerWidth };
 }
@@ -573,7 +583,8 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
 	// Initialize currentKeySig from provided initialKeySig when rendering slice
 	let currentKeySig = initialKeySig ? { sf: initialKeySig.sf, mi: initialKeySig.mi } : null;
-	let meanBarWidth = GetMeanBarWidth(BARWIDTH, measures);
+
+	let meanBarWidth = GetMeanBarWidth(BARWIDTH, GENERALWIDTH);
 	let isFirstMeasureInRow = true;
 	const activeNotes = {};
 
@@ -641,20 +652,20 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 		let lastNoteOffTime = 0;
 		let lastNoteOnTime = -1;
 
-		// NEW: поточний стан показаних альтерацій у межах такту (letter+octave -> '#','b','n')
+		// поточний стан показаних альтерацій у межах такту (letter+octave -> '#','b','n')
 		const measureAccState = {};
 
-		// Обробляємо кожну подію в такті
+		// ---------------------------------------
+		// Аналізує MIDI-події і складає масив нот
+		// ---------------------------------------
 		renderMeasure();
 
+		//---------------------------------------
+		//пост-обробка масиву нот
+		//----------------------------------------
+
 		// Якщо є "активні" ноти (activeNotes), домалюємо їх до кінця такту
-		if (Object.keys(activeNotes).length > 0) {
-			const nextBoundary = measureMap[index + 1];
-			const measureEndTick = (nextBoundary !== undefined) ? nextBoundary : barStartAbsTime + ticksPerMeasure; // fallback
-			console.debug(`AN: bar ${index + 1}, measureEndTick = ${measureEndTick}`)
-			if (stepRead) stepRead.innerHTML += `<i> act.note</i>`;
-			drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState, clefChoice);
-		}
+		AddActiveNotes();
 
 		// Якщо остання нота не доходить до кінця такту, додаємо паузу
 		if (Object.keys(activeNotes).length === 0) {
@@ -667,33 +678,37 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 
 		console.log(`start to draw measure ${index + 1}`);
 
-		// Передаємо ticksPerBeat в drawMeasure
+		//-------------------
+		// МАЛЮЄМО НОТИ
+		//------------------
 		drawMeasure(notes, meanBarWidth, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat);
 
+		//--------------------
+		//ПОСТ-ОБРОБКА 
+		//--------------------
+		//корегуємо Xposition для наступного такту
 		Xposition += STAVE_WIDTH;
 
 		// Скидаємо флаг після обробки першого такту в рядку
 		isFirstMeasureInRow = false;
 
+		//================================
+		//HELPER_FUNCTIONS
+		//===============================
 
-		// Трансформує MIDI-події у нотний текст
-		// ----------------------
-		// // Для кожної події:
-		// - Якщо це Note On з velocity > 0:
-		//   - Додає паузу на початку такту, якщо це перша нота і немає активних нот.
-		//   - Додає паузи між останньою Note Off і поточною Note On.
-		//   - Перевіряє, чи збігається час з останньою Note On.
-		//   - Додає ноту до активних нот.
-		// - Якщо це Note Off або Note On з velocity = 0:
-		//   - Завершує ноту, обчислює її тривалість.
-		//   - Додає ліги між нотами.
-		//   - Видаляє ноту з активних нот.
-		// - Додає обчислені ноти і паузи до масиву notes[]        
-		// ----------------------
+        function AddActiveNotes() {
+            if (Object.keys(activeNotes).length > 0) {
+                const nextBoundary = measureMap[index + 1];
+                const measureEndTick = (nextBoundary !== undefined) ? nextBoundary : barStartAbsTime + ticksPerMeasure; // fallback
+                console.debug(`AN: bar ${index + 1}, measureEndTick = ${measureEndTick}`);
+                if (stepRead) stepRead.innerHTML += `<i> act.note</i>`;
+                drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState, clefChoice);
+            }
+        }
 
-
-		// --- Replace: renderMeasure inner handler where activeNotes are assigned and removed ---
-		// Обробляємо кожну подію в такті
+		//-----------------------------------------
+		// Функція обробки подій для кожного такту
+		// аналізує міді-події, складає Note-On і Note-Off в нотний масив notes
 		function renderMeasure() {
 			console.debug("MR: FOO: midiRenderer.js - renderMeasure");
 			let isFirstNoteInMeasure = true;
@@ -783,7 +798,9 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 								const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
 								note.__srcTicks = allocatedTicks;
 
-								notes.push(note);
+								//===============================
+								notes.push(note); // ADD NOTE //
+								//===============================
 
 								// Tie from previousNote (could be from earlier piece in same measure or from previous measure)
 								AddTie(previousNote, ties, note);
@@ -1226,13 +1243,13 @@ function adjustXYposition(Xposition, GENERALWIDTH, BARWIDTH, Yposition, HEIGHT, 
 		Xposition = Xmargin;
 		console.log("Yposition updated:", Yposition);
 	} else {
-		console.log(`General width ${GENERALWIDTH} vs ${BARWIDTH} + ${Xposition}`);
+		console.log(`adjustXYposition GW = ${GENERALWIDTH} vs ${BARWIDTH} + ${Xposition}`);
 	}
 	console.log(`Processing measure ${index + 1} starting from tick: ${barStartAbsTime} X=${Xposition}  Y=${Yposition}`);
 	return { Xposition, Yposition };
 }
 
-// Оновлена функція drawMeasure з покращеною обробкою помилок та перевірками
+// Функція drawMeasure
 // ----------------------
 // Параметри:
 // - notes: Масив нот для рендерингу.
@@ -1246,8 +1263,8 @@ function adjustXYposition(Xposition, GENERALWIDTH, BARWIDTH, Yposition, HEIGHT, 
 // - currentDenominator: Поточний знаменник розміру такту.
 // - ticksPerBeat: Кількість тіків на чвертну ноту.
 // Повертає: void
+// Генерує зображення черех Vex.Flow.Voice()
 // ----------------------
-
 
 function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat) {
 	console.debug("MR: FOO: midiRenderer.js - drawMeasure");
