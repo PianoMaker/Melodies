@@ -36,7 +36,7 @@ function GetMeanBarWidth(BARWIDTH, measures) {
 		return BARWIDTH;
 	}
 
-	console.debug("FOO: midiparser_ext.js - meanBarWidth");
+	console.debug("MR: FOO: midiparser_ext.js - meanBarWidth");
 	let meanBarWidth = BARWIDTH;
 	let sumBarWidth = 0;
 	let currentWidth;

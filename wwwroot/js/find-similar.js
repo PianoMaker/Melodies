@@ -1,6 +1,6 @@
 ﻿function detailsModule() {
 	function midiPitchToSearchToken(pitch) {
-		console.log("FOO: [FS] find-similar.js - midiPitchToSearchToken ")
+		console.log("MR: FOO: [FS] find-similar.js - midiPitchToSearchToken ")
 		const sharpNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 		const pc = ((Number(pitch) % 12) + 12) % 12;
 		const name = sharpNames[pc];
@@ -38,7 +38,7 @@
 	// keys - рядок з ключами нот
 	// numerator/denominator - музичний розмір
 	function postKeysToSearch(actionUrl, keys, numerator, denominator) {
-		console.log("FOO: [FS] find-similar.js - postKeysToSearch");
+		console.log("MR: FOO: [FS] find-similar.js - postKeysToSearch");
 		const form = document.createElement("form");
 		form.method = "post";
 		form.action = actionUrl;

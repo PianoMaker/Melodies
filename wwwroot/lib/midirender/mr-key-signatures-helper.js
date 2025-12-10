@@ -3,7 +3,7 @@
 //----------------------
 
 function getInitialKeySignatures(allEvents, targetAbsTime, rawData) {
-	console.debug("FOO: [KS] mr-key-signatures-helper.js - getInitialKeySignatures");
+	console.debug("MR: FOO: [KS] mr-key-signatures-helper.js - getInitialKeySignatures");
 	let initialKeySig = null;
 	try {
 		// get all key signature events and pick the last one with absTime <= targetAbsTime
@@ -84,7 +84,7 @@ function mapKeySignatureName(sf, mi) {
 
 // Побудова карти знаків при ключі для sf (-7..+7)
 function buildKeySignatureMap(sf) {
-	console.debug("FOO: midiRenderer.js - buildKeySignatureMap");
+	console.debug("MR: FOO: midiRenderer.js - buildKeySignatureMap");
 	const sharpOrder = ['f', 'c', 'g', 'd', 'a', 'e', 'b'];
 	const flatOrder = ['b', 'e', 'a', 'd', 'g', 'c', 'f'];
 	const map = {};
@@ -139,7 +139,7 @@ function isKeySignatureEvent(ev) {
 //---------------------------------------------------------------------
 //function getKeySignature(midiEvents) {
 //	if (!Array.isArray(midiEvents)) return [];
-//	console.debug("FOO: mr-key-signatures.js - getKeySignature");
+//	console.debug("MR: FOO: mr-key-signatures.js - getKeySignature");
 
 //	const result = [];
 //	midiEvents.forEach(ev => {
@@ -203,7 +203,7 @@ function isKeySignatureEvent(ev) {
 
 function getKeySignatures(midiFile, rawBytes) {
 	const keys = [];
-	console.debug("FOO: mr-key-signatures.js - getKeySignatures");
+	console.debug("MR: FOO: mr-key-signatures.js - getKeySignatures");
 	const pushKs = (sf, mi) => {
 		if (sf == null || mi == null) return;
 		// normalize signed [-7..7]
@@ -328,7 +328,7 @@ function getKeySignatures(midiFile, rawBytes) {
 // ---------------------------------------------------------------------
 
 function updateKeySignatureFromEvents(events) {
-	console.debug("FOO: [KS] mr-key-signatures-helper.js - updateKeySignatureFromEvents");
+	console.debug("MR: FOO: [KS] mr-key-signatures-helper.js - updateKeySignatureFromEvents");
 	if (!Array.isArray(events)) {
 		console.warn('[KS] no events for update KS detected')
 		return null;

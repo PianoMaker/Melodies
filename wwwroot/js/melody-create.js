@@ -247,7 +247,8 @@ document.addEventListener("DOMContentLoaded", function () {
 			}
 			if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
 			// оновлення повідомлення
-			ifNotesEntered.innerText = "для створення MIDI-файлу натисніть 'зберегти'";
+			if (ifNotesEntered)
+				ifNotesEntered.innerText = "для створення MIDI-файлу натисніть 'зберегти'";
 		});
 
 	});

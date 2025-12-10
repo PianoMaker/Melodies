@@ -57,15 +57,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            // Зменшено HEIGHT і TOPPADDING для мінімізації пустого вертикального простору перед коментарями
+            // Use the same HEIGHT/TOPPADDING used by Details so scale matches
             window.renderMidiSegmentFromUrl(
                 midiUrl,
                 startPos,
                 notationEl.id,
                 commentsElId,
-                900,  // GENERALWIDTH
-                130,  // HEIGHT for row
-                10,   // TOPPADDING
+                900,  // GENERALWIDTH (keep as before)
+                200,  // HEIGHT -> match Details (was 130)
+                20,   // TOPPADDING -> match Details (was 10)
                 250,  // BARWIDTH
                 60,   // CLEFZONE
                 10,   // Xmargin

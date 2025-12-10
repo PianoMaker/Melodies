@@ -15,6 +15,7 @@
 // - ELEMENT_FOR_COMMENTS: id елемента для повідомлень/коментарів
 // - numerator, denominator: розмір такту (4/4 за замовчуванням)
 // - GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin: параметри рендерингу
+// - SCALE_FACTOR (нова, необов'язкова): якщо задано (number) — форсує масштаб (1 = без зміни)
 // --------------------------------------------------------
 
 (function () {
@@ -212,6 +213,10 @@
 
 	/**
 	 * Renders notation from a pattern string into an element (non-MIDI path)
+	 *
+	 * Added optional last parameter: SCALE_FACTOR (number).
+	 * If provided (numeric), it will be used directly as the scale factor
+	 * (default behaviour preserved when omitted).
 	 */
 	function renderPatternString(
 		pattern,
@@ -250,6 +255,7 @@
 			const containerWidth = (notationDiv && notationDiv.clientWidth) ? notationDiv.clientWidth : 0;
 			const GEN_WIDTH = Math.max(MIN_SCORE_WIDTH, containerWidth || GENERALWIDTH || 1200);
 
+
 			// 1) Єдиний bar width для всієї сесії рендера
 			// МІНІМАЛЬНА ШИРИНА ТАКТУ, щоб не були вузькими
 			const MIN_BARWIDTH = 240; // налаштовуване значення
@@ -275,17 +281,8 @@
 			});
 			const context = factory.getContext();
 			const score = factory.EasyScore();
-			scaleContext(scaleFactor, context);
+			//scaleContext(scaleFactor, context);
 
-
-
-			try {
-				if (scaleFactor !== 1 && typeof context.scale === 'function') {
-					context.scale(scaleFactor, scaleFactor);
-				}
-			} catch (e) {
-				console.warn("Scaling failed:", e);
-			}
 
 			// Render measure by measure similar to renderMeasures
 			let Xposition = Xmargin;

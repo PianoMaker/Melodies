@@ -84,3 +84,49 @@
     rerenderAllNotations
   });
 })();
+
+(function(){
+   function attachLazyNotesHandlers() {
+     // show-notes buttons inside placeholders
+     document.querySelectorAll('.show-notes-btn').forEach(btn => {
+       btn.addEventListener('click', (ev) => {
+         ev.preventDefault();
+         const p = btn.closest('.noteslist');
+         renderNotesForElement(p);
+       });
+     });
+ 
+     // clicking a melody block should also render its notes (and allow user to click other melodies)
+     document.querySelectorAll('.melody-block').forEach(block => {
+       block.addEventListener('click', (ev) => {
+         // avoid rendering when clicking buttons/controls inside the block
+         if (ev.target.matches('button, a, input, select, textarea')) return;
+         const p = block.querySelector('.noteslist');
+         if (p) renderNotesForElement(p);
+       });
+     });
+
+     // next/previous navigation: render target melody's notes when user navigates
+     document.querySelectorAll('.song-nav').forEach(navBtn => {
+       navBtn.addEventListener('click', (ev) => {
+         ev.preventDefault();
+         // find current melody-block
+         const current = navBtn.closest('.melody-block');
+         if (!current) return;
+         // choose direction by class (next or prev)
+         const isNext = navBtn.classList.contains('next');
+         // find sibling melody-block in the chosen direction
+         let target = current;
+         while (true) {
+           target = isNext ? target.nextElementSibling : target.previousElementSibling;
+           if (!target) break;
+           if (target.classList && target.classList.contains('melody-block')) break;
+         }
+         if (target && target.classList && target.classList.contains('melody-block')) {
+           const targetNotes = target.querySelector('.noteslist');
+           if (targetNotes) renderNotesForElement(targetNotes);
+         }
+       });
+     });
+   }
+})();
