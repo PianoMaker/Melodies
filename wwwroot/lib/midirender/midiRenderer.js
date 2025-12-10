@@ -1685,14 +1685,16 @@ function getStartIdx(startAtMeasureIndex, measures) {
 // - If any note > 65 -> "treble"
 // - Else if any note < 55 -> "bass"
 // - Else -> "treble"
-function decideClefForMeasure(measure) {
+function decideClefForMeasure(measures) {
 	console.debug("FOO: midiRenderer.js - decideClefForMeasure (updated)");
-	if (!Array.isArray(measure) || measure.length === 0) {
+	// Expect an array of measures where each measure is an array of events.
+	if (!Array.isArray(measures) || measures.length === 0) {
 		return "treble";
 	}
 
 	try {
-		const firstWithNotes = (Array.isArray(measures) && measures.length) ? measures.find(m => hasNoteOn(m)) : null;
+		// Find the first measure that actually contains note events
+		const firstWithNotes = measures.find(m => Array.isArray(m) && hasNoteOn(m)) || [];
 
 		let hasLow = false;   // any note < 55
 		let hasHigh = false;  // any note > 65
@@ -1703,8 +1705,7 @@ function decideClefForMeasure(measure) {
 				if (typeof pitch === 'number') {
 					if (pitch < 55) hasLow = true;
 					if (pitch > 65) hasHigh = true;
-					// Early exit if both found
-					if (hasHigh) break;
+					if (hasHigh) break; // early exit
 				}
 			}
 		}
@@ -1725,7 +1726,6 @@ function decideClefForMeasure(measure) {
 		return "treble";
 	}
 }
-
 	function extractEventsFromArray(uint8) {
 		const midiData = MidiParser.Uint8(uint8);
 		const ticksPerBeat = Array.isArray(midiData.timeDivision) ? 480 : midiData.timeDivision;
