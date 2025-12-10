@@ -25,7 +25,7 @@
 // ==========================
 
 
-window.`setupLiveNotationOnCreate = function ({
+window.setupLiveNotationOnCreate = function ({
     container,
     pianodisplay,
     numeratorInput,
