@@ -73,7 +73,31 @@ function calculateRowsFixedWidth(measuresArr, generalWidth, fixedBarWidth, clefZ
 // Розраховує необхідну висоту для нотного стану на основі кількості рядків
 // ----------------------
 function calculateRequiredHeight(measures, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING = 20, CLEFZONE = 60, Xmargin = 10) {
+	console.debug(`calculateRequiredHeight is called, BARWIDTH = ${BARWIDTH}`);
 	const rows = calculateRows(measures, GENERALWIDTH, BARWIDTH, CLEFZONE, Xmargin);
 	return Math.ceil(rows * HEIGHT) + TOPPADDING;
+}
+
+//ймовірно зайва//----------------------
+function calculateRowsFromPattern(measures, GEN_WIDTH, actualBarWidth, CLEFZONE, Xmargin) {
+	console.debug(`calculateRowsFromPattern is called with act barwidth = ${actualBarWidth}`)
+	return (typeof window.calculateRowsFixedWidth === 'function')
+		? window.calculateRowsFixedWidth(measures, GEN_WIDTH, actualBarWidth, CLEFZONE, Xmargin)
+		: (function fallbackCalc(measuresArr, generalWidth, fixedBarWidth, clefZone, xMargin) {
+			console.debug(`fallbackCalc is called: ${measuresArr, generalWidth, fixedBarWidth}`)
+			let rows = 1;
+			let x = xMargin;
+			for (let i = 0; i < measuresArr.length; i++) {
+				const isFirstInRow = (x === xMargin);
+				let staveWidth = fixedBarWidth + (isFirstInRow ? clefZone : 0);
+				if (x + staveWidth > generalWidth) {
+					rows++;
+					x = xMargin;
+					staveWidth = fixedBarWidth + clefZone;
+				}
+				x += staveWidth;
+			}
+			return rows;
+		})(measures, GEN_WIDTH, actualBarWidth, CLEFZONE, Xmargin);
 }
 

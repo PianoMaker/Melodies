@@ -335,25 +335,6 @@
 	console.info('PR build loaded @', new Date().toISOString());
 })();
 
-function calculateRows(measures, GEN_WIDTH, actualBarWidth, CLEFZONE, Xmargin) {
-    return (typeof window.calculateRowsFixedWidth === 'function')
-        ? window.calculateRowsFixedWidth(measures, GEN_WIDTH, actualBarWidth, CLEFZONE, Xmargin)
-        : (function fallbackCalc(measuresArr, generalWidth, fixedBarWidth, clefZone, xMargin) {
-            let rows = 1;
-            let x = xMargin;
-            for (let i = 0; i < measuresArr.length; i++) {
-                const isFirstInRow = (x === xMargin);
-                let staveWidth = fixedBarWidth + (isFirstInRow ? clefZone : 0);
-                if (x + staveWidth > generalWidth) {
-                    rows++;
-                    x = xMargin;
-                    staveWidth = fixedBarWidth + clefZone;
-                }
-                x += staveWidth;
-            }
-            return rows;
-        })(measures, GEN_WIDTH, actualBarWidth, CLEFZONE, Xmargin);
-}
 
 function getMeasuresFromTokens(tokens, parseToken, numerator, denominator, UNITS_PER_QUARTER, durationToUnits, unitsToDurationList, sumUnits) {
     const items = tokens.map(parseToken).filter(Boolean);

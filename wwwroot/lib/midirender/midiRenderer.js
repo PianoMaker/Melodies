@@ -218,7 +218,8 @@ async function renderMidiSegmentFromUrl(
 		let initialKeySig = getInitialKeySignatures(allEvents, targetAbsTime, uint8);		
 
 		// Render the segment		
-		console.debug(`renderMidiSegmentFromUrl(220): startNoteIndex=${startNoteIndex}, targetAbsTime=${targetAbsTime}, startAtMeasureIndex=${startAtMeasureIndex} height=${HEIGHT}, KeySig = ${initialKeySig.sf} : ${initialKeySig.mi}`);
+		const ksDisplay = initialKeySig ? `${initialKeySig.sf} : ${initialKeySig.mi}` : 'null';
+		+		console.debug(`renderMidiSegmentFromUrl(220): startNoteIndex=${startNoteIndex}, targetAbsTime=${targetAbsTime}, startAtMeasureIndex=${startAtMeasureIndex} height=${HEIGHT}, KeySig = ${ksDisplay}`);
 		const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
 		renderMidiFileToNotation(
 			isMidi0,
@@ -462,7 +463,7 @@ function renderMeasuresToNotation(startAtMeasureIndex, measures, maxBarsToRender
 function getRenderDimensions(effectiveWidth, scaleFactor, rowsHeight, containerWidth) {
 	const rendererWidth = Math.max(Math.round(effectiveWidth / scaleFactor), 200);
 	const rendererHeight = Math.max(Math.round(rowsHeight * scaleFactor * scaleFactor), 100);
-	console.log(`renderMidiFileToNotation: rowsHeight = ${rowsHeight}, containerWidth=${containerWidth}, renderer ${rendererWidth}x${rendererHeight}, scaleFactor=${scaleFactor}`);
+	console.log(`renderMidiFileToNotation: rowsHeight = ${rowsHeight}, containerWidth=${containerWidth}`);
 	return { rendererWidth, rendererHeight };
 }
 
