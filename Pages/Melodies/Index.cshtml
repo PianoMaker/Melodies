@@ -132,12 +132,12 @@
                             {
                                 <button class="btn-melody playbutton"
                                         data-filepath="@item.FilePath" id="playButton_@item.FilePath">
-                                    @* <i class="fas fa-play">?</i> *@
+                                     <i class="fas fa-play"><!--?--></i> 
                                 </button>
                                 <button id="stopButton_@item.FilePath" disabled="disabled"
                                         class="stopButton btn-melody">
-                                    @* <i class="fas fa-stop">?</i> *@
-                                </button>
+                                        <i class="fas fa-stop"><!--?--></i>
+                                    </button>
                             }
                             else if (@item.IsFileEligible is true)
                             {
