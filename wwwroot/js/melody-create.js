@@ -706,6 +706,8 @@ document.addEventListener("DOMContentLoaded", function () {
 			backBtn: document.getElementById('backbtn'),
 			noNotesMsg: document.getElementById('noNotesMsg')
 		});
+		const pattern = (document.getElementById('saver')?.textContent || document.getElementById('lettersdisplay')?.textContent || '').trim();
+		if (pattern) window.renderPatternString(pattern, 'liveNotation', 'patternComments', parseInt(numeratorInput?.value) || 4, parseInt(denominatorInput?.value) || 4);
 	} else {
 		console.warn('[createMelody]: setupLiveNotationOnCreate is not loaded. Ensure /lib/midirender/live-notation.js is included before melody-create.js.');
 	}
@@ -757,6 +759,8 @@ document.addEventListener("DOMContentLoaded", function () {
 			}
 		});
 	}
+
+
 });
 
 //----------------------------
