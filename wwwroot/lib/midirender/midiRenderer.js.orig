@@ -22,11 +22,11 @@
  * Displays success or error messages in the comments element.
  */
 
-function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10) {
+function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 170, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10) {
     console.log("refresh score is running");
 =======
 // виведення нот
-function refreshScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 200, BARWIDTH = 250, TOPPADDING = 10, CLEFZONE = 60, Xmargin = 10) {
+function refreshScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 170, BARWIDTH = 250, TOPPADDING = 10, CLEFZONE = 60, Xmargin = 10) {
     console.log(`refresh score is running, file:`,   `
         GENERALWIDTH: ${GENERALWIDTH}, HEIGHT: ${HEIGHT}, BARWIDTH: ${BARWIDTH}`);
 >>>>>>> mastererror
@@ -44,7 +44,7 @@ function refreshScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERAL
             const uint8 = new Uint8Array(e.target.result);
 
 <<<<<<< HEAD
-            var GENERALHEIGHT = 200;
+            var GENERALHEIGHT = 170;
 
             try {
                 renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin); // ноти , GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin
@@ -93,11 +93,11 @@ function refreshScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERAL
 }
 
 <<<<<<< HEAD
-function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10) {
+function renderMidiFileToNotation(uint8, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 170, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10) {
 =======
 
 ///РЕНДЕР НОТ
-function renderMidiFileToNotation(midiFile, midiEvents, ticksPerBeat, ELEMENT_FOR_RENDERING, GENERALWIDTH, GENERALHEIGHT, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10) {
+function renderMidiFileToNotation(midiFile, midiEvents, ticksPerBeat, ELEMENT_FOR_RENDERING, GENERALWIDTH, GENERALHEIGHT, HEIGHT = 170, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10) {
 >>>>>>> mastererror
     if (!ELEMENT_FOR_RENDERING) {
         throw new Error(`Element with id ${ELEMENT_FOR_RENDERING} not found.`);

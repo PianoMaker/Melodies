@@ -55,7 +55,7 @@ namespace Melodies25.Pages.Melodies
             _logger = logger;
         }
 
-        private int minimummatch = 3;//вивести на контроллер
+        private int minimummatch = 4;//вивести на контроллер
 
         [BindProperty]
         public string Note { get; set; }
@@ -669,6 +669,18 @@ namespace Melodies25.Pages.Melodies
         //--------------------------------
         private void CompareMelodies(MusicMelody MelodyPattern)
         {
+            if (MelodyPattern.NotesList.Count > 6)
+                minimummatch = (int)Math.Ceiling(Math.Pow(MelodyPattern.NotesList.Count, 0.5));
+            else if (MelodyPattern.NotesList.Count > 100)
+                minimummatch = (int)Math.Ceiling(Math.Pow(MelodyPattern.NotesList.Count, 0.4));
+            else
+                minimummatch = 4;
+
+            if (LoggingManager.Comparing)
+                MessageL(COLORS.yellow, $"Nnotes = {MelodyPattern.NotesList.Count} Current minimum match value is {minimummatch}");
+
+            MessageL(COLORS.gray, $"Nnotes = {MelodyPattern.NotesList.Count} Minimum match set to {minimummatch}");
+
             MessageL(COLORS.olive, $"CompareMelodies method {SearchAlgorithm?.ToLowerInvariant()}, intonation = {IfIntonation}, rhythm = {IfRhythm}, maxgap = {MaxGap}");
             var sw = new Stopwatch();
             sw.Start();

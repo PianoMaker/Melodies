@@ -46,7 +46,7 @@ async function renderMidiFromUrl(
 	ELEMENT_FOR_RENDERING = 'notation',
 	ELEMENT_FOR_COMMENTS = 'comments',
 	GENERALWIDTH = 1200,
-	HEIGHT = 200,
+	HEIGHT = 170,
 	TOPPADDING = 20,
 	BARWIDTH = 250,
 	CLEFZONE = 60,
@@ -60,6 +60,7 @@ async function renderMidiFromUrl(
 		const blob = await resp.blob();
 		const filename = midiUrl.split('/').pop() || 'remote.mid';
 		const file = new File([blob], filename, { type: blob.type || 'audio/midi' });
+		console.debug(`MR: FOO: renderMidiFromUrl GW = ${GENERALWIDTH} height =${HEIGHT} maxBarsToRender = ${maxBarsToRender}`)
 
 		drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin, maxBarsToRender, RESPONSIVE_THRESHOLD);
 
@@ -96,7 +97,7 @@ async function renderMidiFromUrl(
  *
  * Механізм - викликає renderMidiFileToNotation, додає повідомлення про успішний або провальний результат.
  */
-function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, maxBarsToRender = 1000, RESPONSIVE_THRESHOLD = 800) {
+function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWIDTH = 1200, HEIGHT = 170, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, maxBarsToRender = 1000, RESPONSIVE_THRESHOLD = 800) {
 	console.debug("MR: FOO: midiRenderer.js - drawScore");
 	const notationDiv = document.getElementById(ELEMENT_FOR_RENDERING);
 	const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
@@ -152,11 +153,8 @@ function drawScore(file, ELEMENT_FOR_RENDERING, ELEMENT_FOR_COMMENTS, GENERALWID
 }
 
 
-
-
-
 /**
- * renderMidiSegmentFromUrl
+ * renderMidiSegment`FromUrl
  * ------------------------
  * Loads MIDI by URL and renders a segment starting from the measure nearest to (and <=) the
  * measure that contains the startNoteIndex-th NoteOn event. Start measure is snapped to multiples of 4 (0,4,8,...).
@@ -187,7 +185,7 @@ async function renderMidiSegmentFromUrl(
 	ELEMENT_FOR_RENDERING = 'notation',
 	ELEMENT_FOR_COMMENTS = 'comments',
 	GENERALWIDTH = 1200,
-	HEIGHT = 200,
+	HEIGHT = 150,
 	TOPPADDING = 20,
 	BARWIDTH = 250,
 	CLEFZONE = 60,
@@ -196,7 +194,8 @@ async function renderMidiSegmentFromUrl(
 	RESPONSIVE_THRESHOLD = 800
 ) {
 	try {
-		console.info(`MR: FOO: renderMidiSegmentFromUrl GW = ${GENERALWIDTH}`)
+		//HEIGHT = 150;
+		console.info(`MR: FOO: renderMidiSegmentFromUrl GW = ${GENERALWIDTH} height =${HEIGHT}`)
 		if (!midiUrl) throw new Error('midiUrl is required');
 		const resp = await fetch(midiUrl);
 		if (!resp.ok) throw new Error(`Failed to fetch MIDI (${resp.status})`);
@@ -216,10 +215,10 @@ async function renderMidiSegmentFromUrl(
 		let startAtMeasureIndex = getStartMeasuerIndex(measureMap, targetAbsTime);
 
 		// --- determine initial key signature active at targetAbsTime ---
-		let initialKeySig = getInitialKeySignatures(allEvents, targetAbsTime, uint8);
+		let initialKeySig = getInitialKeySignatures(allEvents, targetAbsTime, uint8);		
 
 		// Render the segment		
-
+		console.debug(`renderMidiSegmentFromUrl(220): startNoteIndex=${startNoteIndex}, targetAbsTime=${targetAbsTime}, startAtMeasureIndex=${startAtMeasureIndex} height=${HEIGHT}, KeySig = ${initialKeySig.sf} : ${initialKeySig.mi}`);
 		const commentsDiv = document.getElementById(ELEMENT_FOR_COMMENTS);
 		renderMidiFileToNotation(
 			isMidi0,
@@ -377,8 +376,8 @@ function hasNoteOn(measure) {
 // ---------------------
 
 
-function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 200, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, commentsDiv, maxBarsToRender = 1000, startAtMeasureIndex = 0, initialKeySig = null, RESPONSIVE_THRESHOLD = 800) {
-	console.debug(`MR: FOO: midiRenderer.js - renderMidiFileToNotation GW = ${GENERALWIDTH}`);
+function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_RENDERING, GENERALWIDTH, HEIGHT = 170, TOPPADDING = 20, BARWIDTH = 250, CLEFZONE = 60, Xmargin = 10, commentsDiv, maxBarsToRender = 1000, startAtMeasureIndex = 0, initialKeySig = null, RESPONSIVE_THRESHOLD = 800) {
+	console.debug(`MR: FOO: midiRenderer.js - renderMidiFileToNotation GW = ${GENERALWIDTH}, height = ${HEIGHT}, maxBarsToRender = ${maxBarsToRender}`);
 	if (!ELEMENT_FOR_RENDERING) {
 		throw new Error(`Element with id ${ELEMENT_FOR_RENDERING} not found.`);
 	}
@@ -399,7 +398,7 @@ function renderMidiFileToNotation(isMidi0, allEvents, ticksPerBeat, ELEMENT_FOR_
 
 function renderMeasuresToNotation(startAtMeasureIndex, measures, maxBarsToRender, isMidi0, measureMap, ELEMENT_FOR_RENDERING, MIN_SCORE_WIDTH, GENERALWIDTH, BARWIDTH, HEIGHT, TOPPADDING, CLEFZONE, Xmargin, RESPONSIVE_THRESHOLD, SCALINGFACTOR, ticksPerBeat, commentsDiv, initialKeySig) {
 
-	console.debug(`MR: FOO: renderMeasuerToNotation: start from ${startAtMeasureIndex}, length = ${measures.length}, GW = ${GENERALWIDTH}, Scaling = ${SCALINGFACTOR}`)
+	console.debug(`MR: FOO: renderMeasuerToNotation: start from ${startAtMeasureIndex}, length = ${measures.length}, GW = ${GENERALWIDTH}, Scaling = ${SCALINGFACTOR}, Height = ${HEIGHT}`)
 
 
     var { measuresWindow, startIdx, remaining } = GetScope(startAtMeasureIndex, measures, maxBarsToRender, isMidi0);
@@ -463,7 +462,7 @@ function renderMeasuresToNotation(startAtMeasureIndex, measures, maxBarsToRender
 function getRenderDimensions(effectiveWidth, scaleFactor, rowsHeight, containerWidth) {
 	const rendererWidth = Math.max(Math.round(effectiveWidth / scaleFactor), 200);
 	const rendererHeight = Math.max(Math.round(rowsHeight * scaleFactor * scaleFactor), 100);
-	console.log(`renderMidiFileToNotation: rowsHeight = ${rowsHeight}, containerWidth=${containerWidth}, effectiveWidth=${effectiveWidth}, renderer ${rendererWidth}x${rendererHeight}, scaleFactor=${scaleFactor}`);
+	console.log(`renderMidiFileToNotation: rowsHeight = ${rowsHeight}, containerWidth=${containerWidth}, renderer ${rendererWidth}x${rendererHeight}, scaleFactor=${scaleFactor}`);
 	return { rendererWidth, rendererHeight };
 }
 

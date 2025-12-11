@@ -225,7 +225,7 @@
 		numerator = 4,
 		denominator = 4,
 		GENERALWIDTH = 1200,
-		HEIGHT = 200,
+		HEIGHT = 170,
 		TOPPADDING = 20,
 		BARWIDTH = 250,
 		CLEFZONE = 60,

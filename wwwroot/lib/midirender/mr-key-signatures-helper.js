@@ -9,16 +9,27 @@ function getInitialKeySignatures(allEvents, targetAbsTime, rawData) {
 		// get all key signature events and pick the last one with absTime <= targetAbsTime
 		if (typeof getKeySignature === 'function') {
 			const keySigs = getKeySignature(allEvents, rawData); // returns array with absTime, sf, mode/name
+			console.debug(`MR: [KS] Found ${keySigs.length} key signature events`);
+
 			if (Array.isArray(keySigs) && keySigs.length) {
 				const candidates = keySigs.filter(k => (k.absTime || 0) <= targetAbsTime);
 				const last = candidates.length ? candidates[candidates.length - 1] : null;
 				if (last) initialKeySig = { sf: last.sf, mi: last.mode ?? 0 };
 			}
 		}
+		else if (typeof updateKeySignatureFromEvents === 'function') {
+			// Fallback: use updateKeySignatureFromEvents to scan events up to targetAbsTime
+			const eventsUpToTarget = allEvents.filter(ev => (ev.absTime || 0) <= targetAbsTime);
+			initialKeySig = updateKeySignatureFromEvents(eventsUpToTarget);
+		}
+		else {
+			console.warn('[KS] No key signature extraction functions available');
+		}
 	} catch (ksErr) {
 		console.warn('[KS] Could not determine initialKeySig for segment:', ksErr);
 		initialKeySig = null;
 	}
+	console.debug(`MR: [KS] = ${initialKeySig ? initialKeySig.sf : 'null'} : ${initialKeySig ? initialKeySig.mi : 'null'}`)
 	return initialKeySig;
 }
 

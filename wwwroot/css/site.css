@@ -1311,3 +1311,10 @@ p {
         pointer-events: auto !important;
     }
 }
+
+/* приховати всі блоки melody (без !important) */
+div[id^="melody"] {
+  display: none;
+}
+
+.hidden-melody { display: none; }

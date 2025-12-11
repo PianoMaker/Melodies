@@ -1,134 +1,326 @@
-(function(){
-  function calcAdaptiveWidth(){
-      const w = window.innerWidth || 1200;
-      console.debug(`calcAdaptiveWidth: GW = ${w}`)
-    return Math.min(1200, Math.max(320, w - 40)); // 40px äëÿ â³äñòóï³â
-  }
+ï»¿
+document.addEventListener("DOMContentLoaded", function () {
 
-  function calcAdaptiveHeight(){
-    const baseHeight = 150;
-    const screenFactor = (window.innerWidth < 768) ? 0.8 : 1;
-    return Math.round(baseHeight * screenFactor);
-  }
+	// Bind LCS gap display and enable/disable based on algorithm
+	const gap = document.getElementById('lcsGap');
+	const gapVal = document.getElementById('lcsGapVal');
+	const algSub = document.getElementById('algSubstring');
+	const algSeq = document.getElementById('algSubsequence');
+	const BARSTODISPLAY = 12;
 
-  function calcAdaptiveBarWidth(){
-    const containerWidth = calcAdaptiveWidth();
-    const minBarWidth = 180;
-    const maxBarWidth = 250;
-    // Àäàïòèâíà øèðèíà òàêòó çàëåæíî â³ä êîíòåéíåðà
-    return Math.min(maxBarWidth, Math.max(minBarWidth, containerWidth / 5));
-  }
 
-//--------------------
-// Îíîâèòè ðåíäåðèíã äëÿ âñ³õ íîòíèõ áëîê³â íà ñòîð³íö³
-//--------------------
-  async function rerenderAllNotations(){
-      const notationElements = document.querySelectorAll('[id^="notation_match_"]');
-    console.debug("FOO renderAllNotations - melody-search.js")
-    
-    for (const el of notationElements) {
-      const midiUrl = el.dataset.midiUrl;
-      const startPosition = parseInt(el.dataset.startPosition) || 0;
-      const commentsId = el.dataset.commentsId;
-      
-      if (midiUrl && typeof renderMidiSegmentFromUrl === 'function') {
-        const width = calcAdaptiveWidth();
-        const height = calcAdaptiveHeight();
-        const barWidth = calcAdaptiveBarWidth();
-        
-        try {
-          await renderMidiSegmentFromUrl(
-            midiUrl,
-            startPosition,
-            el.id,
-            commentsId,
-            width,    // GENERALWIDTH
-            height,   // HEIGHT  
-            20,       // TOPPADDING
-            barWidth, // BARWIDTH
-            60,       // CLEFZONE
-            10,       // Xmargin
-            12        // barsToRender
-          );
-        } catch (e) {
-          console.warn(`Failed to render notation for ${el.id}:`, e);
-        }
-      }
-    }
-  }
+	function calcAdaptiveWidth() {
+		const w = window.innerWidth || 1200;
+		console.debug(`calcAdaptiveWidth: GW = ${w}`)
+		return Math.min(1200, Math.max(320, w - 40)); // 40px Ð´Ð»Ñ Ð²Ñ–Ð´ÑÑ‚ÑƒÐ¿Ñ–Ð²
+	}
 
-  function init(){
-    // ---- çàêîìåíòîâàíî àâòîìàòè÷íèé ìàñîâèé ðåíäåð (âèêëèêàº äóáëþâàííÿ ç search.js) ----
-    // setTimeout(rerenderAllNotations, 100);
-    
-    // Çàì³ñòü àâòîìàòè÷íîãî ìàñîâîãî ðåíäåðà, ìîæíà âèêëèêàòè âðó÷íó ïðè ïîòðåá³:
-    // window.MelodySearch && window.MelodySearch.rerenderAllNotations && window.MelodySearch.rerenderAllNotations();
+	//function calcAdaptiveHeight() {
+	//	const baseHeight = 150;
+	//	const screenFactor = (window.innerWidth < 768) ? 0.8 : 1;
+	//	const height = Math.floor(baseHeight * screenFactor);
+	//	console.debug(`calcAdaptiveHeight: height = ${height}`)
+	//	return height;
+	//}
 
-    // ---- çàêîìåíòîâàíî àâòîìàòè÷íèé resize-trigger, ùîá íå ïîâòîðþâàòè rerender ----
-    // let resizeTimer;
-    // window.addEventListener('resize', () => {
-    //   clearTimeout(resizeTimer);
-    //   resizeTimer = setTimeout(rerenderAllNotations, 300);
-    // });
-  }
+	//function calcAdaptiveBarWidth() {
+	//	const containerWidth = calcAdaptiveWidth();
+	//	const minBarWidth = 180;
+	//	const maxBarWidth = 250;
+	//	// ÐÐ´Ð°Ð¿Ñ‚Ð¸Ð²Ð½Ð° ÑˆÐ¸Ñ€Ð¸Ð½Ð° Ñ‚Ð°ÐºÑ‚Ñƒ Ð·Ð°Ð»ÐµÐ¶Ð½Ð¾ Ð²Ñ–Ð´ ÐºÐ¾Ð½Ñ‚ÐµÐ¹Ð½ÐµÑ€Ð°
+	//	return Math.min(maxBarWidth, Math.max(minBarWidth, containerWidth / 5));
+	//}
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+	//--------------------
+	// ÐžÐ½Ð¾Ð²Ð¸Ñ‚Ð¸ Ñ€ÐµÐ½Ð´ÐµÑ€Ð¸Ð½Ð³ Ð´Ð»Ñ Ð²ÑÑ–Ñ… Ð½Ð¾Ñ‚Ð½Ð¸Ñ… Ð±Ð»Ð¾ÐºÑ–Ð² Ð½Ð° ÑÑ‚Ð¾Ñ€Ñ–Ð½Ñ†Ñ–
+	//--------------------
+	//async function rerenderAllNotations() {
+	//	const notationElements = document.querySelectorAll('[id^="notation_match_"]');
+	//	console.debug("FOO: renderAllNotations - melody-search.js")
 
-  // Åêñïîðò äëÿ â³äëàäêè
-  window.MelodySearch = Object.assign(window.MelodySearch || {}, {
-    calcAdaptiveWidth,
-    calcAdaptiveHeight, 
-    calcAdaptiveBarWidth,
-    rerenderAllNotations
-  });
-})();
+	//	for (const el of notationElements) {
+	//		const midiUrl = el.dataset.midiUrl;
+	//		const startPosition = parseInt(el.dataset.startPosition) || 0;
+	//		const commentsId = el.dataset.commentsId;
 
-(function(){
-   function attachLazyNotesHandlers() {
-     // show-notes buttons inside placeholders
-     document.querySelectorAll('.show-notes-btn').forEach(btn => {
-       btn.addEventListener('click', (ev) => {
-         ev.preventDefault();
-         const p = btn.closest('.noteslist');
-         renderNotesForElement(p);
-       });
-     });
- 
-     // clicking a melody block should also render its notes (and allow user to click other melodies)
-     document.querySelectorAll('.melody-block').forEach(block => {
-       block.addEventListener('click', (ev) => {
-         // avoid rendering when clicking buttons/controls inside the block
-         if (ev.target.matches('button, a, input, select, textarea')) return;
-         const p = block.querySelector('.noteslist');
-         if (p) renderNotesForElement(p);
-       });
-     });
+	//		if (midiUrl && typeof renderMidiSegmentFromUrl === 'function') {
+	//			const width = calcAdaptiveWidth();
+	//			const height = calcAdaptiveHeight();
+	//			const barWidth = calcAdaptiveBarWidth();
 
-     // next/previous navigation: render target melody's notes when user navigates
-     document.querySelectorAll('.song-nav').forEach(navBtn => {
-       navBtn.addEventListener('click', (ev) => {
-         ev.preventDefault();
-         // find current melody-block
-         const current = navBtn.closest('.melody-block');
-         if (!current) return;
-         // choose direction by class (next or prev)
-         const isNext = navBtn.classList.contains('next');
-         // find sibling melody-block in the chosen direction
-         let target = current;
-         while (true) {
-           target = isNext ? target.nextElementSibling : target.previousElementSibling;
-           if (!target) break;
-           if (target.classList && target.classList.contains('melody-block')) break;
-         }
-         if (target && target.classList && target.classList.contains('melody-block')) {
-           const targetNotes = target.querySelector('.noteslist');
-           if (targetNotes) renderNotesForElement(targetNotes);
-         }
-       });
-     });
-   }
-})();
+	//			console.debug(`Rendering notation for ${el.id} with width=${width}, height=${height}, barWidth=${barWidth}`);
+	//			try {
+	//				await renderMidiSegmentFromUrl(
+	//					midiUrl,
+	//					startPosition,
+	//					el.id,
+	//					commentsId,
+	//					width,    // GENERALWIDTH
+	//					height,   // HEIGHT  
+	//					20,       // TOPPADDING
+	//					barWidth, // BARWIDTH
+	//					60,       // CLEFZONE
+	//					10,       // Xmargin
+	//					12        // barsToRender
+	//				);
+	//			} catch (e) {
+	//				console.warn(`Failed to render notation for ${el.id}:`, e);
+	//			}
+	//		}
+	//	}
+	//}
+
+	////function init(){
+	//  // ---- Ð·Ð°ÐºÐ¾Ð¼ÐµÐ½Ñ‚Ð¾Ð²Ð°Ð½Ð¾ Ð°Ð²Ñ‚Ð¾Ð¼Ð°Ñ‚Ð¸Ñ‡Ð½Ð¸Ð¹ Ð¼Ð°ÑÐ¾Ð²Ð¸Ð¹ Ñ€ÐµÐ½Ð´ÐµÑ€ (Ð²Ð¸ÐºÐ»Ð¸ÐºÐ°Ñ” Ð´ÑƒÐ±Ð»ÑŽÐ²Ð°Ð½Ð½Ñ Ð· search.js) ----
+	//  // setTimeout(rerenderAllNotations, 100);
+
+	//  // Ð—Ð°Ð¼Ñ–ÑÑ‚ÑŒ Ð°Ð²Ñ‚Ð¾Ð¼Ð°Ñ‚Ð¸Ñ‡Ð½Ð¾Ð³Ð¾ Ð¼Ð°ÑÐ¾Ð²Ð¾Ð³Ð¾ Ñ€ÐµÐ½Ð´ÐµÑ€Ð°, Ð¼Ð¾Ð¶Ð½Ð° Ð²Ð¸ÐºÐ»Ð¸ÐºÐ°Ñ‚Ð¸ Ð²Ñ€ÑƒÑ‡Ð½Ñƒ Ð¿Ñ€Ð¸ Ð¿Ð¾Ñ‚Ñ€ÐµÐ±Ñ–:
+	//  // window.MelodySearch && window.MelodySearch.rerenderAllNotations && window.MelodySearch.rerenderAllNotations();
+
+	//  // ---- Ð·Ð°ÐºÐ¾Ð¼ÐµÐ½Ñ‚Ð¾Ð²Ð°Ð½Ð¾ Ð°Ð²Ñ‚Ð¾Ð¼Ð°Ñ‚Ð¸Ñ‡Ð½Ð¸Ð¹ resize-trigger, Ñ‰Ð¾Ð± Ð½Ðµ Ð¿Ð¾Ð²Ñ‚Ð¾Ñ€ÑŽÐ²Ð°Ñ‚Ð¸ rerender ----
+	//  // let resizeTimer;
+	//  // window.addEventListener('resize', () => {
+	//  //   clearTimeout(resizeTimer);
+	//  //   resizeTimer = setTimeout(rerenderAllNotations, 300);
+	//  // });
+	//}
+
+	//if (document.readyState === 'loading') {
+	//  document.addEventListener('DOMContentLoaded', init);
+	//} else {
+	//  init();
+	//}
+
+	//// Ð•ÐºÑÐ¿Ð¾Ñ€Ñ‚ Ð´Ð»Ñ Ð²Ñ–Ð´Ð»Ð°Ð´ÐºÐ¸
+	//window.MelodySearch = Object.assign(window.MelodySearch || {}, {
+	//  calcAdaptiveWidth,
+	//  calcAdaptiveHeight, 
+	//  calcAdaptiveBarWidth,
+	//  rerenderAllNotations
+	//});
+
+
+
+	//function attachLazyNotesHandlers() {
+	//	// show-notes buttons inside placeholders
+	//	document.querySelectorAll('.show-notes-btn').forEach(btn => {
+	//		btn.addEventListener('click', (ev) => {
+	//			ev.preventDefault();
+	//			const p = btn.closest('.noteslist');
+	//			renderNotesForElement(p);
+	//		});
+	//	});
+
+	//	// clicking a melody block should also render its notes (and allow user to click other melodies)
+	//	document.querySelectorAll('.melody-block').forEach(block => {
+	//		block.addEventListener('click', (ev) => {
+	//			// avoid rendering when clicking buttons/controls inside the block
+	//			if (ev.target.matches('button, a, input, select, textarea')) return;
+	//			const p = block.querySelector('.noteslist');
+	//			if (p) renderNotesForElement(p);
+	//		});
+	//	});
+
+	//	// next/previous navigation: render target melody's notes when user navigates
+	//	document.querySelectorAll('.song-nav').forEach(navBtn => {
+	//		navBtn.addEventListener('click', (ev) => {
+	//			ev.preventDefault();
+	//			// find current melody-block
+	//			const current = navBtn.closest('.melody-block');
+	//			if (!current) return;
+	//			// choose direction by class (next or prev)
+	//			const isNext = navBtn.classList.contains('next');
+	//			// find sibling melody-block in the chosen direction
+	//			let target = current;
+	//			while (true) {
+	//				target = isNext ? target.nextElementSibling : target.previousElementSibling;
+	//				if (!target) break;
+	//				if (target.classList && target.classList.contains('melody-block')) break;
+	//			}
+	//			if (target && target.classList && target.classList.contains('melody-block')) {
+	//				const targetNotes = target.querySelector('.noteslist');
+	//				if (targetNotes) renderNotesForElement(targetNotes);
+	//			}
+	//		});
+	//	});
+	//}
+
+
+
+	// Responsive: shorten song-title on narrow screens
+	function adjustSongTitles() {
+		const breakpoint = 720; // px
+		const useShort = window.innerWidth <= breakpoint;
+		document.querySelectorAll('.song-title').forEach(el => {
+			const full = el.dataset.full ?? el.textContent ?? '';
+			const short = el.dataset.short ?? full;
+			el.textContent = useShort ? short : full;
+		});
+	}
+
+	// debounce helper
+	function debounce(fn, wait) {
+		let t = null;
+		return function () {
+			clearTimeout(t);
+			t = setTimeout(() => fn.apply(this, arguments), wait);
+		};
+	}
+
+	// Ð”Ð¾Ð¿Ð¾Ð¼Ñ–Ð¶Ð½Ð°: Ñ€ÐµÐ½Ð´ÐµÑ€ Ð½Ð¾Ñ‚Ð°Ñ†Ñ–Ñ— Ð´Ð»Ñ ÐºÐ¾Ð½ÐºÑ€ÐµÑ‚Ð½Ð¾Ð³Ð¾ ÐºÐ¾Ð½Ñ‚ÐµÐ¹Ð½ÐµÑ€Ð° melodyN
+	function renderNotationForMelodyContainer(melodyContainer) {
+		if (!melodyContainer) return;
+
+		// ÑˆÑƒÐºÐ°Ñ”Ð¼Ð¾ notation-ÐºÐ¾Ð½Ñ‚ÐµÐ¹Ð½ÐµÑ€ ÑƒÑÐµÑ€ÐµÐ´Ð¸Ð½Ñ– Ð±Ð»Ð¾ÐºÑƒ Ð¼ÐµÐ»Ð¾Ð´Ñ–Ñ—
+		const notationEl = melodyContainer.querySelector("div[id^='notation_match_']");
+		if (!notationEl) return;
+
+		// ÑƒÐ½Ð¸ÐºÐ°Ñ”Ð¼Ð¾ Ð¿Ð¾Ð²Ñ‚Ð¾Ñ€Ð½Ð¾Ð³Ð¾ Ñ€ÐµÐ½Ð´ÐµÑ€Ñƒ
+		if (notationEl.dataset.rendered === "1") return;
+
+		const midiUrl = notationEl.dataset.midiUrl;
+		const startPos = parseInt(notationEl.dataset.startPosition ?? "0", 10) || 0;
+		const commentsId = notationEl.dataset.commentsId;
+		const commentsElId = commentsId || (function () {
+			const id = notationEl.id || "";
+			return id.replace("notation_match_", "comments_match_");
+		})();
+
+		if (!midiUrl || typeof window.renderMidiSegmentFromUrl !== "function") {
+			console.warn("Notation render skipped: midiUrl or renderer is missing");
+			return;
+		}
+
+		try {
+			console.log(`search.js Rendering notation for ${notationEl.id} from ${midiUrl} starting at ${startPos}`);
+			// Use the same HEIGHT/TOPPADDING used by Details so scale matches
+			window.renderMidiSegmentFromUrl(
+				midiUrl,
+				startPos,
+				notationEl.id,
+				commentsElId,
+				1200,  // GENERALWIDTH (keep as before)
+				150,  // HEIGHT 
+				20,   // TOPPADDING -> match Details (was 10)
+				250,  // BARWIDTH
+				60,   // CLEFZONE
+				10,   // Xmargin
+				BARSTODISPLAY    // barsToRender
+			);
+			notationEl.dataset.rendered = "1";
+		} catch (e) {
+			console.warn("renderMidiSegmentFromUrl failed", e);
+		}
+	}
+
+	// helper: select melody by index (shared by row click and nav buttons)
+	function selectMelodyByIndex(index) {
+		if (!melodies || melodies.length === 0) return;
+		index = Math.max(0, Math.min(index, melodies.length - 1));
+
+		// hide all
+		melodies.forEach(m => m.style.display = 'none');
+		// show selected
+		const selected = document.getElementById(`melody${index}`);
+		if (selected) {
+			selected.style.display = 'block';
+			renderNotationForMelodyContainer(selected);
+		}
+
+		// update row highlight using CSS class to override td backgrounds
+		rows.forEach(r => r.classList.remove('selected-row'));
+		if (rows[index]) rows[index].classList.add('selected-row');
+	}
+
+
+	function updateGapEnabled() {
+		const enabled = algSeq && algSeq.checked;
+		if (gap) gap.disabled = !enabled;
+		const labelWrap = gap ? gap.nextElementSibling : null; // span with value
+		if (labelWrap) {
+			if (enabled) labelWrap.classList.remove('text-muted');
+			else labelWrap.classList.add('text-muted');
+		}
+	}
+
+	// Ð¡ÐšÐžÐ ÐžÐ§Ð•ÐÐÐ¯ ÐÐÐ—Ð’ ÐŸÐ†Ð¡Ð•ÐÐ¬
+
+	adjustSongTitles();
+	window.addEventListener('resize', debounce(adjustSongTitles, 120));
+
+	// ÐŸÐ Ð˜Ð¥ÐžÐ’ÐÐÐÐ¯/Ð Ð•ÐÐ”Ð•Ð  ÐÐžÐ¢ÐÐ¦Ð†Ð™ ÐŸÐž Ð—ÐÐŸÐ˜Ð¢Ð£	
+	let rows = document.querySelectorAll("table tbody tr");
+	let melodies = document.querySelectorAll("div[id^='melody']");
+	melodies.forEach(melody => melody.style.display = "none");
+	if (melodies.length > 0) {
+		selectMelodyByIndex(0);
+	}
+	// Ð”Ð¾Ð´Ð°Ñ”Ð¼Ð¾ Ð¾Ð±Ñ€Ð¾Ð±Ð½Ð¸Ðº Ð¿Ð¾Ð´Ñ–Ð¹ Ð´Ð»Ñ ÐºÐ¾Ð¶Ð½Ð¾Ð³Ð¾ Ñ€ÑÐ´ÐºÐ°
+	rows.forEach((row, index) => {
+		row.addEventListener("click", function () {
+			console.log(`displaying melody ${index}`);
+			selectMelodyByIndex(index);
+		});
+	});
+
+	// Ð ÐµÐ½Ð´ÐµÑ€ Ð·Ð½Ð°Ð¹Ð´ÐµÐ½Ð¸Ñ… Ð¼ÐµÐ»Ð¾Ð´Ñ–Ð¹ Ð¿Ð¾ ÐºÐ»Ñ–ÐºÑƒ Ð½Ð° Ð½Ð¸Ñ…
+	const container = document.getElementById('matchedMelodiesContainer');
+	if (container && typeof window.renderMidiFromUrl === 'function') {
+		function clearAllNotations() {
+			document.querySelectorAll('[id^="notation_match_"]').forEach(div => div.innerHTML = '');
+			document.querySelectorAll('[id^="comments_match_"]').forEach(div => div.innerHTML = '');
+		}
+		container.addEventListener('click', function (e) {
+			const melodyBlock = e.target.closest('.melody-block');
+			// navigation buttons handling: prev / next
+			const navBtn = e.target.closest('.song-nav');
+			if (navBtn && container.contains(navBtn)) {
+				e.preventDefault();
+				// find current visible index
+				const currentIndex = Array.from(melodies).findIndex(m => m.style.display && m.style.display !== 'none');
+				if (navBtn.classList.contains('prev')) {
+					selectMelodyByIndex((currentIndex === -1 ? 0 : currentIndex) - 1);
+				} else if (navBtn.classList.contains('next')) {
+					selectMelodyByIndex((currentIndex === -1 ? 0 : currentIndex) + 1);
+				}
+				return;
+			}
+
+			if (!melodyBlock || !container.contains(melodyBlock)) return;
+			const notationDiv = melodyBlock.querySelector('[id^="notation_match_"]');
+			if (!notationDiv) return;
+			const midiUrl = notationDiv.getAttribute('data-midi-url');
+			const commentsId = notationDiv.getAttribute('data-comments-id');
+			if (!midiUrl) return;
+			try {
+				clearAllNotations();
+				window.renderMidiFromUrl(midiUrl, 12, notationDiv.id, commentsId);
+				notationDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			} catch (e) {
+				console.warn('renderMidiFromUrl failed', e);
+			}
+		});
+	}
+
+	// UI adjustments
+	console.log("adjusting NoteSearch UI");
+	const saveButton = document.getElementById("createMIDI");
+	if (saveButton) {
+		saveButton.textContent = "Ð¿Ð¾Ð¿ÐµÑ€ÐµÐ´Ð½Ñ–Ð¹ Ð¿ÐµÑ€ÐµÐ³Ð»ÑÐ´";
+	}
+
+
+
+	if (gap && gapVal) {
+		gap.addEventListener('input', () => gapVal.textContent = gap.value);
+	}
+	if (algSub) algSub.addEventListener('change', updateGapEnabled);
+	if (algSeq) algSeq.addEventListener('change', updateGapEnabled);
+	updateGapEnabled();
+
+	// Hide loading and show results after DOM is ready
+	const loadingEl = document.getElementById('searchLoading');
+	const resultsEls = document.querySelectorAll('.notescontainer, .table');
+	if (loadingEl) loadingEl.style.display = 'none';
+	resultsEls.forEach(el => el.classList.remove('hide'));
+});

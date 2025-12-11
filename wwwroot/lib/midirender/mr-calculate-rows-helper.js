@@ -3,9 +3,10 @@
 // ----------------------
 function calculateRows(measures, GENERALWIDTH, BARWIDTH, CLEFZONE = 60, Xmargin = 10) {
 	try {
+		console.debug('calculateRows called with:', { measures, GENERALWIDTH, BARWIDTH, CLEFZONE, Xmargin });
 		let rows = 1;
-		let x = Xmargin;
-		const actualBarWidth = (typeof GetMeanBarWidth === 'function') ? GetMeanBarWidth(BARWIDTH, measures) : BARWIDTH;
+		let x = Xmargin;		
+		const actualBarWidth = (typeof GetMeanBarWidth === 'function') ? GetMeanBarWidth(BARWIDTH, GENERALWIDTH) : BARWIDTH;
 		const measuresCount = (measures && measures.length) || 0;
 		for (let i = 0; i < measuresCount; i++) {
 			const isFirstInRow = (x === Xmargin);
@@ -47,6 +48,7 @@ if (typeof window !== 'undefined') window.GetMeanBarWidth = GetMeanBarWidth;
 // ----------------------
 function calculateRowsFixedWidth(measuresArr, generalWidth, fixedBarWidth, clefZone = 60, xMargin = 10) {
 	try {
+		console.debug('calculateRowsFixedWidth called with:', { measuresArr, generalWidth, fixedBarWidth, clefZone, xMargin });
 		let rows = 1;
 		let x = xMargin;
 		const count = Array.isArray(measuresArr) ? measuresArr.length : 0;

@@ -14,8 +14,14 @@
       const vbHeight = vb ? vb.height : null;
       const bbox = svg.getBBox ? svg.getBBox() : null;
       const contentHeight = (bbox && bbox.height) ? bbox.height + 10 : (vbHeight || 0);
-      const styleH = parseFloat(window.getComputedStyle(container).height) || 0;
-      if (contentHeight > 0 && styleH > 0 && contentHeight > styleH) {
+
+      // Use actual container height values rather than only computed style.
+      const containerHeight = container.clientHeight || container.offsetHeight || 0;
+      const scrollHeight = container.scrollHeight || 0;
+
+      // If the content is taller than the container, grow it to fit.
+      const currentVisible = Math.max(containerHeight, scrollHeight);
+      if (contentHeight > 0 && contentHeight > currentVisible) {
         container.style.height = Math.ceil(contentHeight) + 'px';
       }
     } catch (e) { console.warn('ensureNotationHeightFitsAll failed', e); }
