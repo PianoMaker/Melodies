@@ -1,4 +1,6 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
+﻿//Увага: Tone підключений до зовнішньої бібліотеки
+
+document.addEventListener("DOMContentLoaded", () => {
     let synth = new Tone.Synth().toDestination();
     Tone.start();
 

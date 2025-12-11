@@ -14,7 +14,7 @@ git restore --source=twoDatabases E:\Programming\Melodies\lifehack.txt
 
 git restore --source=master E:\Programming\Melodies\wwwroot\js
 
-
-
         Add-Migration EnNames_provided -Context Melodies25Context
         Update-Database -Context Melodies25Context
+
+        сайт опубліковано - http://pianomaker2-001-site1.jtempurl.com/
