@@ -8,11 +8,10 @@
     <dl class="row">
         <dt class="col-sm-3">Email</dt>
         <dd class="col-sm-9">@Model.Email</dd>
-        <dt class="col-sm-3">Ім'я користувача</dt>
-        <dd class="col-sm-9">@Model.UserName</dd>
-        <dt class="col-sm-3">Статус користувача</dt>
-        <dd class="col-sm-9">@Model.Role</dd>
-        <!-- Додайте інші поля за потреби -->
+        @* <dt class="col-sm-3">Ім'я користувача</dt>
+        <dd class="col-sm-9">@Model.UserName</dd> *@
+        <dt class="col-sm-3">Статус</dt>
+        <dd class="col-sm-9">@Model.Role</dd>        
     </dl>
 
 <a class="btn btn-melody" asp-page="/Account/ChangePassword">Змінити пароль</a>

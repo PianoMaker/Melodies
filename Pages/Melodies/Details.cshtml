@@ -255,7 +255,7 @@
             <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
             <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку мелодій</a>
 
-            @* запускає сторінку пошуку, атрибут notesearchHandlerUrl передається як адреса міді-файлу поточної мелодії *@
+            @* запускає сторінку пошуку, атрибут notesearchHandlerUrl передається як адреса міді-файлу поточної мелодії, працює через find-similar.js' *@
             <button id="findSimilarBtn" type="button"
                     class="btn btn-outline-dark light-background link-dark"
                     data-search-url="@notesearchHandlerUrl">
@@ -267,12 +267,7 @@
 
 <!--СКРИТПИ-->
 <script src="~/js/play.js"></script>
-<script src="~/lib/midirender/midifile.bundle.js"></script>
-<script src="~/lib/midirender/vexflow.js"></script>
-<script src="~/lib/midirender/midiparser.js"></script>
-<script src="~/lib/midirender/midiparser_ext.js"></script>
-<script src="~/lib/midirender/makeBeams.js"></script>
-<script src="~/lib/midirender/rendererUtils.js"></script>
-<script src="~/lib/midirender/midiRenderer.js"></script>
-<script src="~/js/MelodyDetails.js" asp-append-version="true"></script>
-<script src="~/js/details.js" asp-append-version="true"></script>
+<script src="~/lib/midirender/midiRenderer.js" asp-append-version="true"></script>
+<script src="~/js/find-similar.js" asp-append-version="true"></script>
+<script src="~/js/melody-details.js" asp-append-version="true"></script>
+

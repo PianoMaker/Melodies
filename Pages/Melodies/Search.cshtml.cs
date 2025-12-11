@@ -1,4 +1,3 @@
-
 using Melodies25.Models;
 using Melodies25.Utilities;
 using Microsoft.AspNetCore.Mvc;
@@ -56,7 +55,7 @@ namespace Melodies25.Pages.Melodies
             _logger = logger;
         }
 
-        private int minimummatch = 3;//вивести на контроллер
+        private int minimummatch = 4;//вивести на контроллер
 
         [BindProperty]
         public string Note { get; set; }
@@ -100,6 +99,9 @@ namespace Melodies25.Pages.Melodies
 
         [BindProperty]
         public bool IfRhythm { get; set; }
+
+        [TempData]
+        public bool FromFindSimilar { get; set; }
 
         private static readonly char[] separator = new char[] { ' ', '_' };
 
@@ -226,7 +228,7 @@ namespace Melodies25.Pages.Melodies
         {
             NoteSearch = false;
 
-            MessageL(COLORS.yellow, "SEARCH - OnPostSearchAsync method");
+            MessageL(COLORS.yellow, "SEARCH - OnPostSearchAsync method");//+" num="+TimeSignatureNumerator+", den="+TimeSignatureDenominator);
 
 
             // Очищення попередніх результатів
@@ -367,6 +369,10 @@ namespace Melodies25.Pages.Melodies
         {
             MessageL(COLORS.yellow, $"SEARCH - OnPostReset method");
             Keys = string.Empty;
+
+            // Clear the "FromFindSimilar" flag so subsequent searches are not treated as "find similar"
+            FromFindSimilar = false;
+
             Page();
         }
         //--------------------------------
@@ -375,14 +381,28 @@ namespace Melodies25.Pages.Melodies
         //--------------------------------
         public async Task OnPostNotesearch()
         {
-            // Diagnostics: log incoming form, bound properties and ModelState
-            //DiagnosticNoteSearch();
-
             MessageL(COLORS.yellow, $"SEARCH - OnPostNotesearch method, Keys = {Keys}, TimeSin={TimeSignatureNumerator}/{TimeSignatureDenominator}, Intonation = {IfIntonation}, Rhythm = {IfRhythm}");
+
+            // Read FromFindSimilar from the posted form (cover cases when model binding didn't set it)
+            if (Request.Form.TryGetValue("FromFindSimilar", out var ff))
+            {
+                var s = ff.ToString();
+                FromFindSimilar = s == "1" || string.Equals(s, "true", StringComparison.OrdinalIgnoreCase) || string.Equals(s, "on", StringComparison.OrdinalIgnoreCase);
+                MessageL(COLORS.olive, $"find similar = {FromFindSimilar}");
+
+            }
+
+            var vaste = "g,,,,,1.";
+            if ( Keys.Contains(vaste))
+            {
+                var vasteidx = Keys.IndexOf(vaste);
+                Console.WriteLine($"vaste found, idx= {vasteidx}");
+                var totalvaste = Keys.Substring(vasteidx, 2);   
+                Keys = Keys.Remove(vasteidx);
+            }
 
             /*включаємо відображення за нотним пошуком*/
             NoteSearch = true;
-
 
             /*ІНІЦІАЛІЗАЦІЯ БАЗИ*/
             await NotesSearchInitialize();
@@ -395,7 +415,6 @@ namespace Melodies25.Pages.Melodies
             TempData["Keys"] = Keys;
             TempData["Numerator"] = TimeSignatureNumerator;
             TempData["Denominator"] = TimeSignatureDenominator;
-
 
 
             if (Keys is not null)
@@ -456,7 +475,7 @@ namespace Melodies25.Pages.Melodies
                 Console.WriteLine("no pattern");
                 Description = "Помилка розпізнавання введеної мелодії для пошуку";
             }
-            MessageL(COLORS.cyan, $"finishing SEARCH method");
+            MessageL(COLORS.cyan, $"finishing SEARCH method, findsimilar = {FromFindSimilar}");
         }
 
         private void LogNotesearch(MusicMelody MelodyPattern)
@@ -650,6 +669,18 @@ namespace Melodies25.Pages.Melodies
         //--------------------------------
         private void CompareMelodies(MusicMelody MelodyPattern)
         {
+            if (MelodyPattern.NotesList.Count > 6)
+                minimummatch = (int)Math.Ceiling(Math.Pow(MelodyPattern.NotesList.Count, 0.5));
+            else if (MelodyPattern.NotesList.Count > 100)
+                minimummatch = (int)Math.Ceiling(Math.Pow(MelodyPattern.NotesList.Count, 0.4));
+            else
+                minimummatch = 4;
+
+            if (LoggingManager.Comparing)
+                MessageL(COLORS.yellow, $"Nnotes = {MelodyPattern.NotesList.Count} Current minimum match value is {minimummatch}");
+
+            MessageL(COLORS.gray, $"Nnotes = {MelodyPattern.NotesList.Count} Minimum match set to {minimummatch}");
+
             MessageL(COLORS.olive, $"CompareMelodies method {SearchAlgorithm?.ToLowerInvariant()}, intonation = {IfIntonation}, rhythm = {IfRhythm}, maxgap = {MaxGap}");
             var sw = new Stopwatch();
             sw.Start();

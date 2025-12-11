@@ -133,8 +133,9 @@
 
 @media (max-width: 900px) {
   .searchcontainer { display: block; }
-  .searchleftcontainer { width: 100%; }
-  .notesinfo { width: 73vh; }
+  .searchleftcontainer { width: 100%; padding-left: 0; padding-right: 0; margin: 0; box-sizing: border-box; }
+  /* use fluid width (not vh) and set consistent side padding so left edges align */
+  .notesinfo { width: 100%; padding-left: 12px; padding-right: 12px; box-sizing: border-box; margin: 0; }
   .whitepianobutton { width: 45px; }
   .blackpianobutton { width: 37px; }
   .cis1 { top: 0px; left: 35px; }
@@ -147,22 +148,208 @@
   .fis2 { top: 0px; left: 490px; }
   .gis2 { top: 0px; left: 535px; }
   .b2  { top: 0px; left: 580px; }
+
+  /* ensure right column uses same box model and no stray left offset */
+  .notesearchrightcontainer, .searchrightcontainer { padding-left: 0; padding-right: 0; margin: 0; box-sizing: border-box; }
 }
 
 @media (max-width: 768px) {
   .searchcontainer { display: block; }
-  .searchleftcontainer { width: 100%; }
-  .notesinfo { width: 65vh; }
+  .searchleftcontainer { width: 100%; padding-left: 0; padding-right: 0; margin: 0; box-sizing: border-box; }
+  /* use fluid width on narrow screens */
+  .notesinfo { width: 100%; padding-left: 12px; padding-right: 12px; box-sizing: border-box; margin: 0; }
   .whitepianobutton { width: 45px; }
   .blackpianobutton { width: 37px; }
   .c3 { display:none; }
 }
 
-@media (max-width: 712px) {
-    .highnote {
-        display: none;
+/* Додати до існуючого файлу */
+
+/* Адаптивне масштабування для нотних блоків */
+.melody-block [id^="notation_"] svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+}
+
+/* Додати для правильного масштабування на Search сторінці */
+.melody-block [id^="notation_match_"] {
+    width: 100%;
+    max-width: 100%;
+}
+
+.melody-block [id^="notation_match_"] svg {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+}
+
+/* Забезпечити правильні розміри контейнера для containerWidth розрахунку */
+.melody-block {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 800px) {
+    .melody-block {
+        padding: 8px;
     }
-    .notesinfo {
-        width: 100%;
+    
+    .melody-block [id^="notation_match_"] {
+        /* Переконатися що containerWidth правильно розраховується */
+        min-width: 0;
     }
+}
+
+/* Контейнер результатів */
+#matchedMelodiesContainer {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* --- Compact controls for mobile (Search page) --- */
+/* Keep these rules at the end of notes.css so they override defaults */
+
+@media (max-width: 576px) {
+  /* make algorithm radios and melody/rythm checkboxes compact */
+  .compact-controls {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px !important;
+    align-items: center !important;
+    margin: 0.25rem 0 !important;
+  }
+
+  .compact-controls .form-check {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+    min-width: 0 !important; /* allow flex shrinking */
+  }
+
+  .compact-controls .form-check-input {
+    margin: 0 !important;
+    width: 18px !important;
+    height: 18px !important;
+    flex: 0 0 auto !important;
+  }
+
+  .compact-controls .form-check-label {
+    display: inline-block !important;
+    width: auto !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Slightly reduce the slider width on mobile when visible */
+  .compact-controls .form-range,
+  .compact-controls input[type="range"] {
+    width: 100px !important;
+    margin-left: 6px !important;
+    margin-right: 6px !important;
+  }
+
+  /* reduce gap between elements that were using gap-3 */
+  .compact-controls.gap-3 { gap: 8px !important; }
+
+  /* ensure hide-mobile keeps hiding on mobile */
+  .hide-mobile { display: none !important; }
+
+  /* minimal spacing for containing right-column controls */
+  .notesearchrightcontainer .d-flex.my-2 { margin-top: 0.25rem !important; margin-bottom: 0.25rem !important; }
+}
+
+/* Fallback for small tablets */
+@media (min-width: 577px) and (max-width: 768px) {
+  .compact-controls .form-check-label { font-size: 1rem !important; }
+  .compact-controls .form-check-input { width: 19px !important; height: 19px !important; }
+}
+
+/* Piano scroll wrapper: enable horizontal scrolling on narrow screens */
+@media (max-width: 900px) {
+  .piano-scroll-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+    padding-bottom: 6px; /* space for scrollbar */
+  }
+
+  /* Ensure inner keyboard keeps its intended layout/width so wrapper scrolls */
+  .piano-scroll-wrapper .piano-scroll-inner {
+    min-width: 800px; /* matches current piano natural width */
+  }
+
+  /* Light scrollbar styling */
+  .piano-scroll-wrapper::-webkit-scrollbar {
+    height: 8px;
+  }
+  .piano-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.22);
+    border-radius: 4px;
+  }
+  .piano-scroll-wrapper {
+    -ms-overflow-style: auto;
+    scrollbar-width: thin;
+  }
+}
+
+/* Responsive notesinfo: ensure it fits narrow screens */
+.notesinfo {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  padding: 8px;
+  overflow: hidden;
+}
+
+/* letters / textarea: use full width inside notesinfo */
+.notesinfo #lettersdisplay,
+.notesinfo #lettersdisplay textarea,
+.notesinfo #pianodisplay {
+  width: 100% !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* button area: flexible, wrap when narrow */
+.notesinfo #buttonarea {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  width: auto !important; /* override inline width:60% if present */
+  box-sizing: border-box;
+  margin-top: 6px;
+}
+
+/* keep buttons compact and prevent overflow */
+.notesinfo #buttonarea .btn-melody {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* small adjustments for very narrow screens */
+@media (max-width: 480px) {
+  .notesinfo {
+    padding: 6px;
+  }
+  .notesinfo #buttonarea {
+    gap: 4px;
+  }
+  .notesinfo #buttonarea .btn-melody {
+    font-size: 0.95rem;
+    padding: 6px 8px;
+  }
+  /* ensure textarea rows remain usable */
+  .notesinfo #pianodisplay {
+    height: auto;
+    min-height: 44px;
+  }
 }

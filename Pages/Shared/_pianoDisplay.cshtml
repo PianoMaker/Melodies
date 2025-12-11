@@ -9,7 +9,7 @@
     string initDen = tmpDen != null ? tmpDen.ToString() : "4";
 }
 <div id="pianoDiv" class="notesinfo" style="display:block">
-    <div id="lettersdisplay" style="display:block; width:100%">
+    <div id="lettersdisplay" style="display:block; width:100%" class="hide-mobile">
         <div id="saver" style="display:none">@TempData["Keys"]</div><!--  тимчасове зберігання -->
         <textarea id="pianodisplay" class="d-inline-block" style="width:90%" rows="2" placeholder="для вводу нот натискайте клавіші клавіатури або введіть код вручну">@Model.Keys</textarea>
     </div>
@@ -21,12 +21,12 @@
         <!--ПОШУК-->
         <form id="notesearchForm" method="post" asp-page-handler="notesearch" class="d-inline-block m-1">
             <input type="hidden" name="Keys" id="keysInput-search" /><!--зберігає код натиснутих клавіш у поле Keys-->
-            <button id="searchBtn" type="submit" class="btn-melody">Пошук</button><!--відправка через createMelody.js-->
+            <button id="searchBtn" type="submit" class="btn-melody">Пошук</button><!--відправка через melody-create.js-->
         </form>
         <!--ЗБЕРЕГТИ-->
         <form id="melodyForm" method="post" asp-page-handler="melody" class="d-inline-block m-1">
             <input type="hidden" name="Keys" id="keysInput-save" /><!--зберігає код натиснутих клавіш у поле Keys-->
-            <button id="createMIDI" type="submit" class="btn-melody">Зберегти</button><!--відправка через createMelody.js-->
+            <button id="createMIDI" type="submit" class="btn-melody">Зберегти</button><!--відправка через melody-create.js-->
         </form>
         <div id="previewMp3path" style="display:none"> @Model.TempMp3FilePath</div>
         @if (TempData["HighlightPlayButton"] is not null)
