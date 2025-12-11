@@ -684,7 +684,12 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 		//-------------------
 		// МАЛЮЄМО НОТИ
 		//------------------
-		drawMeasure(notes, meanBarWidth, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat);
+
+		drawMeasure(notes, meanBarWidth, context, stave, ties, isFirstMeasureInRow, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat);
+
+		
+		
+
 
 		//--------------------
 		//ПОСТ-ОБРОБКА 
@@ -825,6 +830,59 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 					}
 				}
 			});
+		}
+
+		function deleteStupidTies() {
+			//This function removes ties that start and end on the same note in the first measure of a row
+					
+			console.debug("MR: FOO: midiRenderer.js - deleteStupidTies");
+			if (!Array.isArray(ties) || ties.length === 0) return;
+
+			const keep = [];
+			for (let i = 0; i < ties.length; i++) {
+				const t = ties[i];
+				try {
+					// Support both Vex.Flow.StaveTie (first_note/last_note) and descriptor {first,last}
+					const fn = t && (t.first_note || t.first);
+					const ln = t && (t.last_note || t.last);
+
+					// If structure unexpected, keep the tie to avoid data loss
+					if (!fn || !ln) {
+						keep.push(t);
+						continue;
+					}
+
+					// Safely read keys arrays
+					let firstKeys = [];
+					let lastKeys = [];
+					if (typeof fn.getKeys === 'function') {
+						firstKeys = fn.getKeys() || [];
+					} else if (Array.isArray(fn.keys)) {
+						firstKeys = fn.keys;
+					}
+					if (typeof ln.getKeys === 'function') {
+						lastKeys = ln.getKeys() || [];
+					} else if (Array.isArray(ln.keys)) {
+						lastKeys = ln.keys;
+					}
+
+					// If both have at least one key and they are identical -> drop tie
+					if (firstKeys.length > 0 && lastKeys.length > 0 && firstKeys[0] === lastKeys[0]) {
+						console.debug(`deleteStupidTies: removing trivial tie on ${firstKeys[0]}`);
+						continue; // skip (remove)
+					}
+
+					// Otherwise keep
+					keep.push(t);
+				} catch (err) {
+					console.warn('deleteStupidTies: error processing tie, keeping it', err);
+					keep.push(t);
+				}
+			}
+
+			// Mutate original ties array in-place so subsequent draw uses filtered list
+			ties.length = 0;
+			for (const t of keep) ties.push(t);
 		}
 	});
 
@@ -1269,7 +1327,8 @@ function adjustXYposition(Xposition, GENERALWIDTH, BARWIDTH, Yposition, HEIGHT, 
 // Генерує зображення черех Vex.Flow.Voice()
 // ----------------------
 
-function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat) {
+function drawMeasure(notes, BARWIDTH, context, stave, ties, isFirstMeasureInRow, index, commentsDiv, currentNumerator, currentDenominator, ticksPerBeat)
+ {
 	console.debug("MR: FOO: midiRenderer.js - drawMeasure");
 	try {
 		if (notes.length > 0) {
@@ -1332,8 +1391,13 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
 			// Домальовуємо ребра нот (beams) 
 			drawBeams(beams, context, index);
 
-			// Домальовуємо ліги (ties) 
+			// Домальовуємо ліги (ties)
+			if (isFirstMeasureInRow)
+				deleteStupidTies(ties);
+
+
 			drawTies(ties, context, index);
+						
 
 		} else {
 			// Якщо такт порожній - додаємо паузу на весь такт
@@ -1360,6 +1424,16 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, index, commentsDiv, 
 		console.error(`Error rendering measure ${index + 1}: ${error.message}`);
 		commentsDiv.innerHTML += `<br>Error rendering measure ${index + 1}: ${error.message}<br>`;
 	}
+
+	function deleteStupidTies(ties) {
+		// Видаляємо ліги, які закінчуються на первій ноті такту
+		ties.filter(tie => {
+			const endNote = tie.getEndNote();
+			const endNoteIndex = notes.indexOf(endNote);
+			return endNoteIndex !== 0; // Залишаємо ліги, які не закінчуються на першій ноті
+		});
+	}
+
 }
 
 
