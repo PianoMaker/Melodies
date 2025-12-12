@@ -7,11 +7,13 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Drawing.Drawing2D;
 using System.IO;
+using System.Reflection;
 using static Music.Engine;
 using static Music.Globals;
 using static Music.Messages;
 //using Microsoft.DotNet.Scaffolding.Shared;
 //using Microsoft.CodeAnalysis.Elfie.Serialization;
+using System.Runtime.Serialization;
 
 namespace Music
 {
@@ -150,7 +152,7 @@ namespace Music
         {
 
             playspeed = (int)Math.Round(48000 / bpm);
-            //Console.WriteLine($"tempo = {bpm}bpm, playspeed = {playspeed} ms / quater");
+            //Console.WriteLine($"tempo = {bpm}bpm, playspeed = {playspeed} ms / quater";
 
         }
 
@@ -613,20 +615,17 @@ namespace Music
                 {
                     if (ev is KeySignatureEvent oldKs)
                     {
-                        // preserve AbsoluteTime location, but create a fresh KeySignatureEvent with correct typed args
-                        long abs = oldKs.AbsoluteTime;
-                        long absClamped = abs > int.MaxValue ? int.MaxValue : abs;
-                        // Ensure correct ctor usage and typed casting: (absoluteTime, sharps, mi)
-                        var replaced = new KeySignatureEvent((int)absClamped, (sbyte)sharps, (byte)mi);
-                        if (absClamped == 0) hasKsAtZero = true;
+                        // Створюємо новий KeySignatureEvent використовуючи безпечний фабричний метод
+                        var replaced = CreateKeySignatureEvent(oldKs.AbsoluteTime, sharps, mi);
+                        if (replaced.AbsoluteTime == 0) hasKsAtZero = true;
 
                         string oldName = MapKsToName(oldKs.SharpsFlats, oldKs.MajorMinor);
-                        MessageL(COLORS.cyan, $"KS update: track={t}, abs={absClamped}, {oldName} -> {newName}");
+                        MessageL(COLORS.cyan, $"KS update: track={t}, abs={replaced.AbsoluteTime}, {oldName} -> {newName}");
                         newTrack.Add(replaced);
                     }
                     else
                     {
-                        // copy other events untouched
+                        // копіюємо інші події без змін
                         newTrack.Add(ev);
                     }
                 }
@@ -634,7 +633,8 @@ namespace Music
                 // Guarantee a KeySignature at abs=0 for track 0 and all note tracks if missing
                 if ((t == 0 || isNoteTrack[t]) && !hasKsAtZero)
                 {
-                    var ksAtZero = new KeySignatureEvent((int)0L, (sbyte)sharps, (byte)mi);
+                    var ksAtZero = new KeySignatureEvent(0, (sbyte)sharps, (byte)mi);
+                    ksAtZero.AbsoluteTime = 0;
                     newTrack.Insert(0, ksAtZero);
                     MessageL(COLORS.cyan, $"KS {sharps}:{mi} inserted at track {t}:0 -> {newName}");
                 }
@@ -656,10 +656,33 @@ namespace Music
         {
             var midiFile = new MidiFile(midiFilePath);
             var midicollection = InsertKeySignatures(midiFile, tonality.GetSharpFlats(), tonality.Mode);
+
+            // debug: логувати знайдені KeySignatureEvent перед експортом
+            if (LoggingManager.ReadMidi)
+            {
+                for (int t = 0; t < midicollection.Tracks; t++)
+                {
+                    var track = midicollection[t];
+                    foreach (var ev in track)
+                    {
+                        if (ev is KeySignatureEvent ks)
+                        {
+                            MessageL(COLORS.gray, $"Export KS: track={t}, abs={ks.AbsoluteTime}, sf={ks.SharpsFlats}, mi={ks.MajorMinor}");
+                        }
+                    }
+                }
+            }
+
             // Ensure PrepareForExport called before export
             midicollection.PrepareForExport();
-            MidiFile.Export(midiFilePath, midicollection);
 
+            // Use safe overwrite helper to ensure file is replaced even if read-only/open
+            ExportOverwrite(midiFilePath, midicollection);
+
+            if (LoggingManager.ReadMidi)
+            {
+                VerifyKeySignaturesInFile(midiFilePath);
+            }
         }
 
 
@@ -851,6 +874,101 @@ namespace Music
                 throw;
             }
         }
-    }
-}
 
+
+        public static void VerifyKeySignaturesInFile(string midiFilePath)
+        {
+            try
+            {
+                if (!File.Exists(midiFilePath))
+                {
+                    MessageL(COLORS.red, $"VerifyKeySignaturesInFile: file not found: {midiFilePath}");
+                    return;
+                }
+
+                var readBack = new MidiFile(midiFilePath);
+                bool any = false;
+                for (int t = 0; t < readBack.Events.Tracks; t++)
+                {
+                    var track = readBack.Events[t];
+                    foreach (var ev in track)
+                    {
+                        if (ev is KeySignatureEvent ks)
+                        {
+                            any = true;
+                            MessageL(COLORS.gray, $"ReadBack KS: track={t}, abs={ks.AbsoluteTime}, sf={ks.SharpsFlats}, mi={ks.MajorMinor} ({MapKsToName(ks.SharpsFlats, ks.MajorMinor)})");
+                        }
+                    }
+                }
+
+                if (!any)
+                    MessageL(COLORS.red, $"VerifyKeySignaturesInFile: NO KeySignature events found in {midiFilePath}");
+                else
+                    MessageL(COLORS.olive, $"VerifyKeySignaturesInFile: KeySignature events present in {midiFilePath}");
+            }
+            catch (Exception ex)
+            {
+                ErrorMessageL($"VerifyKeySignaturesInFile failed: {ex.Message}");
+            }
+        }
+
+        // Add inside class MidiConverter (near other helper methods)
+        private static KeySignatureEvent CreateKeySignatureEvent(long absoluteTime, int sharps, int mi)
+        {
+            return new KeySignatureEvent((sbyte)sharps, (byte)mi, absoluteTime);
+        }
+        
+
+        // Helper: set KS fields/properties safely
+        private static void SetKeySignatureValues(KeySignatureEvent ks, long absoluteTime, int sharps, int mi)
+        {
+            var ksType = typeof(KeySignatureEvent);
+
+            void TrySet(string name, object value)
+            {
+                var prop = ksType.GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (prop != null && prop.CanWrite)
+                {
+                    prop.SetValue(ks, Convert.ChangeType(value, prop.PropertyType));
+                    return;
+                }
+                var field = ksType.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (field != null)
+                {
+                    field.SetValue(ks, Convert.ChangeType(value, field.FieldType));
+                }
+            }
+
+            TrySet("SharpsFlats", (sbyte)sharps);
+            TrySet("MajorMinor", (byte)mi);
+            TrySet("AbsoluteTime", (int)absoluteTime);
+        }
+
+        // Helper: create a KeySignatureEvent using a safe ctor fallback
+        private static KeySignatureEvent NewEmptyKeySignatureEvent()
+        {
+            var ksType = typeof(KeySignatureEvent);
+
+            // try parameterless ctor
+            var defCtor = ksType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+            if (defCtor != null)
+            {
+                return (KeySignatureEvent)defCtor.Invoke(null);
+            }
+
+            // try 3-arg ctor with neutral args
+            var threeCtor = ksType.GetConstructors().FirstOrDefault(c => c.GetParameters().Length == 3);
+            if (threeCtor != null)
+            {
+                var parms = threeCtor.GetParameters();
+                object timeArg = Convert.ChangeType(0, parms[0].ParameterType);
+                object a1 = Convert.ChangeType((sbyte)0, parms[1].ParameterType);
+                object a2 = Convert.ChangeType((byte)0, parms[2].ParameterType);
+                return (KeySignatureEvent)threeCtor.Invoke(new object[] { timeArg, a1, a2 });
+            }
+
+            throw new InvalidOperationException("No suitable KeySignatureEvent constructor found.");
+        }
+    }
+
+}
