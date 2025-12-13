@@ -669,7 +669,7 @@ namespace Melodies25.Pages.Melodies
         //--------------------------------
         private void CompareMelodies(MusicMelody MelodyPattern)
         {
-            if (MelodyPattern.NotesList.Count > 6)
+            if (MelodyPattern.NotesList.Count > 16)
                 minimummatch = (int)Math.Ceiling(Math.Pow(MelodyPattern.NotesList.Count, 0.5));
             else if (MelodyPattern.NotesList.Count > 100)
                 minimummatch = (int)Math.Ceiling(Math.Pow(MelodyPattern.NotesList.Count, 0.4));
