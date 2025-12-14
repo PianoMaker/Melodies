@@ -13,6 +13,7 @@ namespace Melodies25
         // VisualStudio - локальна БД для розробки
         // SQLExpress - додаткова БД для розробки
         // Smarter - БД на сайті онлайн 
+        // syncService.InteractiveMode - включає діалогові вікна для вирішення конфліктів під час синхронізації
 
         public static void Main(string[] args)
         {
@@ -84,7 +85,12 @@ namespace Melodies25
             using (var scope = app.Services.CreateScope())
             {
                 var syncService = scope.ServiceProvider.GetRequiredService<DatabaseSyncService>();
-                syncService.SyncDatabasesAsync().GetAwaiter().GetResult();
+                
+                // Enable interactive mode
+                syncService.InteractiveMode = true;
+
+                // Run synchronization
+                var collisions = syncService.SyncDatabasesAsync().GetAwaiter().GetResult();
             }
 
             app.Run();
