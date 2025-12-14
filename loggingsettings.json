@@ -1,8 +1,8 @@
 {
-  "AlgorithmDiagnostics": true,
-  "Comparing": true,
-  "PatternSearch": true,
+  "AlgorithmDiagnostics": false,
+  "Comparing": false,
+  "PatternSearch": false,
   "DbQueries": false,
   "CreateAudio": false,
-  "CompareMidi": false
+  "CompareMidi": true
 }
