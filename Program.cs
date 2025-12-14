@@ -18,7 +18,8 @@ namespace Melodies25
 
         public static void Main(string[] args)
         {
-
+            Console.OutputEncoding = Encoding.UTF8;
+            Console.InputEncoding = Encoding.UTF8;
 
             var builder = WebApplication.CreateBuilder(args);
 
