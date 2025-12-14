@@ -20,11 +20,11 @@ namespace Melodies25
 
             // SOURCE context: VisualStudio (LocalDB) – only used for reading / syncing FROM
             builder.Services.AddDbContext<Melodies25SourceContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter")));
 
             // TARGET context: SQLExpress – destination for synchronization
             builder.Services.AddDbContext<Melodies25TargetContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("SQLExpress")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio")));
 
             // WORKING context (used by application pages): also SQLExpress now
             builder.Services.AddDbContext<Melodies25Context>(options =>
