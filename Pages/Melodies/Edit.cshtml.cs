@@ -335,7 +335,25 @@ namespace Melodies25.Pages.Melodies
                 {
                     var fullPath = Path.Combine(_environment.WebRootPath, "melodies", Melody.FilePath);
                     MessageL(COLORS.olive, $"[CALL APPLYKS] {Melody.Tonality} -> {Melody.FilePath}");
-                    ApplyKeySignatureWierd(fullPath, Melody.Tonality);
+
+                    // Try to insert/update KeySignature meta-events properly using NAudio-based routine
+                    try
+                    {
+                        var tonStr = (Melody.Tonality ?? "").Trim()
+                            .Replace('\u2013','-').Replace('\u2014','-').Replace('\u2212','-')
+                            .Replace('–','-').Replace('—','-').Replace('−','-')
+                            .Replace("  "," ");
+                        var tonal = new Tonalities(tonStr);
+                        // InsertKeySignatures will ensure a KeySignature event at abs=0 (and in note tracks)
+                        InsertKeySignatures(fullPath, tonal);
+                        MessageL(COLORS.green, $"KeySignature inserted/updated via InsertKeySignatures: {tonStr}");
+                    }
+                    catch (Exception exKs)
+                    {
+                        // If high-level insertion fails, preserve existing fallback (byte patch)
+                        MessageL(COLORS.yellow, $"InsertKeySignatures failed: {exKs.Message}. Falling back to byte-patch.");
+                        ApplyKeySignatureWierd(fullPath, Melody.Tonality);
+                    }
                 }
                 else
                 {

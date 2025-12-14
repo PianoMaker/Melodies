@@ -1,7 +1,7 @@
 ﻿//========================================
 // Audio helpers and token→MIDI mapping
 //========================================
-// NOTE: extracted from createMelody.js to a shared module to be reused across pages.
+// NOTE: extracted from melody-create.js to a shared module to be reused across pages.
 
 
 
@@ -48,6 +48,13 @@ function pianoTokenToMidi(token) {
 	return (octave + 1) * 12 + semitone;
 }
 
+
+//==========================================
+// Відтворення звуків через Web Audio API
+// Convert MIDI number to frequency
+// Audio player for fallback audio files
+// Note: AudioContext must be resumed on first user gesture (pointerdown) due to browser policies
+//========================================== 
 function playTone(freq, duration = 1.0, type = 'sine', volume = 0.82) {
 	try {
 		const ctx = ensureAudioContext();

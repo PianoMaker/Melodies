@@ -59,33 +59,107 @@
 
     <!--ПРАВОРУЧ-->
     <div class="notesearchrightcontainer">
+
+        <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
+        <div class="piano-scroll-wrapper">
+            <div class="piano-scroll-inner">
+                @await Html.PartialAsync("_durationsTable")
+            </div>
+        </div>
+        <!--МІЙ СТЕЙНВЕЙ -->
+        <div class="piano-scroll-wrapper" aria-label="Piano keyboard scroll container">
+            <div class="piano-scroll-inner">
+                @await Html.PartialAsync("_PianoKeys")
+            </div>
+        </div>
+
+
+
+        <!--ТАБЛО НОТ -->
+        @if (Model.FromFindSimilar == false)
+        {
+            @* <p>find sim= @Model.FromFindSimilar</p> *@
+            <div id="innerNotesContainer">
+                <!-- LIVE notation заповнюється melody-search.js -->
+                <div id="liveNotation" class="mb-3"></div>
+
+                <div id="patternComments" style="display:none"></div>
+
+                @if (@Model.NewPattern is not null)
+                {
+
+                    @for (int index = 0; index < @Model.NewPattern.Count(); index++)
+                    {
+                        var note = @Model.NewPattern[index];
+                        string width = $"{note.DisplayWidth(45, 20)}px";
+                        string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
+                        if (!@note.Rest)
+                        {
+                            <div class="outerNoteBox" style="width:@width; height:10px;">
+                                <div class="notebox" style="margin-bottom:@marginbottom; width:@width;">
+                                    <span>@note.DurSymbol</span><br>
+                                </div>
+                                <span data-index="@index" class="notaname">@note.Name</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="outerNoteBox" style="width:@width; height:10px;">
+                                <div class="notebox pausebox" style="margin-bottom:@marginbottom; width:@width;">
+                                    <span>@note.DurSymbol</span><br>
+                                </div>
+                                <span data-index="@index" class="notaname">@note.Name</span>
+                            </div>
+                        }
+                        @await Html.PartialAsync("_options")
+                    }
+                    <script type="module" src="~/js/contextMenu.js"></script>
+                }
+                else
+                {
+                    <p id="noNotesMsg">жодної ноти не введено</p>
+                }
+            </div>
+        }
+        else
+        {
+
+            <p>___</p>
+        }
+        <script type="module" src="~/js/noteTable.js"></script>
+
+
+
         <!--КНОПКИ УПРАВЛІННЯ, Нотний рядок і кнопка "Пошук"-->
         @await Html.PartialAsync("_pianoDisplay")
 
-        <!--режим пошуку-->
-        <div class="d-flex align-items-center gap-3 my-2">
+        <!--обрати режим пошуку-->
+        <div class="notesinfo d-flex align-items-center gap-3 my-2 compact-controls">
             <div class="form-check me-3">
                 <input class="form-check-input" type="radio" name="SearchAlgorithm"
                        value="Substring" id="algSubstring" form="notesearchForm"
                        @(Model.SearchAlgorithm?.Equals("Substring", StringComparison.OrdinalIgnoreCase) == true ? "checked" : null) />
-                <label class="form-check-label" for="algSubstring">Longest common substring</label>
+                <label class="form-check-label" for="algSubstring"><span class="hide-mobile">алгоритм&nbsp</span> без пропусків</label>
             </div>
             <div class="form-check d-flex align-items-center gap-2">
                 <input class="form-check-input" type="radio" name="SearchAlgorithm"
                        value="Subsequence" id="algSubsequence" form="notesearchForm"
                        @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? "checked" : null) />
-                <label class="form-check-label" for="algSubsequence">Longest common subsequence</label>
-                <!-- LCS max gap slider (1..3) -->
+                <label class="form-check-label" for="algSubsequence"><text class="hide-mobile">алгоритм&nbsp</text>з пропусками</label>
+            </div>
+            <!-- LCS max gap slider (1..3) -->
+            <div class="hide-mobile">
                 <input type="range" min="1" max="3" step="1" value="@Model.MaxGap" id="lcsGap"
                        class="form-range ms-2" style="width:120px" form="notesearchForm" name="MaxGap"
                        disabled="@((Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true) ? null : "disabled")" />
                 <span class="small ms-1 @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? null : "text-muted")">gap: <span id="lcsGapVal">@Model.MaxGap</span></span>
             </div>
+
         </div>
-        <div class="d-flex align-items-center gap-3 my-2">
+        <div class="notesinfo d-flex align-items-center gap-3 my-2 compact-controls">
             <div class="form-check d-flex align-items-center gap-2">
                 <input asp-for="IfIntonation" class="form-check-input" id="ifIntonation" form="notesearchForm" checked="checked" />
-                <label class="form-check-label" for="ifIntonation">Мелодичний малюнок</label>
+                <label class="form-check-label" for="ifIntonation">Мелодія</label>
             </div>
             <div class="form-check d-flex align-items-center gap-2">
                 <input asp-for="IfRhythm" class="form-check-input" id="ifRhythm" form="notesearchForm" />
@@ -93,53 +167,6 @@
             </div>
         </div>
 
-        <!--МІЙ СТЕЙНВЕЙ-->
-        @await Html.PartialAsync("_PianoKeys")
-
-        <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
-        @await Html.PartialAsync("_durationsTable")
-
-        <!--ТАБЛО НОТ ВНИЗУ -->
-        <div id="innerNotesContainer">
-            <!-- LIVE notation (stays on top, updated as user types/clicks)-->
-            <div id="liveNotation" class="mb-3"></div>
-            <div id="patternComments" style="display:none"></div>
-
-            @if (@Model.NewPattern is not null)
-            {
-                @for (int index = 0; index < @Model.NewPattern.Count(); index++)
-                {
-                    var note = @Model.NewPattern[index];
-                    string width = $"{note.DisplayWidth(45, 20)}px";
-                    string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
-                    if (!@note.Rest)
-                    {
-                        <div class="outerNoteBox" style="width:@width; height:10px;">
-                            <div class="notebox" style="margin-bottom:@marginbottom; width:@width;">
-                                <span>@note.DurSymbol</span><br>
-                            </div>
-                            <span data-index="@index" class="notaname">@note.Name</span>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="outerNoteBox" style="width:@width; height:10px;">
-                            <div class="notebox pausebox" style="margin-bottom:@marginbottom; width:@width;">
-                                <span>@note.DurSymbol</span><br>
-                            </div>
-                            <span data-index="@index" class="notaname">@note.Name</span>
-                        </div>
-                    }
-                    @await Html.PartialAsync("_options")
-                }
-                <script type="module" src="~/js/contextMenu.js"></script>
-            }
-            else
-            {
-                <p id="noNotesMsg">жодної ноти не введено</p>
-            }
-        </div>
-        <script type="module" src="~/js/noteTable.js"></script>
 
 
         <!--АУДІО-->
@@ -155,12 +182,19 @@
 
 <!-- ОПИС ВВЕДЕНИХ НОТ -->
 <div class="infocontainer">
+    <!-- Loading animation -->
+    <div id="searchLoading" class="text-center my-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Завантаження результатів...</span>
+        </div>
+        <p class="mt-2">Завантаження результатів пошуку...</p>
+    </div>
     <h2>Результати пошуку</h2>
 
 
     @if (melodyPattern != null)
     {
-        <p>
+        <p class="hide-mobile">
             Введено мелодію:
             @foreach (var notes in melodyPattern)
             {
@@ -171,7 +205,7 @@
 
 
     <!-- ВІДОБРАЖЕННЯ  МЕЛОДІЇ ЩО ЗБІГАЄТЬСЯ-->
-    <div class="notescontainer" id="matchedMelodiesContainer">
+    <div class="notescontainer hide" id="matchedMelodiesContainer">
         @for (int i = 0; i < matchedMelodiesCount; i++)
         {
             var songPattern = ViewData[$"songpattern{i}"] as List<string>;  //ноти мелодії, що збігаються
@@ -195,14 +229,14 @@
                         <button id="previoussong" type="button" class="btn btn-outline-secondary song-nav prev" aria-label="previous">
                             <i class="fas fa-chevron-left" aria-hidden="true"></i>
                         </button>
-                        <p class="mb-0">Пісня: <span class="matchedsongname">@title</span></p>
+                        <p class="mb-0">Мелодія: <span class="matchedsongname">@title</span></p>
                         <button id="nextsong" type="button" class="btn btn-outline-secondary song-nav next" aria-label="next">
                             <i class="fas fa-chevron-right" aria-hidden="true"></i>
                         </button>
                     </div>
 
                     <!--ПЕРЕЛІК НОТ-->
-                    <p id="noteslist">
+                    <p id="noteslist" class="hide-mobile">
                         @for (int j = 0; j < songPattern.Count; j++)
                         {
                             if (isSubseq)
@@ -257,26 +291,25 @@
             }
         }
     </div>
-    <div class="notescontainer">
+    <div class="notescontainer hide">
         <p>@Model.Description</p>
     </div>
 
 
     <!-- ТАБЛИЦЯ РЕЗУЛЬТАТІВ -->
 
-    <table class="table">
-
+    <table class="table hide">
         <thead>
             <tr>
                 <th>Назва</th>
                 <th>Автор</th>
-                <th>Файл</th>
+                <th class="hide-mobile">Файл</th>
                 @if (Model.NoteSearch is true)
                 {
                     <th>Довжина <br>збігу</th>
                     <th>на позиції</th>
                 }
-                <th class="col-actions">Редагувати/Вилучити</th>
+                <th class="col-actions hide-mobile">Редагувати/Вилучити</th>
             </tr>
         </thead>
         <tbody>
@@ -312,7 +345,7 @@
                             }
                         </td>
                         <!--файл-->
-                        <td>
+                        <td class="hide-mobile">
                             @if (!string.IsNullOrEmpty(item.FilePath))
                             {
                                 var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
@@ -340,12 +373,12 @@
                             }
                             else
                             {
-                                <span>Файл не доступний</span>
+                                <span>Файл @item.FilePath не доступний</span>
                             }
                         </td>
                         <td>@matchLength</td> @* Відображаємо довжину збігу *@
                         <td>@position</td> @* На якій позиції співпадає *@
-                        <td class="col-actions">
+                        <td class="col-actions hide-mobile">
                             <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
                             <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
                         </td>
@@ -408,7 +441,7 @@
                             }
                             else
                             {
-                                <span>Файл не доступний</span>
+                                <span>Файл @item.FilePath не доступний</span>
                             }
                         </td>
                         <!-- редагувати/вилучити -->
@@ -435,19 +468,13 @@
 
 <script src="~/js/audioHelpers.js" asp-append-version="true"></script>
 <script src="~/js/play.js" asp-append-version="true"></script>
-<script src="~/js/search.js" asp-append-version="true"></script>
-<script src="~/js/createMelody.js" asp-append-version="true"></script>
-<!-- Pattern renderer dependencies and live renderer for Search page only -->
-<script src="~/lib/midirender/vexflow.js"></script>
-<script src="~/lib/midirender/midiparser.js"></script>
-<script src="~/lib/midirender/midiparser_ext.js"></script>
-<script src="~/lib/midirender/makeBeams.js"></script>
-<script src="~/lib/midirender/rendererUtils.js"></script>
-<script src="~/lib/midirender/midiRenderer.js"></script>
+@* <script src="~/js/search.js" asp-append-version="true"></script> *@
+<script src="~/js/melody-create.js" asp-append-version="true"></script>
+
+<script src="~/lib/midirender/midiRenderer.js" asp-append-version="true"></script>
 <script src="~/lib/midirender/patternRenderer.js"></script>
-
 <!-- Shared setup (must load before wrapper) -->
-<script src="~/lib/midirender/setupLiveNotationCreate.js"></script>
-
+<script src="~/lib/midirender/live-notation.js" asp-append-version="true"></script>
 <!-- thin wrapper that calls setupLiveNotationOnCreate -->
 <script src="~/js/livePatternRenderer.js" asp-append-version="true"></script>
+<script src="~/js/melody-search.js" asp-append-version="true"></script>

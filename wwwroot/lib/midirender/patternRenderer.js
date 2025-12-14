@@ -15,6 +15,7 @@
 // - ELEMENT_FOR_COMMENTS: id елемента для повідомлень/коментарів
 // - numerator, denominator: розмір такту (4/4 за замовчуванням)
 // - GENERALWIDTH, HEIGHT, TOPPADDING, BARWIDTH, CLEFZONE, Xmargin: параметри рендерингу
+// - SCALE_FACTOR (нова, необов'язкова): якщо задано (number) — форсує масштаб (1 = без зміни)
 // --------------------------------------------------------
 
 (function () {
@@ -212,6 +213,10 @@
 
 	/**
 	 * Renders notation from a pattern string into an element (non-MIDI path)
+	 *
+	 * Added optional last parameter: SCALE_FACTOR (number).
+	 * If provided (numeric), it will be used directly as the scale factor
+	 * (default behaviour preserved when omitted).
 	 */
 	function renderPatternString(
 		pattern,
@@ -220,7 +225,7 @@
 		numerator = 4,
 		denominator = 4,
 		GENERALWIDTH = 1200,
-		HEIGHT = 200,
+		HEIGHT = 170,
 		TOPPADDING = 20,
 		BARWIDTH = 250,
 		CLEFZONE = 60,
@@ -243,122 +248,52 @@
 			}
 
 			// Parse tokens -> items
-			const items = tokens.map(parseToken).filter(Boolean);
-
-			// Build measures with cross-bar splitting + ties
-			const capacityQuarters = numerator * (4 / denominator); // quarters per bar
-			const capacityUnits = Math.round(capacityQuarters * UNITS_PER_QUARTER);
-			const measures = []; // array of { notes: StaveNote[], ties: StaveTie[] }
-			let cur = { notes: [], ties: [] };
-			let usedUnits = 0;
-			measures.push(cur);
-
-			for (const it of items) {
-				let remaining = durationToUnits(it.durationCode);
-				let prevPieceNote = null; // last piece of the same logical note to tie from
-
-				while (remaining > 0) {
-					if (usedUnits >= capacityUnits) {
-						// start new bar
-						cur = { notes: [], ties: [] };
-						measures.push(cur);
-						usedUnits = 0;
-					}
-
-					const room = capacityUnits - usedUnits;
-					const pieceUnits = Math.min(remaining, room);
-					const pieceCodes = unitsToDurationList(pieceUnits, /*allowDotted*/ true);
-
-					for (let i = 0; i < pieceCodes.length; i++) {
-						const code = pieceCodes[i];
-						if (it.isRest) {
-							const r = createRest(code);
-							if (r) { r.__durationCode = code; cur.notes.push(r); }
-							prevPieceNote = null; // rests break ties
-						} else {
-							const n = processNoteElement(code, it.key, it.accidental);
-							if (n) n.__durationCode = code;
-							cur.notes.push(n);
-							if (prevPieceNote) cur.ties.push(new Vex.Flow.StaveTie({ first_note: prevPieceNote, last_note: n }));
-							prevPieceNote = n;
-						}
-					}
-
-					usedUnits += pieceUnits;
-					remaining -= pieceUnits;
-				}
-			}
-
-			// Drop trailing empty measure if any
-			if (measures.length && measures[measures.length - 1].notes.length === 0) {
-				measures.pop();
-			}
-
-			// Ensure each bar is filled with trailing rests (non‑dotted) to capacity
-			for (const m of measures) {
-				console.info('PR: calling sumUnits for fill check');
-				const used = sumUnits(m.notes);
-				const leftUnits = Math.max(0, capacityUnits - used);
-				console.info('PR: leftUnits', leftUnits, 'capacityUnits', capacityUnits, 'used', used);
-				const restCodes = unitsToDurationList(leftUnits, /*allowDotted*/ false);
-				for (const rc of restCodes) {
-					const r = createRest(rc);
-					if (r) { r.__durationCode = rc; m.notes.push(r); }
-				}
-			}
+			const measures = getMeasuresFromTokens(tokens, parseToken, numerator, denominator, UNITS_PER_QUARTER, durationToUnits, unitsToDurationList, sumUnits);
 
 			// Compute width/height
 			const MIN_SCORE_WIDTH = Math.max(320, CLEFZONE + BARWIDTH + Xmargin * 2);
 			const containerWidth = (notationDiv && notationDiv.clientWidth) ? notationDiv.clientWidth : 0;
-			const effectiveWidth = Math.max(MIN_SCORE_WIDTH, containerWidth || GENERALWIDTH || 1200);
+			const GEN_WIDTH = Math.max(MIN_SCORE_WIDTH, containerWidth || GENERALWIDTH || 1200);
+
 
 			// 1) Єдиний bar width для всієї сесії рендера
 			// МІНІМАЛЬНА ШИРИНА ТАКТУ, щоб не були вузькими
 			const MIN_BARWIDTH = 240; // налаштовуване значення
-			const naiveBarWidth = GetMeanBarWidth(BARWIDTH, measures.map(m => m.notes));
+			const naiveBarWidth = GetMeanBarWidth(BARWIDTH, GEN_WIDTH);
 			const actualBarWidth = Math.max(MIN_BARWIDTH, naiveBarWidth);
 
 			// 2) Локальний підрахунок кількості рядків за вже обчисленим actualBarWidth (спільна утиліта)
-			const rows = (typeof window.calculateRowsFixedWidth === 'function')
-				? window.calculateRowsFixedWidth(measures, effectiveWidth, actualBarWidth, CLEFZONE, Xmargin)
-				: (function fallbackCalc(measuresArr, generalWidth, fixedBarWidth, clefZone, xMargin){
-					let rows = 1;
-					let x = xMargin;
-					for (let i = 0; i < measuresArr.length; i++) {
-						const isFirstInRow = (x === xMargin);
-						let staveWidth = fixedBarWidth + (isFirstInRow ? clefZone : 0);
-						if (x + staveWidth > generalWidth) {
-							rows++;
-							x = xMargin;
-							staveWidth = fixedBarWidth + clefZone;
-						}
-						x += staveWidth;
-					}
-					return rows;
-				})(measures, effectiveWidth, actualBarWidth, CLEFZONE, Xmargin);
+			const rows = calculateRows(measures, GEN_WIDTH, actualBarWidth, CLEFZONE, Xmargin);
 
 			// Мінімальний запас по висоті: TOPPADDING (вгорі) + невеликий буфер 10px
 			const extra = Math.max(10, TOPPADDING || 0);
 			const totalHeight = rows * HEIGHT + extra;
 
-			console.log(`patternRenderer: ${measures.length} measures, ${rows} rows, totalHeight=${totalHeight}, effectiveWidth=${effectiveWidth}, actualBarWidth=${actualBarWidth}`);
+			console.log(`patternRenderer: ${measures.length} measures, ${rows} rows, totalHeight=${totalHeight}, GEN_WIDTH=${GEN_WIDTH}, actualBarWidth=${actualBarWidth}`);
+
+			const RESPONSIVE_THRESHOLD = 800;
+			const SCALINGFACTOR = 0.5;
+			const scaleFactor = (containerWidth > 0 && containerWidth <= RESPONSIVE_THRESHOLD) ? SCALINGFACTOR : 1;
 
 			// 3) Передаємо той самий actualBarWidth у рендер (щоб обтікання збігалось)
 			const factory = new Vex.Flow.Factory({
-				renderer: { elementId: ELEMENT_FOR_RENDERING, width: effectiveWidth, height: totalHeight }
+				renderer: { elementId: ELEMENT_FOR_RENDERING, width: GEN_WIDTH, height: totalHeight }
 			});
 			const context = factory.getContext();
 			const score = factory.EasyScore();
+			//scaleContext(scaleFactor, context);
+
 
 			// Render measure by measure similar to renderMeasures
 			let Xposition = Xmargin;
 			let Yposition = TOPPADDING;
 			let isFirstMeasureInRow = true;
 
+			//РЕНДЕР КОЖНОГО ТАКТУ
 			for (let i = 0; i < measures.length; i++) {
 				const previousY = Yposition;
 				({ Xposition, Yposition } = adjustXYposition(
-					Xposition, effectiveWidth, actualBarWidth, Yposition, HEIGHT, Xmargin, i, 0));
+					Xposition, GEN_WIDTH, actualBarWidth, Yposition, HEIGHT, Xmargin, i, 0));
 				if (Yposition !== previousY) {
 					isFirstMeasureInRow = true;
 				}
@@ -368,44 +303,21 @@
 				stave.setContext(context).draw();
 
 				const ties = measures[i].ties || [];
-				drawMeasure(measures[i].notes, actualBarWidth, context, stave, ties, i, commentsDiv || { innerHTML: '' }, numerator, denominator, 480);
+				drawMeasure(measures[i].notes, actualBarWidth, context, stave, ties, i, commentsDiv || { innerHTML: '' }, numerator, denominator, 480); // midiRenderer.js
 
 				Xposition += STAVE_WIDTH;
 				isFirstMeasureInRow = false;
 			}
 
-			// Post‑adjust: висоту доводимо до max(totalHeight, bbox.height + extra)
+			// ----------------------
+			// ПІСЛЯ-ОБРОБКА SVG
+			// ----------------------
+			// Динамічно підганяє висоту SVG під фактичний вміст, щоб уникнути зайвих відступів.
 			try {
 				const container = document.getElementById(ELEMENT_FOR_RENDERING);
 				const svg = container && container.querySelector('svg');
-				if (svg && typeof svg.getBBox === 'function') {
-					const adjust = () => {
-						const bbox = svg.getBBox();
-						const contentH = Math.max(totalHeight, Math.ceil((bbox ? bbox.height : 0) + extra));
-						if (contentH > 0) {
-							const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
-							const vbW = vb && vb.width ? vb.width : (parseFloat(svg.getAttribute('width')) || effectiveWidth);
-							if (vbW > 0) svg.setAttribute('viewBox', `0 0 ${vbW} ${contentH}`);
-							svg.setAttribute('height', String(contentH));
-							if (svg.style) {
-								svg.style.height = contentH + 'px';
-								svg.style.maxHeight = 'none';
-							}
-							if (container && container.style) {
-								container.style.minHeight = contentH + 'px';
-								container.style.height = contentH + 'px';
-								container.style.maxHeight = 'none';
-								container.style.overflow = 'visible';
-							}
-						}
-					};
-					adjust();
-					if (typeof requestAnimationFrame === 'function') requestAnimationFrame(adjust);
-					setTimeout(adjust, 50);
-				}
-			} catch (e) {
-				console.warn('patternRenderer post-fix svg size failed', e);
-			}
+				adjustSVG(svg);
+			} catch (e) { console.warn('post-fix svg size failed', e); }
 
 			if (commentsDiv) {
 				commentsDiv.innerHTML += `Рядок нот успішно згенеровано (${measures.length} тактів)`;
@@ -422,3 +334,71 @@
 	window.renderPatternString = renderPatternString;
 	console.info('PR build loaded @', new Date().toISOString());
 })();
+
+
+function getMeasuresFromTokens(tokens, parseToken, numerator, denominator, UNITS_PER_QUARTER, durationToUnits, unitsToDurationList, sumUnits) {
+    const items = tokens.map(parseToken).filter(Boolean);
+
+    // Build measures with cross-bar splitting + ties
+    const capacityQuarters = numerator * (4 / denominator); // quarters per bar
+    const capacityUnits = Math.round(capacityQuarters * UNITS_PER_QUARTER);
+    const measures = []; // array of { notes: StaveNote[], ties: StaveTie[] }
+    let cur = { notes: [], ties: [] };
+    let usedUnits = 0;
+    measures.push(cur);
+
+    for (const it of items) {
+        let remaining = durationToUnits(it.durationCode);
+        let prevPieceNote = null; // last piece of the same logical note to tie from
+
+        while (remaining > 0) {
+            if (usedUnits >= capacityUnits) {
+                // start new bar
+                cur = { notes: [], ties: [] };
+                measures.push(cur);
+                usedUnits = 0;
+            }
+
+            const room = capacityUnits - usedUnits;
+            const pieceUnits = Math.min(remaining, room);
+            const pieceCodes = unitsToDurationList(pieceUnits, /*allowDotted*/ true);
+
+            for (let i = 0; i < pieceCodes.length; i++) {
+                const code = pieceCodes[i];
+                if (it.isRest) {
+                    const r = createRest(code);
+                    if (r) { r.__durationCode = code; cur.notes.push(r); }
+                    prevPieceNote = null; // rests break ties
+                } else {
+                    const n = processNoteElement(code, it.key, it.accidental);
+                    if (n) n.__durationCode = code;
+                    cur.notes.push(n);
+                    if (prevPieceNote) cur.ties.push(new Vex.Flow.StaveTie({ first_note: prevPieceNote, last_note: n }));
+                    prevPieceNote = n;
+                }
+            }
+
+            usedUnits += pieceUnits;
+            remaining -= pieceUnits;
+        }
+    }
+
+    // Drop trailing empty measure if any
+    if (measures.length && measures[measures.length - 1].notes.length === 0) {
+        measures.pop();
+    }
+
+    // Ensure each bar is filled with trailing rests (non‑dotted) to capacity
+    for (const m of measures) {
+        console.info('PR: calling sumUnits for fill check');
+        const used = sumUnits(m.notes);
+        const leftUnits = Math.max(0, capacityUnits - used);
+        console.info('PR: leftUnits', leftUnits, 'capacityUnits', capacityUnits, 'used', used);
+        const restCodes = unitsToDurationList(leftUnits, /*allowDotted*/ false);
+        for (const rc of restCodes) {
+            const r = createRest(rc);
+            if (r) { r.__durationCode = rc; m.notes.push(r); }
+        }
+    }
+    return measures;
+}

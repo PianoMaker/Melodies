@@ -1,5 +1,5 @@
 // Глобальне визначення durationMapping
-const durationMapping = {
+var durationMapping = {
 	1: 'w',
 	w: 'w',
 	2: 'h',
@@ -12,7 +12,7 @@ const durationMapping = {
 	64: '64'
 };
 
-const reverseDurationMapping = {
+var reverseDurationMapping = {
 	w: 1,
 	"1": 1,
 	h: 2,
@@ -32,7 +32,7 @@ let currentKeySignature = 0; // -7..+7 (sf)
 let currentKeyMode = 0;      // 0=major, 1=minor   <-- ADDED
 let enharmonicPreference = 'auto'; // 'auto' | 'sharps' | 'flats'
 function setEnharmonicPreference(pref) {
-	console.debug("FOO: midiparser_ext.js - setEnharmonicPreference");
+	console.debug("MR: FOO: midiparser_ext.js - setEnharmonicPreference");
 	if (['auto', 'sharps', 'flats'].includes(pref)) {
 		enharmonicPreference = pref;
 		console.log('Enharmonic preference =', pref);
@@ -41,146 +41,9 @@ function setEnharmonicPreference(pref) {
 if (typeof window !== 'undefined') window.setEnharmonicPreference = setEnharmonicPreference;
 
 
-// ---------------------------------------------------------------------
-// ФУНКЦІЯ ДЛЯ ОНОВЛЕННЯ ТОНАЛЬНОСТІ З ПОДІЙ MIDI
-// Використання: updateKeySignatureFromEvents(midiEvents);
-// Повертає об'єкт { sf, mi } або null, якщо подій Key Signature немає
-// sf: -7..+7, mi: 0=major, 1=minor
-// Потрібні глобальні функції: normalizeMetaEvent, decodeKeySignature, isKeySignatureEvent
-// currentKeySignature - глобальна змінна
-// enharmonicPreference - 'auto' | 'sharps' | 'flats'
-// ---------------------------------------------------------------------
-
-function updateKeySignatureFromEvents(events) {
-	console.debug("FOO: midiparser_ext.js - updateKeySignatureFromEvents");
-	if (!Array.isArray(events)) return null;
-	let ks = null;
-	for (let i = 0; i < events.length; i++) {
-		let ev = events[i];
-		// Нормалізуємо meta події для стабільного поля data
-		if (ev && ev.type === 0xFF && typeof normalizeMetaEvent === 'function') {
-			ev = normalizeMetaEvent(ev);
-		}
-		// Перевіряємо різні форми key signature
-		const isKS = (typeof isKeySignatureEvent === 'function') ? isKeySignatureEvent(ev) : (ev && ev.type === 0xFF && (ev.metaType === 0x59 || ev.subtype === 0x59));
-		if (!isKS) continue;
-
-		// Пробуємо розпарсити через decodeKeySignature
-		if (typeof decodeKeySignature === 'function') {
-			ks = decodeKeySignature(ev);
-		}
-		// Fallback 1: з data байтів
-		if (!ks && ev && Array.isArray(ev.data) && ev.data.length >= 2) {
-			let bytes = ev.data.slice();
-			if (bytes.length >= 3 && bytes[0] === 2) bytes = bytes.slice(1);
-			let sf = bytes[0]; if (sf > 127) sf -= 256;
-			const miRaw = bytes[1];
-			const mi = (miRaw === 0 || miRaw === 1) ? miRaw : (miRaw ? 1 : 0);
-			ks = { sf, mi };
-		}
-
-		// Fallback 2: param1/param2
-		if (!ks && ev && ev.param1 !== undefined && ev.param2 !== undefined) {
-			let sf = ev.param1; if (sf > 127) sf -= 256;
-			const miRaw = ev.param2;
-			const mi = (miRaw === 0 || miRaw === 1) ? miRaw : (miRaw ? 1 : 0);
-			ks = { sf, mi };
-		}
-
-		if (ks) break;
-	}
-	if (ks && typeof ks.sf === 'number') {
-		currentKeySignature = ks.sf;
-		// Extra safety
-		ks.mi = (ks.mi === 0 || ks.mi === 1) ? ks.mi : (ks.mi ? 1 : 0);
-		currentKeyMode = ks.mi; // <-- ADDED: remember mode (major/minor)
-		return { sf: ks.sf, mi: ks.mi };
-	}
-	return null;
-}
-
-// --- helpers to derive tonic pitch-class from sf/mi (for minor leading-tone logic) ---
-function keyNameFromSfMi(sf, mi) {
-	const majors = ['Cb', 'Gb', 'Db', 'Ab', 'Eb', 'Bb', 'F', 'C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#'];
-	const minors = ['Abm', 'Ebm', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm', 'Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m', 'A#m'];
-	const idx = (sf | 0) + 7;
-	if (idx < 0 || idx >= majors.length) return null;
-	return mi === 1 ? minors[idx] : majors[idx];
-}
-function noteNameToPc(name) {
-	const map = {
-		'C': 0, 'B#': 0,
-		'C#': 1, 'Db': 1,
-		'D': 2,
-		'D#': 3, 'Eb': 3,
-		'E': 4, 'Fb': 4,
-		'E#': 5, 'F': 5,
-		'F#': 6, 'Gb': 6,
-		'G': 7,
-		'G#': 8, 'Ab': 8,
-		'A': 9,
-		'A#': 10, 'Bb': 10,
-		'B': 11, 'Cb': 11
-	};
-	return map[name] ?? null;
-}
-function tonicPcFromSfMi(sf, mi) {
-	const nm = keyNameFromSfMi(sf, mi);
-	if (!nm) return null;
-	const root = mi === 1 ? nm.replace(/m$/, '') : nm;
-	return noteNameToPc(root);
-}
-
-function midiNoteToVexFlow(midiNote) {
-	console.debug("FOO: midiparser_ext.js - midiNoteToVexFlow");
-	const sharpNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-	const flatNames = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-	const pc = midiNote % 12;
-	const octaveRaw = Math.floor(midiNote / 12) - 1;
-
-	// default selection by global preference / sf sign
-	let useFlats;
-	if (enharmonicPreference === 'sharps') useFlats = false;
-	else if (enharmonicPreference === 'flats') useFlats = true;
-	else useFlats = currentKeySignature < 0;
-
-	let chosen = useFlats ? flatNames[pc] : sharpNames[pc];
-	let outOctave = octaveRaw;
-
-	// Minor VII# rule: in minor, prefer sharp spelling for leading tone (one semitone below tonic)
-	try {
-		if (currentKeyMode === 1) { // minor
-			const tonicPc = tonicPcFromSfMi(currentKeySignature, 1);
-			if (tonicPc != null) {
-				const leadingPc = (tonicPc + 11) % 12;
-				if (pc === leadingPc) {
-					// Force sharp spelling for the leading tone (e.g., Dm: pc=1 -> C# not Db)
-					chosen = sharpNames[pc];
-				}
-			}
-		}
-	} catch (e) { /* safe fallback */ }
-
-	// Extreme key signatures (keep existing behavior)
-	if (enharmonicPreference === 'auto') {
-		if (typeof currentKeySignature === 'number') {
-			if (currentKeySignature <= -6 && pc === 11) {
-				chosen = 'Cb';
-				outOctave = octaveRaw + 1;
-			} else if (currentKeySignature <= -6 && pc === 4) {
-				chosen = 'Fb';
-			} else if (currentKeySignature >= 6 && pc === 5) {
-				chosen = 'E#';
-			}
-		}
-	}
-
-	const accidental = chosen.includes('#') ? '#' : (chosen.includes('b') ? 'b' : null);
-	return { key: `${chosen.replace(/[#b]/, '')}/${outOctave}`, accidental };
-}
 
 function splitEventsIntoMeasures(midiEvents, ticksPerBeat) {
-	console.debug("FOO: midiparser_ext.js - splitEventsIntoMeasures");
+	console.debug("MR: FOO: midiparser_ext.js - splitEventsIntoMeasures");
 	let measures = [];
 	let currentMeasure = [];
 	// Підраховуємо абсолютний час початку кожного такту
@@ -205,7 +68,7 @@ function splitEventsIntoMeasures(midiEvents, ticksPerBeat) {
 }
 
 function calculateTotalDuration(notesString = "") {
-	console.debug("FOO: midiparser_ext.js - calculateTotalDuration");
+	console.debug("MR: FOO: midiparser_ext.js - calculateTotalDuration");
 	const notes = notesString.split(/[,|]/);
 	let totalDuration = 0;
 
@@ -219,7 +82,7 @@ function calculateTotalDuration(notesString = "") {
 
 // приймає код тривалості і повертає тривалість в тіках
 function calculateTicksFromDuration(duration, ticksPerBeat) {
-	console.debug("FOO: midiparser_ext.js - calculateTicksFromDuration");
+	console.debug("MR: FOO: midiparser_ext.js - calculateTicksFromDuration");
 
 	let result = getDurationFromCode(duration) * ticksPerBeat;
 	console.debug(`Calculating ticks for duration: ${duration}, result: ${result}`);
@@ -234,7 +97,7 @@ function calculateTicksFromDuration(duration, ticksPerBeat) {
  */
 
 function getDurationFromTicks(ticks, ticksPerBeat) {
-	console.debug("FOO: midiparser_ext.js - getDurationFromTicks");
+	console.debug("MR: FOO: midiparser_ext.js - getDurationFromTicks");
 	if (typeof ticks !== "number" || typeof ticksPerBeat !== "number" || ticks <= 0 || ticksPerBeat <= 0) {
 		console.warn("Invalid input to getDurationFromTicks:", { ticks, ticksPerBeat });
 		return [];                      // Повертаємо порожній масив у разі некоректних даних
@@ -319,7 +182,7 @@ function getDurationFromTicks(ticks, ticksPerBeat) {
  * @returns
  */
 function calculateEndless(notesString) {
-	console.debug("FOO: midiparser_ext.js - calculateEndless");
+	console.debug("MR: FOO: midiparser_ext.js - calculateEndless");
 
 	let totalDuration = calculateTotalDuration(notesString);
 	if (totalDuration % 1 === 0)
@@ -338,13 +201,13 @@ function calculateEndless(notesString) {
 
 //приймає розмір такту (чисельник/знаменник) і повертає тривалість такту в одиницях чвертної ноти
 function getBarDuration(timeSignature) {
-	console.debug("FOO: midiparser_ext.js - getBarDuration");
+	console.debug("MR: FOO: midiparser_ext.js - getBarDuration");
 	const [numerator, denominator] = timeSignature.split('/').map(Number);
 	return numerator * (4 / denominator);
 }
 
 function getDurationFromCode(durationCode) {
-	console.debug("FOO: midiparser_ext.js - getDurationFromCode");
+	console.debug("MR: FOO: midiparser_ext.js - getDurationFromCode");
 	console.debug(`Getting duration value for code: ${durationCode}`);
 	try {
 		const hasDot = durationCode.endsWith('.');
@@ -374,7 +237,7 @@ function getDurationFromCode(durationCode) {
 
 //приймає код тривалості з отриманого коду ноти
 const getDurationValueFromNote = (note) => {
-	console.debug("FOO: midiparser_ext.js - getDurationValueFromNote");
+	console.debug("MR: FOO: midiparser_ext.js - getDurationValueFromNote");
 	const parts = note.split('/');
 	if (parts.length > 1) {
 		let result = getDurationFromCode(parts[1]);
@@ -389,7 +252,7 @@ const getDurationValueFromNote = (note) => {
 
 
 function createRest(duration, clef = 'treble') {
-	console.debug("FOO: midiparser_ext.js - createRest");
+	console.debug("MR: FOO: midiparser_ext.js - createRest");
 	try {
 		if (!duration || typeof duration !== 'string') {
 			console.warn('createRest: invalid duration', duration);
@@ -429,11 +292,21 @@ function createRest(duration, clef = 'treble') {
 // duration: 'q', 'h.', '8t' і т.д.
 // повертає Vex.Flow.StaveNote або null
 // --------------------------------
+function createNote(noteKey, duration, clef = 'treble') {
+	console.debug("MR: FOO: midiparser_ext.js - createNote", { noteKey, duration, clef });
 
-function createNote(noteKey, duration) {
-	console.debug("FOO: midiparser_ext.js - createNote");
-	//console.log(`Creating note with noteKey ${noteKey} duration: ${duration}`);
-	const noteMatch = noteKey.match(/^([a-gA-G])(b|#)?(\d)?$/);
+	if (typeof noteKey !== 'string') {
+		console.error("createNote: invalid noteKey type", noteKey);
+		return null;
+	}
+
+	// Normalize input: accept "c/4", "c4", "c-1", "C#10", "gb3"
+	let nk = noteKey.trim();
+	if (nk.includes('/')) nk = nk.replace('/', '');
+
+	// Match: letter, optional accidental, optional signed/multi-digit octave
+	// If octave missing, fallback to 4
+	const noteMatch = nk.match(/^([a-gA-G])(b|#)?(-?\d+)?$/);
 	if (!noteMatch) {
 		console.error(`Invalid note key: ${noteKey} (normalized -> ${nk}). Expected e.g. c4, d#5, gb3, a-1`);
 		return null;
@@ -443,10 +316,8 @@ function createNote(noteKey, duration) {
 	let octaveNum = typeof octaveRaw !== 'undefined' ? parseInt(octaveRaw, 10) : 4;
 	if (Number.isNaN(octaveNum)) octaveNum = 4;
 
-	// NOTE:
-	// Removed clef-based octave shifting here to avoid double/conflicting octave adjustments.
-	// Clef-aware octave logic should be handled consistently in one place (midiRenderer.js).
-	// (previous code added `octaveNum += 2` for 'bass' which caused notes to render on wrong lines)
+	// NOTE: removed clef-based octave changes here.
+	// Clef-aware octave shifting is performed in midiNoteToVexFlowWithKey (so keys passed to createNote already reflect clef).
 
 	const key = `${letter.toLowerCase()}${accidental || ''}/${octaveNum}`;
 
@@ -457,7 +328,8 @@ function createNote(noteKey, duration) {
 	try {
 		const staveNote = new Vex.Flow.StaveNote({
 			keys: [key],
-			duration: baseDuration
+			duration: baseDuration,
+			clef: clef
 		});
 
 		if (accidental) {
@@ -478,15 +350,16 @@ function createNote(noteKey, duration) {
 			staveNote.__durationCode = duration;
 		}
 
-		console.debug(`createNote: created key='${key}' duration='${baseDuration}' clef='${clef}'`);
+		console.log(`createNote: created key='${key}' duration='${baseDuration}' clef='${clef}'`);
 		return staveNote;
 	} catch (error) {
-		console.error(`Failed to create note with key: ${noteKey} (normalized ${key}) and duration: ${duration}`, error);
+		console.error(`Failed to create note with key: ${noteKey} (normalized -> ${key}) and duration: ${duration}`, error);
 		return null;
 	}
-};// // Аналіз нот із введеного рядку (ноти через коми)
+};// --- updated setStave to accept clef parameter ---
+
 function processNote(element) {
-	console.debug("FOO: midiparser_ext.js - processNote");
+	console.debug("MR: FOO: midiparser_ext.js - processNote");
 	const parts = element.split('/');
 	console.log("Processing note: ", parts[0]);
 	const noteKey = parts[0].toLowerCase();
@@ -503,7 +376,7 @@ function processNote(element) {
 
 // аналізує MIDIFile і визначає розмір та тікі на такт
 function getTimeSignatureAndTicksPerMeasure(midiFile) {
-	console.debug("FOO: midiparser_ext.js - getTimeSignatureAndTicksPerMeasure");
+	console.debug("MR: FOO: midiparser_ext.js - getTimeSignatureAndTicksPerMeasure");
 	console.log("Getting time signature and ticks per measure");
 	const ticksPerBeat = midiFile.header.getTicksPerBeat(); // TPQN
 	let lastNumerator = 4; // Початкове значення за замовчуванням
@@ -529,104 +402,6 @@ function getTimeSignatureAndTicksPerMeasure(midiFile) {
 	return { numerator: lastNumerator, denominator: lastDenominator, ticksPerMeasure: lastTicksPerMeasure, ticksPerBeat };
 }
 
-function isKeySignatureEvent(ev) {
-	// Универсальне визначення key signature meta (0x59)
-	if (!ev) return false;
-	const META_KEY_ID = 0x59; // 89
-	const isMeta =
-		ev.type === 0xFF ||
-		(typeof MIDIEvents !== 'undefined' ? ev.type === MIDIEvents.EVENT_META : false) ||
-		ev.meta === true;
-
-	// metaType або subtype або можливі рядкові значення
-	let metaId = ev.metaType !== undefined ? ev.metaType :
-		ev.subtype !== undefined ? ev.subtype :
-			(ev.metaTypeHex || ev.subtypeHex);
-
-	if (typeof metaId === 'string') {
-		// Пробуємо як hex або десяткове
-		if (/^0x/i.test(metaId)) {
-			metaId = parseInt(metaId, 16);
-		} else {
-			const dec = parseInt(metaId, 10);
-			if (!isNaN(dec)) metaId = dec;
-		}
-	}
-	return isMeta && metaId === META_KEY_ID;
-}
-
-// ФУНКЦІЯ ДЛЯ ОТРИМАННЯ ПОДІЙ KEY SIGNATURE З MIDI
-// Використання: const keySignatures = getKeySignature(midiEvents);
-// Повертає масив об'єктів з параметрами key signature
-// { param1: sf, param2: mi, sf, mode, name, absTime, raw }
-// sf: -7..+7, mi: 0=major, 1=minor, name: 'C', 'Gm' і т.д., absTime: абсолютний час події
-// raw: оригінальні байти [sf, mi]
-// Підтримує різні форми подій key signature
-// Потрібні глобальні функції: normalizeMetaEvent, decodeKeySignature
-//---------------------------------------------------------------------
-function getKeySignature(midiEvents) {
-	if (!Array.isArray(midiEvents)) return [];
-	const result = [];
-	midiEvents.forEach(ev => {
-		if (!ev) return;
-		// Normalize meta if possible
-		if (ev.type === 0xFF && typeof normalizeMetaEvent === 'function') {
-			ev = normalizeMetaEvent(ev);
-		}
-		// Detect key signature meta forms
-		const isKS =
-			(ev.type === 0xFF && (ev.metaType === 0x59 || ev.subtype === 0x59)) ||
-			(ev.type === 0x59); // flattened variant
-		if (!isKS) return;
-
-		let decoded = null;
-		// Preferred: global decoder
-		if (typeof decodeKeySignature === 'function') {
-			decoded = decodeKeySignature(ev);
-		}
-		// Fallback: data array
-		if (!decoded) {
-			let bytes = Array.isArray(ev.data) ? ev.data.slice() : [];
-			if (bytes.length === 3 && bytes[0] === 2) bytes = bytes.slice(1);
-			if (bytes.length >= 2) {
-				let sf = bytes[0]; if (sf > 127) sf -= 256;
-				const mi = bytes[1];
-				const majors = ['Cb', 'Gb', 'Db', 'Ab', 'Eb', 'Bb', 'F', 'C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#'];
-				const minors = ['Abm', 'Ebm', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm', 'Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m', 'A#m'];
-				const idx = sf + 7;
-				const name = (idx >= 0 && idx < majors.length) ? (mi === 0 ? majors[idx] : minors[idx]) : `sf=${sf}`;
-				decoded = { sf, mi, name, raw: ev.data };
-			}
-		}
-		// Fallback: param1 / param2 fields (MIDIFile library representation)
-		if (!decoded && ev.param1 !== undefined && ev.param2 !== undefined) {
-			let sf = ev.param1; if (sf > 127) sf -= 256;
-			const mi = ev.param2;
-			const majors = ['Cb', 'Gb', 'Db', 'Ab', 'Eb', 'Bb', 'F', 'C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#'];
-			const minors = ['Abm', 'Ebm', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm', 'Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m', 'A#m'];
-			const idx = sf + 7;
-			const name = (idx >= 0 && idx < majors.length) ? (mi === 0 ? majors[idx] : minors[idx]) : `sf=${sf}`;
-			decoded = { sf, mi, name, raw: [ev.param1, ev.param2] };
-		}
-
-		if (decoded) {
-			result.push({
-				param1: decoded.sf,
-				param2: decoded.mi,
-				sf: decoded.sf,
-				mode: decoded.mi,
-				name: decoded.name,
-				absTime: ev.absTime ?? 0,
-				raw: decoded.raw
-			});
-		}
-	});
-	return result;
-}
-if (typeof window !== 'undefined') window.getKeySignature = getKeySignature;
-
-
-
 /**
  * Detect whether a parsed midiData object likely represents MIDI Format 0.
  * Heuristic: explicit format fields or single track array.
@@ -634,14 +409,22 @@ if (typeof window !== 'undefined') window.getKeySignature = getKeySignature;
  * @returns {boolean}
  */
 const isMidiFormat0 = (midiData) => {
+	let result = false;
+
 	if (!midiData) return false;
 	// explicit fields some parsers use
-	if (midiData.format === 0 || midiData.format === '0') return true;
-	if (midiData.fileFormat === 0 || midiData.fileFormat === '0') return true;
-	if (midiData.header && (midiData.header.format === 0 || midiData.header.format === '0')) return true;
+	if (midiData.format === 0 || midiData.format === '0') result = true;
+	if (midiData.fileFormat === 0 || midiData.fileFormat === '0') result = true;
+	if (midiData.header && (midiData.header.format === 0 || midiData.header.format === '0')) result = true;
 	// fallback heuristic: single track => likely format 0
-	if (Array.isArray(midiData.track) && midiData.track.length === 1) return true;
-	return false;
+	if (Array.isArray(midiData.track) && midiData.track.length === 1) result = true;
+
+	if (result) {
+		console.warn("MidiFormat0 detected - possible lost Key Signatures [KS]");
+		return true;
+	}
+
+	return result;
 };
 
 //---------------------------------------------------------------------
@@ -671,19 +454,26 @@ function buildMidiDataFromMIDIFile(input) {
             const e = {};
             e.deltaTime = ev.delta ?? ev.deltaTime ?? 0;
 
-            // Meta events
-            if (ev.type === 0xFF || ev.subtype !== undefined || ev.metaType !== undefined || ev.meta === true) {
+            // Meta events - robust detection:
+            // Treat as meta only when ev.type explicitly equals 0xFF, or the library marks ev.meta === true,
+            // or ev.metaType is present / status byte 0x59 (key signature) is used.
+            // IMPORTANT: do NOT treat ev.subtype !== undefined alone as meta, some parsers use .subtype for channel events.
+            if (ev.type === 0xFF || ev.meta === true || ev.metaType !== undefined || ev.type === 0x59) {
                 e.type = 0xFF;
-                e.metaType = ev.subtype ?? ev.metaType;
+                // unify metaType detection: prefer explicit subtype/metaType, else accept flattened status byte 0x59
+                e.metaType = (ev.subtype ?? ev.metaType ?? (ev.type === 0x59 ? 0x59 : undefined));
                 // prefer array-like data; some libraries use ev.data (Array) or ev.param1/param2
                 if (Array.isArray(ev.data)) e.data = ev.data.slice();
                 else if (typeof ev.data === 'number') e.data = [ev.data];
                 else if (ev.param1 !== undefined || ev.param2 !== undefined) e.data = [ev.param1 ?? 0, ev.param2 ?? 0];
-                else e.data = ev.data ?? [];
+                else if (ev.rawBytes && Array.isArray(ev.rawBytes)) {
+                    // try to extract bytes for meta events (fallback)
+                    e.data = ev.rawBytes.slice(-2);
+                } else e.data = ev.data ?? [];
             } else {
                 // Channel / regular events: many parsers supply .type (4-bit), .channel, and .param1/.param2
-                // Keep type as-is (0x9, 0x8 etc) when present
-                e.type = (typeof ev.type === 'number') ? ev.type : (typeof ev.subtype === 'number' ? ev.subtype : ev.type);
+                // Keep type as-is (0x9, 0x8 etc) when present. If parser uses 'subtype' for channel type, accept it.
+                e.type = (typeof ev.type === 'number' && ev.type < 0xF0) ? ev.type : (typeof ev.subtype === 'number' ? ev.subtype : ev.type);
                 if (ev.channel !== undefined) e.channel = ev.channel;
                 if (Array.isArray(ev.data)) e.data = ev.data.slice();
                 else if (ev.param1 !== undefined || ev.param2 !== undefined) e.data = [ev.param1 ?? 0, ev.param2 ?? 0];
@@ -706,7 +496,15 @@ function buildMidiDataFromMIDIFile(input) {
         else if (midiFile.header && midiFile.header.ticksPerBeat) timeDivision = midiFile.header.ticksPerBeat;
     } catch { /* ignore */ }
 
-    return { track: tracks, timeDivision, format: 0 };
+    // attempt to preserve original MIDI format if available (avoid forcing format 0)
+    let format = 0;
+    try {
+        if (midiFile && typeof midiFile.getFormat === 'function') format = midiFile.getFormat();
+        else if (midiFile && midiFile.format !== undefined) format = midiFile.format;
+        else if (midiFile.header && midiFile.header.format !== undefined) format = midiFile.header.format;
+    } catch { /* ignore */ }
+
+    return { track: tracks, timeDivision, format };
 }
 
 //---------------------------------------------------------------------
@@ -715,7 +513,7 @@ function buildMidiDataFromMIDIFile(input) {
 // Повертає масив всіх подій з абсолютним часом absTime
 //---------------------------------------------------------------------
 function SetEventsAbsoluteTime(midiData) {
-    console.debug("FOO: midiparser_ext.js - SetEventsAbsoluteTime (format-aware)");
+    console.debug("MR: FOO: midiparser_ext.js - SetEventsAbsoluteTime (format-aware)");
     const allEvents = [];
 
     // If caller passed a raw Uint8Array or a MIDIFile instance, convert it first
@@ -789,7 +587,7 @@ function SetEventsAbsoluteTime(midiData) {
 // Використання: logMeasureEvents(allEvents);
 //--------------------------------------------------------------------
 function logMeasureEvents(allEvents) {
-	console.debug("FOO: midiparser_ext.js - logEvents");
+	console.debug("MR: FOO: midiparser_ext.js - logEvents");
 	allEvents.forEach((event) => {
 		let eventType = null;
 		let noteInfo = '';
@@ -824,7 +622,7 @@ function logMeasureEvents(allEvents) {
 // Виводить інформацію в HTML-елемент
 //--------------------------------------------------------------------
 function findEndEvent(midiEvents, element) {
-	console.debug("FOO: midiparser_ext.js - findEndEvent");
+	console.debug("MR: FOO: midiparser_ext.js - findEndEvent");
 	// Шукаємо подію End of Track
 	const endEvent = midiEvents.find(event =>
 		event.type === 0xFF && event.metaType === 0x2F
@@ -849,7 +647,7 @@ function findEndEvent(midiEvents, element) {
 //--------------------------------------------------------------------
 
 async function getFileFromPath(filepath) {
-	console.debug("FOO: midiparser_ext.js - getFileFromPath");
+	console.debug("MR: FOO: midiparser_ext.js - getFileFromPath");
 	if (typeof filepath === "string" && filepath) {
 		console.log("getFileFromPath is running, filepath:", filepath);
 
@@ -876,7 +674,7 @@ async function getFileFromPath(filepath) {
 // Повертає кількість тактів у наборі подій MIDI
 //--------------------------------------------------------------------
 function getMeasureCount(midiEvents, ticksPerBeat) {
-	console.debug("FOO: midiparser_ext.js - getMeasureCount");
+	console.debug("MR: FOO: midiparser_ext.js - getMeasureCount");
 	ensureTimeSignature(midiEvents);
 
 	const timeSignatureEvents = getTimeSignatureEvents(midiEvents);
@@ -915,7 +713,7 @@ function getMeasureCount(midiEvents, ticksPerBeat) {
 //--------------------------------------------------------------------
 
 function calculateBarStartAbsTimes(midiEvents, ticksPerBeat) {
-	console.debug("FOO: midiparser_ext.js - calculateBarStartAbsTimes");
+	console.debug("MR: FOO: midiparser_ext.js - calculateBarStartAbsTimes");
 	let barStartAbsTimes = [0];
 	let ticksPerMeasure = ticksPerBeat * 4;
 	let currentAbsTime = 0;
@@ -946,7 +744,7 @@ function calculateBarStartAbsTimes(midiEvents, ticksPerBeat) {
 // Повертає масив подій розміру такту
 //--------------------------------------------------------------------
 function getTimeSignatureEvents(midiEvents) {
-	console.debug("FOO: midiparser_ext.js - getTimeSignatureEvents");
+	console.debug("MR: FOO: midiparser_ext.js - getTimeSignatureEvents");
 	return midiEvents.filter(event =>
 		event.type === 0xFF && event.metaType === 0x58
 	);
@@ -956,7 +754,7 @@ function getTimeSignatureEvents(midiEvents) {
 // Використання: ensureTimeSignature(midiEvents);
 //--------------------------------------------------------------------
 function ensureTimeSignature(midiEvents) {
-	console.debug("FOO: midiparser_ext.js - ensureTimeSignature");
+	console.debug("MR: FOO: midiparser_ext.js - ensureTimeSignature");
 	// Додаємо подію 4/4 на тік 0
 	midiEvents.unshift({
 		type: 0xFF,
@@ -970,7 +768,7 @@ function ensureTimeSignature(midiEvents) {
 }
 
 function getMidiEventFromArray(arrayBuffer) {
-	console.debug("FOO: midiparser_ext.js - getMidiEventFromArray");
+	console.debug("MR: FOO: midiparser_ext.js - getMidiEventFromArray");
 
 	const midiFile = new MIDIFile(arrayBuffer);
 	return midiFile.getMidiEvents();
@@ -981,7 +779,7 @@ function getMidiEventFromArray(arrayBuffer) {
 // Приклад: "c/4" -> 60, "d#/5" -> 75, "gb/3" -> 54
 // Використання: midiNoteFromVexKey("c/4") поверне 60
 function midiNoteFromVexKey(key) {
-	console.debug("FOO: midiparser_ext.js - midiNoteFromVexKey");
+	console.debug("MR: FOO: midiparser_ext.js - midiNoteFromVexKey");
 	// Простий приклад для C4 ("c/4") -> 60
 	// Реалізуйте повну відповідність для всіх нот
 	const noteNames = { 'c': 0, 'd': 2, 'e': 4, 'f': 5, 'g': 7, 'a': 9, 'b': 11 };
@@ -1000,7 +798,7 @@ function midiNoteFromVexKey(key) {
 // Використання: ensureEndEvent(midiEvents, element);
 //--------------------------------------------------------------------
 function ensureEndEvent(midiEvents, element) {
-	console.debug("FOO: midiparser_ext.js - ensureEndEvent");
+	console.debug("MR: FOO: midiparser_ext.js - ensureEndEvent");
 	// Robust check without relying on MIDIEvents global
 	const hasEndTrack = midiEvents.some(e => e && (e.type === 0xFF || e.meta === true || e.type === 'meta') && (e.metaType === 0x2F || e.subtype === 0x2F));
 	if (!hasEndTrack) {
@@ -1066,7 +864,7 @@ function normalizeMetaEvents(events) {
 // Reference: https://www.recordingblogs.com/wiki/midi-meta-event-ff-59-key-signature
 // --------------------------------------------------------------------
 function decodeKeySignature(ev) {
-	console.debug("FOO: Decoding Key Signature from event:", ev);
+	console.debug("MR: FOO: Decoding Key Signature from event:", ev);
 	if (!ev || (ev.metaType !== 0x59 && ev.subtype !== 0x59)) return null;
 
 	let bytes = ev.data;
@@ -1086,6 +884,7 @@ function decodeKeySignature(ev) {
 	const minors = ['Abm', 'Ebm', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm', 'Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m', 'A#m'];
 	const idx = sf + 7;
 	const name = (idx >= 0 && idx < majors.length) ? (mi === 0 ? majors[idx] : minors[idx]) : `sf=${sf}`;
+	console.debug(`[KS]Decoded Key Signature: sf=${sf}, mi=${mi}, name=${name}`);
 	return { sf, mi, name, raw: ev.data };
 }
 
@@ -1105,7 +904,7 @@ function decodeTempo(ev) {
 // - parser - рядок 'MIDIFile' або 'MidiParser', що вказує, який парсер було використано
 // --------------------------------------------------------------------
 function parseMidiPreferMIDIFile(uint8) {
-	console.debug("FOO: midiparser_ext.js - parseMidiPreferMIDIFile");
+	console.debug("MR: FOO: midiparser_ext.js - parseMidiPreferMIDIFile");
 	let midiObj = null;
 
 	// Prefer the MIDIFile parser (used by Admin/Notation)
@@ -1155,7 +954,7 @@ function parseMidiPreferMIDIFile(uint8) {
 // Використання: const { midiObj, allEvents } = await getAllEvents(file);
 // --------------------------------------------------------------------
 async function getAllEvents(file) {
-	console.debug("FOO: midiparser_ext.js - getAllEvents");
+	console.debug("MR: FOO: midiparser_ext.js - getAllEvents");
 	try {
 		const arrayBuffer = await file.arrayBuffer();
 		const uint8 = new Uint8Array(arrayBuffer);
@@ -1182,7 +981,7 @@ if (typeof window !== 'undefined') window.getAllEvents = getAllEvents;
 
 // Рахує кількість NoteOn (velocity > 0) у такті
 function getNumberOfNotes(measure) {
-	console.debug("FOO: midiparser_ext.js - getNumberOfNotes");
+	console.debug("MR: FOO: midiparser_ext.js - getNumberOfNotes");
 	if (!Array.isArray(measure)) return 0;
 	let count = 0;
 	for (const ev of measure) {
@@ -1195,34 +994,6 @@ function getNumberOfNotes(measure) {
 if (typeof window !== 'undefined') window.getNumberOfNotes = getNumberOfNotes;
 
 
-// Розраховує середню ширину такту на основі кількості нот у кожному такті
-function GetMeanBarWidth(BARWIDTH, measures) {
-
-	// If measures is not a non-empty array — just return default BARWIDTH without noisy warnings
-	if (!Array.isArray(measures) || measures.length === 0) {
-		console.debug("meanBarWidth: measures empty or invalid, using BARWIDTH fallback");
-		return BARWIDTH;
-	}
-
-	console.debug("FOO: midiparser_ext.js - meanBarWidth");
-	let meanBarWidth = BARWIDTH;
-	let sumBarWidth = 0;
-	let currentWidth;
-
-	measures.forEach((m) => {
-		let notesamount = getNumberOfNotes(m);
-		if (notesamount !== undefined) {
-			currentWidth = meanBarWidth / 3 + meanBarWidth * notesamount / 7;
-			sumBarWidth += currentWidth;
-		}
-	});
-
-	meanBarWidth = sumBarWidth / measures.length;
-	console.log(`meanBarWidth total: ${meanBarWidth}`);
-
-	return meanBarWidth;
-}
-if (typeof window !== 'undefined') window.GetMeanBarWidth = GetMeanBarWidth;
 
 // Detection of NoteOn events extracted to reusable function
 /**
@@ -1230,6 +1001,7 @@ if (typeof window !== 'undefined') window.GetMeanBarWidth = GetMeanBarWidth;
  * Returns { midiNote, isNoteOn, velocity }
  */
 function detectNoteOn(event) {
+
 	let isNoteOn = false, midiNote = null, velocity = null;
 	if (!event) return { midiNote, isNoteOn, velocity };
 

@@ -12,13 +12,14 @@
 }
 <div class="melody-shell">
     <!--ІНФОРАЦІЯ  ПРО ФАЙЛ-->
-    <div class="infocontainer melody-width">
+    <div class="infocontainer melody-width hideformenu">
+        <div class="spaceformenu"></div>
         <h1>@item.Title</h1>
         <div>
             @if (@item.Author is not null && !@item.Author.Surname.Contains("народна"))
             {
                 <h4>автор - <a asp-page="/Authors/Details" asp-route-id="@item.AuthorID">@item.Author.Name @item.Author.Surname</a></h4>
-                <p>(@item.Author.DateOfBirth - @item.Author.DateOfDeath)</p>
+                <p class="d-none d-md-inline">(@item.Author.DateOfBirth - @item.Author.DateOfDeath)</p>
             }
             else if (@item.Author is not null)
             {
@@ -27,7 +28,7 @@
             }
             @if (item.Year is not null)
             {
-                <p>Написана у @item.Year році</p>
+                <p class="d-none d-md-inline">Написана у @item.Year році</p>
             }
         </div>
         <p><i>@item.Description</i></p>
@@ -39,23 +40,24 @@
                 var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
                 var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
 
-                <div style="display:inline-flex">
-
-                    <audio id="audioPlayer_@item.FilePath" class="audioPlayer" controls style="display: inline; width:500px;">
+                <div class="d-flex d-md-inline-flex align-items-center gap-2" style="flex-wrap:wrap;">
+                    <audio id="audioPlayer_@item.FilePath" class="audioPlayer flex-shrink-0" controls style="max-width:500px; width:100%;">
                         <source src="@mp3filepath" type="audio/mpeg" />
                         Your browser does not support the audio element.
                     </audio>
-                    <a href="@midifilepath" download class="btn btn-outline-dark light-background">
-                        Завантажити Midi <i class="fas fa-download"></i>
-                    </a>
-                    <a href="@mp3filepath" download class="btn btn-outline-dark light-background">
-                        Завантажити mp3 <i class="fas fa-download"></i>
-                    </a>
 
+                    <div class="btn-group" role="group" aria-label="downloads">
+                        <a href="@midifilepath" download class="btn btn-outline-dark light-background" aria-label="Download MIDI">
+                            <span class="d-none d-md-inline">Завантажити </span>Midi <i class="fas fa-download"></i>
+                        </a>
+                        <a href="@mp3filepath" download class="btn btn-outline-dark light-background" aria-label="Download MP3">
+                            <span class="d-none d-md-inline">Завантажити </span>mp3 <i class="fas fa-download"></i>
+                        </a>
+                    </div>
                 </div>
                 @if (!string.IsNullOrEmpty(Model.Melody.Tonality))
                 {
-                    <p>MIDI файл завантажено в тональності @Model.Melody.Tonality</p>
+                    <p><span class="d-none d-md-inline">MIDI файл завантажено в тональності @Model.Melody.Tonality</span></p>
                 }
                 else
                 {
@@ -64,7 +66,13 @@
             }
             else
             {
-                <span>Файл не доступний</span>
+                @if (!string.IsNullOrEmpty(item.FilePath)){
+                    <span>Файл @item.FilePath не доступний</span>
+                }
+                else {
+                    <span>MIDI файл не завантажено</span>
+                }
+
             }
             <hr />
         </div>
@@ -247,7 +255,7 @@
             <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
             <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку мелодій</a>
 
-            @* запускає сторінку пошуку, атрибут notesearchHandlerUrl передається як адреса міді-файлу поточної мелодії *@
+            @* запускає сторінку пошуку, атрибут notesearchHandlerUrl передається як адреса міді-файлу поточної мелодії, працює через find-similar.js' *@
             <button id="findSimilarBtn" type="button"
                     class="btn btn-outline-dark light-background link-dark"
                     data-search-url="@notesearchHandlerUrl">
@@ -259,12 +267,7 @@
 
 <!--СКРИТПИ-->
 <script src="~/js/play.js"></script>
-<script src="~/lib/midirender/midifile.bundle.js"></script>
-<script src="~/lib/midirender/vexflow.js"></script>
-<script src="~/lib/midirender/midiparser.js"></script>
-<script src="~/lib/midirender/midiparser_ext.js"></script>
-<script src="~/lib/midirender/makeBeams.js"></script>
-<script src="~/lib/midirender/rendererUtils.js"></script>
-<script src="~/lib/midirender/midiRenderer.js"></script>
-<script src="~/js/MelodyDetails.js" asp-append-version="true"></script>
-<script src="~/js/details.js" asp-append-version="true"></script>
+<script src="~/lib/midirender/midiRenderer.js" asp-append-version="true"></script>
+<script src="~/js/find-similar.js" asp-append-version="true"></script>
+<script src="~/js/melody-details.js" asp-append-version="true"></script>
+

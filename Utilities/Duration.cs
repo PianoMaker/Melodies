@@ -136,12 +136,11 @@ namespace Music
 
         private DURATION ConvertValue(int baseDur)
         {
-            int value = 1;
-            while(baseDur > 0)
-            {
-                baseDur /= 2;
-                value *= 2;
-            }
+            const int total64th = quatersPerWholeNote * quaterContains64thNotes; // 4 * 16 = 64
+            if (baseDur <= 0) return DURATION.quater; // fallback
+            
+            int value = total64th / baseDur;
+            // value тепер: baseDur=32 -> 2 (half), baseDur=16 -> 4 (quater), baseDur=1 -> 64 (sixtyfourth)
             return (DURATION)value;
         }
 

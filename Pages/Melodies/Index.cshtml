@@ -15,15 +15,23 @@
 @section Styles {
     <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
 }
-<div class="infocontainer">
+<div class="infocontainer hideformenu">
+    <div class="spaceformenu"></div>
     <h1>Мелодій у базі даних - @(Model.TotalCount)</h1>
     <!--Верхній прямокутник-->
     <div class="d-flex flex-row melody-index-flex">
         <!-- Кнопки ліворуч "Пошук", "Додати мелодію" -->
         <div id="operationbuttons" class="d-flex flex-column me-4">
-            <a asp-page="search" class="btn-melody m-2 btn-compact-40 align-self-start">Розширений пошук</a>
-            <a asp-page="Create" class="btn-melody m-2 btn-compact-40 align-self-start">Додати мелодію</a>
+            <a asp-page="search" class="btn-melody m-2 btn-compact-40 align-self-start"><span class="hide-mobile">Розширений пошук</span> <span class="show-mobile">Пошук</span></a>
+            <a asp-page="Create" class="btn-melody m-2 btn-compact-40 align-self-start">Додати <span class="hide-mobile">мелодію</span></a>
         </div>
+
+        <!-- гамбургер (поза блоком літер) -->
+        <button id="lettersToggleBtn" class="letters-hamburger" type="button"
+                aria-controls="lettersbutton" aria-expanded="false" title="Показати/Сховати літери">
+            ☰ Літери
+        </button>
+
         <!-- Кнопки з літерами праворуч -->
         <div id="lettersbutton" class="d-flex flex-column">
             <div class="d-flex flex-wrap gap-1 mb-2 letters-row">
@@ -124,12 +132,12 @@
                             {
                                 <button class="btn-melody playbutton"
                                         data-filepath="@item.FilePath" id="playButton_@item.FilePath">
-                                    <i class="fas fa-play">?</i>
+                                     <i class="fas fa-play"><!--?--></i> 
                                 </button>
                                 <button id="stopButton_@item.FilePath" disabled="disabled"
                                         class="stopButton btn-melody">
-                                    <i class="fas fa-stop">?</i>
-                                </button>
+                                        <i class="fas fa-stop"><!--?--></i>
+                                    </button>
                             }
                             else if (@item.IsFileEligible is true)
                             {
@@ -154,7 +162,7 @@
                     }
                     else
                     {
-                        <span>Файл не доступний</span>
+                       <span>Файл @item.FilePath не доступний</span>
                     }
                 </td>
                 <!-- ОПЕРАЦІЇ -->
@@ -216,4 +224,4 @@
 </div>
 
 <script src="~/js/play.js"></script>
-<script src="~/js/index.js" asp-append-version="true"></script>
+<script src="~/js/melody-index.js" asp-append-version="true"></script>
