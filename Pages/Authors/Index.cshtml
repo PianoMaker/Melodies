@@ -45,7 +45,7 @@
                 <a asp-page="./Index"
                    asp-route-sortOrder="@Model.SurnameSort"
                    asp-route-SelectedLang="@Model.SelectedLang"
-                   class="link-light">
+                   class="link-th">
                     Автор @(Model.SurnameSort == "title_asc" ? "▲" : "▼")
                 </a>
             </th>
@@ -54,7 +54,7 @@
                 <a asp-page="./Index"
                    asp-route-sortOrder="@Model.CountrySort"
                    asp-route-SelectedLang="@Model.SelectedLang"
-                   class="link-light">
+                   class="link-th">
                     Країна  @(Model.SurnameSort == "surname_asc" ? "▲" : "▼")
                 </a>
             </th>
@@ -62,7 +62,7 @@
                 <a asp-page="./Index"
                    asp-route-sortOrder="@Model.MelodiesCountSort"
                    asp-route-SelectedLang="@Model.SelectedLang"
-                   class="link-light">
+                   class="link-th">
                     Мелодій на сайті  @(Model.SurnameSort == "melody_asc" ? "▲" : "▼")
                 </a>
             </th>

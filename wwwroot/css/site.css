@@ -1,10 +1,26 @@
-﻿:root {
-  --brand-red: #be0000;          /* navbar red */
-  --brand-gold: #ffd83d;         /* accent */
-  --surface: #fffcd1;            /* light panel background */
-  --text-dark: #1f1f1f;
-  --brand-border: #d9cf8d;       /* panels/containers border */
+﻿/* Design tokens for consistent feel */
+:root {
+    --brand-red: #be0000; /* старий червоний яскравий */
+    --brand-dark: #34421a; /* старий червоний яскравий */
+    --brand-green: #34620e; /* старий темно-зелений */
+    --brand-maincolor: #4b4f18; /* колір верхньої смуги, підсвітка клавіш */
+    --brand-maincolor-light: #7a7e38; /* колір верхньої смуги, підсвітка клавіш */
+    --nav-height: 85px; /* висота навігаційної смуги */
+    --brand-gold: #ffd83d; /* акцент */
+    --surface: #fffcd1; /* світлий фон панелі */
+    --text-dark: #1f1f1с; /* текстові надписи */
+    --brand-border: #d9cf8d; /* border панелей/контейнерів */
+    --brand-mobile-button: #ffd83d; /* яскравий золотий для кнопок мобільного меню */
+    --radius-lg: 12px;
+    --shadow-1: 0 1px 2px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.08);
+    --shadow-inset: 0 1px 2px rgba(0,0,0,.12) inset;
+    --btnheight: 40px;
+    --mainimage: url(../images/catplays3.png); /* головний малюнок */
+    --footer-height: 30px; /* NEW */
 }
+
+
+
 
 
 html {
@@ -12,6 +28,7 @@ html {
     width: 100%;
     height: 100%;
     font-size: 14px;
+    padding: 0px;
 }
 
 @media (min-width: 768px) {
@@ -21,19 +38,13 @@ html {
 }
 
 body {
-    margin-bottom: 60px;
+    /* замінюємо margin-bottom -> padding-bottom для зарезервованого простору */
+    margin: 0;
+    padding: 0px;
+    padding-bottom: calc(var(--footer-height) + 16px);
     width: 100%;
     height: 100%;
-    margin: 0;
-    padding: 0;
-    /*overflow: hidden;*/
-    /* яскравий градієнт */
-    /*background: linear-gradient(
-        rgb(231 153 42 / 80%) 20%,*/ /* помаранчево‑жовтий */
-    /*rgb(239, 100, 247, 0.7) 40%,*/ /* рожево‑фіолетовий */
-    /*rgb(91 109 9 / 80%) 90%,*/ /* оливковий */
-    /*rgb(9 148 195 / 86%)*/ /* блакитний */
-    /*);*/
+    color: var(--text-dark);
     background-color: #f0e68c; /* lightkhaki */
     background-attachment: fixed;
     background-repeat: no-repeat;
@@ -59,13 +70,99 @@ a.link-light:hover {
     color: yellow !important;
 }
 
+
+/* ГОЛОВНА */
+
+/* Надпис на головній сторінці "Знайди схожу мелодію" */
+.homepagetitle {
+    font-size: 40px;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: linear-gradient(45deg, #ff6347, #ff8c00, #ffcc00);
+    color: #fff5e1;
+    margin: 25px 25px 20px 10px;
+    transform: rotate(-2deg);
+    padding: 10px;
+    display: inline-block;
+    border-radius: 10px;
+    animation: glow 1.2s infinite alternate;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.homepagesubtitle {
+    color: var(--text-dark); /* Темно-коричневий */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    font-size: 1.2em;
+    transition-duration: 0.2s;
+}
+
+.homepagesubtitle:hover {
+    color: var(--brand-green); 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    transition-duration: 0.2s;
+    font-size: 1.2em;
+}
+
+
+/* лівий контейнер*/
+#mainpageleftcontainer {
+    min-width: 390px;
+}
+
+/* поле пошуку */
+.searchfield {
+    width: 250px;
+    height: var(--btnheight);
+}
+
+
+/* КНОПКИ */
+
+.btn {
+    height: var(--btnheight);
+}
+
+/* більшсть кнопок сайту */
+
+.btn-melody {
+    display: inline-block;
+    font-weight: 400;
+    color: #212529;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+    background-color: #d3d3d3; 
+    border: 1px solid #212529;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.375rem;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    background-clip: padding-box;
+}
+
+    .btn-melody:hover, .btn-melody:focus {
+        color: var(--brand-gold);
+        background-color: var(--brand-red);
+        border-color: #212529;
+        text-decoration: none;
+    }
+
+    .btn-melody:active {
+        color: #fff;
+        background-color: #1a1e21;
+        border-color: #1a1e21;
+    }
+
 /* Make outline-dark buttons hover in dark red (match navbar) */
 .btn-outline-dark.light-background:hover,
 .btn-outline-dark.light-background:focus {
     background-color: var(--brand-red);
-    border-color: var(--brand-red);
-    color: #fff;
-}   
+    border-color: var(--brand-maincolor);
+    color: var(--brand-gold);
+}
 
 /* пошук по нотах - головна */
 .btn-notes {
@@ -82,7 +179,7 @@ a.link-light:hover {
     }
 
     .btn-notes:active {
-        box-shadow: 0 1px 2px rgba(0,0,0,.25);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
         transform: translateY(0);
     }
 
@@ -91,19 +188,24 @@ a.link-light:hover {
         outline-offset: 2px;
     }
 
-/*кнпоки вибору тривалостей для вводу мелодій*/
-.durbtn {
-    width: 40px;
-    height: 40px;
-    border: 1px solid black;
-    border-radius: 2px;
-    margin: 5px;
-    transition: background-color 0.3s ease;
+/* кнопки для входу на сайт */
+.btn-logo {
+    background-color: #fffbe6;
+    color: #212529;
+    border: 1px solid #bfa600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 0.5rem 1.2rem;
+    opacity: 0.65;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
-    .durbtn img {
-        height: 30px;
-        vertical-align: top;
+    .btn-logo:hover, .btn-logo:focus {
+        background-color: var(--brand-gold, #ffd83d);
+        color: #212529;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.13);
+        text-decoration: none;
     }
 
 /* підсвічує меню   */
@@ -116,12 +218,13 @@ li.active {
 }
 
 .letter {
-    font-size: 0.7em;
+    font-size: 0.85em; /* was 0.7em */
     background-color: silver;
     border-radius: 1px;
     border: solid 1px black;
     margin: 1px;
     margin-top: 20px;
+    padding: .2rem .35rem; /* better touch target */
 }
 
 /* Align first row with the top buttons */
@@ -137,12 +240,25 @@ li.active {
     color: #fff;
 }
 
+/* Forms: align labels vertically with inputs and increase readability */
+label, .form-label, .col-form-label {
+    display: flex;
+    align-items: center; /* vertical alignment */
+    margin-bottom: .25rem;
+    font-size: 1rem; /* larger labels */
+}
+
+/* Inputs/selects: keep font consistent */
+.form-control, .form-select {
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
 /*стилі елементів головного меню*/
 .melodyitem {
-    
     height: auto !important;
     display: flex;
-    align-items: stretch;   /* let link fill full navbar height */
+    align-items: stretch; /* let link fill full navbar height */
     justify-content: center;
 }
 
@@ -150,8 +266,13 @@ li.active {
     /* match li height to mainNavbar/navbar height */
     height: var(--nav-height) !important;
     display: flex;
-    align-items: stretch;   /* let link fill full navbar height */
+    align-items: stretch; /* let link fill full navbar height */
     justify-content: center;
+}
+
+
+.bg-yellow {
+    background-color: yellow;
 }
 
 
@@ -164,24 +285,21 @@ li.active {
     z-index: 3;
 }
 
-.bg-yellow {
-    background-color: yellow;
-}
 
-
-.btn-light:hover {
-    background-color: darkgray;
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* Збільшена тінь при наведенні */
-    transform: translateY(-2px); /* Невеликий підйом кнопки */
-}
+    .btn-light:hover {
+        background-color: darkgray;
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25); /* Збільшена тінь при наведенні */
+        transform: translateY(-2px); /* Невеликий підйом кнопки */
+    }
 
 .btn-compact-40 {
-    min-height: 40px;
+    min-height: var(--btnheight);
     display: inline-flex;
     align-items: center;
     line-height: 1.1;
-    padding-top: .125rem; 
+    padding-top: .125rem;
     padding-bottom: .125rem;
+    font-size: 1rem; /* larger text on compact buttons */
 }
 
 #innerNotesContainer {
@@ -215,21 +333,23 @@ li.active {
         display: inline-block;
         height: 100%;
     }
+
         .exp-top a:hover {
             transform: scale(1.1);
             color: darkred;
         }
+
         .exp-top a.active {
             background-color: rgba(255, 125, 12, 0.2) !important;
         }
 
-    table {
-        background-color: white;
-        opacity: 0.9;
-        font-family: 'Times New Roman';
-        font-style: normal;
-        border: 1px solid black;
-    }
+table {
+    background-color: white;    
+    opacity: 0.9;
+    font-family: 'Times New Roman';
+    font-style: normal;
+    border: 1px solid black;
+}
 
     table a {
         font-style: normal;
@@ -237,20 +357,28 @@ li.active {
     }
 
         table a:hover {
-            color: blueviolet !important;
+            color: var(--brand-maincolor) !important;
         }
+
+.selected-letter {
+    background-color: var(--brand-gold) !important;
+    color: #212529 !important;
+}
 
 th, td {
     border: 1px solid #ddd;
     padding: 10px;
     text-align: left;
-    font-size: 0.9em;
+    font-size: 1em; /* was 0.9em */
+    vertical-align: middle; /* align text with controls/buttons */
 }
 
-th {
-    background: linear-gradient(to right, #4b4f18, #5a5e38);
-    color: white;
+th, link-th, a.link-th {
+    background: linear-gradient(to right, var(--brand-gold) 75%, white);
+    color: var(--brand-dark);
 }
+
+
 
 table, th, td {
     border-radius: 8px;
@@ -259,39 +387,63 @@ table, th, td {
 }
 
 /* Zebra + hover */
-.table tbody tr:nth-child(odd) td { background-color: rgba(255,255,255,0.96); }
-.table tbody tr:nth-child(even) td { background-color: rgba(250,250,250,0.96); }
-.table tbody tr:hover td { background-color: #f6f6f6; }
+.table tbody tr:nth-child(odd) td {
+    background-color: rgba(255,255,255,0.96);
+}
+
+/* Highlight entire selected table row */
+.selected-row td {
+    background-color: lightyellow !important;
+}
+
+/* ensure selected row hover keeps the same background */
+.selected-row:hover td {
+    background-color: lightyellow !important;
+}
 
 /* Sticky header for easier scanning */
 .table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 /* Narrow fixed width for action column if desired */
-.table td:last-child, .table th:last-child { width: 120px; white-space: nowrap; }
+.table td:last-child, .table th:last-child {
+    width: 120px;
+    white-space: nowrap;
+}
 
 /* Icon-only buttons: keep compact */
-.btn.btn-outline-dark i { pointer-events: none; }
+.btn.btn-outline-dark i {
+    pointer-events: none;
+}
 
 
 
-
+/* ГОЛОВНА СТОРІНКА */
+/* частина з малюнком */
 .mainpage {
     height: 100%;
     background: linear-gradient(217deg, rgba(255,100,100,.8), rgba(255,100,0,0) 70.71%), linear-gradient(127deg, rgba(255,255,100,.8), rgba(255,255,0,0) 70.71%), linear-gradient(336deg, rgba(100,100,255,.8), rgba(255,255,255,0) 70.71%);
     margin: 0;
 }
 
-.filesbox{
+@media (max-width: 768px) {
+    .mainpage {
+        
+        background: linear-gradient(217deg, var(--brand-gold), var(--brand-maincolor-light) 80.71%), linear-gradient(336deg, var(--brand-maincolor), var(--brand-green) 70.71%);
+        
+    }
+}
 
+/* сирпінка файлів*/
+.filesbox {
     border: 1px solid gray;
     background: #fefee7;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
-    margin-top:20px;
-    margin-bottom:40px;
+    margin-top: 20px;
+    margin-bottom: 40px;
 }
 
 
@@ -302,17 +454,6 @@ table, th, td {
 https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     */
 
-
-
-.notestaff {
-    margin: 3px;
-}
-
-
-.notestaff-container {
-    position: absolute;
-    z-index: 2;
-}
 
 .notescontainer {
     font-size: 0.8em;
@@ -338,6 +479,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     border-radius: 5px;
     box-shadow: rgba(55,55,0,0.3) 2px 2px;
 }
+
 .NotesList {
     display: inline-block;
     width: 20%;
@@ -346,6 +488,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     vertical-align: top;
     background-color: rgb(255,255,200)
 }
+
 .pausebox {
     font-size: 1.1em;
     background-color: white;
@@ -390,15 +533,16 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     height: 100%;
     margin: 0;
     padding: 0;
+    position: relative; /* required so control-strip absolute positions to this container */
 }
 
-
+/* головний малюнок сайту тут*/
 .rightcontainer {
     width: 80vh;
-    height: 115%;
+    height: 95%;
     padding: 5px;
     margin-top: 0;
-    background-image: url(../images/elephantplays.png);
+    background-image: var(--mainimage);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -410,7 +554,9 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 /* Tighten spacing for the top action strip */
-.d-flex > .btn.btn-compact-40 { margin: .25rem !important; }
+.d-flex > .btn.btn-compact-40 {
+    margin: .25rem !important;
+}
 
 /* Анімація м'якого пульсування світла */
 @keyframes glow {
@@ -419,15 +565,10 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     }
 
     to {
-        text-shadow: 0px 0px 12px rgb(255 50 50), 0px 0px 20px rgb(255 100 50);
+        text-shadow: 0px 0px 12px rgb(255, 50, 50), 0px 0px 20px rgb(255, 100, 50);
     }
 }
 
-.homepagesubtitle {
-    color: #5a3d1c; /* Темно-коричневий */
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-    font-size: 1.2em;
-}
 
 
 .btn-index {
@@ -468,7 +609,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
     100% {
         transform: translateX(var(--randomHorizontalEnd, 0)) translateY(var(--randomVerticalEnd, 0)) scale(0.4) rotate(var(--randomRotate, 0deg));
-        ;
+        
     }
 }
 
@@ -496,6 +637,8 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 .infocontainer {
     display: block;
 }
+
+
 .searchrightcontainer {
     /*display: inline-block;*/
     width: 70%;
@@ -516,6 +659,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     height: 350px
 }
 
+/* біле тло контейнерів */
 .addcontainer, .infocontainer, .searchcontainer, .searchleftcontainer, .searchrightcontainer {
     background: #fffcd1;
 }
@@ -526,111 +670,28 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     box-shadow: darkgray 0px 1px 10px 5px;
 }
 
+.infocontainer, .table {
+    box-sizing: border-box;
+}
+
 .controlcontainer {
     display: inline-block;
     border: 0px solid grey;
     flex: 1 2 100px;
 }
 
-#pianoroll {
-    position: relative;
-    width: 800px;
-    height: 200px;
-    font-size: 0;
-    padding-left: 10px;
-}
-
-.blackpianobutton {
-    position: absolute;
-    width: 40px;
-    height: 110px;
-    background: linear-gradient(black, darkslategrey);
-    margin: 0;
-}
-
-/* Розташування чорних клавіш */
-.cis1 {
-    top: 0px; /* Відступ зверху */
-    left: 35px; /* Відступ зліва */
-}
-
-.dis1 {
-    top: 0px;
-    left: 90px;
-}
-
-.fis1 {
-    top: 0px;
-    left: 180px;
-}
-
-.gis1 {
-    top: 0px;
-    left: 235px;
-}
-
-.b1 {
-    top: 0px;
-    left: 290px;
-}
-
-.cis2 {
-    top: 0px;
-    left: 385px;
-}
-
-.dis2 {
-    top: 0px;
-    left: 440px;
-}
-
-.fis2 {
-    top: 0px;
-    left: 530px;
-}
-
-.gis2 {
-    top: 0px;
-    left: 585px;
-}
-
-.b2 {
-    top: 0px;
-    left: 640px;
-}
-
-.whitepianobutton {
-    height: 200px;
-    width: 50px;
-    margin: 0;
-    gap: 0px;
-}
 
 h1 {
-    font-size: 1.3em;
+    font-size: 1.6em; /* was 1.3em */
 }
 
 p {
-    font-size: 0.9em;
-}
-
-#transpose-controls {
-    display: flex; /* важливо для justify-content */
-    justify-content: start;
-    align-items: center;
-    width: 800px;
-    margin-bottom: 20px;
-    padding: 5px;
-    border: 1px solid black;
-    gap: 10px; /* відступ між кнопками */
-    background-color: #f9f9cc; /* необов’язково, для кращої видимості */
-    border-radius: 8px; /* необов’язково, для естетики */
-    font-size: 0.8em !important;
+    font-size: 1em; /* was 0.9em */
 }
 
 
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
 
     .searchcontainer {
         display: block;
@@ -640,157 +701,623 @@ p {
         width: 100%;
     }
 
-   
-
-
-    .notesinfo{
-        width:65vh;
+    
+        .searchrightcontainer {
+            width: 100%;
+        }
     }
-
-    .whitepianobutton {
-        width: 45px;
-    }
-
-    .blackpianobutton {
-        width: 40px;
-    }
-
-
-    .cis1 {
-        top: 0px; /* Відступ зверху */
-        left: 35px; /* Відступ зліва */
-    }
-
-    .dis1 {
-        top: 0px;
-        left: 90px;
-    }
-
-    .fis1 {
-        top: 0px;
-        left: 180px;
-    }
-
-    .gis1 {
-        top: 0px;
-        left: 235px;
-    }
-
-    .b1 {
-        top: 0px;
-        left: 290px;
-    }
-
-    .cis2 {
-        top: 0px; /* Відступ зверху */
-        left: 385px; /* Відступ зліва */
-    }
-
-    .dis2 {
-        top: 0px;
-        left: 440px;
-    }
-
-    .fis2 {
-        top: 0px;
-        left: 530px;
-    }
-
-    .gis2 {
-        top: 0px;
-        left: 585px;
-    }
-
-    .b2 {
-        top: 0px;
-        left: 640px;
-    }
-
-
-}
 
 @media (max-width: 768px) {
 
+    .searchcontainer {
+        display: block;
+    }
+
+    .searchleftcontainer {
+        width: 100%;
+    }
+
+}
+
+/* ДЛЯ МОБІЛЬНИХ ЕКРАНІВ */
+@media (max-width: 768px) {
+    /* Layout helpers */
     .d-flex {
         flex-direction: column;
-        align-items: center; /* Вирівнюємо по центру */
+        align-items: center;
     }
-
 
     .w-25, .w-75 {
-        width: 100% !important; /* Робимо елементи повної ширини */
+        width: 100% !important;
     }
 
+    /* навігаційна смуга */
     .navmelody {
-        margin: 20px 10px 0px 10px;
-        padding-right: 0px !important;
+        display: block;
+        text-align: center;
+        width: clamp(14rem, 92vw, 26rem);
+        font-size: 1.25rem !important;
+        line-height: 1.2;
+        margin: .15rem auto !important;
+        padding: .35rem .6rem !important;
+        min-height: 40px;
+        border-width: 1px !important;
     }
 
     .smallfont {
         font-size: 0.7em !important;
         color: darkslategrey;
     }
+
+    /* Search form layout */
+    .search-form {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: .5rem;
+    }
+
+        .search-form .searchfield {
+            width: 100%;
+            min-height: 48px;
+            border-radius: var(--radius-lg);
+            border: 2px solid rgba(0,0,0,.15);
+            box-shadow: var(--shadow-inset);
+        }
+
+            .search-form .searchfield:focus {
+                border-color: var(--brand-red);
+                outline: 3px solid rgba(189, 0, 0, .2);
+                outline-offset: 2px;
+            }
+
+        .search-form .search-button {
+            width: 100%;
+            min-height: 48px;
+            border-radius: var(--radius-lg);
+            background-color: var(--brand-mobile-button) !important;
+            border: 2px solid rgba(0,0,0,.05);
+            color: var(--text-dark) !important;
+            box-shadow: var(--shadow-1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+        }
+
+            .search-form .search-button:active {
+                transform: translateY(1px);
+                box-shadow: 0 1px 2px rgba(0,0,0,.08);
+            }
+
+    .search-form-notes {
+        display: none !important;
+    }
+
+    /* Right side login/status area */
+    .rightcontainer {
+        background-image: none !important;
+        background: none !important;
+        background-color: transparent !important;
+        height: auto !important;
+        width: 100% !important;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 26rem;
+    }
+
+    /* Mobile: specific styles for signed-in status and exit buttons scoped to #signedUser */
+    #signedUser {
+        background-color: var(--brand-mobile-button) !important;
+        border-color: var(--brand-mobile-button) !important;
+        color: var(--text-dark) !important;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-1);
+        border: 2px solid rgba(0,0,0,.05);
+        width: clamp(14rem, 92vw, 26rem);
+        margin-left: auto;
+        margin-right: auto;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .rightcontainer.align-items-end {
+        align-items: center !important;
+    }
+
+
+    /* Background pattern softer on mobile */
+    body::after {
+        opacity: .12;
+    }
+
+    /* Strong focus for accessibility */
+    .btn:focus-visible, .search-button:focus-visible, .searchfield:focus-visible {
+        outline: 3px solid #2d6cdf;
+        outline-offset: 2px;
+    }
+
+
+    mainpage {
+        padding-top: 0.75rem;
+    }
+
+    .commoncontainer {
+        padding-top: 2rem !important; /* ~21px at 14px base font-size */
+    }
+
+    body.menu-open .commoncontainer {
+        padding-top: 12em !important;
+        transition: padding-top 200ms ease;
+    }
 }
 
 
-@media (max-width: 512px) {
-    .haslo {
-        min-width: 200px;
+@media (max-width: 992px) {
+    .container {
+        max-width: 100% !important;
+        width: 100% !important;
     }
 
-    .searchfield {
-        width: 200px;
-    }
-
-    .homepagetitle {
-        font-size: 2em;
-    }
-
-    .title {
-        font-size: 1.5em;
-    }
-
-    .navmelody {
-        margin: 20px 0px 0px 0px;
-        padding-right: 0px;
+    /* Half-page responsive container: 100% below 992px, 50% from 992px up */
+    .halfpagecontainer {
+        flex: 0 0 auto;
+        width: 100%;
     }
 }
 
-/* Вирівняти верхній край першого ряду літер із кнопками */
-.letters-row .letter {
-    margin-top: 0; /* Вирівнюємо по верхньому краю */
+    @media (max-width: 480px) {
+        .ifnarrowscreen {
+            display: none;
+        }
+    }
+
+    /* File info text size: slightly smaller on tablets and phones */
+    .fileinfo {
+        font-size: 1rem; /* базово */
+    }
+
+@media (max-width: 768px) {
+    .fileinfo {
+        font-size: 0.95rem;
+    }
 }
 
-/* Force letters rows to wrap horizontally and fill width on all screens */
-.letters-row {
-    display: flex;               /* ensure flex container regardless of Bootstrap overrides */
-    flex-direction: row !important; /* override global .d-flex on small screens */
-    flex-wrap: wrap;             /* wrap to next line */
-    gap: .25rem;                 /* small gap between letters */
+@media (max-width: 576px) {
+    .fileinfo {
+        font-size: 0.9rem;
+    }
+}
+
+    /* Keep letter pickers horizontal and wrapping on all screen sizes */
+    .letters-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .25rem;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    /* Each letter form should size to content, not stretch */
+    .letters-row form {
+        flex: 0 0 auto;
+    }
+
+/* Override the global mobile .d-flex column rule for letters */
+@media (max-width: 768px) {
+    .letters-row {
+        flex-direction: row !important;
+    }
+}
+
+/* Responsive layout for Notation page */
+.notation-layout {
+    display: flex;
     width: 100%;
+    margin-top: 20px;
+    align-items: flex-start;
+    gap: 12px;
 }
 
-/* Make each form shrink to content so multiple letters fit per row */
-.letters-row form {
-    flex: 0 0 auto;
+#SheetMusic {
+    flex: 0 0 80%;
+    background-color: rgb(255,255,230);
+}
+
+.NotesList {
+    flex: 0 0 20%;
+}
+
+@media (max-width: 992px) {
+
+    .notation-layout {
+        flex-direction: column;
+    }
+
+    #SheetMusic {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+    }
+
+    .NotesList {
+        width: 100% !important;
+        display: block;
+        margin-top: 8px;
+    }
+}
+
+.btn-melody {
+    display: inline-block;
+    font-weight: 400;
+    color: #212529;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+    background-color: #d3d3d3; /* darkened from #f8f9fa to match .light-background */
+    border: 1px solid #212529;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.375rem;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    background-clip: padding-box;
+}
+
+    .btn-melody:hover, .btn-melody:focus {
+        color: var(--brand-gold);
+        background-color: var(--brand-red);
+        border-color: #212529;
+        text-decoration: none;
+    }
+
+    .btn-melody:active {
+        color: #fff;
+        background-color: #1a1e21;
+        border-color: #1a1e21;
+    }
+
+/* Melodies/Index adaptive layout for operationbuttons and lettersbutton */
+@media (max-width: 768px) {
+    .melody-index-flex {
+        flex-direction: column !important;
+    }
+
+    #operationbuttons {
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        margin-bottom: 1rem;
+        gap: 0.5rem;
+    }
+
+        #operationbuttons .btn-melody {
+            margin: 0 !important;
+        }
+}
+
+.show-mobile {
+}
+
+@media (min-width: 900px) {
+    .show-mobile {
+        display: none !important;
+    }
+}
+
+
+@media (max-width: 900px) {
+    .hide-mobile {
+        display: none !important;        
+    }
+    
+
+    .table {
+        width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .col-actions {
+        display: none !important;
+    }
+}
+
+/* ===== Control strip (appended non-destructively) =====
+
+*/
+
+.control-strip {
+    /* in normal flow: sits where placed in DOM (after action buttons) */
+    position: relative; /* not fixed to viewport */
+    display: block;
+    margin: 16px auto 60px auto; /* gap above, large bottom margin to clear footer */
+    max-width: 1100px; /* match main content width */
+    width: calc(100% -20px); /* side gutters */
+    background: #f0f0f0;
+    border: 2px solid rgba(0,0,0,0.58);
+    border-radius: 8px;
+    font-size: 0.7em;
+    color: #111;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.86); /* було 02px8px */
+    overflow: visible; /* allow expanded content to push layout down */
+    transition: box-shadow 240ms ease; /* було box-shadow240ms */
+    z-index: 10;
+    padding: 8px 12px; /* було 8px12px */
+}
+
+    /* toggle inside strip, visible at top */
+    .control-strip .control-toggle {
+        position: absolute;
+        right: 12px;
+        top: 8px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 1px solid #ccc;
+        background: #fff;
+        color: #000;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        line-height: 1;
+        box-shadow: 1px 4px rgba(0,0,0,0.06);
+    }
+
+        .control-strip .control-toggle:focus {
+            outline: 2px solid rgba(0,0,0,0.12);
+        }
+
+/* content hidden by default */
+.control-content {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 300ms ease, opacity 160ms ease;
+    padding-top: 0;
+    
+}
+
+/* expanded state */
+.control-strip.expanded {
+    padding-bottom: 12px;
+}
+
+    .control-strip.expanded .control-content {
+        max-height: 480px;
+        opacity: 1;
+        padding-top: 8px;
+    }
+
+.control-messages {
+    font-size: 0.95rem;
+    color: #222;
+    line-height: 1.4;
+}
+
+.control-msg {
+    margin: 06px 6px 0;
+    color: #333;
+}
+
+.control-err {
+    margin: 0;
+    color: #b32d2e;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+@media (max-width:640px) {
+    .control-strip {
+        width: calc(100% -20px);
+        max-width: calc(100% -20px);
+        margin-bottom: 80px; /* more space on mobile for footer */
+    }
+
+        .control-strip .control-toggle {
+            right: 8px;
+            top: 6px;
+        }
+
+        .control-strip.expanded .control-content {
+            max-height: 360px;
+        }
+}
+
+/* End control-strip block */
+    @media (max-width: 720px) {
+        .col-actions,
+        .table th.col-actions,
+        .table td.col-actions {
+            display: none !important;
+            visibility: collapse !important;
+        }
+
+        /* reset last-child fixed width inside the small screen breakpoint */
+        .table td:last-child, .table th:last-child {
+            width: auto !important;
+            white-space: normal !important;
+        }
+
+        .song-title {
+            display: inline-block;
+            max-width: 10rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    #durationspanel {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 24px;
+        flex-wrap: nowrap;
+    }
+
+    #durationbuttons {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    #timesignature {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    @media (max-width: 900px) {
+        #durationspanel {
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+        }
+    }
+
+    .settimesignature {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .settimesignature input,
+        .settimesignature select,
+        .settimesignature span {
+            display: inline-block !important;
+            width: auto;
+            margin: 0 2px;
+            vertical-align: middle;
+            box-sizing: border-box;
+        }
+}
+#midiIsReady {
+    color: green;
+    font-weight: bold;
+}
+
+#midiIsNotReady {
+    color: red;
+    font-weight: bold;
+}
+
+
+/* Language toggle styles (moved from page inline to site.css) */
+.lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.lang-toggle .lang-label {
+    font-size: 0.9rem;
+    color: var(--bs-body-color, #000);
+}
+
+.lang-toggle .switch {
+    position: relative;
+    width: 56px;
+    height: 28px;
+    background: #e9ecef;
+    border-radius: 999px;
+    display: inline-block;
+    vertical-align: middle;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+}
+.lang-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+}
+.lang-toggle .knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 160ms ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+/* Ховаємо будь-який input у перемикачі (достатньо одного правила) */
+.lang-toggle input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
     margin: 0;
 }
 
-.charts-container { width: 100%; max-width: 600px; }
-/* Компактний блок дій під мелодією */
-.infocontainer.actions-container {
-    padding: 8px 12px;       /* менші внутрішні відступи */
-    margin: 8px 0;           /* менші зовнішні */
+/* Стан "Увімкнено" для поточного чекбокса (специфічно, без [type="checkbox"]) */
+#langSwitch:checked + .switch {
+    background: #0d6efd;
 }
-.actions-row {
-    display: inline-flex;
-    gap: .5rem;              /* відступ між кнопками */
-    align-items: center;
+#langSwitch:checked + .switch .knob {
+    transform: translateX(28px);
 }
 
+/* Фокус (одне правило замість двох) */
+.lang-toggle input:focus + .switch {
+    outline: 3px solid var(--brand-green);
+    outline-offset: 2px;
+}
 
+/* Toggle brand color override: replace blue with --brand-green */
+.lang-toggle input[type="checkbox"]:checked + .switch,
+#langSwitch:checked + .switch {
+    background: var(--brand-green);
+}
 
+/* Простір для розкриття гамбургера */
 
+.hideformenu {
+    max-height: 400px; /* достатньо для висоти вмісту; підлаштуйте при необхідності */
+    opacity: 1;
+    overflow: hidden;
+    transform: none;
+    transition: max-height 280ms ease, opacity 220ms ease, transform 240ms ease;
+    will-change: max-height, opacity, transform;
+    pointer-events: auto;
+}
 
+.spaceformenu {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-8px);
+    transition: max-height 280ms ease, opacity 220ms ease, transform 240ms ease;
+    will-change: max-height, opacity, transform;
+}
 
+@media (max-width: 800px) {
+    body.menu-open .hideformenu {
+        height: 200px !important;
+        opacity: 0 !important;
+        transform: translateY(-6px) !important;
+        pointer-events: none !important;
+    }
+    body.menu-open .spaceformenu {
+        max-height: 240px !important; /* підлаштуйте висоту під реальний вміст */
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        pointer-events: auto !important;
+    }
+}
 
+/* приховати всі блоки melody (без !important) */
+div[id^="melody"] {
+  display: none;
+}
+
+.hidden-melody { display: none; }
