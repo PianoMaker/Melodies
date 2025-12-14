@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Melodies25.Models;
 using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Text;
 
 namespace Melodies25
 {
@@ -17,19 +18,21 @@ namespace Melodies25
 
         public static void Main(string[] args)
         {
+
+
             var builder = WebApplication.CreateBuilder(args);
 
             // SOURCE context: VisualStudio (LocalDB) – only used for reading / syncing FROM
             builder.Services.AddDbContext<Melodies25SourceContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio")));
 
             // TARGET context: SQLExpress – destination for synchronization
             builder.Services.AddDbContext<Melodies25TargetContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter")));
 
             // WORKING context (used by application pages): also SQLExpress now
             builder.Services.AddDbContext<Melodies25Context>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Smarter")));
 
             // Identity context (can be unified later if desired)
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -84,13 +87,25 @@ namespace Melodies25
             // Run one-way sync (source -> target) at startup
             using (var scope = app.Services.CreateScope())
             {
-                var syncService = scope.ServiceProvider.GetRequiredService<DatabaseSyncService>();
-                
-                // Enable interactive mode
-                syncService.InteractiveMode = true;
+                try
+                {
+                    var syncService = scope.ServiceProvider.GetRequiredService<DatabaseSyncService>();
+                    
+                    // Enable interactive mode
+                    syncService.InteractiveMode = true;
 
-                // Run synchronization
-                var collisions = syncService.SyncDatabasesAsync().GetAwaiter().GetResult();
+                    Console.WriteLine("🔄 Запуск синхронізації...");
+                    
+                    // Run synchronization
+                    var collisions = syncService.SyncDatabasesAsync().GetAwaiter().GetResult();
+                    
+                    Console.WriteLine($"✅ Синхронізація завершена. Конфліктів: {collisions.Count}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❌ Помилка синхронізації: {ex.Message}");
+                    Console.WriteLine("⚠️ Додаток буде запущено без синхронізації...");
+                }
             }
 
             app.Run();

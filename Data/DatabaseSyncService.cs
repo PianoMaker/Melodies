@@ -7,6 +7,7 @@ public class DatabaseSyncService
     private readonly Melodies25SourceContext _sourceDb;   // VisualStudio (source)
     private readonly Melodies25TargetContext _targetDb;   // SQLExpress (target)
     private readonly ILogger<DatabaseSyncService> _logger;
+    private readonly IWebHostEnvironment _environment;  // NEW: Для роботи з файлами
 
     private List<Author> _missingAuthorsInTarget = new();
     private List<Country> _missingCountriesInTarget = new();
@@ -16,17 +17,18 @@ public class DatabaseSyncService
     public IReadOnlyList<string> Collisions => _collisions;
 
     private bool _interactiveMode = false;
-    public bool InteractiveMode 
-    { 
-        get => _interactiveMode; 
-        set => _interactiveMode = value; 
+    public bool InteractiveMode
+    {
+        get => _interactiveMode;
+        set => _interactiveMode = value;
     }
 
-    public DatabaseSyncService(Melodies25SourceContext sourceDb, Melodies25TargetContext targetDb, ILogger<DatabaseSyncService> logger)
+    public DatabaseSyncService(Melodies25SourceContext sourceDb, Melodies25TargetContext targetDb, ILogger<DatabaseSyncService> logger, IWebHostEnvironment environment)
     {
         _sourceDb = sourceDb;
         _targetDb = targetDb;
         _logger = logger;
+        _environment = environment;
     }
 
     public async Task<IReadOnlyList<string>> SyncDatabasesAsync()
@@ -45,6 +47,9 @@ public class DatabaseSyncService
         await SyncAuthorEnglishNamesAsync();
 
         if (melodies) await SyncMelodiesAsync(); else _logger.LogInformation("Melodies up-to-date.");
+
+        // NEW: Синхронізація MIDI файлів
+        await SyncMidiFilesAsync();
 
         _logger.LogInformation("Synchronization finished.");
         return Collisions;
@@ -143,11 +148,11 @@ public class DatabaseSyncService
             bool enDuplicate = await _targetDb.Author.AnyAsync(a => ((a.SurnameEn ?? "").Trim().ToLower()) == normSurnameEn && ((a.NameEn ?? "").Trim().ToLower()) == normNameEn);
 
             // NEW: Check if all four fields match exactly (complete author match)
-            bool completeMatch = await _targetDb.Author.AnyAsync(a => 
-                ((a.Surname ?? "").Trim().ToLower()) == normSurname && 
+            bool completeMatch = await _targetDb.Author.AnyAsync(a =>
+              ((a.Surname ?? "").Trim().ToLower()) == normSurname &&
                 ((a.Name ?? "").Trim().ToLower()) == normName &&
-                ((a.SurnameEn ?? "").Trim().ToLower()) == normSurnameEn && 
-                ((a.NameEn ?? "").Trim().ToLower()) == normNameEn);
+           ((a.SurnameEn ?? "").Trim().ToLower()) == normSurnameEn &&
+                    ((a.NameEn ?? "").Trim().ToLower()) == normNameEn);
 
             if (completeMatch)
             {
@@ -223,7 +228,7 @@ public class DatabaseSyncService
 
         // Build grouped map to avoid duplicate-key exception when multiple source rows normalize to same key.
         var grouped = srcAuthors
-            .Where(a => !string.IsNullOrWhiteSpace(a.Surname) || !string.IsNullOrWhiteSpace(a.Name))
+    .Where(a => !string.IsNullOrWhiteSpace(a.Surname) || !string.IsNullOrWhiteSpace(a.Name))
             .GroupBy(a => Key(a));
 
         // Log duplicates and create dictionary choosing first entry per key
@@ -323,7 +328,7 @@ public class DatabaseSyncService
             if (melody.Author == null) continue;
             var normSurname = (melody.Author.Surname ?? "").Trim().ToLower();
             var author = await _targetDb.Author.Include(a => a.Country)
-                .FirstOrDefaultAsync(a => ((a.Surname ?? "").Trim().ToLower()) == normSurname);
+                 .FirstOrDefaultAsync(a => ((a.Surname ?? "").Trim().ToLower()) == normSurname);
 
             if (author == null)
             {
@@ -377,6 +382,218 @@ public class DatabaseSyncService
         _logger.LogInformation("Melodies sync complete.");
     }
 
+    // NEW: Синхронізація MIDI файлів
+    private async Task SyncMidiFilesAsync()
+    {
+        _logger.LogInformation("Starting MIDI files synchronization...");
+
+        var melodiesPath = Path.Combine(_environment.WebRootPath, "melodies");
+
+        // Переконатися, що папка melodies існує в обох проєктах
+        if (!Directory.Exists(melodiesPath))
+        {
+            Directory.CreateDirectory(melodiesPath);
+            _logger.LogInformation("Created melodies directory: {Path}", melodiesPath);
+        }
+
+        // Отримати всі мелодії з обох баз даних
+        var sourceMelodies = await _sourceDb.Melody
+            .Where(m => !string.IsNullOrEmpty(m.FilePath) && m.FilePath.EndsWith(".mid"))
+        .Select(m => new { m.ID, m.FilePath, m.Title, m.Author.Surname })
+.ToListAsync();
+
+        var targetMelodies = await _targetDb.Melody
+            .Where(m => !string.IsNullOrEmpty(m.FilePath) && m.FilePath.EndsWith(".mid"))
+ .Select(m => new { m.ID, m.FilePath, m.Title, m.Author.Surname })
+         .ToListAsync();
+
+        _logger.LogInformation("Found {SourceCount} source MIDI files and {TargetCount} target MIDI files",
+            sourceMelodies.Count, targetMelodies.Count);
+
+        // Створити мапи файлів за іменем
+        var sourceFileMap = sourceMelodies.ToDictionary(m => m.FilePath!, m => m);
+        var targetFileMap = targetMelodies.ToDictionary(m => m.FilePath!, m => m);
+
+        // Отримати всі унікальні імена файлів
+        var allFileNames = sourceFileMap.Keys.Union(targetFileMap.Keys).ToHashSet();
+
+        int copied = 0, skipped = 0, conflicts = 0;
+
+        foreach (var fileName in allFileNames)
+        {
+            var sourceFilePath = Path.Combine(GetSourceMelodiesPath(), fileName);
+            var targetFilePath = Path.Combine(melodiesPath, fileName);
+
+            bool sourceExists = File.Exists(sourceFilePath);
+            bool targetExists = File.Exists(targetFilePath);
+
+            if (sourceExists && targetExists)
+            {
+                // Обидва файли існують - перевірити розміри
+                var sourceInfo = new FileInfo(sourceFilePath);
+                var targetInfo = new FileInfo(targetFilePath);
+
+                if (sourceInfo.Length == targetInfo.Length)
+                {
+                    // Однаковий розмір - пропустити
+                    skipped++;
+                    _logger.LogDebug("File {FileName} has same size, skipping", fileName);
+                }
+                else
+                {
+                    // Різний розмір - запитати користувача
+                    conflicts++;
+                    var decision = await HandleFileConflictAsync(fileName, sourceInfo, targetInfo);
+
+                    if (decision == FileDecision.UseSource)
+                    {
+                        File.Copy(sourceFilePath, targetFilePath, overwrite: true);
+                        copied++;
+                        _logger.LogInformation("Copied {FileName} from source (user choice)", fileName);
+                    }
+                    else if (decision == FileDecision.UseTarget)
+                    {
+                        // Нічого не робити, залишити цільовий файл
+                        _logger.LogInformation("Kept target {FileName} (user choice)", fileName);
+                    }
+                }
+            }
+            else if (sourceExists && !targetExists)
+            {
+                // Тільки в джерелі - копіювати
+                File.Copy(sourceFilePath, targetFilePath);
+                copied++;
+                _logger.LogInformation("Copied {FileName} from source", fileName);
+            }
+            else if (!sourceExists && targetExists)
+            {
+                // Тільки в цілі - залишити як є
+                _logger.LogDebug("File {FileName} exists only in target, keeping", fileName);
+            }
+            else
+            {
+                // Файл в базі є, але фізично відсутній в обох місцях
+                AddCollision($"MIDI file '{fileName}' referenced in database but missing from both directories");
+            }
+        }
+
+        _logger.LogInformation("MIDI files sync complete. Copied: {Copied}, Skipped: {Skipped}, Conflicts: {Conflicts}",
+copied, skipped, conflicts);
+    }
+
+    // NEW: Отримати шлях до папки melodies джерельного проєкту
+    private string GetSourceMelodiesPath()
+    {
+        // Припускаємо, що джерельний проєкт знаходиться поруч з поточним
+        var currentPath = _environment.WebRootPath;
+        var currentProjectDir = Directory.GetParent(currentPath)?.FullName;
+        var sourceProjectDir = Path.Combine(Directory.GetParent(currentProjectDir)!.FullName, "SourceProject", "wwwroot", "melodies");
+
+        // Якщо стандартний шлях не існує, спробувати знайти в поточному проєкті
+        if (!Directory.Exists(sourceProjectDir))
+        {
+            sourceProjectDir = Path.Combine(_environment.WebRootPath, "melodies_source");
+        }
+
+        // Якщо і цього немає, використати поточну папку melodies як джерело
+        if (!Directory.Exists(sourceProjectDir))
+        {
+            sourceProjectDir = Path.Combine(_environment.WebRootPath, "melodies");
+        }
+
+        return sourceProjectDir;
+    }
+
+    // NEW: Enum для рішень щодо файлів
+    public enum FileDecision
+    {
+        UseSource,
+        UseTarget,
+        Skip
+    }
+
+    // NEW: Обробка конфліктів файлів
+    private async Task<FileDecision> HandleFileConflictAsync(string fileName, FileInfo sourceInfo, FileInfo targetInfo)
+    {
+        if (!_interactiveMode)
+        {
+            // В автоматичному режимі - використати новіший файл
+            if (sourceInfo.LastWriteTime > targetInfo.LastWriteTime)
+            {
+                _logger.LogInformation("Auto-selecting source file {FileName} (newer: {SourceDate} > {TargetDate})",
+           fileName, sourceInfo.LastWriteTime, targetInfo.LastWriteTime);
+                return FileDecision.UseSource;
+            }
+            else
+            {
+                _logger.LogInformation("Auto-keeping target file {FileName} (newer or same: {TargetDate} >= {SourceDate})",
+     fileName, targetInfo.LastWriteTime, sourceInfo.LastWriteTime);
+                return FileDecision.UseTarget;
+            }
+        }
+
+        // Інтерактивний режим
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("=== КОНФЛІКТ MIDI ФАЙЛУ ===");
+        Console.ResetColor();
+
+        Console.WriteLine($"Файл: {fileName}");
+        Console.WriteLine();
+
+        Console.WriteLine("ДЖЕРЕЛЬНИЙ ФАЙЛ:");
+        Console.WriteLine($"  Розмір: {FormatFileSize(sourceInfo.Length)}");
+        Console.WriteLine($"  Дата зміни: {sourceInfo.LastWriteTime:yyyy-MM-dd HH:mm:ss}");
+
+        Console.WriteLine();
+        Console.WriteLine("ЦІЛЬОВИЙ ФАЙЛ:");
+        Console.WriteLine($"  Розмір: {FormatFileSize(targetInfo.Length)}");
+        Console.WriteLine($"  Дата зміни: {targetInfo.LastWriteTime:yyyy-MM-dd HH:mm:ss}");
+
+        Console.WriteLine();
+        Console.WriteLine("Оберіть файл:");
+        Console.WriteLine("1 - Використати джерельний файл");
+        Console.WriteLine("2 - Залишити цільовий файл");
+        Console.WriteLine("0 - Пропустити цей файл");
+        Console.Write("Ваш вибір (1/2/0): ");
+
+        while (true)
+        {
+            var input = Console.ReadLine()?.Trim();
+            switch (input)
+            {
+                case "1":
+                    Console.WriteLine("✓ Буде використано джерельний файл.");
+                    return FileDecision.UseSource;
+                case "2":
+                    Console.WriteLine("✓ Цільовий файл залишиться без змін.");
+                    return FileDecision.UseTarget;
+                case "0":
+                    Console.WriteLine("✓ Файл пропущено.");
+                    return FileDecision.Skip;
+                default:
+                    Console.Write("Некоректний вибір. Введіть 1, 2 або 0: ");
+                    break;
+            }
+        }
+    }
+
+    // NEW: Форматування розміру файлу
+    private static string FormatFileSize(long bytes)
+    {
+        string[] suffixes = { "B", "KB", "MB", "GB" };
+        int counter = 0;
+        decimal number = bytes;
+
+        while (Math.Round(number / 1024) >= 1)
+        {
+            number /= 1024;
+            counter++;
+        }
+
+        return $"{number:n1} {suffixes[counter]}";
+    }
+
     private static bool Same(string a, string b) => string.Equals(a?.Trim(), b?.Trim(), StringComparison.OrdinalIgnoreCase);
 
     // Enum для типів рішень користувача
@@ -394,29 +611,29 @@ public class DatabaseSyncService
         Console.WriteLine();
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine("=== ПОТЕНЦІЙНИЙ КОНФЛІКТ АВТОРА ===");
-  Console.ResetColor();
-        
+        Console.ResetColor();
+
         Console.WriteLine($"Автор для синхронізації: {author.Surname} {author.Name} ({author.MelodiesCount} композицій)");
-   if (!string.IsNullOrEmpty(author.SurnameEn) || !string.IsNullOrEmpty(author.NameEn))
-       Console.WriteLine($"Англійське ім'я: {author.SurnameEn} {author.NameEn}");
-     
-  Console.WriteLine($"Країна: {author.Country?.Name}");
+        if (!string.IsNullOrEmpty(author.SurnameEn) || !string.IsNullOrEmpty(author.NameEn))
+            Console.WriteLine($"Англійське ім'я: {author.SurnameEn} {author.NameEn}");
+
+        Console.WriteLine($"Країна: {author.Country?.Name}");
         Console.WriteLine($"Роки життя: {author.DateOfBirth}-{author.DateOfDeath}");
-        
- // NEW: Показати існуючих авторів у цільовій базі
+
+        // NEW: Показати існуючих авторів у цільовій базі
         await ShowExistingAuthorsAsync(author);
-     
+
         Console.WriteLine();
-     Console.ForegroundColor = ConsoleColor.Red;
+        Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("ВИЯВЛЕНО КОНФЛІКТИ:");
         Console.ResetColor();
-        
+
         if (exists)
-        Console.WriteLine("• Точний збіг імені та прізвища");
+            Console.WriteLine("• Точний збіг імені та прізвища");
         if (possibleDuplicate)
             Console.WriteLine("• Збіг прізвища (можливий дублікат)");
         if (enDuplicate)
-     Console.WriteLine("• Збіг англійського імені та прізвища");
+            Console.WriteLine("• Збіг англійського імені та прізвища");
 
         Console.WriteLine();
         Console.WriteLine("Оберіть дію:");
@@ -427,57 +644,57 @@ public class DatabaseSyncService
         Console.Write("Ваш вибір (1/2/3/0): ");
 
         while (true)
-     {
- var input = Console.ReadLine()?.Trim();
-  switch (input)
+        {
+            var input = Console.ReadLine()?.Trim();
+            switch (input)
             {
-      case "1":
-   Console.WriteLine("✓ Автор буде пропущений.");
-      return UserDecision.Skip;
-    case "2":
-        Console.ForegroundColor = ConsoleColor.Red;
-  Console.WriteLine("⚠ УВАГА: Автор буде доданий попри можливий конфлікт!");
-        Console.ResetColor();
-          return UserDecision.Add;
- case "3":// NEW
-  Console.ForegroundColor = ConsoleColor.Cyan;
-           Console.WriteLine("🔄 Автор буде об'єднаний з існуючим.");
-           Console.ResetColor();
-        return UserDecision.Merge;
-     case "0":
-     Console.WriteLine("Синхронізація відмінена користувачем.");
-               throw new OperationCanceledException("User cancelled synchronization");
-          default:
-         Console.Write("Некоректний вибір. Введіть 1, 2, 3 або 0: ");
-     break;
-  }
-     }
+                case "1":
+                    Console.WriteLine("✓ Автор буде пропущений.");
+                    return UserDecision.Skip;
+                case "2":
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("⚠ УВАГА: Автор буде доданий попри можливий конфлікт!");
+                    Console.ResetColor();
+                    return UserDecision.Add;
+                case "3":// NEW
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine("🔄 Автор буде об'єднаний з існуючим.");
+                    Console.ResetColor();
+                    return UserDecision.Merge;
+                case "0":
+                    Console.WriteLine("Синхронізація відмінена користувачем.");
+                    throw new OperationCanceledException("User cancelled synchronization");
+                default:
+                    Console.Write("Некоректний вибір. Введіть 1, 2, 3 або 0: ");
+                    break;
+            }
+        }
     }
 
     // NEW: Метод для показу існуючих авторів
     private async Task ShowExistingAuthorsAsync(Author sourceAuthor)
     {
         var normSurname = (sourceAuthor.Surname ?? "").Trim().ToLower();
-        
-   var existingAuthors = await _targetDb.Author
-            .Include(a => a.Country)
-     .Where(a => 
-          ((a.Surname ?? "").Trim().ToLower()) == normSurname ||
-     ((a.Surname ?? "").Trim().ToLower()).Contains(normSurname.Substring(0, Math.Min(3, normSurname.Length))))
+
+        var existingAuthors = await _targetDb.Author
+       .Include(a => a.Country)
+            .Where(a =>
+     ((a.Surname ?? "").Trim().ToLower()) == normSurname ||
+  ((a.Surname ?? "").Trim().ToLower()).Contains(normSurname.Substring(0, Math.Min(3, normSurname.Length))))
             .ToListAsync();
-        
+
         if (existingAuthors.Any())
         {
-         Console.WriteLine();
-   Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("ІСНУЮЧІ АВТОРИ У ЦІЛЬОВІЙ БАЗІ:");
-   Console.ResetColor();
-            
- for (int i = 0; i < existingAuthors.Count; i++)
+            Console.ResetColor();
+
+            for (int i = 0; i < existingAuthors.Count; i++)
             {
                 var existing = existingAuthors[i];
-       Console.WriteLine($"  [{i + 1}] {existing.Surname} {existing.Name} | {existing.SurnameEn} {existing.NameEn}");
-  Console.WriteLine($"    Країна: {existing.Country?.Name} | Роки: {existing.DateOfBirth}-{existing.DateOfDeath}");
+                Console.WriteLine($"  [{i + 1}] {existing.Surname} {existing.Name} | {existing.SurnameEn} {existing.NameEn}");
+                Console.WriteLine($"      Країна: {existing.Country?.Name} | Роки: {existing.DateOfBirth}-{existing.DateOfDeath}");
             }
         }
     }
@@ -487,106 +704,106 @@ public class DatabaseSyncService
     {
         var normSurname = (sourceAuthor.Surname ?? "").Trim().ToLower();
         var normName = (sourceAuthor.Name ?? "").Trim().ToLower();
-        
-   // Знайти найбільш схожого автора для об'єднання
+
+        // Знайти найбільш схожого автора для об'єднання
         var targetAuthor = await _targetDb.Author
-   .Include(a => a.Country)
-            .Where(a => 
+       .Include(a => a.Country)
+          .Where(a =>
         ((a.Surname ?? "").Trim().ToLower()) == normSurname &&
-        ((a.Name ?? "").Trim().ToLower()) == normName)
-            .FirstOrDefaultAsync();
-        
- // Якщо точного збігу немає, шукати по прізвищу
+       ((a.Name ?? "").Trim().ToLower()) == normName)
+                .FirstOrDefaultAsync();
+
+        // Якщо точного збігу немає, шукати по прізвищу
         if (targetAuthor == null)
         {
             var possibleAuthors = await _targetDb.Author
-   .Include(a => a.Country)
-         .Where(a => ((a.Surname ?? "").Trim().ToLower()) == normSurname)
-        .ToListAsync();
- 
-        if (possibleAuthors.Count == 1)
-      {
-   targetAuthor = possibleAuthors[0];
+                .Include(a => a.Country)
+             .Where(a => ((a.Surname ?? "").Trim().ToLower()) == normSurname)
+                 .ToListAsync();
+
+            if (possibleAuthors.Count == 1)
+            {
+                targetAuthor = possibleAuthors[0];
             }
-         else if (possibleAuthors.Count > 1)
-    {
+            else if (possibleAuthors.Count > 1)
+            {
                 targetAuthor = await AskUserToChooseAuthorAsync(possibleAuthors);
-       }
+            }
         }
-        
- if (targetAuthor == null)
+
+        if (targetAuthor == null)
         {
             throw new InvalidOperationException("Не вдалося знайти автора для об'єднання.");
         }
-  
+
         // Виконати merge полів
         bool hasChanges = false;
-        
-     // Об'єднання англійських імен
+
+        // Об'єднання англійських імен
         if (string.IsNullOrWhiteSpace(targetAuthor.NameEn) && !string.IsNullOrWhiteSpace(sourceAuthor.NameEn))
         {
-      targetAuthor.NameEn = sourceAuthor.NameEn;
+            targetAuthor.NameEn = sourceAuthor.NameEn;
             hasChanges = true;
         }
-   
- if (string.IsNullOrWhiteSpace(targetAuthor.SurnameEn) && !string.IsNullOrWhiteSpace(sourceAuthor.SurnameEn))
+
+        if (string.IsNullOrWhiteSpace(targetAuthor.SurnameEn) && !string.IsNullOrWhiteSpace(sourceAuthor.SurnameEn))
         {
             targetAuthor.SurnameEn = sourceAuthor.SurnameEn;
-  hasChanges = true;
+            hasChanges = true;
         }
-        
+
         // Об'єднання дат народження/смерті
         if (targetAuthor.DateOfBirth == null && sourceAuthor.DateOfBirth != null)
-    {
-targetAuthor.DateOfBirth = sourceAuthor.DateOfBirth;
-            hasChanges = true;
-  }
-  
-   if (targetAuthor.DateOfDeath == null && sourceAuthor.DateOfDeath != null)
-    {
-       targetAuthor.DateOfDeath = sourceAuthor.DateOfDeath;
-         hasChanges = true;
-        }
-  
-        // Об'єднання опису
-    if (string.IsNullOrWhiteSpace(targetAuthor.Description) && !string.IsNullOrWhiteSpace(sourceAuthor.Description))
         {
-         targetAuthor.Description = sourceAuthor.Description;
+            targetAuthor.DateOfBirth = sourceAuthor.DateOfBirth;
             hasChanges = true;
-  }
+        }
+
+        if (targetAuthor.DateOfDeath == null && sourceAuthor.DateOfDeath != null)
+        {
+            targetAuthor.DateOfDeath = sourceAuthor.DateOfDeath;
+            hasChanges = true;
+        }
+
+        // Об'єднання опису
+        if (string.IsNullOrWhiteSpace(targetAuthor.Description) && !string.IsNullOrWhiteSpace(sourceAuthor.Description))
+        {
+            targetAuthor.Description = sourceAuthor.Description;
+            hasChanges = true;
+        }
         else if (!string.IsNullOrWhiteSpace(targetAuthor.Description) && !string.IsNullOrWhiteSpace(sourceAuthor.Description))
         {
             // Об'єднати описи якщо вони різні
-if (!targetAuthor.Description.Contains(sourceAuthor.Description))
-    {
-           targetAuthor.Description += "\n\n--- З джерельної бази ---\n" + sourceAuthor.Description;
-       hasChanges = true;
-         }
+            if (!targetAuthor.Description.Contains(sourceAuthor.Description))
+            {
+                targetAuthor.Description += "\n\n--- З джерельної бази ---\n" + sourceAuthor.Description;
+                hasChanges = true;
+            }
         }
-        
- // Об'єднання країни
+
+        // Об'єднання країни
         if (targetAuthor.Country == null && sourceAuthor.Country != null)
         {
-            var country = await _targetDb.Country.FirstOrDefaultAsync(c => 
+            var country = await _targetDb.Country.FirstOrDefaultAsync(c =>
       ((c.Name ?? "").Trim().ToLower()) == (sourceAuthor.Country.Name ?? "").Trim().ToLower());
-  
+
             if (country == null)
-      {
-             country = new Country { Name = sourceAuthor.Country.Name };
-     _targetDb.Country.Add(country);
-     await _targetDb.SaveChangesAsync();
-   }
-         
-   targetAuthor.Country = country;
-          hasChanges = true;
-   }
-        
-        if (hasChanges)
-{
-            await _targetDb.SaveChangesAsync();
-       _logger.LogInformation($"Merged author '{sourceAuthor.Surname} {sourceAuthor.Name}' with existing author ID {targetAuthor.ID}.");
+            {
+                country = new Country { Name = sourceAuthor.Country.Name };
+                _targetDb.Country.Add(country);
+                await _targetDb.SaveChangesAsync();
+            }
+
+            targetAuthor.Country = country;
+            hasChanges = true;
         }
-  
+
+        if (hasChanges)
+        {
+            await _targetDb.SaveChangesAsync();
+            _logger.LogInformation($"Merged author '{sourceAuthor.Surname} {sourceAuthor.Name}' with existing author ID {targetAuthor.ID}.");
+        }
+
         return targetAuthor;
     }
 
@@ -595,23 +812,23 @@ if (!targetAuthor.Description.Contains(sourceAuthor.Description))
     {
         Console.WriteLine();
         Console.WriteLine("Виберіть автора для об'єднання:");
-        
+
         for (int i = 0; i < authors.Count; i++)
         {
             var author = authors[i];
-     Console.WriteLine($"{i + 1} - {author.Surname} {author.Name} | {author.SurnameEn} {author.NameEn} (ID: {author.ID})");
+            Console.WriteLine($"{i + 1} - {author.Surname} {author.Name} | {author.SurnameEn} {author.NameEn} (ID: {author.ID})");
             Console.WriteLine($"    Країна: {author.Country?.Name} | Роки: {author.DateOfBirth}-{author.DateOfDeath}");
         }
-   
+
         Console.Write($"Введіть номер (1-{authors.Count}): ");
-        
- while (true)
+
+        while (true)
         {
             var input = Console.ReadLine()?.Trim();
             if (int.TryParse(input, out int choice) && choice >= 1 && choice <= authors.Count)
-         {
-     return authors[choice - 1];
-       }
+            {
+                return authors[choice - 1];
+            }
             Console.Write($"Некоректний вибір. Введіть номер від 1 до {authors.Count}: ");
         }
     }
