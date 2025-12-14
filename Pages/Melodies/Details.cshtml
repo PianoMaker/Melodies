@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Мелодія";
     var item = Model.Melody;
+    var file = @Model.Melody.FilePath;
     var url = Url.Content($"~/melodies/{item.FilePath}");
     var notesearchHandlerUrl = Url.Page("./Search", new { handler = "Notesearch" });
 }
@@ -57,7 +58,13 @@
                 </div>
                 @if (!string.IsNullOrEmpty(Model.Melody.Tonality))
                 {
-                    <p><span class="d-none d-md-inline">MIDI файл завантажено в тональності @Model.Melody.Tonality</span></p>
+                    if(User.IsInRole("Admin")){
+                        <p><span class="d-none d-md-inline">MIDI файл <i>@file</i> завантажено в тональності @Model.Melody.Tonality</span></p>
+                    }
+                    else
+                    {
+                        <p><span class="d-none d-md-inline">MIDI файл завантажено в тональності @Model.Melody.Tonality</span></p>
+                    }
                 }
                 else
                 {
