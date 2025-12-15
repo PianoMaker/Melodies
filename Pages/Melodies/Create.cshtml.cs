@@ -341,7 +341,10 @@ namespace Melodies25.Pages.Melodies
             if (fileupload is not null)
             {
                 //складаємо ім'я файлу
-                string newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
+                string surname = !string.IsNullOrWhiteSpace(Melody.Author.SurnameEn)
+    ? Melody.Author.SurnameEn
+    : Translit.Transliterate(Melody.Author.Surname ?? "Unknown");
+                string newfilename = $"{surname}_{Translit.Transliterate(Melody.Title)}.mid";
                 Melody.FilePath = newfilename; //назву MIDI файлу фіксуємо (назва для DB/JSON)
 
                 MessageL(COLORS.green, $"try to process uploaded file {newfilename}");
@@ -412,7 +415,10 @@ namespace Melodies25.Pages.Melodies
             else if (!string.IsNullOrEmpty(TempMidiFilePath))
             {
 
-                string newfilename = $"{Translit.Transliterate(Melody.Author.Surname)}_{Translit.Transliterate(Melody.Title)}.mid";
+                string surname = !string.IsNullOrWhiteSpace(Melody.Author.SurnameEn) 
+    ? Melody.Author.SurnameEn 
+    : Translit.Transliterate(Melody.Author.Surname ?? "Unknown");
+                string newfilename = $"{surname}_{Translit.Transliterate(Melody.Title)}.mid";
 
                 // destination depends on role
                 var destDir = isPrivileged ? publishedDir : incomingDir;
@@ -757,6 +763,14 @@ namespace Melodies25.Pages.Melodies
         }
     }
 }
+
+
+
+
+
+
+
+
 
 
 
