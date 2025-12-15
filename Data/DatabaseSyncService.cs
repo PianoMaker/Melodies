@@ -111,10 +111,8 @@ public class DatabaseSyncService
     //--------
     private async Task SyncAuthorsAsync()
     {
-        // Reset IDs to avoid conflicts
         foreach (var a in _missingAuthorsInTarget) a.ID = 0;
-
-        // Додати відсутні країни в цільову базу даних
+        
         foreach (var author in _missingAuthorsInTarget)
         {
             Country? country = null;
@@ -133,66 +131,99 @@ public class DatabaseSyncService
                 }
             }
 
-            // Normalize values to avoid using custom method in query (EF cannot translate custom method Same)
+            // Нормалізовані значення для перевірки
             var normSurname = (author.Surname ?? "").Trim().ToLower();
             var normName = (author.Name ?? "").Trim().ToLower();
             var normSurnameEn = (author.SurnameEn ?? "").Trim().ToLower();
             var normNameEn = (author.NameEn ?? "").Trim().ToLower();
 
-            //surname and name match
-            bool exists = await _targetDb.Author.AnyAsync(a => ((a.Surname ?? "").Trim().ToLower()) == normSurname && ((a.Name ?? "").Trim().ToLower()) == normName);
+            // 1. Перевірка точного збігу (ім'я + прізвище)
+            bool exactMatch = await _targetDb.Author.AnyAsync(a => 
+                ((a.Surname ?? "").Trim().ToLower()) == normSurname && 
+                ((a.Name ?? "").Trim().ToLower()) == normName);
 
-            //surname match only (possible duplicate)
-            bool possibleDuplicate = await _targetDb.Author.AnyAsync(a => ((a.Surname ?? "").Trim().ToLower()) == normSurname);
-
-            bool enDuplicate = await _targetDb.Author.AnyAsync(a => ((a.SurnameEn ?? "").Trim().ToLower()) == normSurnameEn && ((a.NameEn ?? "").Trim().ToLower()) == normNameEn);
-
-            // NEW: Check if all four fields match exactly (complete author match)
-            bool completeMatch = await _targetDb.Author.AnyAsync(a =>
-              ((a.Surname ?? "").Trim().ToLower()) == normSurname &&
-                ((a.Name ?? "").Trim().ToLower()) == normName &&
-           ((a.SurnameEn ?? "").Trim().ToLower()) == normSurnameEn &&
+            // 2. Перевірка збігу англійських імен
+            bool englishMatch = !string.IsNullOrEmpty(normSurnameEn) && 
+                await _targetDb.Author.AnyAsync(a => 
+                    ((a.SurnameEn ?? "").Trim().ToLower()) == normSurnameEn && 
                     ((a.NameEn ?? "").Trim().ToLower()) == normNameEn);
 
-            if (completeMatch)
+            // 3. NEW: Перевірка змішаних збігів (Surname = SurnameEn або навпаки)
+            bool crossLanguageMatch = false;
+            string crossMatchDetails = "";
+
+            if (!string.IsNullOrEmpty(normSurname) && !string.IsNullOrEmpty(normSurnameEn))
             {
-                // Повний збіг - точно той самий автор, пропускаємо без питань
-                _logger.LogInformation($"Author '{author.Surname} {author.Name}' / '{author.SurnameEn} {author.NameEn}' already exists (complete match - skipping).");
+                // Перевірка чи Surname джерела = SurnameEn цілі
+                bool surnameMatchesTargetEn = await _targetDb.Author.AnyAsync(a => 
+                    ((a.SurnameEn ?? "").Trim().ToLower()) == normSurname);
+                
+                // Перевірка чи SurnameEn джерела = Surname цілі  
+                bool surnameEnMatchesTarget = await _targetDb.Author.AnyAsync(a => 
+                    ((a.Surname ?? "").Trim().ToLower()) == normSurnameEn);
+
+                if (surnameMatchesTargetEn || surnameEnMatchesTarget)
+                {
+                    crossLanguageMatch = true;
+                    crossMatchDetails = surnameMatchesTargetEn ? 
+                        $"Surname '{author.Surname}' matches existing SurnameEn" :
+                        $"SurnameEn '{author.SurnameEn}' matches existing Surname";
+                }
+            }
+
+            // 4. Перевірка часткових збігів по прізвищу
+            bool partialMatch = await _targetDb.Author.AnyAsync(a => 
+                ((a.Surname ?? "").Trim().ToLower()) == normSurname);
+
+            // 5. Обробка результатів перевірки
+            if (exactMatch)
+            {
+                AddCollision($"Author '{author.Surname} {author.Name}' already exists (exact match - skip).");
                 continue;
             }
 
-            if (exists || possibleDuplicate || enDuplicate)
+            if (englishMatch)
             {
-                // Часткові збіги - залежить від режиму
+                AddCollision($"Author '{author.SurnameEn} {author.NameEn}' already exists in English (skip).");
+                continue;
+            }
+
+            if (crossLanguageMatch)
+            {
+                AddCollision($"Author '{author.Surname} {author.Name}' / '{author.SurnameEn} {author.NameEn}' - {crossMatchDetails} (NEEDS CONFIRMATION).");
+                
                 if (_interactiveMode)
                 {
-                    var decision = await AskUserDecisionAsync(author, exists, possibleDuplicate, enDuplicate);
+                    var decision = await AskCrossLanguageDecisionAsync(author, crossMatchDetails);
                     if (decision == UserDecision.Skip)
                     {
-                        AddCollision($"Author '{author.Surname} {author.Name}' skipped by user decision.");
                         continue;
-                    }
-                    else if (decision == UserDecision.Add)
-                    {
-                        // Продовжити додавання автора попри конфлікт
-                        _logger.LogInformation($"User decided to add author '{author.Surname} {author.Name}' despite potential duplicate.");
                     }
                     else if (decision == UserDecision.Merge)
                     {
-                        // Об'єднати з існуючим автором
-                        var mergedAuthor = await MergeAuthorsAsync(author);
-                        _logger.LogInformation($"User decided to merge author '{author.Surname} {author.Name}' with existing author ID {mergedAuthor.ID}.");
-                        continue; // Не додавати нового автора, використовувати об'єднаний
+                        await MergeCrossLanguageAuthorAsync(author);
+                        continue;
                     }
+                    // Якщо Add - продовжити додавання
                 }
                 else
                 {
-                    // Автоматично пропустити (старий механізм)
-                    AddCollision($"Author '{author.Surname} {author.Name}' already exists (skip).");
+                    // В автоматичному режимі пропускати такі випадки
                     continue;
                 }
             }
 
+            if (partialMatch && _interactiveMode)
+            {
+                var decision = await AskUserDecisionAsync(author, false, true, false);
+                if (decision == UserDecision.Skip)
+                {
+                    AddCollision($"Author '{author.Surname} {author.Name}' skipped by user decision.");
+                    continue;
+                }
+            }
+
+            // Додати автора якщо немає конфліктів
             _targetDb.Author.Add(new Author
             {
                 Name = author.Name,
@@ -205,120 +236,157 @@ public class DatabaseSyncService
                 Description = author.Description
             });
         }
+        
         await _targetDb.SaveChangesAsync();
         _logger.LogInformation("Authors sync complete.");
     }
 
-    // NEW: two-way enrichment of NameEn and SurnameEn
-    private async Task SyncAuthorEnglishNamesAsync()
+    // NEW: Метод для обробки міжмовних конфліктів
+    private async Task<UserDecision> AskCrossLanguageDecisionAsync(Author author, string details)
     {
-        _logger.LogInformation("Enriching English author names between SOURCE and TARGET ...");
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Magenta;
+        Console.WriteLine("=== МІЖМОВНИЙ КОНФЛІКТ АВТОРА ===");
+        Console.ResetColor();
 
-        // Load tracked entities for updates
-        var srcAuthors = await _sourceDb.Author.ToListAsync();
-        var trgAuthors = await _targetDb.Author.ToListAsync();
+        Console.WriteLine($"Автор: {author.Surname} {author.Name}");
+        Console.WriteLine($"English: {author.SurnameEn} {author.NameEn}");
+        Console.WriteLine($"Конфлікт: {details}");
 
-        // Index by normalized (surname, name)
-        string Key(Author a)
+        // Показати схожих авторів
+        await ShowSimilarAuthorsAsync(author);
+
+        Console.WriteLine();
+        Console.WriteLine("Це може бути той самий автор з різним написанням імені.");
+        Console.WriteLine("Оберіть дію:");
+        Console.WriteLine("1 - Пропустити (безпечно)");
+        Console.WriteLine("2 - Додати як нового автора");
+        Console.WriteLine("3 - Об'єднати з існуючим автором");
+        Console.WriteLine("0 - Відмінити синхронізацію");
+        Console.Write("Ваш вибір (1/2/3/0): ");
+
+        while (true)
         {
-            var s = ((a.Surname ?? "").Trim().ToLower());
-            var n = ((a.Name ?? "").Trim().ToLower());
-            return $"{s}|{n}";
-        }
-
-        // Build grouped map to avoid duplicate-key exception when multiple source rows normalize to same key.
-        var grouped = srcAuthors
-    .Where(a => !string.IsNullOrWhiteSpace(a.Surname) || !string.IsNullOrWhiteSpace(a.Name))
-            .GroupBy(a => Key(a));
-
-        // Log duplicates and create dictionary choosing first entry per key
-        var duplicates = grouped.Where(g => g.Count() > 1).ToList();
-        foreach (var g in duplicates)
-        {
-            AddCollision($"Duplicate normalized author key in SOURCE: '{g.Key}' ({g.Count()} entries). Using the first occurrence.");
-            _logger.LogDebug("Duplicate group members: {Members}", string.Join(" | ", g.Select(x => $"{x.Surname} {x.Name} (Id={x.ID})")));
-        }
-
-        var srcMap = grouped.ToDictionary(g => g.Key, g => g.First());
-
-        int updatedSrc = 0, updatedTrg = 0, conflicts = 0;
-
-        foreach (var t in trgAuthors)
-        {
-            var key = Key(t);
-            if (!srcMap.TryGetValue(key, out var s))
-                continue; // author not in source — skip
-
-            // Compare and fill when one side is empty and the other has data
-            var sNameEn = (s.NameEn ?? "").Trim();
-            var sSurnameEn = (s.SurnameEn ?? "").Trim();
-            var tNameEn = (t.NameEn ?? "").Trim();
-            var tSurnameEn = (t.SurnameEn ?? "").Trim();
-
-            bool trgChanged = false, srcChanged = false;
-
-            // NameEn
-            if (string.IsNullOrWhiteSpace(tNameEn) && !string.IsNullOrWhiteSpace(sNameEn))
+            var input = Console.ReadLine()?.Trim();
+            switch (input)
             {
-                t.NameEn = sNameEn;
-                trgChanged = true; updatedTrg++;
-            }
-            else if (string.IsNullOrWhiteSpace(sNameEn) && !string.IsNullOrWhiteSpace(tNameEn))
-            {
-                s.NameEn = tNameEn;
-                srcChanged = true; updatedSrc++;
-            }
-            else if (!string.IsNullOrWhiteSpace(tNameEn) && !string.IsNullOrWhiteSpace(sNameEn) && !string.Equals(tNameEn, sNameEn, StringComparison.Ordinal))
-            {
-                conflicts++;
-                AddCollision($"NameEn differs for '{t.Surname} {t.Name}': source='{sNameEn}', target='{tNameEn}'");
-            }
-
-            // SurnameEn
-            if (string.IsNullOrWhiteSpace(tSurnameEn) && !string.IsNullOrWhiteSpace(sSurnameEn))
-            {
-                t.SurnameEn = sSurnameEn;
-                if (!trgChanged) updatedTrg++;
-                trgChanged = true;
-            }
-            else if (string.IsNullOrWhiteSpace(sSurnameEn) && !string.IsNullOrWhiteSpace(tSurnameEn))
-            {
-                s.SurnameEn = tSurnameEn;
-                if (!srcChanged) updatedSrc++;
-                srcChanged = true;
-            }
-            else if (!string.IsNullOrWhiteSpace(tSurnameEn) && !string.IsNullOrWhiteSpace(sSurnameEn) && !string.Equals(tSurnameEn, sSurnameEn, StringComparison.Ordinal))
-            {
-                conflicts++;
-                AddCollision($"SurnameEn differs for '{t.Surname} {t.Name}': source='{sSurnameEn}', target='{tSurnameEn}'");
+                case "1": return UserDecision.Skip;
+                case "2": return UserDecision.Add;
+                case "3": return UserDecision.Merge;
+                case "0": throw new OperationCanceledException("User cancelled synchronization");
+                default:
+                    Console.Write("Некоректний вибір. Введіть 1, 2, 3 або 0: ");
+                    break;
             }
         }
+    }
 
-        if (updatedTrg > 0)
+    // NEW: Показати схожих авторів для міжмовного конфлікту
+    private async Task ShowSimilarAuthorsAsync(Author sourceAuthor)
+    {
+        var normSurname = (sourceAuthor.Surname ?? "").Trim().ToLower();
+        var normSurnameEn = (sourceAuthor.SurnameEn ?? "").Trim().ToLower();
+
+        var similarAuthors = await _targetDb.Author
+            .Include(a => a.Country)
+            .Where(a => 
+                ((a.Surname ?? "").Trim().ToLower()) == normSurname ||
+                ((a.SurnameEn ?? "").Trim().ToLower()) == normSurname ||
+                ((a.Surname ?? "").Trim().ToLower()) == normSurnameEn ||
+                ((a.SurnameEn ?? "").Trim().ToLower()) == normSurnameEn)
+            .ToListAsync();
+
+        if (similarAuthors.Any())
+        {
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("СХОЖІ АВТОРИ У ЦІЛЬОВІЙ БАЗІ:");
+            Console.ResetColor();
+
+            foreach (var existing in similarAuthors)
+            {
+                Console.WriteLine($"  • {existing.Surname} {existing.Name} | {existing.SurnameEn} {existing.NameEn}");
+                Console.WriteLine($"    Країна: {existing.Country?.Name} | Роки: {existing.DateOfBirth}-{existing.DateOfDeath}");
+            }
+        }
+    }
+
+    // NEW: Об'єднання авторів при міжмовному конфлікті  
+    private async Task MergeCrossLanguageAuthorAsync(Author sourceAuthor)
+    {
+        var normSurname = (sourceAuthor.Surname ?? "").Trim().ToLower();
+        var normSurnameEn = (sourceAuthor.SurnameEn ?? "").Trim().ToLower();
+
+        // Знайти цільового автора для об'єднання
+        var targetAuthor = await _targetDb.Author
+            .Include(a => a.Country)
+            .Where(a => 
+                ((a.Surname ?? "").Trim().ToLower()) == normSurname ||
+                ((a.SurnameEn ?? "").Trim().ToLower()) == normSurname ||
+                ((a.Surname ?? "").Trim().ToLower()) == normSurnameEn ||
+                ((a.SurnameEn ?? "").Trim().ToLower()) == normSurnameEn)
+            .FirstOrDefaultAsync();
+
+        if (targetAuthor == null)
+        {
+            throw new InvalidOperationException("Не вдалося знайти автора для міжмовного об'єднання.");
+        }
+
+        // Об'єднати поля
+        bool hasChanges = await MergeAuthorFieldsAsync(targetAuthor, sourceAuthor);
+
+        if (hasChanges)
         {
             await _targetDb.SaveChangesAsync();
-            _logger.LogInformation("Updated target English fields for {Count} authors.", updatedTrg);
+            _logger.LogInformation($"Cross-language merged author '{sourceAuthor.Surname} {sourceAuthor.Name}' with existing author ID {targetAuthor.ID}.");
         }
-        else
+    }
+
+    // NEW: Допоміжний метод для об'єднання полів авторів
+    private async Task<bool> MergeAuthorFieldsAsync(Author targetAuthor, Author sourceAuthor)
+    {
+        bool hasChanges = false;
+
+        // Об'єднання англійських імен
+        if (string.IsNullOrWhiteSpace(targetAuthor.NameEn) && !string.IsNullOrWhiteSpace(sourceAuthor.NameEn))
         {
-            _logger.LogInformation("No English fields updated in target.");
+            targetAuthor.NameEn = sourceAuthor.NameEn;
+            hasChanges = true;
         }
 
-        if (updatedSrc > 0)
+        if (string.IsNullOrWhiteSpace(targetAuthor.SurnameEn) && !string.IsNullOrWhiteSpace(sourceAuthor.SurnameEn))
         {
-            await _sourceDb.SaveChangesAsync();
-            _logger.LogInformation("Updated source English fields for {Count} authors.", updatedSrc);
-        }
-        else
-        {
-            _logger.LogInformation("No English fields updated in source.");
+            targetAuthor.SurnameEn = sourceAuthor.SurnameEn;
+            hasChanges = true;
         }
 
-        if (conflicts > 0)
+        // Об'єднання українських імен якщо їх немає
+        if (string.IsNullOrWhiteSpace(targetAuthor.Name) && !string.IsNullOrWhiteSpace(sourceAuthor.Name))
         {
-            _logger.LogWarning("English name conflicts detected for {Count} authors. See collisions list.", conflicts);
+            targetAuthor.Name = sourceAuthor.Name;
+            hasChanges = true;
         }
-        _logger.LogInformation("English author names enrichment complete.");
+
+        if (string.IsNullOrWhiteSpace(targetAuthor.Surname) && !string.IsNullOrWhiteSpace(sourceAuthor.Surname))
+        {
+            targetAuthor.Surname = sourceAuthor.Surname;
+            hasChanges = true;
+        }
+
+        // Інші поля...
+        if (targetAuthor.DateOfBirth == null && sourceAuthor.DateOfBirth != null)
+        {
+            targetAuthor.DateOfBirth = sourceAuthor.DateOfBirth;
+            hasChanges = true;
+        }
+
+        if (targetAuthor.DateOfDeath == null && sourceAuthor.DateOfDeath != null)
+        {
+            targetAuthor.DateOfDeath = sourceAuthor.DateOfDeath;
+            hasChanges = true;
+        }
+
+        return hasChanges;
     }
 
     private async Task SyncMelodiesAsync()
