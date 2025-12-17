@@ -434,7 +434,7 @@ function renderMeasuresToNotation(startAtMeasureIndex, measures, maxBarsToRender
         console.debug(`renderMidiFileToNotation: renderer ${rendererWidth}x${rendererHeight}, scaleFactor=${scaleFactor}`);
 
         const scaledWidth = effectiveWidth / scaleFactor;
-		const scaledBARWIDTH = BARWIDTH;
+		const scaledBARWIDTH = BARWIDTH * Math.sqrt(scaleFactor);
 
 		console.debug(`scaledWidth [RW] = ${scaledWidth} `);
 
