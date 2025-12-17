@@ -1,5 +1,6 @@
 ﻿using Melodies25.Data;
 using Melodies25.Models;
+using Melodies25.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 public class DatabaseSyncService
@@ -899,5 +900,240 @@ copied, skipped, conflicts);
             }
             Console.Write($"Некоректний вибір. Введіть номер від 1 до {authors.Count}: ");
         }
+    }
+
+    // NEW: Синхронізація англійських імен авторів
+    private async Task SyncAuthorEnglishNamesAsync()
+    {
+        _logger.LogInformation("Starting English names synchronization for authors...");
+
+        // Отримати всіх авторів з обох баз даних
+        var sourceAuthors = await _sourceDb.Author.AsNoTracking().ToListAsync();
+        var targetAuthors = await _targetDb.Author.ToListAsync(); // без AsNoTracking для можливості оновлення
+
+        int updatedCount = 0;
+        int enrichedCount = 0;
+
+        foreach (var sourceAuthor in sourceAuthors)
+        {
+            // Знайти відповідного автора в цільовій базі
+            var targetAuthor = targetAuthors.FirstOrDefault(ta =>
+                Same(ta.Name, sourceAuthor.Name) &&
+                Same(ta.Surname, sourceAuthor.Surname));
+
+            if (targetAuthor == null)
+            {
+                // Спробувати знайти по англійських іменах
+                targetAuthor = targetAuthors.FirstOrDefault(ta =>
+                    !string.IsNullOrWhiteSpace(sourceAuthor.NameEn) &&
+                    !string.IsNullOrWhiteSpace(sourceAuthor.SurnameEn) &&
+                    Same(ta.NameEn, sourceAuthor.NameEn) &&
+                    Same(ta.SurnameEn, sourceAuthor.SurnameEn));
+            }
+
+            if (targetAuthor != null)
+            {
+                bool hasChanges = false;
+
+                // Оновити англійські імена якщо вони відсутні в цільовій базі
+                if (string.IsNullOrWhiteSpace(targetAuthor.NameEn) &&
+                    !string.IsNullOrWhiteSpace(sourceAuthor.NameEn))
+                {
+                    targetAuthor.NameEn = sourceAuthor.NameEn;
+                    hasChanges = true;
+                }
+
+                if (string.IsNullOrWhiteSpace(targetAuthor.SurnameEn) &&
+                    !string.IsNullOrWhiteSpace(sourceAuthor.SurnameEn))
+                {
+                    targetAuthor.SurnameEn = sourceAuthor.SurnameEn;
+                    hasChanges = true;
+                }
+
+                // Оновити українські імена якщо вони відсутні в цільовій базі (зворотний напрямок)
+                if (string.IsNullOrWhiteSpace(targetAuthor.Name) &&
+                    !string.IsNullOrWhiteSpace(sourceAuthor.Name))
+                {
+                    targetAuthor.Name = sourceAuthor.Name;
+                    hasChanges = true;
+                }
+
+                if (string.IsNullOrWhiteSpace(targetAuthor.Surname) &&
+                    !string.IsNullOrWhiteSpace(sourceAuthor.Surname))
+                {
+                    targetAuthor.Surname = sourceAuthor.Surname;
+                    hasChanges = true;
+                }
+
+                if (hasChanges)
+                {
+                    updatedCount++;
+                    _logger.LogDebug("Updated author names: {Surname} {Name} -> {SurnameEn} {NameEn}",
+                        targetAuthor.Surname, targetAuthor.Name, targetAuthor.SurnameEn, targetAuthor.NameEn);
+                }
+            }
+        }
+
+        // Збереження змін у цільовій базі
+        if (updatedCount > 0)
+        {
+            await _targetDb.SaveChangesAsync();
+            _logger.LogInformation("Updated English names for {Count} authors in target database", updatedCount);
+        }
+
+        // Тепер синхронізуємо зворотний напрямок: з цільової бази в джерельну
+        var sourceAuthorsForUpdate = await _sourceDb.Author.ToListAsync();
+
+        foreach (var targetAuthor in targetAuthors)
+        {
+            var sourceAuthor = sourceAuthorsForUpdate.FirstOrDefault(sa =>
+                Same(sa.Name, targetAuthor.Name) &&
+                Same(sa.Surname, targetAuthor.Surname));
+
+            if (sourceAuthor == null)
+            {
+                // Спробувати знайти по англійських іменах
+                sourceAuthor = sourceAuthorsForUpdate.FirstOrDefault(sa =>
+                    !string.IsNullOrWhiteSpace(targetAuthor.NameEn) &&
+                    !string.IsNullOrWhiteSpace(targetAuthor.SurnameEn) &&
+                    Same(sa.NameEn, targetAuthor.NameEn) &&
+                    Same(sa.SurnameEn, targetAuthor.SurnameEn));
+            }
+
+            if (sourceAuthor != null)
+            {
+                bool hasChanges = false;
+
+                // Оновити англійські імена в джерельній базі
+                if (string.IsNullOrWhiteSpace(sourceAuthor.NameEn) &&
+                    !string.IsNullOrWhiteSpace(targetAuthor.NameEn))
+                {
+                    sourceAuthor.NameEn = targetAuthor.NameEn;
+                    hasChanges = true;
+                }
+
+                if (string.IsNullOrWhiteSpace(sourceAuthor.SurnameEn) &&
+                    !string.IsNullOrWhiteSpace(targetAuthor.SurnameEn))
+                {
+                    sourceAuthor.SurnameEn = targetAuthor.SurnameEn;
+                    hasChanges = true;
+                }
+
+                if (hasChanges)
+                {
+                    enrichedCount++;
+                }
+            }
+        }
+
+        // Збереження змін у джерельній базі
+        if (enrichedCount > 0)
+        {
+            await _sourceDb.SaveChangesAsync();
+            _logger.LogInformation("Enriched English names for {Count} authors in source database", enrichedCount);
+        }
+
+        // Генерування англійських імен через транслітерацію для авторів без них
+        await GenerateTransliteratedNamesAsync();
+
+        _logger.LogInformation("English names sync complete. Updated: {Updated}, Enriched: {Enriched}",
+            updatedCount, enrichedCount);
+    }
+
+    // NEW: Генерування англійських імен через транслітерацію
+    private async Task GenerateTransliteratedNamesAsync()
+    {
+        _logger.LogInformation("Generating transliterated English names for authors without them...");
+
+        int generatedInSource = 0;
+        int generatedInTarget = 0;
+
+        // Обробка джерельної бази
+        var sourceAuthorsWithoutEn = await _sourceDb.Author
+            .Where(a => (string.IsNullOrWhiteSpace(a.NameEn) || string.IsNullOrWhiteSpace(a.SurnameEn)) &&
+                        (!string.IsNullOrWhiteSpace(a.Name) || !string.IsNullOrWhiteSpace(a.Surname)))
+            .ToListAsync();
+
+        foreach (var author in sourceAuthorsWithoutEn)
+        {
+            bool hasChanges = false;
+
+            if (string.IsNullOrWhiteSpace(author.NameEn) && !string.IsNullOrWhiteSpace(author.Name))
+            {
+                author.NameEn = Translit.Transliterate(author.Name);
+                hasChanges = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(author.SurnameEn) && !string.IsNullOrWhiteSpace(author.Surname))
+            {
+                // Особлива обробка для "Українська народна пісня"
+                if (author.Surname.Equals("Українська народна пісня", StringComparison.OrdinalIgnoreCase))
+                {
+                    author.SurnameEn = "Ukrainian folk song";
+                }
+                else
+                {
+                    author.SurnameEn = Translit.Transliterate(author.Surname);
+                }
+                hasChanges = true;
+            }
+
+            if (hasChanges)
+            {
+                generatedInSource++;
+                _logger.LogDebug("Generated English names for source author: {Surname} {Name} -> {SurnameEn} {NameEn}",
+                    author.Surname, author.Name, author.SurnameEn, author.NameEn);
+            }
+        }
+
+        if (generatedInSource > 0)
+        {
+            await _sourceDb.SaveChangesAsync();
+        }
+
+        // Обробка цільової бази
+        var targetAuthorsWithoutEn = await _targetDb.Author
+            .Where(a => (string.IsNullOrWhiteSpace(a.NameEn) || string.IsNullOrWhiteSpace(a.SurnameEn)) &&
+                        (!string.IsNullOrWhiteSpace(a.Name) || !string.IsNullOrWhiteSpace(a.Surname)))
+            .ToListAsync();
+
+        foreach (var author in targetAuthorsWithoutEn)
+        {
+            bool hasChanges = false;
+
+            if (string.IsNullOrWhiteSpace(author.NameEn) && !string.IsNullOrWhiteSpace(author.Name))
+            {
+                author.NameEn = Translit.Transliterate(author.Name);
+                hasChanges = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(author.SurnameEn) && !string.IsNullOrWhiteSpace(author.Surname))
+            {
+                if (author.Surname.Equals("Українська народна пісня", StringComparison.OrdinalIgnoreCase))
+                {
+                    author.SurnameEn = "Ukrainian folk song";
+                }
+                else
+                {
+                    author.SurnameEn = Translit.Transliterate(author.Surname);
+                }
+                hasChanges = true;
+            }
+
+            if (hasChanges)
+            {
+                generatedInTarget++;
+                _logger.LogDebug("Generated English names for target author: {Surname} {Name} -> {SurnameEn} {NameEn}",
+                    author.Surname, author.Name, author.SurnameEn, author.NameEn);
+            }
+        }
+
+        if (generatedInTarget > 0)
+        {
+            await _targetDb.SaveChangesAsync();
+        }
+
+        _logger.LogInformation("Generated transliterated names. Source: {SourceCount}, Target: {TargetCount}",
+            generatedInSource, generatedInTarget);
     }
 }
