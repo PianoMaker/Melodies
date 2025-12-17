@@ -1322,3 +1322,24 @@ div[id^="melody"] {
 }
 
 .hidden-melody { display: none; }
+
+@media (max-width: 600px) {
+    .mobile-small {
+        font-size: 0.9rem !important;
+        padding: 0.1rem 0.1rem !important;
+    }
+    .btn-melody {
+        font-size: 0.9rem !important;
+        padding: 0.1rem 0.1rem !important;
+    }
+}
+
+.text-responsive {
+    font-size: 1rem;
+}
+
+/* Мобілки */
+@media (max-width: 576px) {
+    .text-responsive {
+        font-size: 0.85rem;
+    }
