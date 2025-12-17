@@ -416,6 +416,7 @@ function renderMeasuresToNotation(startAtMeasureIndex, measures, maxBarsToRender
 
     // If we scale the context by scaleFactor, we must allocate a larger renderer
     const { rendererWidth, rendererHeight } = getRenderDimensions(effectiveWidth, scaleFactor, rowsHeight, containerWidth);
+	
 
     setTimeout(() => {
         const factory = new Vex.Flow.Factory({
@@ -433,7 +434,7 @@ function renderMeasuresToNotation(startAtMeasureIndex, measures, maxBarsToRender
         console.debug(`renderMidiFileToNotation: renderer ${rendererWidth}x${rendererHeight}, scaleFactor=${scaleFactor}`);
 
         const scaledWidth = effectiveWidth / scaleFactor;
-		const scaledBARWIDTH = BARWIDTH;
+		const scaledBARWIDTH = BARWIDTH * Math.sqrt(scaleFactor);
 
 		console.debug(`scaledWidth [RW] = ${scaledWidth} `);
 
@@ -462,8 +463,9 @@ function renderMeasuresToNotation(startAtMeasureIndex, measures, maxBarsToRender
 
 function getRenderDimensions(effectiveWidth, scaleFactor, rowsHeight, containerWidth) {
 	const rendererWidth = Math.max(Math.round(effectiveWidth / scaleFactor), 200);
-	const rendererHeight = Math.max(Math.round(rowsHeight * scaleFactor * scaleFactor), 100);
+	const rendererHeight = Math.max(Math.round(rowsHeight * scaleFactor * scaleFactor ), 100);
 	console.log(`renderMidiFileToNotation: rowsHeight = ${rowsHeight}, containerWidth=${containerWidth}`);
+	console.log(`renderMidiFileToNotation: rendererHight = ${rowsHeight}, rendererWidth=${containerWidth}`);
 	return { rendererWidth, rendererHeight };
 }
 

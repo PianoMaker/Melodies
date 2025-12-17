@@ -848,6 +848,10 @@ p {
         padding-top: 12em !important;
         transition: padding-top 200ms ease;
     }
+
+    h1 {
+        font-size: 1.1em !important;
+    }
 }
 
 
