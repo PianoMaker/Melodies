@@ -2,7 +2,7 @@
 :root {
     --brand-red: #be0000; /* старий яскравий */
     --brand-green: #34620e; /* старий темно-зелений */
-    --brand-maincolor: #4b4f18; /* колір верхньої смуги, підсвітка клавіш */
+    --brand-maincolor: #4b4f18; /* колір верхньої смуги (темно-зелений), підсвітка клавіш */
     --brand-maincolor-light: #7a7e38; /* колір верхньої смуги, підсвітка клавіш */
     --nav-height: 85px; /* висота навігаційної смуги */
     --brand-gold: #ffd83d; /* акцент */
@@ -19,9 +19,141 @@
 
 }
 
+/* Brand palette tokens and preview utilities (added) */
+:root {
+    /* Derived brand shades (based on --brand-maincolor: #4b4f18) */
+    --brand-900: #2b2d0e;
+    --brand-700: #3f4214;
+    --brand-500: #4b4f18; /* existing brand-maincolor */
+    --brand-300: #7a7e38; /* existing brand-maincolor-light */
+    --brand-100: #dfe0ad;
 
+    /* Surface / panel tints (based on --surface: #fffcd1) */
+    --surface-50:  #ffffff;
+    --surface-100: #fffef9;
+    --surface-200: #fffce6;
+    --surface-300: #fffcd1; /* existing surface */
+    --surface-400: #fff9b0;
 
+    /* Accents */
+    --brand-gold-dark: #d4b11e;
+}
 
+/* Palette preview grid */
+.palette {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    align-items: stretch;
+    margin: 12px 0;
+}
+
+.palette-item {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-1);
+    display: flex;
+    flex-direction: column;
+    min-height: 120px;
+    border: 1px solid var(--brand-border);
+}
+
+.palette-swatch {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* labels under each swatch */
+.palette-label {
+    padding: 8px 10px;
+    text-align: center;
+    font-size: 0.85rem;
+    background: rgba(0,0,0,0.03);
+}
+
+/* Swatch background helpers */
+.sw-bg-brand-900 { background: var(--brand-900); color: #fff; }
+.sw-bg-brand-700 { background: var(--brand-700); color: #fff; }
+.sw-bg-brand-500 { background: var(--brand-500); color: #fff; }
+.sw-bg-brand-300 { background: var(--brand-300); color: #212529; }
+.sw-bg-brand-100 { background: var(--brand-100); color: #212529; }
+
+.sw-bg-surface-50  { background: var(--surface-50);  color: var(--brand-500); }
+.sw-bg-surface-100 { background: var(--surface-100); color: var(--brand-500); }
+.sw-bg-surface-200 { background: var(--surface-200); color: var(--brand-500); }
+.sw-bg-surface-300 { background: var(--surface-300); color: var(--brand-500); }
+.sw-bg-surface-400 { background: var(--surface-400); color: var(--brand-500); }
+
+/* Mosaic / trendy square split */
+.color-mosaic {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    align-items: stretch;
+    width: 100%;
+    max-width: 900px;
+}
+.mosaic-tile {
+    aspect-ratio: 1 / 1;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* Example gradient tiles and combos */
+.tile-brand-gradient {
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-300));
+    color: #fff;
+}
+.tile-surface-gradient {
+    background: linear-gradient(135deg, var(--surface-50), var(--surface-300));
+    color: var(--brand-500);
+}
+.tile-accent {
+    background: conic-gradient(from 200deg, var(--brand-gold) 0 40%, var(--brand-500) 40% 100%);
+    color: #111;
+}
+
+/* Component examples */
+.card-surface {
+    background: var(--surface-300);
+    border: 1px solid var(--brand-border);
+    color: var(--brand-500);
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-1);
+}
+
+.btn-brand {
+    background: var(--brand-500);
+    color: #fff;
+    border: 1px solid rgba(0,0,0,0.12);
+    padding: .5rem .9rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.btn-brand-outline {
+    background: transparent;
+    color: var(--brand-500);
+    border: 1px solid var(--brand-500);
+    padding: .45rem .85rem;
+    border-radius: 8px;
+}
+
+/* small responsive tweaks */
+@media (max-width: 640px) {
+    .color-mosaic { grid-template-columns: repeat(3, 1fr); }
+    .palette { gap: 8px; }
+}
 
 html {
     position: relative;
@@ -129,6 +261,7 @@ a.link-light:hover {
 
 /* більшсть кнопок сайту */
 
+
 .btn-melody {
     display: inline-block;
     font-weight: 400;
@@ -136,9 +269,9 @@ a.link-light:hover {
     text-align: center;
     vertical-align: middle;
     user-select: none;
-    background-color: #d3d3d3;
+    background-color: #d3d3d3; /* darkened from #f8f9fa to match .light-background */
     border: 1px solid #212529;
-    padding: 0.375rem 0.75rem;    
+    padding: 0.375rem 0.75rem;
     font-size: 1rem;
     line-height: 1.5;
     border-radius: 0.375rem;
@@ -158,6 +291,7 @@ a.link-light:hover {
         background-color: #1a1e21;
         border-color: #1a1e21;
     }
+    
 
 /* Make outline-dark buttons hover in dark red (match navbar) */
 .btn-outline-dark.light-background:hover,
@@ -305,11 +439,30 @@ label, .form-label, .col-form-label {
     font-size: 1rem; /* larger text on compact buttons */
 }
 
+.searchrightcontainer {    
+    width: 70%;
+    height: 100%;
+    margin: 10px;
+    /* unified layout anchor for children */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-left: 0;
+    padding-right: 0;
+    align-items: stretch;
+}
+
+/* ensure inner notes container uses the same width anchor */
 #innerNotesContainer {
     border: 1px solid gray;
     border-radius: 12px;
-    padding: 2px;
-    background: rgba(255,255,225,0.8);
+    padding: 15px;
+    background: var(--surface-100);
+    margin-left: 7px;
+    margin-right: 0;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 #code {
@@ -347,7 +500,7 @@ label, .form-label, .col-form-label {
         }
 
 table {
-    background-color: white;    
+    background-color: var(--surface-100);    
     opacity: 0.9;
     font-family: 'Times New Roman';
     font-style: normal;
@@ -372,8 +525,8 @@ th, td {
     border: 1px solid #ddd;
     padding: 10px;
     text-align: left;
-    font-size: 1em; /* was 0.9em */
-    vertical-align: middle; /* align text with controls/buttons */
+    font-size: 1em; 
+    vertical-align: middle; 
 }
 
 th {
@@ -389,17 +542,17 @@ table, th, td {
 
 /* Zebra + hover */
 .table tbody tr:nth-child(odd) td {
-    background-color: rgba(255,255,255,0.96);
+    background-color: var(--surface-100); 
 }
 
 /* Highlight entire selected table row */
 .selected-row td {
-    background-color: lightyellow !important;
+    background-color: var(--surface-400) !important;
 }
 
 /* ensure selected row hover keeps the same background */
 .selected-row:hover td {
-    background-color: lightyellow !important;
+    background-color: var(--surface-400) !important;
 }
 
 /* Sticky header for easier scanning */
@@ -436,10 +589,10 @@ table, th, td {
     }
 }
 
-/* сирпінка файлів*/
+/* сторінка файлів*/
 .filesbox {
     border: 1px solid gray;
-    background: #fefee7;
+    background: var(--surface-200);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
     margin-top: 20px;
     margin-bottom: 40px;
@@ -465,7 +618,8 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
         font-size: 1em;
     }
 
-.notebox {
+ /* Контейнер окремихнот */
+.notebox { 
     display: inline-block;
     font-size: 0.9em;
     text-align: center;
@@ -474,7 +628,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     margin: 5px 1px 1px 1px;
     min-width: 35px;
     border: 1px solid gray;
-    background-color: antiquewhite;
+    background-color: var(--surface-400);
     border-radius: 5px;
     box-shadow: rgba(55,55,0,0.3) 2px 2px;
 }
@@ -485,7 +639,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     border: 1px solid black;
     border-radius: 5px;
     vertical-align: top;
-    background-color: rgb(255,255,200)
+    background-color: var(--surface-400);
 }
 
 .pausebox {
@@ -505,15 +659,11 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     text-align: center;
 }
 
-.innerNotesContainer {
-    padding: 5px;
-    border: 1px solid darkred;
-    background-color: rgba(255,255,200,0.9);
-}
+
 
 .noteanalysis {
     display: inline-block;
-    background-color: lightgoldenrodyellow;
+    background-color: var(--surface-400);
     padding: 5px;
     border: 1px solid darkred;
 }
@@ -560,7 +710,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 /* Анімація м'якого пульсування світла */
 @keyframes glow {
     from {
-        text-shadow: 4px 4px 15px rgb(230 255 15), 0px 0px 16px rgb(255 247 11)
+        text-shadow: 4px 4px 15px rgb(230 255 15), 0px 0px 16px rgb(255, 247, 11)
     }
 
     to {
@@ -614,15 +764,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
 /*<!--SEARCH PAGE -->*/
 
-.notesinfo {
-    border: 1px solid black;
-    border-radius: 5px;
-    background-color: lightgray;
-    width: 750px;
-    padding: 10px;
-    margin: 10px;
-    display: block;
-}
 
 .addcontainer, .infocontainer, .searchcontainer {
     border: 1px solid black;
@@ -642,7 +783,15 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     /*display: inline-block;*/
     width: 70%;
     height: 100%;
-    margin: 10px
+    margin: 10px;
+    /* unified layout anchor for children */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-left: 0;
+    padding-right: 0;
+    align-items: stretch;
 }
 
 .searchleftcontainer {
@@ -660,7 +809,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 
 /* біле тло контейнерів */
 .addcontainer, .infocontainer, .searchcontainer, .searchleftcontainer, .searchrightcontainer {
-    background: #fffcd1;
+    background: var(--surface-200); 
 }
 
 .table {
@@ -957,36 +1106,6 @@ p {
     }
 }
 
-.btn-melody {
-    display: inline-block;
-    font-weight: 400;
-    color: #212529;
-    text-align: center;
-    vertical-align: middle;
-    user-select: none;
-    background-color: #d3d3d3; /* darkened from #f8f9fa to match .light-background */
-    border: 1px solid #212529;
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    border-radius: 0.375rem;
-    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    background-clip: padding-box;
-}
-
-    .btn-melody:hover, .btn-melody:focus {
-        color: var(--brand-gold);
-        background-color: var(--brand-maincolor);
-        border-color: #212529;
-        text-decoration: none;
-    }
-
-    .btn-melody:active {
-        color: #fff;
-        background-color: #1a1e21;
-        border-color: #1a1e21;
-    }
-
 /* Melodies/Index adaptive layout for operationbuttons and lettersbutton */
 @media (max-width: 768px) {
     .melody-index-flex {
@@ -1166,13 +1285,7 @@ p {
         }
     }
 
-    #durationspanel {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 24px;
-        flex-wrap: nowrap;
-    }
+/* Duration panel on Search page */
 
     #durationbuttons {
         display: flex;
@@ -1343,7 +1456,7 @@ div[id^="melody"] {
     }
     .btn-melody {
         padding: .35rem .6rem !important; /* comfortable horizontal spacing */
-        font-size: 1.4rem !important;
+        font-size: 1.1rem !important; /* keeping font-size consistent with other styles */
         box-sizing: border-box;
     }
 
