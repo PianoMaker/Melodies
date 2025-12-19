@@ -1,13 +1,13 @@
 ﻿/* Design tokens for consistent feel */
 :root {
-    --brand-red: #be0000;               /* старий яскравий */
-    --brand-green: #34620e;             /* старий темно-зелений */
-    --brand-maincolor: #4b4f18;         /* колір верхньої смуги, підсвітка клавіш */
-    --brand-maincolor-light: #7a7e38;   /* колір верхньої смуги, підсвітка клавіш */
-    --nav-height: 85px;                 /* висота навігаційної смуги */
-    --brand-gold: #ffd83d;              /* акцент */
-    --surface: #fffcd1;                 /* світлий фон панелі */
-    --text-dark: #1f1f1с;               /* текстові надписи */
+    --brand-red: #be0000; /* старий яскравий */
+    --brand-green: #34620e; /* старий темно-зелений */
+    --brand-maincolor: #4b4f18; /* колір верхньої смуги, підсвітка клавіш */
+    --brand-maincolor-light: #7a7e38; /* колір верхньої смуги, підсвітка клавіш */
+    --nav-height: 85px; /* висота навігаційної смуги */
+    --brand-gold: #ffd83d; /* акцент */
+    --surface: #fffcd1; /* світлий фон панелі */
+    --text-dark: #333333; /* текстові надписи */
     --brand-border: #d9cf8d; /* border панелей/контейнерів */
     --brand-mobile-button: #ffd83d; /* яскравий золотий для кнопок мобільного меню */
     --radius-lg: 12px;
@@ -16,6 +16,7 @@
     --btnheight: 40px;
     --mainimage: url(../images/catplays3.png); /* головний малюнок */
     --footer-height: 30px; /* NEW */
+
 }
 
 
@@ -94,15 +95,18 @@ a.link-light:hover {
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
     font-size: 1.2em;
     transition-duration: 0.2s;
+    letter-spacing: 0.05em;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.1);
 }
 
-.homepagesubtitle:hover {
-    color: var(--brand-green); 
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(-2px);
-    transition-duration: 0.2s;
-    font-size: 1.2em;
-}
+    .homepagesubtitle:hover {
+        color: var(--brand-green);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        transform: translateY(-2px);
+        transition-duration: 0.2s;
+        font-size: 1.2em;
+        
+    }
 
 
 /* лівий контейнер*/
@@ -132,9 +136,9 @@ a.link-light:hover {
     text-align: center;
     vertical-align: middle;
     user-select: none;
-    background-color: #d3d3d3; 
+    background-color: #d3d3d3;
     border: 1px solid #212529;
-    padding: 0.375rem 0.75rem;
+    padding: 0.375rem 0.75rem;    
     font-size: 1rem;
     line-height: 1.5;
     border-radius: 0.375rem;
@@ -428,9 +432,7 @@ table, th, td {
 
 @media (max-width: 768px) {
     .mainpage {
-        
-        background: linear-gradient(217deg, var(--brand-gold), var(--brand-maincolor-light) 80.71%), linear-gradient(336deg, var(--brand-maincolor), var(--brand-green) 70.71%);
-        
+        background: linear-gradient( 180deg, #F3D85A 0%, #D6C14A 60%, #BFA73E 100% );
     }
 }
 
@@ -768,6 +770,13 @@ p {
                 outline-offset: 2px;
             }
 
+    .login-button {
+        border-radius: var(--radius-lg);
+        background-color: #fce588 !important;
+        border: 2px solid rgba(0,0,0,.05);
+        opacity: 1 !important;
+    }
+
         .search-form .search-button {
             width: 100%;
             min-height: 48px;
@@ -989,12 +998,16 @@ p {
         align-items: flex-start !important;
         margin-bottom: 1rem;
         gap: 0.5rem;
+        padding: 10px !important;
     }
 
         #operationbuttons .btn-melody {
             margin: 0 !important;
         }
 }
+
+
+
 
 .show-mobile {
 }
@@ -1329,8 +1342,24 @@ div[id^="melody"] {
         padding: 0.1rem 0.1rem !important;
     }
     .btn-melody {
-        font-size: 0.9rem !important;
-        padding: 0.1rem 0.1rem !important;
+        padding: .35rem .6rem !important; /* comfortable horizontal spacing */
+        font-size: 1.4rem !important;
+        box-sizing: border-box;
+    }
+
+    /* operation buttons and letter buttons should not be forced to narrow widths */
+    #operationbuttons .btn-melody,
+    .letters-row .btn-melody,
+    .searchcontainer .btn-melody {
+      width: auto !important;
+      min-width: 6.5rem; /* ensure a minimum tap target */
+    }
+
+    /* keep truly icon-only controls compact by targeting play/stop if needed */
+    .playButton, .stopButton {
+        padding: .25rem !important;
+        min-width: 2.2rem;
+        font-size: 1.1rem !important;
     }
 }
 
@@ -1342,4 +1371,24 @@ div[id^="melody"] {
 @media (max-width: 576px) {
     .text-responsive {
         font-size: 0.85rem;
+    }
+    .homepagesubtitle {
+        font-size: 1.2rem;
+        color: var(--text-dark);
+        
+    }
+}
+
+/* Ensure anchor buttons (btn-melody) are never underlined */
+a.btn-melody,
+a.btn-melody:link,
+a.btn-melody:visited,
+a.btn-melody:hover,
+a.btn-melody:focus,
+a.btn-melody:active {
+    text-decoration: none !important;
+}
+
+    a.btn-melody > * {
+        text-decoration: none !important; /* covers inner spans/icons */
     }

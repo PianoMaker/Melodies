@@ -130,7 +130,7 @@
                         <div style="display:inline-flex">
                             @if (@item.IsFileEligible is null)
                             {
-                                <button class="btn-melody playbutton"
+                                <button class="btn-melody playButton"
                                         data-filepath="@item.FilePath" id="playButton_@item.FilePath">
                                      <i class="fas fa-play"><!--?--></i> 
                                 </button>
@@ -141,7 +141,7 @@
                             }
                             else if (@item.IsFileEligible is true)
                             {
-                                <button class="btn-melody playbutton"
+                                <button class="btn-melody playButton"
                                         data-filepath="@item.FilePath" id="playButton_@item.FilePath">
                                     <i class="fas fa-play"></i>
                                 </button>

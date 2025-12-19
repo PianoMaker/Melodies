@@ -141,7 +141,7 @@ namespace Melodies25.Pages.Melodies
             {
                 await PrepareMp3Async(_environment, TempMidiFilePath, false);
                 TempMp3FilePath = GetTemporaryPath(ConvertToMp3Path(TempMidiFilePath));
-                TempData["HighlightPlayButton"] = true;
+                TempData["HighlightplayButton"] = true;
             }
             catch (Exception)
             {
