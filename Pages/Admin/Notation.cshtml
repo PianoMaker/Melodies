@@ -2,6 +2,14 @@
 @model Melodies25.Pages.Account.NotationModel
 @{
 }
+
+@* Admin menu: show only to admins *@
+@if (User.IsInRole("Admin"))
+{
+    @await Html.PartialAsync("_adminMenu")
+}
+
+
 <div class="infocontainer">
     <h2>Оберіть Midi-файл для відображення</h2>
     <form method="post">
@@ -56,6 +64,7 @@
 <script src="~/lib/midirender/mr-durations-helper.js"></script>
 <script src="~/lib/midirender/midiRenderer.js"></script>
 <script type="module" src="~/js/NotationFetch.js"></script>
+
 
 
 

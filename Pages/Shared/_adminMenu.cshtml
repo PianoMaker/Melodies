@@ -1,16 +1,39 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Authorization
+@if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+{
     var currentPage = ViewContext.RouteData.Values["Page"]?.ToString();
-}
-<div class="exp-top d-flex justify-content-between align-items-center">
-    <div>
-        <p>
-            <a class="@(currentPage == "/Account/Users" ? "active" : "")" href="/Account/Users">Управління користувачами</a> -
-            <a class="@(currentPage == "/Admin/Incoming" ? "active" : "")" href="/Admin/Incoming">Нові файли</a> -
-            <a class="@(currentPage == "/Admin/Files" ? "active" : "")" href="/Admin/Files">Управління файлами</a> -
-            <a class="@(currentPage == "/Admin/Notation" ? "active" : "")" href="/Admin/Notation">Нотація</a> -
-            @* <a class="@(currentPage == "/Admin/Widi" ? "active" : "")" href="/Admin/Widi">Widi</a> - *@
-            <a class="@(currentPage == "/Admin/Tone" ? "active" : "")" href="/Admin/Tone">Tone</a>
-            <a class="@(currentPage == "/Admin/Settings" ? "active" : "")" href="/Admin/Settings">Налаштування</a>
-        </p>
+    <div class="exp-top admin-topbar">
+        <div class="admin-topbar-inner container-fluid d-flex align-items-center justify-content-between">
+            <div class="d-block align-items-center">
+                <span id="adminTopbarLabel" class="admin-topbar-label d-md-none" aria-hidden="true">Адмін-меню</span>
+                <button id="adminTopbarToggle" class="admin-hamburger d-md-none btn btn-light" aria-expanded="false" aria-controls="adminTopbarMobile" aria-label="Відкрити адміністративне меню">
+                    <span class="hamburger-icon" aria-hidden="true">☰</span>
+                </button>
+            
+            </div>
+
+            <nav class="admin-menu d-none d-md-flex align-items-center gap-2" role="navigation" aria-label="Admin links">
+                <a class="admin-link @(currentPage == "/Account/Users" ? "active" : "")" href="/Account/Users">Управління користувачами</a>
+                <span class="divider"> - </span>
+                <a class="admin-link @(currentPage == "/Admin/Incoming" ? "active" : "")" href="/Admin/Incoming">Нові файли</a>
+                <span class="divider"> - </span>
+                <a class="admin-link @(currentPage == "/Admin/Files" ? "active" : "")" href="/Admin/Files">Управління файлами</a>
+                <span class="divider"> - </span>
+                <a class="admin-link @(currentPage == "/Admin/Notation" ? "active" : "")" href="/Admin/Notation">Нотація</a>
+                <span class="divider"> - </span>
+                <a class="admin-link @(currentPage == "/Admin/Tone" ? "active" : "")" href="/Admin/Tone">Tone</a>
+                <span class="divider"> - </span>
+                <a class="admin-link @(currentPage == "/Admin/Settings" ? "active" : "")" href="/Admin/Settings">Налаштування</a>
+            </nav>
+
+            <div id="adminTopbarMobile" class="admin-mobile-menu d-md-none" hidden aria-label="Admin links mobile" role="menu">
+                <a class="admin-link @(currentPage == "/Account/Users" ? "active" : "")" href="/Account/Users" role="menuitem">Управління користувачами</a>
+                <a class="admin-link @(currentPage == "/Admin/Incoming" ? "active" : "")" href="/Admin/Incoming" role="menuitem">Нові файли</a>
+                <a class="admin-link @(currentPage == "/Admin/Files" ? "active" : "")" href="/Admin/Files" role="menuitem">Управління файлами</a>
+                <a class="admin-link @(currentPage == "/Admin/Notation" ? "active" : "")" href="/Admin/Notation" role="menuitem">Нотація</a>
+                <a class="admin-link @(currentPage == "/Admin/Tone" ? "active" : "")" href="/Admin/Tone" role="menuitem">Tone</a>
+                <a class="admin-link @(currentPage == "/Admin/Settings" ? "active" : "")" href="/Admin/Settings" role="menuitem">Налаштування</a>
+            </div>
+        </div>
     </div>
-</div>
+}

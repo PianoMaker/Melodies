@@ -3,6 +3,12 @@
 @{
     ViewData["Title"] = "Налаштування";
 }
+@* Admin menu: show only to admins *@
+@if (User.IsInRole("Admin"))
+{
+    @await Html.PartialAsync("_adminMenu")
+}
+
 
 <div class="container infocontainer">
 
@@ -52,3 +58,4 @@
 
     </form>
 </div>
+
