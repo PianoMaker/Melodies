@@ -145,11 +145,6 @@
             </div>
             
         </nav>
-        @* show admin menu for Account, Experimental and Admin sections *@
-        @if (currentPage.Contains("/Account") || currentPage.Contains("/Experimental") || currentPage.Contains("/Admin"))
-        {
-            @await Html.PartialAsync("_adminMenu")
-        }
     </header>
     
     <!-- Середина -->

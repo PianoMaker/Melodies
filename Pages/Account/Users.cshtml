@@ -1,9 +1,15 @@
-﻿@page
+﻿
+@page
 @model Melodies25.Pages.Account.UsersModel
 @{
     ViewData["Title"] = "Сторінка адміністратора";
 }
 
+@* Admin menu: show only to admins *@
+@if (User.IsInRole("Admin"))
+{
+    @await Html.PartialAsync("_adminMenu")
+}
 
 @if (TempData["SuccessMessage"] != null)
 {
@@ -102,3 +108,4 @@ else
 {
     <p>Немає користувачів для відображення.</p>
 }
+

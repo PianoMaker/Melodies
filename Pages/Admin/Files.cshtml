@@ -2,6 +2,13 @@
 @model Melodies25.Pages.Account.FilesModel
 @{
 }
+
+@* Admin menu: show only to admins *@
+@if (User.IsInRole("Admin"))
+{
+    @await Html.PartialAsync("_adminMenu")
+}
+
 <div class="infocontainer">
     <p>Усього файлів - @Model.NumberOfFiles</p>
     <p>Загальний обсяг - @Model.TotalSize кБ</p>
@@ -14,120 +21,121 @@
         <button type="submit" style="display:block">Видалити</button>
     </form>
 </div>
-
-<h3>Midi-файли</h3>
-<div id="midifilesBox" class="filesbox">
-    <button id="midifilesBtn" style="width:30px">+</button>
-    <span id="showmidifiles"></span>
-    <div id="midifilesDiv">
-        @if (Model.MidiFiles.Any())
-        {
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Назва файлу</th>
-                        <th>Створено</th>
-                        <th>Дії</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var file in Model.MidiFiles)
-                    {
+<div calss="container">
+    <h3>Midi-файли</h3>
+    <div id="midifilesBox" class="filesbox">
+        <button id="midifilesBtn" style="width:30px">+</button>
+        <span id="showmidifiles"></span>
+        <div id="midifilesDiv">
+            @if (Model.MidiFiles.Any())
+            {
+                <table class="table table-bordered">
+                    <thead>
                         <tr>
-                            <td>@file.Name</td>
-                            <td>@file.Date</td>
-                            <td>
-                                <form method="post" asp-page-handler="DeleteFile" asp-route-fileId="@file.Id" class="d-inline">
-                                    <button type="submit" class="btn btn-danger">Видалити файл</button>
-                                </form>
-                            </td>
+                            <th>Назва файлу</th>
+                            <th>Створено</th>
+                            <th>Дії</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var file in Model.MidiFiles)
+                        {
+                            <tr>
+                                <td>@file.Name</td>
+                                <td>@file.Date</td>
+                                <td>
+                                    <form method="post" asp-page-handler="DeleteFile" asp-route-fileId="@file.Id" class="d-inline">
+                                        <button type="submit" class="btn btn-danger">Видалити файл</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
 
-        }
-        else
-        {
-            <p>Немає файлів для відображення.</p>
-        }
+            }
+            else
+            {
+                <p>Немає файлів для відображення.</p>
+            }
+        </div>
     </div>
-</div>
 
-<h3>Mp3-файли</h3>
-<div id="mp3filesBox" class="filesbox">
-    <button id="mp3filesBtn" style="width:30px">+</button>
-    <span id="showmp3files"></span>
-    <div id="mp3filesDiv">
-        @if (Model.Mp3Files.Any())
-        {
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Назва файлу</th>
-                        <th>Створено</th>
-                        <th>Дії</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var file in Model.Mp3Files)
-                    {
+    <h3>Mp3-файли</h3>
+    <div id="mp3filesBox" class="filesbox">
+        <button id="mp3filesBtn" style="width:30px">+</button>
+        <span id="showmp3files"></span>
+        <div id="mp3filesDiv">
+            @if (Model.Mp3Files.Any())
+            {
+                <table class="table table-bordered">
+                    <thead>
                         <tr>
-                            <td>@file.Name</td>
-                            <td>@file.Date</td>
-                            <td>
-                                <form method="post" asp-page-handler="DeleteFile" asp-route-fileId="@file.Id" class="d-inline">
-                                    <button type="submit" class="btn btn-danger">Видалити файл</button>
-                                </form>
-                            </td>
+                            <th>Назва файлу</th>
+                            <th>Створено</th>
+                            <th>Дії</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        }
-        else
-        {
-            <p>Немає файлів для відображення.</p>
-        }
+                    </thead>
+                    <tbody>
+                        @foreach (var file in Model.Mp3Files)
+                        {
+                            <tr>
+                                <td>@file.Name</td>
+                                <td>@file.Date</td>
+                                <td>
+                                    <form method="post" asp-page-handler="DeleteFile" asp-route-fileId="@file.Id" class="d-inline">
+                                        <button type="submit" class="btn btn-danger">Видалити файл</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>Немає файлів для відображення.</p>
+            }
+        </div>
     </div>
-</div>
 
 
-<h3>Тимчасові файли</h3>
-<div id="tempfilesBox" class="filesbox">
-    <button id="tempfilesBtn" style="width:30px">+</button>
-    <span id="showtempfiles"></span>
-    <div id="tempfilesDiv">
-        @if (Model.TempFiles.Any())
-        {
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Назва файлу</th>
-                        <th>Створено</th>
-                        <th>Дії</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var file in Model.TempFiles)
-                    {
+    <h3>Тимчасові файли</h3>
+    <div id="tempfilesBox" class="filesbox">
+        <button id="tempfilesBtn" style="width:30px">+</button>
+        <span id="showtempfiles"></span>
+        <div id="tempfilesDiv">
+            @if (Model.TempFiles.Any())
+            {
+                <table class="table table-bordered">
+                    <thead>
                         <tr>
-                            <td>@file.Name</td>
-                            <td>@file.Date</td>
-                            <td>
-                                <form method="post" asp-page-handler="DeleteFile" asp-route-fileId="@file.Id" class="d-inline">
-                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Ви впевнені, що хочете видалити цей файл?')">Видалити файл</button>
-                                </form>
-                            </td>
+                            <th>Назва файлу</th>
+                            <th>Створено</th>
+                            <th>Дії</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        }
-        else
-        {
-            <p>Немає файлів для відображення.</p>
-        }
+                    </thead>
+                    <tbody>
+                        @foreach (var file in Model.TempFiles)
+                        {
+                            <tr>
+                                <td>@file.Name</td>
+                                <td>@file.Date</td>
+                                <td>
+                                    <form method="post" asp-page-handler="DeleteFile" asp-route-fileId="@file.Id" class="d-inline">
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Ви впевнені, що хочете видалити цей файл?')">Видалити файл</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>Немає файлів для відображення.</p>
+            }
+        </div>
     </div>
 </div>
 <script src="~/js/managefiles.js"></script>

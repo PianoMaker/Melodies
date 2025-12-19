@@ -3,6 +3,13 @@
 @{
 }
 
+@* Admin menu: show only to admins *@
+@if (User.IsInRole("Admin"))
+{
+    @await Html.PartialAsync("_adminMenu")
+}
+
+
 
 <h1>Tone.js</h1>
 <p id="main"></p>

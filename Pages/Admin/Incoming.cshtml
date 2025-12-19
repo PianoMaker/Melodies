@@ -4,6 +4,11 @@
     var message = TempData["Message"] as string;
     var incoming = Model.IncomingMelodies;
 }
+@* Admin menu: show only to admins *@
+@if (User.IsInRole("Admin"))
+{
+    @await Html.PartialAsync("_adminMenu")
+}
 <div class="infocontainer">
     @if (incoming != null && incoming.Any())
     {
@@ -27,3 +32,4 @@
         <p>No incoming melodies found.</p>
     }
 </div>
+
