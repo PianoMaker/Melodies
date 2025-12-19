@@ -229,6 +229,12 @@ h6 {
   z-index: 997;
 }
 
+@media (max-height: 768px) {
+    .header {
+        padding: 10px 14px;
+    }
+}
+
 .header .logo {
   line-height: 1;
 }
@@ -246,6 +252,7 @@ h6 {
   text-transform: uppercase;
   color: var(--accent-color);
 }
+
 
 .header .btn-getstarted,
 .header .btn-getstarted:focus {

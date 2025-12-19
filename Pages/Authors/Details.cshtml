@@ -78,7 +78,7 @@
                             </a>
                             @if (@item.IsFileEligible is null)
                             {
-                                <button class="btn btn-outline-dark light-background playbutton"
+                                <button class="btn btn-outline-dark light-background playButton"
                                         data-filepath="@item.FilePath" id="playButton_@item.FilePath">
                                     <i class="fas fa-play">?</i>
                                 </button>
@@ -89,7 +89,7 @@
                             }
                             else if (@item.IsFileEligible is true)
                             {
-                                <button class="btn btn-outline-dark light-background playbutton"
+                                <button class="btn btn-outline-dark light-background playButton"
                                         data-filepath="@item.FilePath" id="playButton_@item.FilePath">
                                     <i class="fas fa-play"></i>
                                 </button>

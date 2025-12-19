@@ -592,7 +592,7 @@ namespace Melodies25.Pages.Melodies
                         MessageL(COLORS.green, $"CreateAudio: generated preview mp3 {TempMp3FilePath} for saved temp midi {TempMidiFilePath}");
                     }
 
-                    TempData["HighlightPlayButton"] = true;
+                    TempData["HighlightplayButton"] = true;
                     TempData["Keys"] = Keys;
                 }
                 catch (Exception ex)

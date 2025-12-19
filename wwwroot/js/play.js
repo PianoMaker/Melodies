@@ -1,7 +1,7 @@
 ﻿document.addEventListener('DOMContentLoaded', function () {
     console.log("Play.js starts");
 
-    document.querySelectorAll('.playbutton').forEach(function (playButton) {
+    document.querySelectorAll('.playButton').forEach(function (playButton) {
         playButton.addEventListener('click', function (e) {
             e.preventDefault(); // Запобігаємо відправці форми
             console.log("Play.js play button works");
