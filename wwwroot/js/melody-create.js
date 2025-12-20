@@ -226,6 +226,34 @@ document.addEventListener("DOMContentLoaded", function () {
 		return document.getElementById('dotbutton')?.classList.contains('highlight') || false;
 	}
 
+	// обробник клавіші '1' для встановлення цілої ноти
+
+	// Replace the existing 'keydown' listener block with this unified handler (handles keys 1..6)
+	document.addEventListener('keydown', function (e) {
+		// не перехоплювати введення, коли користувач у полі вводу/textarea або contentEditable
+		const active = document.activeElement;
+		const tag = active && active.tagName ? active.tagName.toLowerCase() : '';
+		if (tag === 'input' || tag === 'textarea' || (active && active.isContentEditable)) return;
+
+		// верхній рядок клавіш 1..6 → індекси 0..5 → duration = 2**index (1,2,4,8,16,32)
+		const k = e.key;
+		if (k >= '1' && k <= '6') {
+			const idx = parseInt(k, 10) - 1;
+			duration = String(2 ** idx);
+			if (typeof durationbuttons !== 'undefined' && durationbuttons.length > 0) {
+				durationbuttons.forEach((btn, i) => {
+					btn.classList.toggle('highlight', i === idx);
+				});
+			}
+			console.log('[createMelody] keyboard: set duration to', duration, 'from key', k);
+			e.preventDefault();
+		}
+		if (k === '.' || k === '/' || k=== ',') {
+			dotBtn.classList.toggle('highlight');
+			console.log('[createMelody]: toggling highlight for dot button');
+		}
+	});
+
 	//----------------------------------
 	// обробники клавіш фортепіано
 	//----------------------------------
