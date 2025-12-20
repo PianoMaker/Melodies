@@ -2,6 +2,10 @@
 @model Melodies25.Pages.Account.IndexModel
 @{
 }
+@if(User.IsInRole("Admin"))
+{
+    @await Html.PartialAsync("_adminMenu")
+}
 
     <h1>WebMidi.js Quick Start</h1>
     <p id="main"></p>

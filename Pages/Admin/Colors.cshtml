@@ -1,0 +1,11 @@
+﻿@page
+@model Melodies25.Pages.Admin.ColorsModel
+@{
+}
+@if (User.IsInRole("Admin"))
+{
+    @await Html.PartialAsync("_adminMenu")
+}
+<div class="infocontainer">
+<partial name="_BrandPalette" />
+</div>  
