@@ -52,11 +52,13 @@
 
 /*  лав≥атура */
 #pianoroll {
+    display: block;
     position: relative;
     width: 800px;
     height: 200px;
     font-size: 0;
     padding-left: 10px;
+    overflow: hidden;
 }
 
 /* б≥л≥ клав≥ш≥ */
@@ -250,6 +252,64 @@
         margin: 0;
         box-sizing: border-box;
     }
+
+  /* Enable horizontal scrolling of the keyboard inside the right column
+     while keeping the visual keyboard contained by the parent. */
+  #stainway {
+    overflow-x: auto;               /* allow horizontal scroll */
+    overflow-y: visible;            /* do not clip vertically */
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+    max-width: 100%;
+    height: 200px;
+    min-height: 220px;
+    margin-top: 8px; /* ensure visual separation from any above controls */
+  }
+
+
+  #pianoroll {
+    min-width: 800px; 
+    width: auto;
+    height: 200px;    
+    overflow: visible;
+    box-sizing: border-box;
+  }
+
+  .whitepianobutton { height: 200px; }
+  .blackpianobutton { height: 110px; }
+
+  /* Light scrollbar styling (optional, non-invasive) */
+  #stainway::-webkit-scrollbar {
+    height: 8px;
+  }
+  #stainway::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.18);
+    border-radius: 4px;
+  }
+
+  /* Ensure durations panel reserves space and pushes piano down on small screens.
+     No z-index used; we rely on normal document flow (margin-bottom) to prevent overlap. */
+  #durationspanel {
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+      padding: 8px;
+      margin-bottom: 12px; /* critical: push the piano down so it doesn't overlap */
+      box-sizing: border-box;
+      width: 100%;
+  }
+
+  /* If piano is inside a scroll wrapper, add small top spacing so it can't visually collide */
+  .piano-scroll-wrapper {
+      padding-bottom: 6px;
+      margin-top: 0;
+      box-sizing: border-box;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+  }
+
+  .piano-scroll-wrapper .piano-scroll-inner {
+      min-width: 800px; /* keep natural keyboard width */
+  }
 }
 
 @media (max-width: 768px) {
@@ -397,14 +457,14 @@
 
 /* Fallback for small tablets */
 @media (min-width: 577px) and (max-width: 768px) {
-    .compact-controls .form-check-label {
-        font-size: 1rem !important;
-    }
+  .compact-controls .form-check-label {
+    font-size: 1rem !important;
+  }
 
-    .compact-controls .form-check-input {
-        width: 19px !important;
-        height: 19px !important;
-    }
+  .compact-controls .form-check-input {
+    width: 19px !important;
+    height: 19px !important;
+  }
 }
 
 /* Piano scroll wrapper: enable horizontal scrolling on narrow screens */
@@ -478,7 +538,7 @@
             white-space: nowrap;
         }
 
-/* small adjustments for very narrow screens */
+ /* small adjustments for very narrow screens */
 @media (max-width: 480px) {
     .notesinfo {
         padding: 6px;
@@ -526,8 +586,6 @@
     align-items: center;
 }
     
-}
-
 #timesignature {
     display: flex;
     flex-direction: column;
