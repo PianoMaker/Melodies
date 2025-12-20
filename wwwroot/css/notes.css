@@ -129,6 +129,51 @@
     left: 640px;
 }
 
+.dis1 {
+    top: 0px;
+    left: 90px;
+}
+
+.fis1 {
+    top: 0px;
+    left: 180px;
+}
+
+.gis1 {
+    top: 0px;
+    left: 235px;
+}
+
+.b1 {
+    top: 0px;
+    left: 290px;
+}
+
+.cis2 {
+    top: 0px;
+    left: 385px;
+}
+
+.dis2 {
+    top: 0px;
+    left: 440px;
+}
+
+.fis2 {
+    top: 0px;
+    left: 530px;
+}
+
+.gis2 {
+    top: 0px;
+    left: 585px;
+}
+
+.b2 {
+    top: 0px;
+    left: 640px;
+}
+
 /* Transpose controls */
 #transpose-controls {
     display: flex;
