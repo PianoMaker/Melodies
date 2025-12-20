@@ -126,14 +126,12 @@
             <button style="width:80%; margin:10px" id="openpianoBtn">Ввести з клавіатури</button>
         </div>
         
-        <!--КНОПКИ УПРАВЛІННЯ І Нотний рядок-->
-        @await Html.PartialAsync("_pianoDisplay")
+        <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
+        @await Html.PartialAsync("_durationsTable")
 
         <!--МІЙ СТЕЙНВЕЙ-->
         @await Html.PartialAsync("_PianoKeys")
 
-        <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
-        @await Html.PartialAsync("_durationsTable")
 
         <!--ТАБЛО НОТ ВНИЗУ -->
         <div id="innerNotesContainer">
@@ -171,6 +169,12 @@
                 <p id="ifNotesEntered">жодної ноти не введено</p>
             }
         </div>
+
+
+        <!--КНОПКИ УПРАВЛІННЯ, Нотний рядок і кнопка "Пошук"-->
+        @await Html.PartialAsync("_pianoDisplay")
+
+        
         <script type="module" src="~/js/noteTable.js"></script>
 
         <script>

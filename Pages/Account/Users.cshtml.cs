@@ -102,7 +102,7 @@ namespace Melodies25.Pages.Account
                 return NotFound();
             }
 
-            // Невозможно скинути власний пароль тут (використовуйте сторінку ChangePassword)
+            // Неможливо скинути власний пароль тут (використовуйте сторінку ChangePassword)
             var current = await _userManager.GetUserAsync(User);
             if (current != null && current.Id == target.Id)
             {
