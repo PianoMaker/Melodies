@@ -154,7 +154,6 @@
                        disabled="@((Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true) ? null : "disabled")" />
                 <span class="small ms-1 @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? null : "text-muted")">gap: <span id="lcsGapVal">@Model.MaxGap</span></span>
             </div>
-
         </div>
         <div class="notesinfo d-flex align-items-center gap-3 my-2 compact-controls">
             <div class="form-check d-flex align-items-center gap-2">

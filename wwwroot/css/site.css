@@ -868,7 +868,7 @@ p {
 }
 
 /* ДЛЯ МОБІЛЬНИХ ЕКРАНІВ */
-@media (max-width: 768px) {
+@media (max-width: 476px) {
     /* Layout helpers */
     .d-flex {
         flex-direction: column;
@@ -1607,3 +1607,4 @@ a.btn-melody:active {
 @media (max-width: 420px) {
   .admin-topbar-label { font-size: 0.95rem; margin-left: 0.4rem; }
 }
+
