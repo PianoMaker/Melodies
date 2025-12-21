@@ -393,11 +393,11 @@ namespace Melodies25.Pages.Melodies
             }
 
             var vaste = "g,,,,,1.";
-            if ( Keys.Contains(vaste))
+            if (!string.IsNullOrEmpty(Keys) && Keys.Contains(vaste))
             {
                 var vasteidx = Keys.IndexOf(vaste);
                 Console.WriteLine($"vaste found, idx= {vasteidx}");
-                var totalvaste = Keys.Substring(vasteidx, 2);   
+                var totalvaste = Keys.Substring(vasteidx, 2);
                 Keys = Keys.Remove(vasteidx);
             }
 
