@@ -5,39 +5,6 @@
 
 /* ФОРТЕПІАННА КЛАВІАТУРА */
 /* Контейнер для нот */
-.notescontainer {
-    font-size: 0.8em;
-    border: 1px solid gray;
-    background-color: lightgoldenrodyellow;
-    padding: 8px;
-}
-
-    .notescontainer h3 {
-        font-size: 1em;
-    }
-
-/* Контейнер для пошуку нот */
-.notebox {
-    display: inline-block;
-    font-size: 0.9em;
-    text-align: center;
-    padding: 2px;
-    height: 30px;
-    margin: 5px 1px 1px 1px;
-    min-width: 35px;
-    border: 1px solid gray;
-    background-color: antiquewhite;
-    border-radius: 5px;
-    box-shadow: rgba(55,55,0,0.3) 2px 2px;
-}
-
-.pausebox {
-    font-size: 1.1em;
-    background-color: white;
-    border: none;
-    background-color: white;
-}
-
 
 /*Кнопки вибору тривалостей для вводу мелодій*/
 .durbtn {
@@ -361,16 +328,7 @@
 
     /* Ensure durations panel reserves space and pushes piano down on small screens.
      No z-index used; we rely on normal document flow (margin-bottom) to prevent overlap. */
-    #durationspanel {
-        flex-direction: column;
-        gap: 12px;
-        align-items: stretch;
-        padding: 8px;
-        margin-bottom: 12px; /* critical: push the piano down so it doesn't overlap */
-        box-sizing: border-box;
-        width: 100%;
-    }
-
+    
     /* If piano is inside a scroll wrapper, add small top spacing so it can't visually collide */
     .piano-scroll-wrapper {
         /*padding-bottom: 6px;*/
@@ -668,11 +626,17 @@
 }
 
 @media (max-width: 900px) {
+   
     #durationspanel {
         flex-direction: column;
         gap: 12px;
         align-items: stretch;
+        padding: 8px;
+        margin-bottom: 12px; /* critical: push the piano down so it doesn't overlap */
+        box-sizing: border-box;
+        width: 100%;
     }
+
 }
 
 .settimesignature {
