@@ -1,3 +1,8 @@
+
+
+
+
+
 /* ‘Œ–“≈œ≤¿ÕÕ¿  À¿¬≤¿“”–¿ */
 /*  ÓÌÚÂÈÌÂ ‰Îˇ ÌÓÚ */
 .notescontainer {
@@ -50,15 +55,39 @@
     }
 
 
-/*  Î‡‚≥‡ÚÛ‡ */
+/* -----------------
+     Î‡‚≥‡ÚÛ‡ 
+    -----------------*/
+
+.piano-scroll-inner {
+    box-sizing: border-box;
+    text-align: initial;
+    position: relative; /* keep normal flow; provides positioning context if needed */
+}
+
+#stainway {
+    display: block; /* keep full-width container behavior */
+    width: 100%;
+}
+
+#pianoroll {
+    margin: 0 auto; /* center fixed-width piano (800px) inside #stainway */
+}
+
 #pianoroll {
     display: block;
     position: relative;
     width: 800px;
     height: 200px;
     font-size: 0;
-    padding-left: 10px;
     overflow: hidden;
+}
+
+.piano-scroll-wrapper {
+    background-color: var(--surface-400);
+    box-shadow: var(--shadow-1);
+    margin: 0;
+    padding: 0;
 }
 
 /* ·≥Î≥ ÍÎ‡‚≥¯≥ */
@@ -211,6 +240,7 @@
     margin: 0 2px;
 }
 
+
 @media (max-width: 900px) {
     .searchcontainer {
         display: block;
@@ -242,52 +272,52 @@
 
     .cis1 {
         top: 0px;
-        left: 35px;
+        left: 30px;
     }
 
     .dis1 {
         top: 0px;
-        left: 85px;
+        left: 75px;
     }
 
     .fis1 {
         top: 0px;
-        left: 170px;
+        left: 160px;
     }
 
     .gis1 {
         top: 0px;
-        left: 220px;
+        left: 205px;
     }
 
     .b1 {
         top: 0px;
-        left: 265px;
+        left: 252px;
     }
 
     .cis2 {
         top: 0px;
-        left: 355px;
+        left: 340px;
     }
 
     .dis2 {
         top: 0px;
-        left: 400px;
+        left: 390px;
     }
 
     .fis2 {
         top: 0px;
-        left: 490px;
+        left: 480px;
     }
 
     .gis2 {
         top: 0px;
-        left: 535px;
+        left: 525px;
     }
 
     .b2 {
         top: 0px;
-        left: 580px;
+        left: 570px;
     }
 
     /* ensure right column uses same box model and no stray left offset */
@@ -298,63 +328,70 @@
         box-sizing: border-box;
     }
 
-  /* Enable horizontal scrolling of the keyboard inside the right column
+    /* Enable horizontal scrolling of the keyboard inside the right column
      while keeping the visual keyboard contained by the parent. */
-  #stainway {
-    overflow-x: auto;               /* allow horizontal scroll */
-    overflow-y: visible;            /* do not clip vertically */
-    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
-    max-width: 100%;
-    height: 200px;
-    min-height: 220px;
-    margin-top: 8px; /* ensure visual separation from any above controls */
-  }
+    #stainway {
+        overflow-x: auto; /* allow horizontal scroll */
+        overflow-y: visible; /* do not clip vertically */
+        -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+        max-width: 100%;
+        height: 200px;
+        min-height: 200px;
+        /*margin-top: 8px;*/ /* ensure visual separation from any above controls */
+    }
 
 
-  #pianoroll {
-    min-width: 800px; 
-    width: auto;
-    height: 200px;    
-    overflow: visible;
-    box-sizing: border-box;
-  }
+    #pianoroll {
+        min-width: 800px;
+        width: auto;
+        height: 200px;
+        overflow: visible;
+        box-sizing: border-box;
+    }
 
-  .whitepianobutton { height: 200px; }
-  .blackpianobutton { height: 110px; }
+    .whitepianobutton {
+        height: 200px;
+    }
 
-  /* Light scrollbar styling (optional, non-invasive) */
-  #stainway::-webkit-scrollbar {
-    height: 8px;
-  }
-  #stainway::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.18);
-    border-radius: 4px;
-  }
+    .blackpianobutton {
+        height: 110px;
+    }
 
-  /* Ensure durations panel reserves space and pushes piano down on small screens.
+    /* Light scrollbar styling (optional, non-invasive) */
+    #stainway::-webkit-scrollbar {
+        /*height: 8px;*/
+    }
+
+    #stainway::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,0.18);
+        border-radius: 4px;
+    }
+
+    /* Ensure durations panel reserves space and pushes piano down on small screens.
      No z-index used; we rely on normal document flow (margin-bottom) to prevent overlap. */
-  #durationspanel {
-      flex-direction: column;
-      gap: 12px;
-      align-items: stretch;
-      padding: 8px;
-      margin-bottom: 12px; /* critical: push the piano down so it doesn't overlap */
-      box-sizing: border-box;
-      width: 100%;
-  }
+    #durationspanel {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+        padding: 8px;
+        margin-bottom: 12px; /* critical: push the piano down so it doesn't overlap */
+        box-sizing: border-box;
+        width: 100%;
+    }
 
-  /* If piano is inside a scroll wrapper, add small top spacing so it can't visually collide */
-  .piano-scroll-wrapper {
-      padding-bottom: 6px;
-      margin-top: 0;
-      box-sizing: border-box;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-  }
+    /* If piano is inside a scroll wrapper, add small top spacing so it can't visually collide */
+    .piano-scroll-wrapper {
+        /*padding-bottom: 6px;*/
+        margin-top: 0;
+        box-sizing: border-box;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        background-color: var(--surface-400);
+    }
 
-  .piano-scroll-wrapper .piano-scroll-inner {
-      min-width: 800px; /* keep natural keyboard width */
-  }
+        .piano-scroll-wrapper .piano-scroll-inner {
+            min-width: 800px; /* keep natural keyboard width */
+        }
 }
 
 @media (max-width: 768px) {
@@ -367,7 +404,6 @@
         padding-left: 0;
         padding-right: 0;
         margin: 0;
-        box-sizing: border-box;
     }
     /* use fluid width on narrow screens */
     .notesinfo {
@@ -392,6 +428,8 @@
 }
 
 /* ƒÓ‰‡ÚË ‰Ó ≥ÒÌÛ˛˜Ó„Ó Ù‡ÈÎÛ */
+
+
 
 /* ¿‰‡ÔÚË‚ÌÂ Ï‡Ò¯Ú‡·Û‚‡ÌÌˇ ‰Îˇ ÌÓÚÌËı ·ÎÓÍ≥‚ */
 .melody-block [id^="notation_"] svg {
@@ -502,14 +540,14 @@
 
 /* Fallback for small tablets */
 @media (min-width: 577px) and (max-width: 768px) {
-  .compact-controls .form-check-label {
-    font-size: 1rem !important;
-  }
+    .compact-controls .form-check-label {
+        font-size: 1rem !important;
+    }
 
-  .compact-controls .form-check-input {
-    width: 19px !important;
-    height: 19px !important;
-  }
+    .compact-controls .form-check-input {
+        width: 19px !important;
+        height: 19px !important;
+    }
 }
 
 /* Piano scroll wrapper: enable horizontal scrolling on narrow screens */
@@ -553,8 +591,8 @@
     border: 1px solid black;
     border-radius: 5px;
     background-color: lightgray;
-    margin: 10px;
-    padding: 10px;
+    padding: 10px 10px;
+    /*padding: 10px;*/
 }
 
     /* letters / textarea: use full width inside notesinfo */
@@ -583,7 +621,7 @@
             white-space: nowrap;
         }
 
- /* small adjustments for very narrow screens */
+/* small adjustments for very narrow screens */
 @media (max-width: 480px) {
     .notesinfo {
         padding: 6px;
@@ -609,16 +647,13 @@
     display: flex;
     box-sizing: border-box;
     flex-direction: row;
-    
     gap: 24px;
     flex-wrap: nowrap;
     margin-right: 10px;
     width: 100%;
-
-        padding-left: 8px;
+    padding-left: 8px;
     margin-left: 0;
     overflow: visible;
-    
 }
 
 #durationbuttons {
@@ -626,11 +661,11 @@
     flex-direction: row;
     gap: 8px;
     flex: 1 1 0%;
-    min-width: 0; 
-    flex-wrap: wrap; 
+    min-width: 0;
+    flex-wrap: wrap;
     align-items: center;
 }
-    
+
 #timesignature {
     display: flex;
     flex-direction: column;
@@ -661,3 +696,36 @@
         vertical-align: middle;
         box-sizing: border-box;
     }
+
+/*  ¬»œ–¿¬À≈ÕÕﬂ œŒ«»÷≤…  À¿¬≤¿“”–» ƒÀﬂ ÿ»–Œ »’ ≈ –¿Õ≤¬ */
+
+@media (min-width: 901px) {
+    /* center piano without changing positioning context inside it */
+    .piano-scroll-inner {
+        text-align: center;
+    }
+
+    .blackpianobutton {
+        transform: translateX(20px);
+        /* preserve existing stacking and positioning */
+        will-change: transform;
+    }
+
+
+    #pianoroll {
+        display: block; /* restore block layout */
+        margin: 0 auto; /* center fixed-width piano */
+        width: 800px; /* keep explicit width */
+        position: relative; /* keep absolute positioning context for black keys */
+        box-sizing: border-box;
+        font-size: 0; /* avoid inline whitespace effects inside piano */
+    }
+
+        /* ensure white keys use stable inline-block layout and align to top */
+        #pianoroll .whitepianobutton {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+
+}
