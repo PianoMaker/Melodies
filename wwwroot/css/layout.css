@@ -2,12 +2,13 @@
     overflow: hidden;
 }
 
+/* Навігаційна стрічка */
+#navbarstrip {
+   
+    height: var(--nav-height);
+}
 
-
-/*--------------------------------------*/
-/* -------ЛОГО -------------------------*/
-/*--------------------------------------*/
-
+/* ЛОГО */
 .logoimage {
     position: static;
     height: var(--nav-height);
@@ -17,39 +18,12 @@
     max-width: 100%;
 }
 
-.imgcontainer {
-    display: flex;
-    align-items: center;
-    flex-shrink: 1;
-    min-width: 300px;
-    max-width: 390px;
-}
-
-#logocontainer {
-    display: flex;
-    align-items: center;
-    justify-content: center; /* center the brand/logo horizontally */
-}
-
-    #logocontainer .imgcontainer {
-        margin: 0 !important;
-    }
-
-
-#logocontainer {
-    display: flex;
-    flex: 0 1 auto !important;
-    align-items: center;
-    min-width: 0;
-}
-
-
 @media (max-width: 768px) {
     /* Force logo container and image to center vertically with the navbar height */
     #logocontainer {
         display: flex !important;
-        align-items: flex-start !important;
-        justify-content: flex-start !important;
+        align-items: flex-start !important; 
+        justify-content: flex-start !important; 
         padding-top: 0 !important;
         height: var(--nav-height) !important;
         flex: 0 1 auto !important;
@@ -71,30 +45,15 @@
         position: relative !important;
         top: 0 !important;
     }
-
-    /* Logo + brand */
-    .imgcontainer {
-        min-width: auto;
-        max-width: none;
-    }
-
-
 }
 
-
-
-/*--------------------------------------*/
-/* -------НАВІГАЦІЙНА СТРІЧКА  */
-/*--------------------------------------*/
-
-/*контейнер усієї стрічки - navbar navbar-expand-md navbar-dark bg-sky border-bottom box-shadow p-0 */
-
-#navbarstrip {
-    height: var(--nav-height);
+.imgcontainer {
+    display: flex;
+    align-items: center;
+    flex-shrink: 1;
 }
 
-/* колір навігаціої смуги  */
-
+/*смуга на горі */
 .bg-sky {
     background: linear-gradient(90deg, var(--brand-maincolor) 70%, var(--brand-gold));
     border-bottom: 1px solid black !important;
@@ -102,48 +61,52 @@
 }
 
 
+
+.imgcontainer {
+    display: flex;
+    align-items: center;
+    flex-shrink: 1;
+    min-width: 300px;
+    max-width: 390px;
+    display: flex;
+} 
+   
+
+ Надписи на горі 
 .navbar-collapse,
 .navbar-nav,
 .navbar-nav .nav-item {
-    height: var(--nav-height);
+    height: var(--nav-height); 
 }
 
-/* контейнер меню */
 .navbar-nav {
     display: flex;
     width: 100%;
     align-items: stretch;
 }
 
-/* елементи меню */
 .nav-item {
     flex-grow: 1; /* Розтягує кожен елемент рівномірно */
     text-align: center; /* Вирівнює текст по центру */
 }
 
-/* контейнери посилань меню */
+/* стрічка з посиланнмяи меню */
 .navmelody {
     font-size: 1.4em;
     margin: 0;
-    padding: 0 1rem;
+    padding: 0 1rem; /* horizontal padding only */
     transition: linear 0.2s;
     font-family: var(--heading-font);
-    display: flex;
+    display: flex; /* center text vertically */
     align-items: center;
     justify-content: center;
-    height: 100%;
+    height: 100%; /* fill li (which matches navbar height) */
     color: aliceblue !important;
     text-shadow: 1px 1px 2px rgba(60, 40, 20, 0.4);
     text-decoration: none;
 }
 
-    /* Наведення на елементи меню */
-    .navmelody:hover {
-        color: lemonchiffon !important;
-        transform: scale(1.02) translateY(-1px);
-    }
-
-/* Активні елементи меню підсвічуюються */
+/* Active item highlight on the link, so it spans the full navbar height */
 .navbar-nav .nav-item.active > .nav-link,
 .navbar-nav .nav-link.active {
     background: rgba(255, 165, 0, 0.65);
@@ -151,193 +114,13 @@
 }
 
 /* Avoid legacy li.active backgrounds interfering in the navbar */
-#navbarstrip .nav-item.active {
-    background: transparent !important;
+#navbarstrip .nav-item.active { background: transparent !important; }
+
+/* Наведення на елементи меню */
+.navmelody:hover {
+  color: lemonchiffon !important;
+  transform: scale(1.02) translateY(-1px);
 }
-
-
-/* ДЛЯ МОБІЛОК */
-@media (max-width: 768px) {
-
-    /* Навігаційна стрічка */
-    #navbarstrip {
-        --nav-height: 50px;
-        height: var(--nav-height) !important;
-        min-height: var(--nav-height) !important;
-        padding: 0 !important;
-    }
-
-        /* Keep header items on one line */
-        #navbarstrip .container-fluid {
-            display: flex;
-            align-items: center;
-            flex-wrap: nowrap !important;
-        }
-
-
-
-    .navbar-brand {
-        padding: 0 !important;
-        margin-right: .5rem;
-        display: flex;
-        align-items: center;
-    }
-
-    /* Toggler */
-    .navbar-dark .navbar-toggler {
-        border-color: rgba(255,255,255,.5);
-    }
-
-    .navbar-dark .navbar-toggler {
-        background-color: rgba(255,255,255,.08);
-        border-color: rgba(255,255,255,.35);
-        border-radius: 8px;
-        padding: .35rem .5rem;
-    }
-
-    .navbar-toggler {
-        margin-left: auto;
-        height: var(--nav-height) !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .navbar-toggler-icon {
-        width: 2rem;
-        height: 2rem;
-        background-size: 100% 100%;
-    }
-
-    /* Collapse panel spacing + background */
-    .navbar-collapse {
-        padding: .5rem 0 .75rem;
-        width: 100%;
-        height: auto;
-        position: relative;
-        /*background-color: #f0e68c;*/
-        border-top: 1px solid rgba(0,0,0,.2);
-    }
-
-        .navbar-collapse::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            background: url(../images/notes_bck.png);
-            background-size: 300px 300px;
-            background-repeat: repeat;
-            opacity: .10;
-        }
-
-        .navbar-collapse > * {
-            position: relative;
-            z-index: 1;
-        }
-
-    /* Stack nav items as buttons - yellow rounded rectangle */
-    .navbar-nav {
-        flex-direction: column;
-        align-items: center !important;
-        width: 100%;
-        padding: 0;
-        height: auto;
-    }
-
-    .nav-item {
-        flex-grow: 0;
-        text-align: center;
-        height: auto !important;
-        width: 100%;
-        margin: 0;
-        display: flex;
-        justify-content: center;
-    }
-
-    .navmelody {
-        box-sizing: border-box;
-        font-size: 1.3rem;
-        margin: .2rem auto;
-        padding: .4rem .6rem;
-        display: block;
-        width: clamp(14rem, 92vw, 26rem);
-        height: auto;
-        border: 2px solid rgba(255,255,255,0.9);
-        border-radius: 12px;
-        background-color: var(--brand-mobile-button) !important; /* yellow */
-        color: var(--text-dark) !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,.15) inset, 0 1px 2px rgba(0,0,0,.1);
-        text-align: center;
-        text-shadow: none !important;
-    }
-        /* Keep the same yellow on interaction on mobile */
-        .navmelody:hover,
-        .navmelody:focus,
-        .navmelody:active {
-            background-color: var(--brand-mobile-button) !important;
-            color: var(--text-dark) !important;
-            text-decoration: none;
-            transform: none !important;
-        }
-
-    .navbar-nav .nav-item.active > .nav-link,
-    .navbar-nav .nav-link.active {
-        background: var(--brand-mobile-button) !important;
-        color: var(--text-dark) !important;
-        border-radius: 12px;
-        border-color: rgba(255,255,255,0.95);
-    }
-
-    /* Mobile: navbar uses solid brand-red background */
-    #navbarstrip.bg-sky {
-        background: var(--brand-maincolor) !important;
-        background-image: none !important;
-    }
-
-    /* ЗНАЙДИ СХОЖУ МЕЛОДІЮ */
-    .homepagetitle {
-        background: none !important;
-        animation: none !important;
-        box-shadow: none !important;
-        transform: none !important;
-        border-radius: 0 !important;
-        font-size: 1.6rem;
-        margin: 12px 12px 6px 12px;
-        padding: 0;
-        color: #ffffff;
-        text-shadow: 0 1px 2px rgba(0,0,0,.25);
-        letter-spacing: .5px;
-        line-height: 1.2;
-    }
-
-
-    #mainpageleftcontainer {
-        min-width: 0 !important;
-    }
-
-    /* Примусово вирівняти список меню під гамбургером зверху */
-    #navbarstrip .navbar-collapse {
-        align-items: flex-start !important;
-    }
-}
-
-
-/* Smallest screens extra tweak */
-@media (max-width: 512px) {
-    .navmelody {
-        margin: .2rem auto;
-    }
-
-        .navmelody:hover,
-        .navmelody:focus,
-        .navmelody:active {
-            background-color: var(--brand-mobile-button) !important;
-            color: var(--text-dark) !important;
-        }
-}
-
-
 
 /* Нижня стрічка */
 .footer {
@@ -348,21 +131,16 @@
     height: 30px;
 }
 
-.singerellamenue {
-    font-family: sans-serif;
-    letter-spacing: -0.2px;
-}
+.singerellamenue { font-family: sans-serif; letter-spacing: -0.2px; }
 
 
-/* ПОЛЕ ДЛЯ ПОШУКУ */
 .searchfield {
     width: 250px;
 }
 
-
 .login-button {
     border-radius: var(--radius-lg);
-    background-color: var(--surface-300);
+    background-color: #fce588 !important;
     border: 2px solid rgba(0,0,0,.05);
     opacity: 0.90 !important;
 }
@@ -373,10 +151,14 @@
     flex: 0 0 auto !important;
     display: inline-flex !important;
 }
+/* Left logo container should not flex-grow on desktop */
+#logocontainer {
+    flex: 0 1 auto !important;
+}
 
 /* Анімація м'якого пульсування світла */
 @keyframes glow {
-    from {
+        from {
         text-shadow: 4px 4px 15px rgb(230 255 15), 0px 0px 16px rgb(255 247 11)
     }
 
@@ -385,94 +167,281 @@
     }
 }
 
+/* ДЛЯ МОБІЛОК */
+@media (max-width: 768px) {
+  
+    /* Навігаційна стрічка */
+  #navbarstrip {
+    --nav-height: 50px;
+    height: var(--nav-height) !important;
+    min-height: var(--nav-height) !important;
+    padding: 0 !important;
+  }
+
+  /* Keep header items on one line */
+  #navbarstrip .container-fluid {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap !important;
+  }
+
+  /* Logo + brand */
+  .imgcontainer {
+    min-width: auto;
+    max-width: none;
+  }
+  .logoimage {
+    height: var(--nav-height) !important;
+    max-height: var(--nav-height) !important;
+  }
+  .navbar-brand {
+    padding: 0 !important;
+    margin-right: .5rem;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Toggler */
+  .navbar-dark .navbar-toggler {
+    border-color: rgba(255,255,255,.5);
+  }
+  .navbar-dark .navbar-toggler {
+    background-color: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.35);
+    border-radius: 8px;
+    padding: .35rem .5rem;
+  }
+  .navbar-toggler {
+    margin-left: auto;
+    height: var(--nav-height) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .navbar-toggler-icon {
+    width: 2rem;
+    height: 2rem;
+    background-size: 100% 100%;
+  }
+
+  /* Collapse panel spacing + background */
+  .navbar-collapse {
+    padding: .5rem 0 .75rem;
+    width: 100%;
+    height: auto;
+    position: relative;
+    /*background-color: #f0e68c;*/
+    border-top: 1px solid rgba(0,0,0,.2);
+  }
+    .navbar-collapse::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background: url(../images/notes_bck.png);        
+        background-size: 300px 300px;
+        background-repeat: repeat;
+        opacity: .10;
+    }
+  .navbar-collapse > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Stack nav items as buttons - yellow rounded rectangle */
+  .navbar-nav {
+    flex-direction: column;
+    align-items: center !important;
+    width: 100%;
+    padding: 0;
+    height: auto;
+  }
+  .nav-item {
+    flex-grow: 0;
+    text-align: center;
+    height: auto !important;
+    width: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .navmelody {
+    box-sizing: border-box;
+    font-size: 1.3rem;
+    margin: .2rem auto;
+    padding: .4rem .6rem;
+    display: block;
+    width: clamp(14rem, 92vw, 26rem);
+    height: auto;
+    border: 2px solid rgba(255,255,255,0.9);
+    border-radius: 12px;
+    background-color: var(--brand-mobile-button) !important; /* yellow */
+    color: var(--text-dark) !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,.15) inset, 0 1px 2px rgba(0,0,0,.1);
+    text-align: center;
+    text-shadow: none !important;
+  }
+  /* Keep the same yellow on interaction on mobile */
+  .navmelody:hover,
+  .navmelody:focus,
+  .navmelody:active {
+    background-color: var(--brand-mobile-button) !important;
+    color: var(--text-dark) !important;
+    text-decoration: none;
+    transform: none !important;
+  }
+  .navbar-nav .nav-item.active > .nav-link,
+  .navbar-nav .nav-link.active {
+    background: var(--brand-mobile-button) !important;
+    color: var(--text-dark) !important;
+    border-radius: 12px;
+    border-color: rgba(255,255,255,0.95);
+  }
+
+  /* Mobile: navbar uses solid brand-red background */
+    #navbarstrip.bg-sky {
+        background: var(--brand-maincolor) !important;
+        background-image: none !important;
+    }
+
+  /* ЗНАЙДИ СХОЖУ МЕЛОДІЮ */
+  .homepagetitle 
+  { 
+      background: none !important; 
+      animation: none !important; 
+      box-shadow: none !important; 
+      transform: none !important; 
+      border-radius: 0 !important; 
+      font-size: 1.6rem; 
+      margin: 12px 12px 6px 12px; 
+      padding: 0; 
+      color: #ffffff; 
+      text-shadow: 0 1px 2px rgba(0,0,0,.25); 
+      letter-spacing: .5px; 
+      line-height: 1.2; 
+
+  }
 
 
+  #mainpageleftcontainer {
+    min-width: 0 !important;
+  }
 
+  /* Примусово вирівняти список меню під гамбургером зверху */
+  #navbarstrip .navbar-collapse {
+    align-items: flex-start !important;
+  }
+}
+
+
+/* Smallest screens extra tweak */
+@media (max-width: 512px) {
+  .navmelody {
+    margin: .2rem auto;
+  }
+  .navmelody:hover,
+  .navmelody:focus,
+  .navmelody:active {
+    background-color: var(--brand-mobile-button) !important;
+    color: var(--text-dark) !important;
+  }
+}
+
+/* Center logo inside its container */
+#logocontainer {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* center the brand/logo horizontally */
+}
+#logocontainer .imgcontainer {
+  margin: 0 !important;
+}
+
+/* Keep play/stop buttons always square and fit smaller layouts */
+.playButton,
+.stopButton {
+  display: inline-flex;             /* centers icon/text */
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;                   /* don't grow or shrink with container */
+  aspect-ratio: 1 / 1;              /* force 1:1 aspect */
+  width: clamp(28px, 5vw, 48px);    /* smaller min/ideal/max so they fit */
+  max-width: 48px;
+  min-width: 28px;
+  height: auto;                     /* height computed from width + aspect-ratio */
+  box-sizing: border-box;
+  padding: 0.12rem;                 /* reduced padding so content fits */
+  border-radius: 6px;
+  font-size: 0.9rem;                /* scale any label/icon */
+}
+
+/* Ensure icon/content scales inside the square */
+.playButton > *,
+.stopButton > * {
+  width: 60%;
+  height: 60%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Slightly larger touch target on very small screens if needed */
+@media (max-width: 768px) {
+  .playButton,
+  .stopButton {
+    width: clamp(32px, 9vw, 56px);
+  }
+}
 
 /* Admin topbar responsive styles */
-.admin-topbar {
-    padding: 6px 10px;
-    background: lemonchiffon;
-    border: 1px solid #000;
-}
-
-    .admin-topbar .admin-topbar-inner {
-        gap: .5rem;
-    }
+.admin-topbar { padding: 6px 10px; background: lemonchiffon; border: 1px solid #000; }
+.admin-topbar .admin-topbar-inner { gap: .5rem; }
 
 /* desktop */
-.admin-menu .admin-link {
-    color: #000;
-    text-decoration: none;
-    padding: .2rem .45rem;
-    white-space: nowrap;
-}
-
-    .admin-menu .admin-link:hover {
-        text-decoration: none;
-        color: var(--brand-maincolor);
-    }
+.admin-menu .admin-link { color: #000; text-decoration: none; padding: .2rem .45rem; white-space: nowrap; }
+.admin-menu .admin-link:hover { text-decoration: none; color: var(--brand-maincolor); }
 
 /* mobile hamburger button */
-.admin-hamburger {
-    font-size: 1.05rem;
-    padding: .25rem .5rem;
-    border-radius: 8px;
-}
+.admin-hamburger { font-size: 1.05rem; padding: .25rem .5rem; border-radius: 8px; }
 
 /* mobile collapsed menu (hidden by default via hidden attribute) */
 .admin-mobile-menu {
-    display: block;
-    width: 100%;
-    background: #fffbe6;
-    border-top: 1px solid rgba(0,0,0,0.08);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    padding: .5rem .6rem;
-    box-sizing: border-box;
-    transition: max-height 220ms ease, opacity 180ms ease;
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
+  display: block;
+  width: 100%;
+  background: #fffbe6;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  padding: .5rem .6rem;
+  box-sizing: border-box;
+  transition: max-height 220ms ease, opacity 180ms ease;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
 }
+.admin-mobile-menu a.admin-link {
+  display: block;
+  padding: .5rem 0;
+  color: #212529;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.admin-mobile-menu a.admin-link:last-child { border-bottom: none; }
 
-    .admin-mobile-menu a.admin-link {
-        display: block;
-        padding: .5rem 0;
-        color: #212529;
-        text-decoration: none;
-        border-bottom: 1px solid rgba(0,0,0,0.04);
-    }
-
-        .admin-mobile-menu a.admin-link:last-child {
-            border-bottom: none;
-        }
-
-    /* when open */
-    .admin-mobile-menu.open {
-        max-height: 480px; /* enough to show links; adjust if needed */
-        opacity: 1;
-    }
+/* when open */
+.admin-mobile-menu.open {
+  max-height: 480px; /* enough to show links; adjust if needed */
+  opacity: 1;
+}
 
 /* optional small-screen tweaks */
 @media (max-width: 767.98px) {
-    .exp-top {
-        padding: 6px 8px;
-    }
-
-    .admin-menu {
-        display: none !important;
-    }
-    /* ensure desktop nav hidden on small */
+  .exp-top { padding: 6px 8px; }
+  .admin-menu { display: none !important; } /* ensure desktop nav hidden on small */
 }
-
 @media (min-width: 768px) {
-    .admin-mobile-menu {
-        display: none !important;
-    }
-    /* hide mobile menu on desktop */
-    .admin-hamburger {
-        display: none !important;
-    }
+  .admin-mobile-menu { display: none !important; } /* hide mobile menu on desktop */
+  .admin-hamburger { display: none !important; }
 }
 
 @media (max-width: 768px) {
@@ -498,33 +467,33 @@
 
     /* Ensure navbar background is full-bleed on small screens (keeps dark strip full width
    whether menu is collapsed or expanded) */
-    @media (max-width: 768px) {
-        #navbarstrip {
-            position: relative;
-            width: 100vw !important;
-            max-width: 100vw !important;
-            /* remove centering inside a limited container so bg reaches viewport edges */
-            margin-left: calc(50% - 50vw) !important;
-            margin-right: calc(50% - 50vw) !important;
-            box-sizing: border-box;
-            z-index: 1050;
-            left: 0 !important;
-            right: 0 !important;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-        }
+@media (max-width: 768px) {
+  #navbarstrip {
+    position: relative;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    /* remove centering inside a limited container so bg reaches viewport edges */
+    margin-left: calc(50% - 50vw) !important;
+    margin-right: calc(50% - 50vw) !important;
+    box-sizing: border-box;
+    z-index: 1050;
+    left: 0 !important;
+    right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
 
-            /* Let the collapse area sit on top of that full-bleed background without its own offset */
-            #navbarstrip .navbar-collapse {
-                background: transparent !important;
-                width: 100% !important;
-            }
+  /* Let the collapse area sit on top of that full-bleed background without its own offset */
+  #navbarstrip .navbar-collapse {
+    background: transparent !important;
+    width: 100% !important;
+  }
 
-        /* Ensure collapsed content stretches full width under the header row */
-        #mainNavbar {
-            order: 2;
-            width: 100% !important;
-            flex-basis: 100% !important;
-            align-items: flex-start !important;
-        }
-    }
+  /* Ensure collapsed content stretches full width under the header row */
+  #mainNavbar {
+    order: 2;
+    width: 100% !important;
+    flex-basis: 100% !important;
+    align-items: flex-start !important;
+  }
+}
