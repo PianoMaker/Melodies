@@ -533,20 +533,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
         font-size: 1em;
     }
 
- /* Контейнер окремихнот */
-.notebox { 
-    display: inline-block;
-    font-size: 0.9em;
-    text-align: center;
-    padding: 2px;
-    height: 30px;
-    margin: 5px 1px 1px 1px;
-    min-width: 35px;
-    border: 1px solid gray;
-    background-color: var(--surface-400);
-    border-radius: 5px;
-    box-shadow: rgba(55,55,0,0.3) 2px 2px;
-}
 
 .NotesList {
     display: inline-block;
@@ -557,12 +543,6 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     background-color: var(--surface-400);
 }
 
-.pausebox {
-    font-size: 1.1em;
-    background-color: white;
-    border: none;
-    background-color: white;
-}
 
 #degreesChart, #weightChart {
     width: 400px;
@@ -727,7 +707,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     height: 100%;
     width: 40%;
     margin: 10px;
-    min-height: 800px;
+    min-height: 620px;
     padding: 15px;
 
 }
@@ -1224,11 +1204,7 @@ p {
 
 /* Duration panel on Search page */
 
-    #durationbuttons {
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-    }
+
 
     #timesignature {
         display: flex;
@@ -1237,12 +1213,6 @@ p {
     }
 
     @media (max-width: 900px) {
-        #durationspanel {
-            flex-direction: column;
-            gap: 12px;
-            align-items: stretch;
-        }
-    }
 
     .settimesignature {
         display: flex !important;

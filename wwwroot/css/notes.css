@@ -253,14 +253,6 @@
         margin: 0;
         box-sizing: border-box;
     }
-    /* use fluid width (not vh) and set consistent side padding so left edges align */
-    .notesinfo {
-        width: 100%;
-        padding-left: 12px;
-        padding-right: 12px;
-        box-sizing: border-box;
-        margin: 0;
-    }
 
     .whitepianobutton {
         width: 45px;
@@ -405,14 +397,7 @@
         padding-right: 0;
         margin: 0;
     }
-    /* use fluid width on narrow screens */
-    .notesinfo {
-        width: 100%;
-        padding-left: 12px;
-        padding-right: 12px;
-        box-sizing: border-box;
-        margin: 0;
-    }
+
 
     .whitepianobutton {
         width: 45px;
@@ -581,6 +566,14 @@
     }
 }
 
+/* use fluid width on narrow screens */
+.notesinfo {
+    width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+    box-sizing: border-box;
+    margin: 0;
+}
 /* Responsive notesinfo: ensure it fits narrow screens */
 .notesinfo {
     box-sizing: border-box;
@@ -592,6 +585,7 @@
     border-radius: 5px;
     background-color: lightgray;
     padding: 10px 10px;
+    margin: 0;
     /*padding: 10px;*/
 }
 
@@ -665,6 +659,7 @@
     flex-wrap: wrap;
     align-items: center;
 }
+
 
 #timesignature {
     display: flex;
