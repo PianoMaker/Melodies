@@ -66,14 +66,13 @@
                 @await Html.PartialAsync("_durationsTable")
             </div>
         </div>
-        <!--МІЙ СТЕЙНВЕЙ -->
+        
+        <!--  МІЙ СТЕЙНВЕЙ -->
         <div class="piano-scroll-wrapper" aria-label="Piano keyboard scroll container">
             <div class="piano-scroll-inner">
                 @await Html.PartialAsync("_PianoKeys")
             </div>
         </div>
-
-
 
         <!--ТАБЛО НОТ -->
         @if (Model.FromFindSimilar == false)

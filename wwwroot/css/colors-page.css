@@ -1,0 +1,124 @@
+﻿/* Palette preview grid */
+.palette {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    align-items: stretch;
+    margin: 12px 0;
+}
+
+.palette-item {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-1);
+    display: flex;
+    flex-direction: column;
+    min-height: 120px;
+    border: 1px solid var(--brand-border);
+}
+
+.palette-swatch {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* labels under each swatch */
+.palette-label {
+    padding: 8px 10px;
+    text-align: center;
+    font-size: 0.85rem;
+    background: rgba(0,0,0,0.03);
+}
+
+/* Swatch background helpers */
+.sw-bg-brand-900 {
+    background: var(--brand-900);
+    color: #fff;
+}
+
+.sw-bg-brand-700 {
+    background: var(--brand-700);
+    color: #fff;
+}
+
+.sw-bg-brand-500 {
+    background: var(--brand-500);
+    color: #fff;
+}
+
+.sw-bg-brand-300 {
+    background: var(--brand-300);
+    color: #212529;
+}
+
+.sw-bg-brand-100 {
+    background: var(--brand-100);
+    color: #212529;
+}
+
+.sw-bg-surface-50 {
+    background: var(--surface-50);
+    color: var(--brand-500);
+}
+
+.sw-bg-surface-100 {
+    background: var(--surface-100);
+    color: var(--brand-500);
+}
+
+.sw-bg-surface-200 {
+    background: var(--surface-200);
+    color: var(--brand-500);
+}
+
+.sw-bg-surface-300 {
+    background: var(--surface-300);
+    color: var(--brand-500);
+}
+
+.sw-bg-surface-400 {
+    background: var(--surface-400);
+    color: var(--brand-500);
+}
+
+/* Mosaic / trendy square split */
+.color-mosaic {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    align-items: stretch;
+    width: 100%;
+    max-width: 900px;
+}
+
+.mosaic-tile {
+    aspect-ratio: 1 / 1;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* Example gradient tiles and combos */
+.tile-brand-gradient {
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-300));
+    color: #fff;
+}
+
+.tile-surface-gradient {
+    background: linear-gradient(135deg, var(--surface-50), var(--surface-300));
+    color: var(--brand-500);
+}
+
+.tile-accent {
+    background: conic-gradient(from 200deg, var(--brand-gold) 0 40%, var(--brand-500) 40% 100%);
+    color: #111;
+}
