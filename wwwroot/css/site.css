@@ -763,7 +763,7 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
 }
 
 /*<!--SEARCH PAGE -->*/
-
+/*<!--containers -->*/
 
 .addcontainer, .infocontainer, .searchcontainer {
     border: 1px solid black;
@@ -812,6 +812,55 @@ https://webdoky.org/uk/docs/Web/CSS/gradient/linear-gradient/#syntaksys-->
     background: var(--surface-200); 
 }
 
+
+@media (max-width: 1200px) {
+
+    .searchcontainer {
+        display: block;
+    }
+
+    .searchleftcontainer {
+        width: 100%;
+    }
+
+
+    .searchrightcontainer {
+        width: 100%;
+    }
+}
+
+@media (max-width: 900px) {
+
+    .searchcontainer {
+        display: block;
+    }
+
+    .searchleftcontainer {
+        width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .searchcontainer {
+        display: block;
+    }
+
+    .searchleftcontainer {
+        width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+}
+
+
+
 .table {
     border: 1px solid black;
     border-radius: 15px;
@@ -839,92 +888,64 @@ p {
 
 
 
-@media (max-width: 1200px) {
-
-    .searchcontainer {
-        display: block;
-    }
-
-    .searchleftcontainer {
-        width: 100%;
-    }
-
-    
-        .searchrightcontainer {
-            width: 100%;
-        }
-    }
-
-@media (max-width: 768px) {
-
-    .searchcontainer {
-        display: block;
-    }
-
-    .searchleftcontainer {
-        width: 100%;
-    }
-
-}
-
-/* ДЛЯ МОБІЛЬНИХ ЕКРАНІВ */
-@media (max-width: 476px) {
-    /* Layout helpers */
-    .d-flex {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .w-25, .w-75 {
-        width: 100% !important;
-    }
-
-    /* навігаційна смуга */
-    .navmelody {
-        display: block;
-        text-align: center;
-        width: clamp(14rem, 92vw, 26rem);
-        font-size: 1.25rem !important;
-        line-height: 1.2;
-        margin: .15rem auto !important;
-        padding: .35rem .6rem !important;
-        min-height: 40px;
-        border-width: 1px !important;
-    }
-
-    .smallfont {
-        font-size: 0.7em !important;
-        color: darkslategrey;
-    }
-
-    /* Search form layout */
-    .search-form {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: .5rem;
-    }
-
-        .search-form .searchfield {
-            width: 100%;
-            min-height: 48px;
-            border-radius: var(--radius-lg);
-            border: 2px solid rgba(0,0,0,.15);
-            box-shadow: var(--shadow-inset);
+    /* ДЛЯ МОБІЛЬНИХ ЕКРАНІВ */
+    @media (max-width: 476px) {
+        /* Layout helpers */
+        .d-flex {
+            flex-direction: column;
+            align-items: center;
         }
 
-            .search-form .searchfield:focus {
-                border-color: var(--brand-red);
-                outline: 3px solid rgba(189, 0, 0, .2);
-                outline-offset: 2px;
+        .w-25, .w-75 {
+            width: 100% !important;
+        }
+
+        /* навігаційна смуга */
+        .navmelody {
+            display: block;
+            text-align: center;
+            width: clamp(14rem, 92vw, 26rem);
+            font-size: 1.25rem !important;
+            line-height: 1.2;
+            margin: .15rem auto !important;
+            padding: .35rem .6rem !important;
+            min-height: 40px;
+            border-width: 1px !important;
+        }
+
+        .smallfont {
+            font-size: 0.7em !important;
+            color: darkslategrey;
+        }
+
+        /* Search form layout */
+        .search-form {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: .5rem;
+        }
+
+            .search-form .searchfield {
+                width: 100%;
+                min-height: 48px;
+                border-radius: var(--radius-lg);
+                border: 2px solid rgba(0,0,0,.15);
+                box-shadow: var(--shadow-inset);
             }
 
-    .login-button {
-        border-radius: var(--radius-lg);
-        background-color: #fce588 !important;
-        border: 2px solid rgba(0,0,0,.05);
-        opacity: 1 !important;
-    }
+                .search-form .searchfield:focus {
+                    border-color: var(--brand-red);
+                    outline: 3px solid rgba(189, 0, 0, .2);
+                    outline-offset: 2px;
+                }
+
+        .login-button {
+            border-radius: var(--radius-lg);
+            background-color: #fce588 !important;
+            border: 2px solid rgba(0,0,0,.05);
+            opacity: 1 !important;
+        }
 
         .search-form .search-button {
             width: 100%;
@@ -945,86 +966,86 @@ p {
                 box-shadow: 0 1px 2px rgba(0,0,0,.08);
             }
 
-    .search-form-notes {
-        display: none !important;
+        .search-form-notes {
+            display: none !important;
+        }
+
+        /* Right side login/status area */
+        .rightcontainer {
+            background-image: none !important;
+            background: none !important;
+            background-color: transparent !important;
+            height: auto !important;
+            width: 100% !important;
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 26rem;
+        }
+
+        /* Mobile: specific styles for signed-in status and exit buttons scoped to #signedUser */
+        #signedUser {
+            background-color: var(--brand-mobile-button) !important;
+            border-color: var(--brand-mobile-button) !important;
+            color: var(--text-dark) !important;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-1);
+            border: 2px solid rgba(0,0,0,.05);
+            width: clamp(14rem, 92vw, 26rem);
+            margin-left: auto;
+            margin-right: auto;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .rightcontainer.align-items-end {
+            align-items: center !important;
+        }
+
+
+        /* Background pattern softer on mobile */
+        body::after {
+            opacity: .12;
+        }
+
+        /* Strong focus for accessibility */
+        .btn:focus-visible, .search-button:focus-visible, .searchfield:focus-visible {
+            outline: 3px solid #2d6cdf;
+            outline-offset: 2px;
+        }
+
+
+        mainpage {
+            padding-top: 0.75rem;
+        }
+
+        .commoncontainer {
+            padding-top: 2rem !important; /* ~21px at 14px base font-size */
+        }
+
+        body.menu-open .commoncontainer {
+            padding-top: 12em !important;
+            transition: padding-top 200ms ease;
+        }
+
+        h1 {
+            font-size: 1.1em !important;
+        }
     }
 
-    /* Right side login/status area */
-    .rightcontainer {
-        background-image: none !important;
-        background: none !important;
-        background-color: transparent !important;
-        height: auto !important;
-        width: 100% !important;
-        margin-left: auto;
-        margin-right: auto;
-        max-width: 26rem;
+
+    @media (max-width: 992px) {
+        .container {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Half-page responsive container: 100% below 992px, 50% from 992px up */
+        .halfpagecontainer {
+            flex: 0 0 auto;
+            width: 100%;
+        }
     }
-
-    /* Mobile: specific styles for signed-in status and exit buttons scoped to #signedUser */
-    #signedUser {
-        background-color: var(--brand-mobile-button) !important;
-        border-color: var(--brand-mobile-button) !important;
-        color: var(--text-dark) !important;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-1);
-        border: 2px solid rgba(0,0,0,.05);
-        width: clamp(14rem, 92vw, 26rem);
-        margin-left: auto;
-        margin-right: auto;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .rightcontainer.align-items-end {
-        align-items: center !important;
-    }
-
-
-    /* Background pattern softer on mobile */
-    body::after {
-        opacity: .12;
-    }
-
-    /* Strong focus for accessibility */
-    .btn:focus-visible, .search-button:focus-visible, .searchfield:focus-visible {
-        outline: 3px solid #2d6cdf;
-        outline-offset: 2px;
-    }
-
-
-    mainpage {
-        padding-top: 0.75rem;
-    }
-
-    .commoncontainer {
-        padding-top: 2rem !important; /* ~21px at 14px base font-size */
-    }
-
-    body.menu-open .commoncontainer {
-        padding-top: 12em !important;
-        transition: padding-top 200ms ease;
-    }
-
-    h1 {
-        font-size: 1.1em !important;
-    }
-}
-
-
-@media (max-width: 992px) {
-    .container {
-        max-width: 100% !important;
-        width: 100% !important;
-    }
-
-    /* Half-page responsive container: 100% below 992px, 50% from 992px up */
-    .halfpagecontainer {
-        flex: 0 0 auto;
-        width: 100%;
-    }
-}
 
     @media (max-width: 480px) {
         .ifnarrowscreen {
@@ -1037,17 +1058,17 @@ p {
         font-size: 1rem; /* базово */
     }
 
-@media (max-width: 768px) {
-    .fileinfo {
-        font-size: 0.95rem;
+    @media (max-width: 768px) {
+        .fileinfo {
+            font-size: 0.95rem;
+        }
     }
-}
 
-@media (max-width: 576px) {
-    .fileinfo {
-        font-size: 0.9rem;
+    @media (max-width: 576px) {
+        .fileinfo {
+            font-size: 0.9rem;
+        }
     }
-}
 
     /* Keep letter pickers horizontal and wrapping on all screen sizes */
     .letters-row {
@@ -1058,210 +1079,209 @@ p {
         justify-content: flex-start;
     }
 
-    /* Each letter form should size to content, not stretch */
-    .letters-row form {
-        flex: 0 0 auto;
+        /* Each letter form should size to content, not stretch */
+        .letters-row form {
+            flex: 0 0 auto;
+        }
+
+    /* Override the global mobile .d-flex column rule for letters */
+    @media (max-width: 768px) {
+        .letters-row {
+            flex-direction: row !important;
+        }
     }
 
-/* Override the global mobile .d-flex column rule for letters */
-@media (max-width: 768px) {
-    .letters-row {
-        flex-direction: row !important;
-    }
-}
-
-/* Responsive layout for Notation page */
-.notation-layout {
-    display: flex;
-    width: 100%;
-    margin-top: 20px;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-#SheetMusic {
-    flex: 0 0 80%;
-    background-color: rgb(255,255,230);
-}
-
-.NotesList {
-    flex: 0 0 20%;
-}
-
-@media (max-width: 992px) {
-
+    /* Responsive layout for Notation page */
     .notation-layout {
-        flex-direction: column;
+        display: flex;
+        width: 100%;
+        margin-top: 20px;
+        align-items: flex-start;
+        gap: 12px;
     }
 
     #SheetMusic {
-        flex: 0 0 100% !important;
-        width: 100% !important;
+        flex: 0 0 80%;
+        background-color: rgb(255,255,230);
     }
 
     .NotesList {
-        width: 100% !important;
-        display: block;
-        margin-top: 8px;
-    }
-}
-
-/* Melodies/Index adaptive layout for operationbuttons and lettersbutton */
-@media (max-width: 768px) {
-    .melody-index-flex {
-        flex-direction: column !important;
+        flex: 0 0 20%;
     }
 
-    #operationbuttons {
-        flex-direction: row !important;
-        align-items: flex-start !important;
-        margin-bottom: 1rem;
-        gap: 0.5rem;
-        padding: 10px !important;
-    }
+    @media (max-width: 992px) {
 
-        #operationbuttons .btn-melody {
-            margin: 0 !important;
+        .notation-layout {
+            flex-direction: column;
         }
-}
+
+        #SheetMusic {
+            flex: 0 0 100% !important;
+            width: 100% !important;
+        }
+
+        .NotesList {
+            width: 100% !important;
+            display: block;
+            margin-top: 8px;
+        }
+    }
+
+    /* Melodies/Index adaptive layout for operationbuttons and lettersbutton */
+    @media (max-width: 768px) {
+        .melody-index-flex {
+            flex-direction: column !important;
+        }
+
+        #operationbuttons {
+            flex-direction: row !important;
+            align-items: flex-start !important;
+            margin-bottom: 1rem;
+            gap: 0.5rem;
+            padding: 10px !important;
+        }
+
+            #operationbuttons .btn-melody {
+                margin: 0 !important;
+            }
+    }
 
 
 
 
-.show-mobile {
-}
-
-@media (min-width: 900px) {
     .show-mobile {
-        display: none !important;
     }
-}
 
-
-@media (max-width: 900px) {
-    .hide-mobile {
-        display: none !important;        
+    @media (min-width: 900px) {
+        .show-mobile {
+            display: none !important;
+        }
     }
-    
 
-    .table {
-        width: 100% !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
+
+    @media (max-width: 900px) {
+        .hide-mobile {
+            display: none !important;
+        }
+
+
+        .table {
+            width: 100% !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+        }
     }
-}
 
-@media (max-width: 600px) {
-    .col-actions {
-        display: none !important;
+    @media (max-width: 600px) {
+        .col-actions {
+            display: none !important;
+        }
     }
-}
 
-/* ===== Control strip (appended non-destructively) =====
+    /* ===== Control strip (appended non-destructively) =====
 
 */
 
-.control-strip {
-    /* in normal flow: sits where placed in DOM (after action buttons) */
-    position: relative; /* not fixed to viewport */
-    display: block;
-    margin: 16px auto 60px auto; /* gap above, large bottom margin to clear footer */
-    max-width: 1100px; /* match main content width */
-    width: calc(100% -20px); /* side gutters */
-    background: #f0f0f0;
-    border: 2px solid rgba(0,0,0,0.58);
-    border-radius: 8px;
-    font-size: 0.7em;
-    color: #111;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.86); /* було 02px8px */
-    overflow: visible; /* allow expanded content to push layout down */
-    transition: box-shadow 240ms ease; /* було box-shadow240ms */
-    z-index: 10;
-    padding: 8px 12px; /* було 8px12px */
-}
-
-    /* toggle inside strip, visible at top */
-    .control-strip .control-toggle {
-        position: absolute;
-        right: 12px;
-        top: 8px;
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        border: 1px solid #ccc;
-        background: #fff;
-        color: #000;
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        line-height: 1;
-        box-shadow: 1px 4px rgba(0,0,0,0.06);
-    }
-
-        .control-strip .control-toggle:focus {
-            outline: 2px solid rgba(0,0,0,0.12);
-        }
-
-/* content hidden by default */
-.control-content {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-height 300ms ease, opacity 160ms ease;
-    padding-top: 0;
-    
-}
-
-/* expanded state */
-.control-strip.expanded {
-    padding-bottom: 12px;
-}
-
-    .control-strip.expanded .control-content {
-        max-height: 480px;
-        opacity: 1;
-        padding-top: 8px;
-    }
-
-.control-messages {
-    font-size: 0.95rem;
-    color: #222;
-    line-height: 1.4;
-}
-
-.control-msg {
-    margin: 06px 6px 0;
-    color: #333;
-}
-
-.control-err {
-    margin: 0;
-    color: #b32d2e;
-    white-space: normal;
-    word-wrap: break-word;
-}
-
-@media (max-width:640px) {
     .control-strip {
-        width: calc(100% -20px);
-        max-width: calc(100% -20px);
-        margin-bottom: 80px; /* more space on mobile for footer */
+        /* in normal flow: sits where placed in DOM (after action buttons) */
+        position: relative; /* not fixed to viewport */
+        display: block;
+        margin: 16px auto 60px auto; /* gap above, large bottom margin to clear footer */
+        max-width: 1100px; /* match main content width */
+        width: calc(100% -20px); /* side gutters */
+        background: #f0f0f0;
+        border: 2px solid rgba(0,0,0,0.58);
+        border-radius: 8px;
+        font-size: 0.7em;
+        color: #111;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.86); /* було 02px8px */
+        overflow: visible; /* allow expanded content to push layout down */
+        transition: box-shadow 240ms ease; /* було box-shadow240ms */
+        z-index: 10;
+        padding: 8px 12px; /* було 8px12px */
     }
 
+        /* toggle inside strip, visible at top */
         .control-strip .control-toggle {
-            right: 8px;
-            top: 6px;
+            position: absolute;
+            right: 12px;
+            top: 8px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #000;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            line-height: 1;
+            box-shadow: 1px 4px rgba(0,0,0,0.06);
         }
+
+            .control-strip .control-toggle:focus {
+                outline: 2px solid rgba(0,0,0,0.12);
+            }
+
+    /* content hidden by default */
+    .control-content {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 300ms ease, opacity 160ms ease;
+        padding-top: 0;
+    }
+
+    /* expanded state */
+    .control-strip.expanded {
+        padding-bottom: 12px;
+    }
 
         .control-strip.expanded .control-content {
-            max-height: 360px;
+            max-height: 480px;
+            opacity: 1;
+            padding-top: 8px;
         }
-}
 
-/* End control-strip block */
+    .control-messages {
+        font-size: 0.95rem;
+        color: #222;
+        line-height: 1.4;
+    }
+
+    .control-msg {
+        margin: 06px 6px 0;
+        color: #333;
+    }
+
+    .control-err {
+        margin: 0;
+        color: #b32d2e;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+
+    @media (max-width:640px) {
+        .control-strip {
+            width: calc(100% -20px);
+            max-width: calc(100% -20px);
+            margin-bottom: 80px; /* more space on mobile for footer */
+        }
+
+            .control-strip .control-toggle {
+                right: 8px;
+                top: 6px;
+            }
+
+            .control-strip.expanded .control-content {
+                max-height: 360px;
+            }
+    }
+
+    /* End control-strip block */
     @media (max-width: 720px) {
         .col-actions,
         .table th.col-actions,
@@ -1285,326 +1305,336 @@ p {
         }
     }
 
-/* Duration panel on Search page */
 
-    #durationbuttons {
-        display: flex;
-        flex-direction: row;
+
+    #midiIsReady {
+        color: green;
+        font-weight: bold;
+    }
+
+    #midiIsNotReady {
+        color: red;
+        font-weight: bold;
+    }
+
+
+    /* Language toggle styles (moved from page inline to site.css) */
+    .lang-toggle {
+        display: inline-flex;
+        align-items: center;
         gap: 8px;
+        user-select: none;
     }
 
-    #timesignature {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        .lang-toggle .lang-label {
+            font-size: 0.9rem;
+            color: var(--bs-body-color, #000);
+        }
+
+        .lang-toggle .switch {
+            position: relative;
+            width: 56px;
+            height: 28px;
+            background: #e9ecef;
+            border-radius: 999px;
+            display: inline-block;
+            vertical-align: middle;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+        }
+
+        .lang-toggle input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            margin: 0;
+        }
+
+        .lang-toggle .knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 160ms ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        /* Ховаємо будь-який input у перемикачі (достатньо одного правила) */
+        .lang-toggle input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            margin: 0;
+        }
+
+    /* Стан "Увімкнено" для поточного чекбокса (специфічно, без [type="checkbox"]) */
+    #langSwitch:checked + .switch {
+        background: #0d6efd;
     }
 
-    @media (max-width: 900px) {
-        #durationspanel {
-            flex-direction: column;
-            gap: 12px;
-            align-items: stretch;
+        #langSwitch:checked + .switch .knob {
+            transform: translateX(28px);
+        }
+
+    /* Фокус (одне правило замість двох) */
+    .lang-toggle input:focus + .switch {
+        outline: 3px solid var(--brand-green);
+        outline-offset: 2px;
+    }
+
+    /* Toggle brand color override: replace blue with --brand-green */
+    .lang-toggle input[type="checkbox"]:checked + .switch,
+    #langSwitch:checked + .switch {
+        background: var(--brand-green);
+    }
+
+    /* Простір для розкриття гамбургера */
+
+    .hideformenu {
+        max-height: 400px; /* достатньо для висоти вмісту; підлаштуйте при необхідності */
+        opacity: 1;
+        overflow: hidden;
+        transform: none;
+        transition: max-height 280ms ease, opacity 220ms ease, transform 240ms ease;
+        will-change: max-height, opacity, transform;
+        pointer-events: auto;
+    }
+
+    .spaceformenu {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transform: translateY(-8px);
+        transition: max-height 280ms ease, opacity 220ms ease, transform 240ms ease;
+        will-change: max-height, opacity, transform;
+    }
+
+    @media (max-width: 800px) {
+        body.menu-open .hideformenu {
+            height: 200px !important;
+            opacity: 0 !important;
+            transform: translateY(-6px) !important;
+            pointer-events: none !important;
+        }
+
+        body.menu-open .spaceformenu {
+            max-height: 240px !important; /* підлаштуйте висоту під реальний вміст */
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            pointer-events: auto !important;
         }
     }
 
-    .settimesignature {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center;
-        gap: 0.5rem;
+    /* приховати всі блоки melody (без !important) */
+    div[id^="melody"] {
+        display: none;
     }
 
-        .settimesignature input,
-        .settimesignature select,
-        .settimesignature span {
-            display: inline-block !important;
-            width: auto;
-            margin: 0 2px;
-            vertical-align: middle;
+    .hidden-melody {
+        display: none;
+    }
+
+    @media (max-width: 600px) {
+        .mobile-small {
+            font-size: 0.9rem !important;
+            padding: 0.1rem 0.1rem !important;
+        }
+
+        .btn-melody {
+            padding: .35rem .6rem !important; /* comfortable horizontal spacing */
+            font-size: 1.1rem !important; /* keeping font-size consistent with other styles */
             box-sizing: border-box;
         }
-}
-#midiIsReady {
-    color: green;
-    font-weight: bold;
-}
 
-#midiIsNotReady {
-    color: red;
-    font-weight: bold;
-}
+        /* operation buttons and letter buttons should not be forced to narrow widths */
+        #operationbuttons .btn-melody,
+        .letters-row .btn-melody,
+        .searchcontainer .btn-melody {
+            width: auto !important;
+            min-width: 6.5rem; /* ensure a minimum tap target */
+        }
+
+        /* keep truly icon-only controls compact by targeting play/stop if needed */
+        .playButton, .stopButton {
+            padding: .25rem !important;
+            min-width: 2.2rem;
+            font-size: 1.1rem !important;
+        }
+    }
+
+    .text-responsive {
+        font-size: 1rem;
+    }
+
+    /* Мобілки */
+    @media (max-width: 576px) {
+        .text-responsive {
+            font-size: 0.85rem;
+        }
+
+        .homepagesubtitle {
+            font-size: 1.2rem;
+            color: var(--text-dark);
+        }
+    }
+
+    /* Ensure anchor buttons (btn-melody) are never underlined */
+    a.btn-melody,
+    a.btn-melody:link,
+    a.btn-melody:visited,
+    a.btn-melody:hover,
+    a.btn-melody:focus,
+    a.btn-melody:active {
+        text-decoration: none !important;
+    }
+
+        a.btn-melody > * {
+            text-decoration: none !important; /* covers inner spans/icons */
+        }
 
 
-/* Language toggle styles (moved from page inline to site.css) */
-.lang-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    /* Admin topbar responsive styles (appended) */
+    .admin-topbar {
+        padding: 6px 10px;
+        background: lemonchiffon;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+
+        .admin-topbar .admin-topbar-inner {
+            gap: .5rem;
+        }
+
+    /* desktop */
+    .admin-menu .admin-link {
+        color: #000;
+        text-decoration: none;
+        padding: .2rem .45rem;
+        white-space: nowrap;
+        display: inline-block;
+    }
+
+        .admin-menu .admin-link.active {
+            font-weight: 600;
+        }
+
+        .admin-menu .admin-link:hover {
+            color: var(--brand-maincolor);
+        }
+
+    /* mobile hamburger button */
+    .admin-hamburger {
+        font-size: 1.05rem;
+        padding: .25rem .5rem;
+        border-radius: 8px;
+        border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    /* mobile collapsed menu */
+    .admin-mobile-menu {
+        display: block;
+        width: 100%;
+        background: #fffbe6;
+        border-top: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+        padding: .5rem .6rem;
+        box-sizing: border-box;
+        transition: max-height 220ms ease, opacity 180ms ease;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+    }
+
+        .admin-mobile-menu a.admin-link {
+            display: block;
+            padding: .45rem 0;
+            color: #212529;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+        }
+
+            .admin-mobile-menu a.admin-link:last-child {
+                border-bottom: none;
+            }
+
+        /* when open */
+        .admin-mobile-menu.open {
+            max-height: 480px; /* adjust if additional links */
+            opacity: 0.9 !important;
+            background-color: #fffbe6 !important;
+            z-index: 20;
+        }
+
+    /* ensure desktop elements hidden on small screens and mobile hidden on desktop */
+    @media (max-width: 767.98px) {
+        .admin-menu {
+            display: none !important;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .admin-mobile-menu, .admin-hamburger {
+            display: none !important;
+        }
+    }
+
+    /* Admin topbar mobile label (visible only on small screens via .d-md-none) */
+.admin-topbar-label {
+    margin-left: 0.5rem;
+    font-weight: 600;
+    color: #000;
+    font-size: 1rem;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
     user-select: none;
 }
 
-.lang-toggle .lang-label {
-    font-size: 0.9rem;
-    color: var(--bs-body-color, #000);
-}
-
-.lang-toggle .switch {
-    position: relative;
-    width: 56px;
-    height: 28px;
-    background: #e9ecef;
-    border-radius: 999px;
-    display: inline-block;
-    vertical-align: middle;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
-}
-.lang-toggle input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-    margin: 0;
-}
-.lang-toggle .knob {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 22px;
-    height: 22px;
-    background: white;
-    border-radius: 50%;
-    transition: transform 160ms ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-
-/* Ховаємо будь-який input у перемикачі (достатньо одного правила) */
-.lang-toggle input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-    margin: 0;
-}
-
-/* Стан "Увімкнено" для поточного чекбокса (специфічно, без [type="checkbox"]) */
-#langSwitch:checked + .switch {
-    background: #0d6efd;
-}
-#langSwitch:checked + .switch .knob {
-    transform: translateX(28px);
-}
-
-/* Фокус (одне правило замість двох) */
-.lang-toggle input:focus + .switch {
-    outline: 3px solid var(--brand-green);
-    outline-offset: 2px;
-}
-
-/* Toggle brand color override: replace blue with --brand-green */
-.lang-toggle input[type="checkbox"]:checked + .switch,
-#langSwitch:checked + .switch {
-    background: var(--brand-green);
-}
-
-/* Простір для розкриття гамбургера */
-
-.hideformenu {
-    max-height: 400px; /* достатньо для висоти вмісту; підлаштуйте при необхідності */
-    opacity: 1;
-    overflow: hidden;
-    transform: none;
-    transition: max-height 280ms ease, opacity 220ms ease, transform 240ms ease;
-    will-change: max-height, opacity, transform;
-    pointer-events: auto;
-}
-
-.spaceformenu {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transform: translateY(-8px);
-    transition: max-height 280ms ease, opacity 220ms ease, transform 240ms ease;
-    will-change: max-height, opacity, transform;
-}
-
-@media (max-width: 800px) {
-    body.menu-open .hideformenu {
-        height: 200px !important;
-        opacity: 0 !important;
-        transform: translateY(-6px) !important;
-        pointer-events: none !important;
+    /* Slightly smaller label on very narrow screens */
+    @media (max-width: 420px) {
+        .admin-topbar-label {
+            font-size: 0.95rem;
+            margin-left: 0.4rem;
+        }
     }
-    body.menu-open .spaceformenu {
-        max-height: 240px !important; /* підлаштуйте висоту під реальний вміст */
-        opacity: 1 !important;
-        transform: translateY(0) !important;
-        pointer-events: auto !important;
-    }
-}
 
-/* приховати всі блоки melody (без !important) */
-div[id^="melody"] {
-  display: none;
-}
 
-.hidden-melody { display: none; }
 
-@media (max-width: 600px) {
-    .mobile-small {
-        font-size: 0.9rem !important;
-        padding: 0.1rem 0.1rem !important;
-    }
-    .btn-melody {
-        padding: .35rem .6rem !important; /* comfortable horizontal spacing */
-        font-size: 1.1rem !important; /* keeping font-size consistent with other styles */
+    /* Keep play/stop buttons always square and fit smaller layouts */
+    .playButton,
+    .stopButton {
+        display: inline-flex; /* centers icon/text */
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto; /* don't grow or shrink with container */
+        aspect-ratio: 1 / 1; /* force 1:1 aspect */
+        width: clamp(28px, 5vw, 48px); /* smaller min/ideal/max so they fit */
+        max-width: 48px;
+        min-width: 28px;
+        height: auto; /* height computed from width + aspect-ratio */
         box-sizing: border-box;
+        padding: 0.5rem;
+        border-radius: 6px;
+        font-size: 1.1rem;
     }
 
-    /* operation buttons and letter buttons should not be forced to narrow widths */
-    #operationbuttons .btn-melody,
-    .letters-row .btn-melody,
-    .searchcontainer .btn-melody {
-      width: auto !important;
-      min-width: 6.5rem; /* ensure a minimum tap target */
-    }
-
-    /* keep truly icon-only controls compact by targeting play/stop if needed */
-    .playButton, .stopButton {
-        padding: .25rem !important;
-        min-width: 2.2rem;
-        font-size: 1.1rem !important;
-    }
-}
-
-.text-responsive {
-    font-size: 1rem;
-}
-
-/* Мобілки */
-@media (max-width: 576px) {
-    .text-responsive {
-        font-size: 0.85rem;
-    }
-    .homepagesubtitle {
-        font-size: 1.2rem;
-        color: var(--text-dark);
-        
-    }
-}
-
-/* Ensure anchor buttons (btn-melody) are never underlined */
-a.btn-melody,
-a.btn-melody:link,
-a.btn-melody:visited,
-a.btn-melody:hover,
-a.btn-melody:focus,
-a.btn-melody:active {
-    text-decoration: none !important;
-}
-
-    a.btn-melody > * {
-        text-decoration: none !important; /* covers inner spans/icons */
-    }
-
-
-/* Admin topbar responsive styles (appended) */
-.admin-topbar {
-    padding: 6px 10px;
-    background: lemonchiffon;
-    border: 1px solid rgba(0,0,0,0.08);
-}
-
-    .admin-topbar .admin-topbar-inner {
-        gap: .5rem;
-    }
-
-/* desktop */
-.admin-menu .admin-link {
-    color: #000;
-    text-decoration: none;
-    padding: .2rem .45rem;
-    white-space: nowrap;
-    display: inline-block;
-}
-
-    .admin-menu .admin-link.active {
-        font-weight: 600;
-    }
-
-    .admin-menu .admin-link:hover {
-        color: var(--brand-maincolor);
-    }
-
-/* mobile hamburger button */
-.admin-hamburger {
-    font-size: 1.05rem;
-    padding: .25rem .5rem;
-    border-radius: 8px;
-    border: 1px solid rgba(0,0,0,0.06);
-}
-
-/* mobile collapsed menu */
-.admin-mobile-menu {
-    display: block;
-    width: 100%;
-    background: #fffbe6;
-    border-top: 1px solid rgba(0,0,0,0.06);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.06);
-    padding: .5rem .6rem;
-    box-sizing: border-box;
-    transition: max-height 220ms ease, opacity 180ms ease;
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-}
-
-    .admin-mobile-menu a.admin-link {
-        display: block;
-        padding: .45rem 0;
-        color: #212529;
-        text-decoration: none;
-        border-bottom: 1px solid rgba(0,0,0,0.03);
-    }
-
-        .admin-mobile-menu a.admin-link:last-child {
-            border-bottom: none;
+        /* Ensure icon/content scales inside the square */
+        .playButton > *,
+        .stopButton > * {
+            width: 60%;
+            height: 60%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
 
-    /* when open */
-    .admin-mobile-menu.open {
-        max-height: 480px; /* adjust if additional links */
-        opacity: 0.9 !important;
-        background-color: #fffbe6 !important;
-        z-index: 20;
+    /* Slightly larger touch target on very small screens if needed */
+    @media (max-width: 768px) {
+        .playButton,
+        .stopButton {
+            width: clamp(32px, 9vw, 56px);
+        }
     }
-
-/* ensure desktop elements hidden on small screens and mobile hidden on desktop */
-@media (max-width: 767.98px) {
-    .admin-menu {
-        display: none !important;
-    }
-}
-
-@media (min-width: 768px) {
-    .admin-mobile-menu, .admin-hamburger {
-        display: none !important;
-    }
-}
-
-/* Admin topbar mobile label (visible only on small screens via .d-md-none) */
-.admin-topbar-label {
-  margin-left: 0.5rem;
-  font-weight: 600;
-  color: #000;
-  font-size: 1rem;
-  line-height: 1;
-  display: inline-block;
-  vertical-align: middle;
-  user-select: none;
-}
-
-/* Slightly smaller label on very narrow screens */
-@media (max-width: 420px) {
-  .admin-topbar-label { font-size: 0.95rem; margin-left: 0.4rem; }
-}
-
