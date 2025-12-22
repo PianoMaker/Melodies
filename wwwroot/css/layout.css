@@ -499,3 +499,8 @@
         }
     }
 }
+@media (min-width: 769px) {
+    .navbar-toggler, .navbar-toggler.d-md-none, #mobileMenuToggle {
+        display: none !important;
+    }
+}
