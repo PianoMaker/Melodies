@@ -33,7 +33,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\Pages\" />
     <Folder Include="wwwroot\melodies\" />
     <Folder Include="wwwroot\temporary\" />
   </ItemGroup>

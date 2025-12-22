@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+   <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+   <xsd:choice maxOccurs="unbounded">
+    <xsd:element name="metadata">
+   <xsd:complexType>
+ <xsd:sequence>
+      <xsd:element name="value" type="xsd:string" minOccurs="0" />
+    </xsd:sequence>
+        <xsd:attribute name="name" use="required" type="xsd:string" />
+        <xsd:attribute name="type" type="xsd:string" />
+          <xsd:attribute name="mimetype" type="xsd:string" />
+       <xsd:attribute ref="xml:space" />
+     </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+          <xsd:complexType>
+     <xsd:attribute name="alias" type="xsd:string" />
+        <xsd:attribute name="name" type="xsd:string" />
+     </xsd:complexType>
+       </xsd:element>
+      <xsd:element name="data">
+     <xsd:complexType>
+<xsd:sequence>
+ <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+             <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+   </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+        <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+      <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+    </xsd:complexType>
+ </xsd:element>
+   <xsd:element name="resheader">
+    <xsd:complexType>
+   <xsd:sequence>
+      <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+</xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+   </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Melodies Page Resources - Ukrainian -->
+  <data name="Melodies" xml:space="preserve">
+    <value>Мелодії</value>
+  </data>
+  <data name="MelodiesList" xml:space="preserve">
+    <value>Список мелодій</value>
+  </data>
+  <data name="AddMelody" xml:space="preserve">
+    <value>Додати мелодію</value>
+  </data>
+  <data name="EditMelody" xml:space="preserve">
+    <value>Редагувати мелодію</value>
+  </data>
+  <data name="DeleteMelody" xml:space="preserve">
+    <value>Видалити мелодію</value>
+  </data>
+  <data name="MelodyDetails" xml:space="preserve">
+    <value>Деталі мелодії</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Назва</value>
+  </data>
+  <data name="Author" xml:space="preserve">
+    <value>Автор</value>
+  </data>
+  <data name="Genre" xml:space="preserve">
+    <value>Жанр</value>
+</data>
+  <data name="Key" xml:space="preserve">
+    <value>Тональність</value>
+  </data>
+  <data name="TimeSignature" xml:space="preserve">
+    <value>Розмір</value>
+  </data>
+  <data name="Tempo" xml:space="preserve">
+    <value>Темп</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Тривалість</value>
+  </data>
+  <data name="Difficulty" xml:space="preserve">
+    <value>Складність</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Опис</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>Ноти</value>
+  </data>
+  <data name="UploadDate" xml:space="preserve">
+    <value>Дата завантаження</value>
+  </data>
+  <data name="MidiFile" xml:space="preserve">
+    <value>MIDI файл</value>
+  </data>
+  <data name="AudioFile" xml:space="preserve">
+    <value>Аудіо файл</value>
+  </data>
+  <data name="SheetMusic" xml:space="preserve">
+    <value>Нотний запис</value>
+  </data>
+  <data name="Play" xml:space="preserve">
+    <value>Відтворити</value>
+  </data>
+  <data name="Stop" xml:space="preserve">
+    <value>Зупинити</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>Завантажити</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Пошук</value>
+  </data>
+  <data name="SearchMelodies" xml:space="preserve">
+    <value>Пошук мелодій</value>
+  </data>
+  <data name="SearchByNotes" xml:space="preserve">
+    <value>Пошук за нотами</value>
+  </data>
+  <data name="FindSimilarMelody" xml:space="preserve">
+    <value>Знайди схожу мелодію</value>
+  </data>
+  <data name="EnterNotes" xml:space="preserve">
+    <value>Введіть ноти</value>
+  </data>
+  <data name="PlayNotes" xml:space="preserve">
+    <value>Відтворити ноти</value>
+  </data>
+  <data name="ClearNotes" xml:space="preserve">
+    <value>Очистити ноти</value>
+  </data>
+  <data name="SearchResults" xml:space="preserve">
+    <value>Результати пошуку</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>Результатів не знайдено</value>
+  </data>
+  <data name="ResultsFound" xml:space="preserve">
+    <value>результатів знайдено</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Створити</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Редагувати</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Видалити</value>
+  </data>
+  <data name="Preview" xml:space="preserve">
+    <value>Попередній перегляд</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Назад до списку</value>
+  </data>
+  <data name="AreYouSureDelete" xml:space="preserve">
+    <value>Ви впевнені, що хочете видалити цю мелодію?</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Зберегти</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Скасувати</value>
+  </data>
+  <data name="Upload" xml:space="preserve">
+    <value>Завантажити</value>
+  </data>
+  <data name="SelectFile" xml:space="preserve">
+    <value>Виберіть файл</value>
+  </data>
+</root>

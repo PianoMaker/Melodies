@@ -1,5 +1,6 @@
 ﻿@page
 @model Melodies25.Pages.Melodies.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 
 @{
     ViewData["Title"] = "Мелодії в Базі даних";
@@ -22,7 +23,7 @@
     <div class="d-flex flex-row melody-index-flex">
         <!-- Кнопки ліворуч "Пошук", "Додати мелодію" -->
         <div id="operationbuttons" class="d-flex flex-column me-4">
-            <a asp-page="search" class="btn-melody m-2 btn-compact-40 align-self-start"><span class="hide-mobile">Розширений пошук</span> <span class="show-mobile">Пошук</span></a>
+            <a asp-page="search" class="btn-melody m-2 btn-compact-40 align-self-start"><span class="hide-mobile">Розширений пошук</span> <span class="show-mobile">@Localizer["Search"]</span></a>
             <a asp-page="Create" class="btn-melody m-2 btn-compact-40 align-self-start">Додати <span class="hide-mobile">мелодію</span></a>
         </div>
 
@@ -73,7 +74,7 @@
                    asp-route-letter="@Model.SelectedLetter"
                    asp-route-pageIndex="1"
                    class="link-light">
-                    Назва  @(Model.TitleSort == "title_asc" ? "▲" : "▼")
+                        @Localizer["Title"]  @(Model.TitleSort == "title_asc" ? "▲" : "▼")
                 </a>
             </th>
             <th>
@@ -82,11 +83,11 @@
                    asp-route-letter="@Model.SelectedLetter"
                    asp-route-pageIndex="1"
                    class="link-light">
-                    Автор @(Model.AuthorSort == "title_asc" ? "▲" : "▼")
+                    @Localizer["Author"] @(Model.AuthorSort == "title_asc" ? "▲" : "▼")
                 </a>
             </th>
             <th>
-                Файл
+                @Localizer["File"]
             </th>
                 @if (user.IsInRole("Admin") || user.IsInRole("Moderator"))
                 {
