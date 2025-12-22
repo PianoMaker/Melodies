@@ -7,9 +7,11 @@ using Microsoft.EntityFrameworkCore;
 using Music;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using static Music.Messages;
+
 
 namespace Melodies25.Pages.Countries
 {
@@ -24,9 +26,26 @@ namespace Melodies25.Pages.Countries
 
         public IList<Country> Country { get;set; } = default!;
 
+
+        [BindProperty(SupportsGet = true)]
+        public string SelectedLang { get; set; } = "uk";
+
         public async Task OnGetAsync()
         {
+            try
+            {
+                var ui = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                SelectedLang = string.IsNullOrEmpty(ui) ? "uk" : ui;
+            }
+            catch
+            {
+                SelectedLang = "uk";
+            }
+
+
             Country = await _context.Country.ToListAsync();
+
+            bool isEn = string.Equals(SelectedLang, "en", StringComparison.OrdinalIgnoreCase);
 
             MessageL(COLORS.yellow, $"COUNTRIES/INDEX -  OnGET");
             foreach (var currentCountry in Country)
