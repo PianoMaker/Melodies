@@ -1,5 +1,6 @@
 ﻿@page
 @model Melodies25.Pages.Countries.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 
 @{
     ViewData["Title"] = "Мелодія - країни";
@@ -7,7 +8,7 @@
 
 <div class="infocontainer melody-width hideformenu">
     <div class="spaceformenu"></div>
-<h1>Країн у базі даних - @Model.Country.Count</h1>
+<h1>@Localizer["CountriesInDatabase", Model.Country.Count]</h1>
 
 <p>
     <a asp-page="Create"
@@ -52,8 +53,8 @@
                     @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
                     {
                         <td>
-                            <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
-                            <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
+                            <a asp-page="./Edit" asp-route-id="@item.ID" class="link-dark" title="@Localizer["Edit"]" aria-label="@Localizer["Edit"]"><i class="fas fa-edit"></i></a>
+                            <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px" title="@Localizer["Delete"]" aria-label="@Localizer["Delete"]"><i class="fas fa-remove"></i></a>
                         </td>
                     }
             </tr>

@@ -1,102 +1,103 @@
 ﻿@page
 @model Melodies25.Pages.Authors.CreateModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 
 @{
-    ViewData["Title"] = "Додати автора";
-    var SelectedMode  = @Model.SelectedMode;
+ ViewData["Title"] = Localizer["AddAuthor"];
+ var SelectedMode = @Model.SelectedMode;
 }
 <div class="infocontainer melody-width">
-    <h1>Додати автора</h1>
+ <h1>@Localizer["AddAuthor"]</h1>
 </div>
 <div class="row addcontainer melody-width">
-    <div class="container-fluid">
-        <form method="post" id="modeForm">
-            <label>
-                <input type="radio" asp-for="SelectedMode" value="composer" onchange="submitType()" /> Композитор
-            </label>
-            <label>
-                <input type="radio" asp-for="SelectedMode" value="band" onchange="submitType()" /> Гурт
-            </label>
-            <label>
-                <input type="radio" asp-for="SelectedMode" value="folk" onchange="submitType()" /> Народна пісня
-            </label>            
-            <script>
-                           function submitType() {
-                               console.log("change mode");
-                    document.getElementById("modeForm").submit();
-                }
-            </script>
-        </form>
-    </div>
-    <div class="col-md-4">        
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                @if (@SelectedMode == "composer")
-                {
-                    <label asp-for="Author.Name" class="control-label">Ім'я'</label>
-                    <input asp-for="Author.Name" class="form-control" />
-                }
-                else
-                {
-                    <label asp-for="Author.Name" class="control-label"><text></text></label>
-                    <input asp-for="Author.Name" class="form-control" disabled />
-                }                
-                <span asp-validation-for="Author.Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                @if (SelectedMode == "composer")
-                {
-                    <label asp-for="Author.Surname" class="control-label">Прізвище</label>                    
+ <div class="container-fluid">
+ <form method="post" id="modeForm">
+ <label>
+ <input type="radio" asp-for="SelectedMode" value="composer" onchange="submitType()" /> @Localizer["Composer"]
+ </label>
+ <label>
+ <input type="radio" asp-for="SelectedMode" value="band" onchange="submitType()" /> @Localizer["Group"]
+ </label>
+ <label>
+ <input type="radio" asp-for="SelectedMode" value="folk" onchange="submitType()" /> @Localizer["FolkSong"]
+ </label> 
+ <script>
+ function submitType() {
+ console.log("change mode");
+ document.getElementById("modeForm").submit();
+ }
+ </script>
+ </form>
+ </div>
+ <div class="col-md-4"> 
+ <form method="post">
+ <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+ <div class="form-group">
+ @if (@SelectedMode == "composer")
+ {
+ <label asp-for="Author.Name" class="control-label">@Localizer["Name"]</label>
+ <input asp-for="Author.Name" class="form-control" />
+ }
+ else
+ {
+ <label asp-for="Author.Name" class="control-label"><text></text></label>
+ <input asp-for="Author.Name" class="form-control" disabled />
+ } 
+ <span asp-validation-for="Author.Name" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ @if (SelectedMode == "composer")
+ {
+ <label asp-for="Author.Surname" class="control-label">@Localizer["Surname"]</label> 
 
-                }
-                else if (@SelectedMode == "band") {
-                    <label asp-for="Author.Surname" class="control-label">Назва гурту</label>
-                    
-                }
-                else{
-                    <label asp-for="Author.Surname" class="control-label">Народна пісня</label>
-                    
-                }
-                <input id="inputAuthor" asp-for="Author.Surname" class="form-control" />
-                <p id="authorWarning"></p>
-                <span asp-validation-for="Author.Surname" class="text-danger"></span>
-            </div>            
-            <div class="form-group">
-                <label asp-for="Author.DateOfBirth" class="control-label">Рік народження</label>
-                <input asp-for="Author.DateOfBirth" type="number" class="form-control" />
-                <span asp-validation-for="Author.DateOfBirth" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Author.DateOfDeath" class="control-label">Рік смерті</label>
-                <input asp-for="Author.DateOfDeath" type="number" class="form-control" />
-                <span asp-validation-for="Author.DateOfDeath" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Author.CountryID" class="control-label">Країна</label>
-                <select asp-for="Author.CountryID" class="form-control" asp-items="ViewBag.CountryID">
-                    <option value="">-- Оберіть країну --</option>
-                </select>
-                <span asp-validation-for="Author.CountryID" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Author.Description" class="control-label">Додаткова інформація</label>
-                <input asp-for="Author.Description" class="form-control" />
-                <span asp-validation-for="Author.Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Додати" class="btn-melody" />
-            </div>
-        </form>
-    </div>
+ }
+ else if (@SelectedMode == "band") {
+ <label asp-for="Author.Surname" class="control-label">@Localizer["GroupName"]</label>
+ 
+ }
+ else{
+ <label asp-for="Author.Surname" class="control-label">@Localizer["FolkSongLabel"]</label>
+ 
+ }
+ <input id="inputAuthor" asp-for="Author.Surname" class="form-control" />
+ <p id="authorWarning"></p>
+ <span asp-validation-for="Author.Surname" class="text-danger"></span>
+ </div> 
+ <div class="form-group">
+ <label asp-for="Author.DateOfBirth" class="control-label">@Localizer["DateOfBirth"]</label>
+ <input asp-for="Author.DateOfBirth" type="number" class="form-control" />
+ <span asp-validation-for="Author.DateOfBirth" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="Author.DateOfDeath" class="control-label">@Localizer["DateOfDeath"]</label>
+ <input asp-for="Author.DateOfDeath" type="number" class="form-control" />
+ <span asp-validation-for="Author.DateOfDeath" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="Author.CountryID" class="control-label">@Localizer["Country"]</label>
+ <select asp-for="Author.CountryID" class="form-control" asp-items="ViewBag.CountryID">
+ <option value="">-- @Localizer["SelectCountry"] --</option>
+ </select>
+ <span asp-validation-for="Author.CountryID" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="Author.Description" class="control-label">@Localizer["AdditionalInformation"]</label>
+ <input asp-for="Author.Description" class="form-control" />
+ <span asp-validation-for="Author.Description" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <input type="submit" value="@Localizer["AddAuthor"]" class="btn-melody" />
+ </div>
+ </form>
+ </div>
 </div>
 
 <div>
-    <a asp-page="Index" class="btn-melody">До списку авторів</a>
+ <a asp-page="Index" class="btn-melody">@Localizer["BackToList"]</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+ @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
 
 <script src="~/js/authors-create.js" asp-append-version="true"></script>

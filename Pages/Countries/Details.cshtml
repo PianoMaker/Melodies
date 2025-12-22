@@ -1,5 +1,6 @@
 ﻿@page
 @model Melodies25.Pages.Countries.DetailsModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 
 @{
     ViewData["Title"] = "Мелодія - країни";
@@ -15,7 +16,7 @@
 <h4>@Model.Country.NameEn</h4>
 
 <div>
-    <p>Авторів на сайті - @Model.Author.Count</p>
+    <p>@Localizer["AuthorsOnSite", Model.Author.Count]</p>
     <hr />
 
 </div>
@@ -24,13 +25,13 @@
     <thead>
         <tr>
             <th>
-               Автор                            
+               @Localizer["Author"]                          
             </th>
             <th>
-                Роки життя
+                @Localizer["LifeYears"]
             </th>
             <th>
-                Мелодій у базі даних
+                @Localizer["MelodiesInDatabase"]
             </th>
         </tr>
     </thead>
@@ -49,8 +50,8 @@
                     @Html.DisplayFor(modelItem => item.MelodiesCount)
                 </td>
                 <td>
-                    <a asp-page="../Author/Edit" asp-route-id="@item.ID" class="link-dark"><i class="fas fa-edit"></i></a>
-                    <a asp-page="../Author/Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px"><i class="fas fa-remove"></i></a>
+                    <a asp-page="../Author/Edit" asp-route-id="@item.ID" class="link-dark" title="@Localizer["Edit"]" aria-label="@Localizer["Edit"]"><i class="fas fa-edit"></i></a>
+                    <a asp-page="../Author/Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px" title="@Localizer["Delete"]" aria-label="@Localizer["Delete"]"><i class="fas fa-remove"></i></a>
                 </td>
             </tr>
         }
@@ -58,7 +59,7 @@
 </table>
 <div class="infocontainer actions-container melody-width">
     <div class="actions-row">
-        <a asp-page="./Edit" asp-route-id="@Model.Country.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
-        <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">Назад до списку</a>
+        <a asp-page="./Edit" asp-route-id="@Model.Country.ID" class="btn btn-outline-dark light-background link-dark">@Localizer["Edit"]</a>
+        <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">@Localizer["BackToList"]</a>
     </div>
 </div>

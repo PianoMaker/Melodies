@@ -50,7 +50,7 @@
 
 
 
-/* Consolidated .linkouts rules — single source of truth (removed duplicate blocks) */
+/* межі для нижніх контейнерів*/
 
 .linkouts, .portretinfo {
     border: 1px solid var(--brand-border);
@@ -63,7 +63,7 @@
     padding-left: 0;
     background: var(--surface-400);    
     border-radius: inherit;
-    padding: 28px;               /* increased for breathing room */
+    padding: 28px;               
     box-sizing: border-box;
     columns: auto !important;
     column-count: 1 !important;
@@ -71,7 +71,7 @@
     -webkit-column-break-inside: avoid;
 }
 
-/* keep headings/text inside left and right at the same vertical position */
+/* заголовки у нижніх контейнерах */
 .portretinfo strong,
 .linkouts strong {
     display: block;
@@ -79,7 +79,7 @@
     margin-bottom: 8px;
 }
 
-/* Keep list items as block so text wraps naturally (multi-line), prevent fragmentation */
+/* заголовки */
 .linkouts li,
 .h-notes {
     display: block;
@@ -107,13 +107,12 @@
     background-size: contain;
 }
 
-/* YouTube special item: icon larger, keep icon position; move label text by increasing padding */
+/* кнопка YouTube  */
 .linkouts > ul > li.youtube-button {
-    padding-left: 64px; /* space for 40px icon + gap — this moves the text only */
+    padding-left: 64px; 
     margin-left: 0;
 }
 
-/* YouTube icon (overrides generic ::before) */
 .linkouts > ul > li.youtube-button::before {
     content: "";
     position: absolute;
@@ -127,13 +126,12 @@
     background-size: contain;
 }
 
-/* Keep anchor text stable */
 .linkouts > ul > li.youtube-button > a {
     display: inline-block;
     vertical-align: middle;
 }
 
-/* Mobile tweaks */
+/* Mobile */
 @media (max-width: 480px) {
     .linkouts li,
     .h-notes {
@@ -147,7 +145,7 @@
         top: 0.12em;
     }
     .linkouts > ul > li.youtube-button {
-        padding-left: 52px; /* 32px icon + gap */
+        padding-left: 52px;
     }
     .linkouts > ul > li.youtube-button::before {
         width: 32px;

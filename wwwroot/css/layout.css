@@ -593,7 +593,7 @@
     .admin-menu {
         display: none !important;
     }
-    /* ensure desktop nav hidden on small */
+   
 }
 
 /* Smallest screens extra tweak */
@@ -635,3 +635,24 @@
         display: none !important;
     }
 }
+
+/* Переключення мов */
+.btn-pale {
+    color: #212529;
+    background-color: var(--brand-100);
+    border-color: rgba(0,0,0,0.08);
+    box-shadow: inset -1px rgba(0,0,0,0.12);
+}
+
+    .btn-pale:hover,
+    .btn-pale:focus,
+    .btn-pale:active {
+        color: #212529;
+        filter: brightness(0.95);
+        text-decoration: none;
+    }
+
+    .btn-pale:focus {
+        outline: 0;
+        box-shadow: 0000.2rem rgba(0,0,0,0.06);
+    }
