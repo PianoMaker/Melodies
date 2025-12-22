@@ -13,6 +13,7 @@ using NAudio.Midi;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -54,14 +55,26 @@ namespace Melodies25.Pages.Melodies
             _userManager = userManager;
         }
         
-
-        // Ensure Melody is never null to avoid NullReferenceException in the Razor view
+             
         public IList<Melody> Melody { get; set; } = new List<Melody>();
 
-        // GET supports sort, letter filter and paging
+        [BindProperty(SupportsGet = true)]
+        public string SelectedLang { get; set; } = "uk";
+                
         public async Task OnGetAsync(string sortOrder, string? letter, int? pageIndex)
         {
             MessageL(COLORS.yellow, $"MELODY/INDEX -  OnGET");
+
+            // Ensure SelectedLang reflects current UI culture (so view can render NameEn/SurnameEn for English)
+            try
+            {
+                var ui = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                SelectedLang = string.IsNullOrWhiteSpace(ui) ? "uk" : ui;
+            }
+            catch
+            {
+                SelectedLang = "uk";
+            }
 
             TitleSort = sortOrder == "title_asc" ? "title_desc" : "title_asc";
             AuthorSort = sortOrder == "author_asc" ? "author_desc" : "author_asc";
