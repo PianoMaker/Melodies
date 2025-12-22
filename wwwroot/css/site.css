@@ -39,6 +39,11 @@
 }
 
 
+a {
+    color: var(--brand-maincolor);
+    text-decoration: none;    
+}
+
 /* Component examples */
 .card-surface {
     background: var(--surface-300);
@@ -1260,7 +1265,7 @@ p {
             vertical-align: middle;
             box-sizing: border-box;
         }
-}
+
 #midiIsReady {
     color: green;
     font-weight: bold;

@@ -127,8 +127,9 @@
     position: fixed;
     bottom: 0;
     width: 100%;
-    background: #fef7e2;
+    background: var(--brand-100);
     height: 30px;
+    border: 1px solid var(--brand-border);
 }
 
 .singerellamenue { font-family: sans-serif; letter-spacing: -0.2px; }
@@ -467,33 +468,34 @@
 
     /* Ensure navbar background is full-bleed on small screens (keeps dark strip full width
    whether menu is collapsed or expanded) */
-@media (max-width: 768px) {
-  #navbarstrip {
-    position: relative;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    /* remove centering inside a limited container so bg reaches viewport edges */
-    margin-left: calc(50% - 50vw) !important;
-    margin-right: calc(50% - 50vw) !important;
-    box-sizing: border-box;
-    z-index: 1050;
-    left: 0 !important;
-    right: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
+    @media (max-width: 768px) {
+        #navbarstrip {
+            position: relative;
+            width: 100vw !important;
+            max-width: 100vw !important;
+            /* remove centering inside a limited container so bg reaches viewport edges */
+            margin-left: calc(50% - 50vw) !important;
+            margin-right: calc(50% - 50vw) !important;
+            box-sizing: border-box;
+            z-index: 1050;
+            left: 0 !important;
+            right: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
 
-  /* Let the collapse area sit on top of that full-bleed background without its own offset */
-  #navbarstrip .navbar-collapse {
-    background: transparent !important;
-    width: 100% !important;
-  }
+            /* Let the collapse area sit on top of that full-bleed background without its own offset */
+            #navbarstrip .navbar-collapse {
+                background: transparent !important;
+                width: 100% !important;
+            }
 
-  /* Ensure collapsed content stretches full width under the header row */
-  #mainNavbar {
-    order: 2;
-    width: 100% !important;
-    flex-basis: 100% !important;
-    align-items: flex-start !important;
-  }
+        /* Ensure collapsed content stretches full width under the header row */
+        #mainNavbar {
+            order: 2;
+            width: 100% !important;
+            flex-basis: 100% !important;
+            align-items: flex-start !important;
+        }
+    }
 }
