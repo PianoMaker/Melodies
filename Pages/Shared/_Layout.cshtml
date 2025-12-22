@@ -38,7 +38,7 @@
 
 
 </head>
-<body class="@ViewData["BodyClass"]">
+<body class="@(ViewData["BodyClass"] ?? "") @(currentCulture == "en" ? "lang-en" : "")">
 
     <!--Верхня панель-->
     <header >        
@@ -222,10 +222,31 @@
             });
         })();
     </script>
+    <script>
+        // Apply small theme tweak based on current UI culture.
+        // Insert this after the culture-switch handler (it uses server-side currentCulture variable already defined).
+        (function () {
+            try {
+                var culture = '@currentCulture';
+                if (culture && culture.toLowerCase() === 'en') {
+                    const root = document.documentElement;
+                    // read the --brand-english variable from CSS (defined in site.css) or fallback to hard-coded blue
+                    const englishColor = getComputedStyle(root).getPropertyValue('--brand-english').trim() || '#2a5d84';
+                    root.style.setProperty('--brand-maincolor', englishColor);
+                    // optional: adjust the lighter variant to match the english tone
+                    root.style.setProperty('--brand-maincolor-light', '#5b7fa0');
+                }
+            } catch (e) {
+                // safe fallback — do nothing on error
+                console && console.warn && console.warn('applyLangColors failed', e);
+            }
+        })();
+    </script>
 
 
     @* Render optional page-level Scripts section here *@
     @await RenderSectionAsync("Scripts", required: false)
+
 
 </body>
 </html>
