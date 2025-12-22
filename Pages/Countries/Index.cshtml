@@ -4,17 +4,19 @@
 
 @{
     ViewData["Title"] = "Мелодія - країни";
+    var lng = Model.SelectedLang;
 }
 
 <div class="infocontainer melody-width hideformenu">
     <div class="spaceformenu"></div>
-<h1>@Localizer["CountriesInDatabase", Model.Country.Count]</h1>
+    <h1>@Localizer["CountriesInDatabase", Model.Country.Count]</h1>
 
-<p>
-    <a asp-page="Create"
-       class="btn btn-outline-dark light-background border-dark m-4">
-       Додати країну</a>
-</p>
+    <p>
+        <a asp-page="Create"
+           class="btn btn-outline-dark light-background border-dark m-4">
+            Додати країну
+        </a>
+    </p>
 </div>
 
 <!-- Use the same melody-width container to keep widths identical and centered -->
@@ -24,26 +26,35 @@
         <thead>
             <tr>
                 <th class="w-50">
-                   Назва
+                    @Localizer["Country"]
                 </th>
                 <th class="w-25">
-                    Авторів у базі даних
+                    @Localizer["Authors"]
                 </th>
                 <th class="w-25">
-                    Мелодій у базі даних
+                    @Localizer["Melodies"]
                 </th>
                 @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
                 {
-                    <th class="w-50">Редагування/Вилучення</th>
+                    <th class="w-50">@Localizer["EditDelete"]</th>
                 }
             </tr>
         </thead>
         <tbody>
-@foreach (var item in Model.Country) {
-            <tr>
-                <td>
-                       <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Name)</a>
-                </td>
+            @foreach (var item in Model.Country)
+            {
+                <tr>
+                    <td>
+                        @if (lng == "uk")
+                        {
+                            <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Name)</a>
+                        }
+                        else
+                        {
+
+                            <a asp-page="./Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.NameEn)</a>
+                        }
+                    </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.AuthorsCount)
                     </td>
@@ -57,8 +68,8 @@
                             <a asp-page="./Delete" asp-route-id="@item.ID" class="link-danger" style="margin-left:50px" title="@Localizer["Delete"]" aria-label="@Localizer["Delete"]"><i class="fas fa-remove"></i></a>
                         </td>
                     }
-            </tr>
-}
+                </tr>
+            }
         </tbody>
     </table>
 </div>

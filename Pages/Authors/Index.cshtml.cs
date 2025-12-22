@@ -41,7 +41,6 @@ namespace Melodies25.Pages.Authors
         public string SelectedLang { get; set; } = "uk";
 
 
-
         public async Task OnGetAsync(string sortOrder)
         {
             MessageL(COLORS.yellow, $"AUTHORS/INDEX -  OnGET");
