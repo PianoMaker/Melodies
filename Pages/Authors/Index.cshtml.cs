@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using static Music.Messages;
+using System.Globalization;
 
 namespace Melodies25.Pages.Authors
 {
@@ -36,7 +37,7 @@ namespace Melodies25.Pages.Authors
         
         public string MelodiesCountSort { get; set; }
 
-        [BindProperty(SupportsGet = true)]        
+        [BindProperty(SupportsGet = true)] 
         public string SelectedLang { get; set; } = "uk";
 
 
@@ -44,6 +45,18 @@ namespace Melodies25.Pages.Authors
         public async Task OnGetAsync(string sortOrder)
         {
             MessageL(COLORS.yellow, $"AUTHORS/INDEX -  OnGET");
+
+            // Read current UI culture set by RequestLocalization (e.g. via cookie from _Layout toggle)
+            try
+            {
+                var ui = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                SelectedLang = string.IsNullOrEmpty(ui) ? "uk" : ui;
+            }
+            catch
+            {
+                SelectedLang = "uk";
+            }
+
             await LoadPage(sortOrder);
         }
 
@@ -57,11 +70,12 @@ namespace Melodies25.Pages.Authors
         private async Task LoadPage(string sortOrder)
         {
             // Toggle sort states
-            SurnameSort       = sortOrder == "surname_asc" ? "surname_desc" : "surname_asc";
-            CountrySort       = sortOrder == "country_asc" ? "country_desc" : "country_asc";
+            SurnameSort = sortOrder == "surname_asc" ? "surname_desc" : "surname_asc";
+            CountrySort = sortOrder == "country_asc" ? "country_desc" : "country_asc";
             MelodiesCountSort = sortOrder == "melody_asc" ? "melody_desc" : "melody_asc";
 
-            bool isEn    = string.Equals(SelectedLang, "en", StringComparison.OrdinalIgnoreCase);
+            // Determine language from SelectedLang which is set on OnGet from CurrentUICulture
+            bool isEn = string.Equals(SelectedLang, "en", StringComparison.OrdinalIgnoreCase);
             string folkUk = "Українська народна пісня";
             string folkEn = "Ukrainian folk song";
 

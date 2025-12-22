@@ -1,274 +1,276 @@
 ﻿@page
 @model Melodies25.Pages.Melodies.DetailsModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 
 @{
-    ViewData["Title"] = "Мелодія";
-    var item = Model.Melody;
-    var file = @Model.Melody.FilePath;
-    var url = Url.Content($"~/melodies/{item.FilePath}");
-    var notesearchHandlerUrl = Url.Page("./Search", new { handler = "Notesearch" });
+ ViewData["Title"] = Localizer["MelodyTitle"];
+ var item = Model.Melody;
+ var file = Model.Melody.FilePath;
+ var url = Url.Content($"~/melodies/{item.FilePath}");
+ var notesearchHandlerUrl = Url.Page("./Search", new { handler = "Notesearch" });
 }
 @section Styles {
-    <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
+ <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
 }
 <div class="melody-shell">
-    <!--ІНФОРАЦІЯ  ПРО ФАЙЛ-->
-    <div class="infocontainer melody-width hideformenu">
-        <div class="spaceformenu"></div>
-        <h1>@item.Title</h1>
-        <div>
-            @if (@item.Author is not null && !@item.Author.Surname.Contains("народна"))
-            {
-                <h4>автор - <a asp-page="/Authors/Details" asp-route-id="@item.AuthorID">@item.Author.Name @item.Author.Surname</a></h4>
-                <p class="d-none d-md-inline">(@item.Author.DateOfBirth - @item.Author.DateOfDeath)</p>
-            }
-            else if (@item.Author is not null)
-            {
-                <p>@item.Author.Surname</p>
+ <!--ІНФОРАЦІЯ ПРО ФАЙЛ-->
+ <div class="infocontainer melody-width hideformenu">
+ <div class="spaceformenu"></div>
+ <h1>@item.Title</h1>
+ <div>
+ @if (item.Author is not null && !item.Author.Surname.Contains("народна"))
+ {
+ <h4>@Localizer["AuthorLabel"] - <a asp-page="/Authors/Details" asp-route-id="@item.AuthorID">@item.Author.Name @item.Author.Surname</a></h4>
+ <p class="d-none d-md-inline">(@item.Author.DateOfBirth - @item.Author.DateOfDeath)</p>
+ }
+ else if (item.Author is not null)
+ {
+ <p>@item.Author.Surname</p>
+ }
+ @if (item.Year is not null)
+ {
+ <p class="d-none d-md-inline">@Localizer["Written"] @item.Year @Localizer["InYear"]</p>
+ }
+ </div>
+ <p><i>@item.Description</i></p>
+ <hr />
+ <div class="container">
 
-            }
-            @if (item.Year is not null)
-            {
-                <p class="d-none d-md-inline">Написана у @item.Year році</p>
-            }
-        </div>
-        <p><i>@item.Description</i></p>
-        <hr />
-        <div class="container">
+ @if (!string.IsNullOrEmpty(item.FilePath))
+ {
+ var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
+ var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
 
-            @if (!string.IsNullOrEmpty(item.FilePath))
-            {
-                var midifilepath = Url.Content($"~/melodies/{item.FilePath}");
-                var mp3filepath = Url.Content($"~/mp3/{item.Mp3Filepath}");
+ <div class="d-flex d-md-inline-flex align-items-center gap-2" style="flex-wrap:wrap;">
+ <audio id="audioPlayer_@item.FilePath" class="audioPlayer flex-shrink-0" controls style="max-width:500px; width:100%;">
+ <source src="@mp3filepath" type="audio/mpeg" />
+ @Localizer["AudioNotSupported"]
+ </audio>
 
-                <div class="d-flex d-md-inline-flex align-items-center gap-2" style="flex-wrap:wrap;">
-                    <audio id="audioPlayer_@item.FilePath" class="audioPlayer flex-shrink-0" controls style="max-width:500px; width:100%;">
-                        <source src="@mp3filepath" type="audio/mpeg" />
-                        Your browser does not support the audio element.
-                    </audio>
+ <div class="btn-group" role="group" aria-label="downloads">
+ <a href="@midifilepath" download class="btn btn-outline-dark light-background" aria-label="@Localizer["DownloadMIDI"]">
+ <span class="d-none d-md-inline">@Localizer["Download"] </span>Midi <i class="fas fa-download"></i>
+ </a>
+ <a href="@mp3filepath" download class="btn btn-outline-dark light-background" aria-label="@Localizer["DownloadMP3"]">
+ <span class="d-none d-md-inline">@Localizer["Download"] </span>mp3 <i class="fas fa-download"></i>
+ </a>
+ </div>
+ </div>
 
-                    <div class="btn-group" role="group" aria-label="downloads">
-                        <a href="@midifilepath" download class="btn btn-outline-dark light-background" aria-label="Download MIDI">
-                            <span class="d-none d-md-inline">Завантажити </span>Midi <i class="fas fa-download"></i>
-                        </a>
-                        <a href="@mp3filepath" download class="btn btn-outline-dark light-background" aria-label="Download MP3">
-                            <span class="d-none d-md-inline">Завантажити </span>mp3 <i class="fas fa-download"></i>
-                        </a>
-                    </div>
-                </div>
-                @if (!string.IsNullOrEmpty(Model.Melody.Tonality))
-                {
-                    if(User.IsInRole("Admin")){
-                        <p><span class="d-none d-md-inline">MIDI файл <i>@file</i> завантажено в тональності @Model.Melody.Tonality</span></p>
-                    }
-                    else
-                    {
-                        <p><span class="d-none d-md-inline">MIDI файл завантажено в тональності @Model.Melody.Tonality</span></p>
-                    }
-                }
-                else
-                {
-                    <p>тональність MIDI файлу не визначено</p>
-                }
-            }
-            else
-            {
-                @if (!string.IsNullOrEmpty(item.FilePath)){
-                    <span>Файл @item.FilePath не доступний</span>
-                }
-                else {
-                    <span>MIDI файл не завантажено</span>
-                }
+ @if (!string.IsNullOrEmpty(Model.Melody.Tonality))
+ {
+ if (User.IsInRole("Admin"))
+ {
+ <p><span class="d-none d-md-inline">MIDI файл <i>@file</i> @Localizer["UploadedIn"] @Model.Melody.Tonality</span></p>
+ }
+ else
+ {
+ <p><span class="d-none d-md-inline">@Localizer["MidiFile"] @Localizer["UploadedIn"] @Model.Melody.Tonality</span></p>
+ }
+ }
+ else
+ {
+ <p>@Localizer["TonalityNotDefined"]</p>
+ }
+ }
+ else
+ {
+ if (!string.IsNullOrEmpty(item.FilePath))
+ {
+ <span>@Localizer["FileNotAvailable", item.FilePath]</span>
+ }
+ else
+ {
+ <span>@Localizer["MidiNotUploaded"]</span>
+ }
+ }
 
-            }
-            <hr />
-        </div>
-    </div>
+ <hr />
+ </div>
+ </div>
 
-    <!-- НОТИ І СТАТИСТИКА -->
-    <div class="notescontainer melody-details melody-width">
-        <!-- НОТНИЙ ТЕКСТ -->
-        <div class="panel-notes">
-            <div id="notation" data-midi-url='@Url.Content($"~/melodies/{item.FilePath}")' data-public-domain='@System.Text.Json.JsonSerializer.Serialize(item?.IfPublicDomain ?? false)'>notation will be shown here</div>
-            <div id="comments" class="text-responsive"></div>
-            <div id="stepRead" style="display:none"></div>
-        </div>
+ <!-- НОТИ І СТАТИСТИКА -->
+ <div class="notescontainer melody-details melody-width">
+ <!-- НОТНИЙ ТЕКСТ -->
+ <div class="panel-notes">
+ <div id="notation" data-midi-url='@Url.Content($"~/melodies/{item.FilePath}")' data-public-domain='@System.Text.Json.JsonSerializer.Serialize(item?.IfPublicDomain ?? false)'>@Localizer["NotationPlaceholder"]</div>
+ <div id="comments" class="text-responsive"></div>
+ <div id="stepRead" style="display:none"></div>
+ </div>
 
-        <hr class="section-divider" />
+ <hr class="section-divider" />
 
-        <!-- СТАТИСТИКА  -->
-        <div class="panel-analysis">
-            @if (@item.MidiMelody is null)
-            {
-                <form method="post">
-                    <button class="btn-melody" type="submit">Порахувати статистику</button>
-                </form>
-            }
-            else
-            {
-                <h3>
-                    Нот у мелодії - @item.MidiMelody.Notes.Count
-                    <button class="toggle-btn" id="notesbtn" onclick="toggleContent('innerNotesContainer', 'notesbtn')">+</button>
-                </h3>
-                <div id="innerNotesContainer" style="display:none">
-                    @foreach (var note in @item.MidiMelody.Notes)
-                    {
-                        string width = $"{note.DisplayWidth(45, 20)}px";
-                        string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
-                        <div class="outerNoteBox" style="width:@(string.IsNullOrWhiteSpace(width) ? "1px" : width); height:10px;">
-                            <div class="notebox" style="margin-bottom:@(string.IsNullOrWhiteSpace(marginbottom) ? "0px" : marginbottom); width:@(string.IsNullOrWhiteSpace(width) ? "1px" : width)">
-                                <text>@note.DurSymbol</text><br>
-                            </div>
-                            <text class="notaname">@note.Name</text>
-                        </div>
-                    }
-                </div>
-                <div>
-                    <h3>
-                        Тривалості
-                        <button class="toggle-btn" id="durationsbtn" onclick="toggleContent('durations', 'durationsbtn')">+</button>
-                    </h3>
-                    <div class="hidden-content" id="durations" style="display: none;">
-                        <p>
-                            @foreach (var note in @item.MidiMelody.Notes)
-                            {
-                                <text>
-                                    <text> @note.Duration.RelDuration() [@note.AbsDuration()]</text>
-                                </text>
-                            }
-                        </p>
-                    </div>
-                </div>
+ <!-- СТАТИСТИКА -->
+ <div class="panel-analysis">
+ @if (item.MidiMelody is null)
+ {
+ <form method="post">
+ <button class="btn-melody" type="submit">@Localizer["CalculateStats"]</button>
+ </form>
+ }
+ else
+ {
+ <h3>
+ @Localizer["NotesInMelody", item.MidiMelody.Notes.Count]
+ <button class="toggle-btn" id="notesbtn" onclick="toggleContent('innerNotesContainer', 'notesbtn')">+</button>
+ </h3>
+ <div id="innerNotesContainer" style="display:none">
+ @foreach (var note in item.MidiMelody.Notes)
+ {
+ string width = $"{note.DisplayWidth(45,20)}px";
+ string marginbottom = $"{note.AbsPitch() *2 -10}px";
+ <div class="outerNoteBox" style="width:@(string.IsNullOrWhiteSpace(width) ? "1px" : width); height:10px;">
+ <div class="notebox" style="margin-bottom:@(string.IsNullOrWhiteSpace(marginbottom) ? "0px" : marginbottom); width:@(string.IsNullOrWhiteSpace(width) ? "1px" : width)">
+ <text>@note.DurSymbol</text><br>
+ </div>
+ <text class="notaname">@note.Name</text>
+ </div>
+ }
+ </div>
+ <div>
+ <h3>
+ @Localizer["Durations"]
+ <button class="toggle-btn" id="durationsbtn" onclick="toggleContent('durations', 'durationsbtn')">+</button>
+ </h3>
+ <div class="hidden-content" id="durations" style="display: none;">
+ <p>
+ @foreach (var note in item.MidiMelody.Notes)
+ {
+ <text>
+ <text> @note.Duration.RelDuration() [@note.AbsDuration()]</text>
+ </text>
+ }
+ </p>
+ </div>
+ </div>
 
-                <h3>
-                    Інтервальний ряд у півонах
-                    <button class="toggle-btn" id="intervalsbtn" onclick="toggleContent('intervals','intervalsbtn')">+</button>               
-                </h3>
-                <div class="hidden-content" id="intervals" style="display: none;">
-                    <p>
-                        @foreach (var interval in @item.MidiMelody.IntervalList)
-                        {
-                            <text>
-                                <text>@interval </text>
-                            </text>
-                        }
-                    </p>
-                </div>
-              
-                <div style="display:block">
-                <h3>
-                    Дієзність (beta)
-                    <button class="toggle-btn" id="sharpnessbtn" onclick="toggleContent('sharpness','sharpnessbtn')">+</button>
-                </h3>
-                <div class="hidden-content" id="sharpness" style="display: none;">
-                    <p>
-                        @foreach (var note in @item.MidiMelody.Notes)
-                        {
-                            <text>
-                                <text>@note.Sharpness </text>
-                            </text>
-                        }
-                    </p>
-                </div>
-                </div>
-                <div style="display:block">
-                    <h3>
-                        Статистика нот (beta)
-                        <button class="toggle-btn" id="statsbtn" onclick="toggleContent('stats','statsbtn')">+</button>
-                    </h3>
-                    <div class="hidden-content" id="stats" style="display: none;">
-                        @if (@item.MidiMelody.GetStats() is not null)
-                        {
-                            <div class="noteanalysis">
-                                <h3>без урахування тривалості</h3>
-                                @foreach (var note in @item.MidiMelody.GetStats())
-                                {
-                                    <p><text>@note.Key - @note.Value %</text></p>
-                                }
-                            </div>
-                        }
+ <h3>
+ @Localizer["IntervalSeries"]
+ <button class="toggle-btn" id="intervalsbtn" onclick="toggleContent('intervals','intervalsbtn')">+</button>
+ </h3>
+ <div class="hidden-content" id="intervals" style="display: none;">
+ <p>
+ @foreach (var interval in item.MidiMelody.IntervalList)
+ {
+ <text>
+ <text>@interval </text>
+ </text>
+ }
+ </p>
+ </div>
 
-                        @if (@item.MidiMelody.GetDegreesStats() is not null)
-                        {
-                            <div class="noteanalysis">
-                                <h3>по ступенях</h3>
-                                @foreach (var value in @item.MidiMelody.GetDegreesStats())
-                                {
-                                    <p><text>@value.Key - @value.Value %</text></p>
-                                }
-                            </div>
-                        }
+ <div style="display:block">
+ <h3>
+ @Localizer["SharpnessBeta"]
+ <button class="toggle-btn" id="sharpnessbtn" onclick="toggleContent('sharpness','sharpnessbtn')">+</button>
+ </h3>
+ <div class="hidden-content" id="sharpness" style="display: none;">
+ <p>
+ @foreach (var note in item.MidiMelody.Notes)
+ {
+ <text>
+ <text>@note.Sharpness </text>
+ </text>
+ }
+ </p>
+ </div>
+ </div>
+ <div style="display:block">
+ <h3>
+ @Localizer["NotesStatsBeta"]
+ <button class="toggle-btn" id="statsbtn" onclick="toggleContent('stats','statsbtn')">+</button>
+ </h3>
+ <div class="hidden-content" id="stats" style="display: none;">
+ @if (item.MidiMelody.GetStats() is not null)
+ {
+ <div class="noteanalysis">
+ <h3>@Localizer["WithoutDurations"]</h3>
+ @foreach (var note in item.MidiMelody.GetStats())
+ {
+ <p><text>@note.Key - @note.Value %</text></p>
+ }
+ </div>
+ }
 
+ @if (item.MidiMelody.GetDegreesStats() is not null)
+ {
+ <div class="noteanalysis">
+ <h3>@Localizer["ByDegrees"]</h3>
+ @foreach (var value in item.MidiMelody.GetDegreesStats())
+ {
+ <p><text>@value.Key - @value.Value %</text></p>
+ }
+ </div>
+ }
 
+ @if (item.MidiMelody.GetWeight() is not null)
+ {
+ <div class="noteanalysis">
+ <h3>@Localizer["WithDurations"]</h3>
+ @foreach (var note in item.MidiMelody.GetWeight())
+ {
+ <p><text>@note.Key - @note.Value %</text></p>
+ }
+ </div>
+ }
 
-                        @if (@item.MidiMelody.GetWeight() is not null)
-                        {
-                            <div class="noteanalysis">
-                                <h3>з урахуванням тривалостей</h3>
-                                @foreach (var note in @item.MidiMelody.GetWeight())
-                                {
-                                    <p><text>@note.Key - @note.Value %</text></p>
-                                }
-                            </div>
-                        }
+ @if (item.MidiMelody.GetDegreesWeightStats() is not null)
+ {
+ <div class="noteanalysis">
+ <p>@Localizer["ByDegrees"]</p>
+ @foreach (var value in item.MidiMelody.GetDegreesWeightStats())
+ {
+ <p><text>@value.Key - @value.Value %</text></p>
+ }
+ </div>
+ }
+ </div>
 
-                        @if (@item.MidiMelody.GetDegreesWeightStats() is not null)
-                        {
-                            <div class="noteanalysis">
-                                <p>по ступенях </p>
-                                @foreach (var value in @item.MidiMelody.GetDegreesWeightStats())
-                                {
-                                    <p><text>@value.Key - @value.Value %</text></p>
-                                }
-                            </div>
-                        }
-                    </div>
+ @* ДІАГРАМИ *@
+ <script>
+ window.chartLabels = @Html.Raw(Model.Labels);
+ window.chartValues = @Html.Raw(Model.Values);
+ window.chartWeightValues = @Html.Raw(Model.WeightValues);
+ </script>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <script src="~/js/chartDegree.js"></script>
+ <script src="~/js/togglecontent.js"></script>
 
-                    @* ДІАГРАМИ *@
-                    <script>
-                        window.chartLabels = @Html.Raw(Model.Labels);
-                        window.chartValues = @Html.Raw(Model.Values);
-                        window.chartWeightValues = @Html.Raw(Model.WeightValues);
-                    </script>
-                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                    <script src="~/js/chartDegree.js"></script>
-                    <script src="~/js/togglecontent.js"></script>
+ @if (item.MidiMelody.Tonality is not null)
+ {
+ <div class="charts-container" style="max-width:600px;">
+ <input type="radio" id="degreesRadio" name="chartToggle" checked>
+ <label for="degreesRadio">@Localizer["ValuesChart"]</label>
 
-                    @if (@item.MidiMelody.Tonality is not null)
-                    {
-                        <div class="charts-container" style="max-width: 600px;">
-                            <input type="radio" id="degreesRadio" name="chartToggle" checked>
-                            <label for="degreesRadio">Графік значень</label>
+ <input type="radio" id="weightRadio" name="chartToggle">
+ <label for="weightRadio">@Localizer["WeightChart"]</label>
 
-                            <input type="radio" id="weightRadio" name="chartToggle">
-                            <label for="weightRadio">Графік ваги</label>
+ <canvas id="degreesChart" width="400" height="200" style="width:400px !important; height:200px !important;"></canvas>
+ <canvas id="weightChart" width="400" height="200" style="width:400px !important; height:200px !important; display: none;"></canvas>
+ </div>
+ }
+ else
+ {
+ <p>@Model.ErrorMsg</p>
+ }
+ </div>
+ }
+ </div>
+ </div>
 
-                            <canvas id="degreesChart" width="400" height="200" style="width: 400px !important; height: 200px !important;"></canvas>
-                            <canvas id="weightChart" width="400" height="200" style="width: 400px !important; height: 200px !important; display: none;"></canvas>
-                        </div>
-                    }
-                    else
-                    {
-                        <p>@Model.ErrorMsg</p>
-                    }
-                </div>
-            }
-        </div>
-    </div>
-
-    <!-- НИЖНІЙ КОНТЕНЙЕР З КНОПКАМИ -->
-    <div class="infocontainer actions-container melody-width">
-        <div class="actions-row">
-            <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background link-dark">Редагувати</a>
-            <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark"><span class="hide-mobile">Назад до списку мелодій</span><span class="show-mobile">Усі мелодії</span></a>
-            @* запускає сторінку пошуку, атрибут notesearchHandlerUrl передається як адреса міді-файлу поточної мелодії, працює через find-similar.js' *@
-            <button id="findSimilarBtn" type="button"
-                    class="btn btn-outline-dark light-background link-dark"
-                    data-search-url="@notesearchHandlerUrl">
-                <span class="hide-mobile">Знайти схожі мелодії</span><span class="show-mobile">Схожі</span>
-            </button>
-        </div>
-    </div>
+ <!-- НИЖНІЙ КОНТЕНЬЕР З КНОПКАМИ -->
+ <div class="infocontainer actions-container melody-width">
+ <div class="actions-row">
+ <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background link-dark">@Localizer["Edit"]</a>
+ <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark"><span class="hide-mobile">@Localizer["BackToList"]</span><span class="show-mobile">@Localizer["AllMelodies"]</span></a>
+ @* запускає сторінку пошуку, атрибут notesearchHandlerUrl передається як адреса міді-файлу поточної мелодії, працює через find-similar.js' *@
+ <button id="findSimilarBtn" type="button"
+ class="btn btn-outline-dark light-background link-dark"
+ data-search-url="@notesearchHandlerUrl">
+ <span class="hide-mobile">@Localizer["FindSimilarFull"]</span><span class="show-mobile">@Localizer["FindSimilarShort"]</span>
+ </button>
+ </div>
+ </div>
 </div>
 
 <!--СКРИТПИ-->
@@ -276,4 +278,3 @@
 <script src="~/lib/midirender/midiRenderer.js" asp-append-version="true"></script>
 <script src="~/js/find-similar.js" asp-append-version="true"></script>
 <script src="~/js/melody-details.js" asp-append-version="true"></script>
-

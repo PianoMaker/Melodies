@@ -12,7 +12,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="__placeholder" xml:space="preserve">
-    <value>TODO</value>
+  <data name="AuthorsInDatabase" xml:space="preserve">
+    <value>Authors in database - {0}</value>
+  </data>
+  <data name="AddAuthor" xml:space="preserve">
+    <value>Add author</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="AuthorColumn" xml:space="preserve">
+    <value>Author column</value>
+  </data>
+  <data name="YearsOfLife" xml:space="preserve">
+    <value>Years of life</value>
+  </data>
+  <data name="Country" xml:space="preserve">
+    <value>Country</value>
+  </data>
+  <data name="MelodiesOnSite" xml:space="preserve">
+    <value>Melodies on site</value>
+  </data>
+  <data name="EditDelete" xml:space="preserve">
+    <value>Edit delete</value>
+  </data>
+  <data name="NoData" xml:space="preserve">
+    <value>No data</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Unknown</value>
   </data>
 </root>

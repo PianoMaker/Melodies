@@ -12,7 +12,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="__placeholder" xml:space="preserve">
-    <value>TODO</value>
+  <data name="CountriesInDatabase" xml:space="preserve">
+    <value>Країн у базі даних - {0}</value>
   </data>
 </root>

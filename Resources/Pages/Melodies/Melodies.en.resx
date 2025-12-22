@@ -171,9 +171,9 @@
   <data name="Preview" xml:space="preserve">
   <value>Preview</value>
   </data>
-  <data name="BackToList" xml:space="preserve">
-    <value>Back to List</value>
-  </data>
+ <data name="BackToList" xml:space="preserve">
+ <value>Back to list</value>
+ </data>
   <data name="AreYouSureDelete" xml:space="preserve">
     <value>Are you sure you want to delete this melody?</value>
   </data>

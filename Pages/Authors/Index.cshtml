@@ -1,42 +1,21 @@
 ﻿@page
 @model Melodies25.Pages.Authors.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 
 @{
     ViewData["Title"] = "Мелодія - автори";
     var lng = Model.SelectedLang;
-    
 }
 <div class="infocontainer melody-width hideformenu">
     <div class="spaceformenu"></div>
-    <h1>Авторів у базі даних - @Model.Author.Count</h1>
+    <h1>@Localizer["AuthorsInDatabase", Model.Author.Count]</h1>
     <div style="display:inline">
 
-        <a asp-page="Create" class="btn-melody">Додати автора</a>
+        <a asp-page="Create" class="btn-melody">@Localizer["AddAuthor"]</a>
 
         <form method="post" asp-page-handler="translit" style="display:inline">
-            <button type="submit" class="btn-melody m-4">Оновити</button>
+            <button type="submit" class="btn-melody m-4">@Localizer["Update"]</button>
         </form>
-
-        <!-- Language toggle (left = Uk, right = En). -->
-        <form method="post" id="langform" style="display:inline; margin-left:8px;">
-            <label for="langSwitch" class="visually-hidden">Мова</label>
-            <input type="hidden" id="langHidden" name="SelectedLang" value="@Model.SelectedLang" />
-            <label class="lang-toggle">
-                <span class="lang-label">Uk</span>
-                <input
-                    type="checkbox"
-                    id="langSwitch"
-                    name="SelectedLang"
-                    value="en"
-                    @(Model.SelectedLang == "en" ? "checked" : "")
-                />
-                <span class="switch" role="presentation">
-                    <span class="knob" aria-hidden="true"></span>
-                </span>
-                <span class="lang-label">En</span>
-            </label>
-        </form>
-
     </div>
 </div>
 
@@ -48,16 +27,16 @@
                    asp-route-sortOrder="@Model.SurnameSort"
                    asp-route-SelectedLang="@Model.SelectedLang"
                    class="link-light">
-                    Автор @(Model.SurnameSort == "title_asc" ? "▲" : "▼")
+                    @Localizer["AuthorColumn"] @(Model.SurnameSort == "surname_asc" ? "▲" : "▼")
                 </a>
             </th>
-            <th class="d-none d-md-flex">Роки життя</th>
+            <th class="d-none d-md-flex">@Localizer["YearsOfLife"]</th>
             <th>
                 <a asp-page="./Index"
                    asp-route-sortOrder="@Model.CountrySort"
                    asp-route-SelectedLang="@Model.SelectedLang"
                    class="link-light">
-                    Країна  @(Model.SurnameSort == "surname_asc" ? "▲" : "▼")
+                    @Localizer["Country"] @(Model.CountrySort == "country_asc" ? "▲" : "▼")
                 </a>
             </th>
             <th>
@@ -65,12 +44,12 @@
                    asp-route-sortOrder="@Model.MelodiesCountSort"
                    asp-route-SelectedLang="@Model.SelectedLang"
                    class="link-light">
-                    Мелодій на сайті  @(Model.SurnameSort == "melody_asc" ? "▲" : "▼")
+                    @Localizer["MelodiesOnSite"] @(Model.MelodiesCountSort == "melody_asc" ? "▲" : "▼")
                 </a>
             </th>
             @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
             {
-                <th>Редагувати/Вилучити</th>
+                <th>@Localizer["EditDelete"]</th>
             }
         </tr>
     </thead>
@@ -95,11 +74,11 @@
                     @if (lng == "uk")
                     {
                         <a asp-page="../Countries/Details" asp-route-id="@item.Country?.ID" class="link-dark">
-                        @(item.Country != null ? item.Country.Name : "Немає даних")</a>
+                        @(item.Country != null ? item.Country.Name : Localizer["NoData"])</a>
                     }
                     else
                     {
-                        @(item.Country != null ? item.Country.NameEn : "unknown")
+                        @(item.Country != null ? item.Country.NameEn : Localizer["Unknown"])
                     }
                 </td>
                 <td>
@@ -116,5 +95,4 @@
         }
     </tbody>
 </table>
-<script src="~/js/author-index.js" asp-append-version="true"></script>
 

@@ -15,4 +15,34 @@
   <data name="__placeholder" xml:space="preserve">
     <value>TODO</value>
   </data>
+  <data name="AuthorsInDatabase" xml:space="preserve">
+    <value>Авторів у базі даних - {0}</value>
+  </data>
+  <data name="AddAuthor" xml:space="preserve">
+    <value>Додати автора</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>Оновити</value>
+  </data>
+  <data name="AuthorColumn" xml:space="preserve">
+    <value>Автор</value>
+  </data>
+  <data name="YearsOfLife" xml:space="preserve">
+    <value>Роки життя</value>
+  </data>
+  <data name="Country" xml:space="preserve">
+    <value>Країна</value>
+  </data>
+  <data name="MelodiesOnSite" xml:space="preserve">
+    <value>Мелодії на сайті</value>
+  </data>
+  <data name="EditDelete" xml:space="preserve">
+    <value>Редагувати / Вилучити</value>
+  </data>
+  <data name="NoData" xml:space="preserve">
+    <value>Немає даних</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Невідомо</value>
+  </data>
 </root>

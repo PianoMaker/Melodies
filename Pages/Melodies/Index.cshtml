@@ -18,13 +18,13 @@
 }
 <div class="infocontainer hideformenu">
     <div class="spaceformenu"></div>
-    <h1>Мелодій у базі даних - @(Model.TotalCount)</h1>
+    <h1>@Localizer["MelodiesInDatabase", Model.TotalCount]</h1>
     <!--Верхній прямокутник-->
     <div class="d-flex flex-row melody-index-flex">
         <!-- Кнопки ліворуч "Пошук", "Додати мелодію" -->
         <div id="operationbuttons" class="d-flex flex-column me-4">
-            <a asp-page="search" class="btn-melody m-2 btn-compact-40 align-self-start"><span class="hide-mobile">Розширений пошук</span> <span class="show-mobile">@Localizer["Search"]</span></a>
-            <a asp-page="Create" class="btn-melody m-2 btn-compact-40 align-self-start">Додати <span class="hide-mobile">мелодію</span></a>
+            <a asp-page="search" class="btn-melody m-2 btn-compact-40 align-self-start"><span class="hide-mobile">@Localizer["AdvancedSearch"]</span> <span class="show-mobile">@Localizer["Search"]</span></a>
+            <a asp-page="Create" class="btn-melody m-2 btn-compact-40 align-self-start"><span class="hide-mobile">@Localizer["AddMelody"]</span><span class="show-mobile">@Localizer["Add"]</span></a>
         </div>
 
         <!-- гамбургер (поза блоком літер) -->

@@ -1,5 +1,6 @@
 ﻿@page
 @model Melodies25.Pages.Account.LogoutModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @{
 }
 <!DOCTYPE html>
@@ -9,6 +10,6 @@
     <title>Logout</title>
 </head>
 <body>
-    <h2>You are being logged out...</h2>
+    <h2>@Localizer["Logout"]...</h2>
 </body>
 </html>

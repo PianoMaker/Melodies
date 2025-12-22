@@ -1,7 +1,7 @@
-﻿@{
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
     var currentPage = Context.Request.Path.Value ?? "";
     var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-    @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -123,9 +123,9 @@
                         <li class="nav-item d-flex align-items-center ms-md-2">
                             <div class="btn-group btn-group-sm" role="group" aria-label="Language switcher">
                                 <input type="radio" class="btn-check" name="culture-switch" id="langUk" value="uk" @(currentCulture == "uk" ? "checked" : null) />
-                                <label class="btn btn-outline-light" for="langUk">УКР</label>
+                                <label class="btn @(currentCulture == "uk" ? "btn-pale" : "btn-outline-light")" for="langUk">УКР</label>
                                 <input type="radio" class="btn-check" name="culture-switch" id="langEn" value="en" @(currentCulture == "en" ? "checked" : null) />
-                                <label class="btn btn-outline-light" for="langEn">EN</label>
+                                <label class="btn @(currentCulture == "en" ? "btn-pale" : "btn-outline-light")" for="langEn">EN</label>
                             </div>
                         </li>
 

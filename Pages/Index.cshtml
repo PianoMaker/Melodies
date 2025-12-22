@@ -24,14 +24,14 @@
             <!-- -->
             <div id="mainpageleftcontainer" class="container flex-column justify-content-center align-items-start mt-5 w-25">
                 <h3 class="homepagetitle mt-lg-5">@Localizer["FindSimilarMelody"]</h3>
-                <p class="homepagesubtitle">Пошук мелодій за нотами</p>
+                <p class="homepagesubtitle">@Localizer["NotesSearch"]</p>
                 <!--ПОШУК-->
                 <form method="post" asp-page-handler="Search" class="mt-3 w-100 d-flex align-items-stretch search-form">
                     <input asp-for="Search" type="text" class="form-control searchfield" placeholder="введіть назву мелодії" />
-                    <button type="submit" class="btn btn-index mt-2 search-button"><span class="me-2">🔍</span><span>Пошук</span></button>
+                    <button type="submit" class="btn btn-index mt-2 search-button"><span class="me-2">🔍</span><span>@Localizer["SearchButton"]</span></button>
                 </form>
                 <form method="post" asp-page-handler="AdvancedSearch" class="mt-3 w-100 d-flex search-form-notes">
-                    <button type="submit" class="btn btn-index w-100 mt-2 btn-notes"><span class="me-2">🔍</span><span>Пошук за нотами</span></button>
+                    <button type="submit" class="btn btn-index w-100 mt-2 btn-notes"><span class="me-2">🔍</span><span>@Localizer["SearchByNotesButton"]</span></button>
                 </form>
             </div>
 
@@ -42,19 +42,19 @@
                 {
                     <div class="d-flex gap-3 m-3">
                         <a class="btn btn-logo" asp-area="Identity" asp-page="/Account/Profile" title="Manage">
-                            профіль
+                            @Localizer["Profile"]
                         </a>
 
                         <form class="form-inline" method="post" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
-                            <button type="submit" class="btn btn-logo">Вийти</button>
+                            <button type="submit" class="btn btn-logo">@Localizer["Exit"]</button>
                         </form>
                     </div>
                 }
                 else
                 {
                     <div class="d-flex gap-3 m-3">
-                        <a class="btn link-dark shadow login-button" asp-area="Identity" asp-page="/Account/Register">Зареєструватися</a>
-                        <a class="btn link-dark shadow login-button" asp-area="Identity" asp-page="/Account/Login">Увійти</a>
+                        <a class="btn link-dark shadow login-button" asp-area="Identity" asp-page="/Account/Register">@Localizer["Register"]</a>
+                        <a class="btn link-dark shadow login-button" asp-area="Identity" asp-page="/Account/Login">@Localizer["LogIn"]</a>
                     </div>
                 }
             </div>
@@ -79,7 +79,7 @@
                             </div>
                             <form method="post" asp-page-handler="Search" class="mt-3 w-100 d-flex flex-row align-items-baseline">
                                 <input asp-for="Search" type="text" class="form-control searchfield" />
-                                <button type="submit" class="btn btn-secondary mt-2">🔍 Пошук</button>
+                                <button type="submit" class="btn btn-secondary mt-2"><span class="me-2">🔍</span><span>@Localizer["SearchButton"]</span></button>
                             </form>
                         </div>
                     </div>

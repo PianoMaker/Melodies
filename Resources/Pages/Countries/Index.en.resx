@@ -15,4 +15,7 @@
   <data name="__placeholder" xml:space="preserve">
     <value>TODO</value>
   </data>
+  <data name="CountriesInDatabase" xml:space="preserve">
+    <value>Countries in database - {0}</value>
+  </data>
 </root>
