@@ -1248,12 +1248,17 @@ p {
 
 
 /* Language toggle styles (moved from page inline to site.css) */
-.lang-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    user-select: none;
-}
+        .lang-toggle {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--heading-font, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+        }
 
 .lang-toggle .lang-label {
     font-size: 0.9rem;

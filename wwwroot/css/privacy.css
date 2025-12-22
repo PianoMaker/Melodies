@@ -2,7 +2,19 @@
     Сторінка про сайт
 ------------------  */
 
+.infocontainer{
+    padding: 60px;
+}
+@media(max-width: 768px){
+    .infocontainer{
+        padding: 20px;
+    }
+}
 
+
+
+
+/*портрет*/
 .selfportret {
     height: 200px;
     width: auto;
@@ -11,18 +23,24 @@
     margin-right: 30px;
 }
 
+/* контейнер портрет + посилання */
 .portretcontainer {
     display: inline-flex;
     margin-top: 20px;
-    align-items: stretch; /* змінено з flex-start на stretch */
+    align-items: stretch; 
     gap: 12px;
 }
 
-/* remove inner border on left box (outer .infocontainer already provides the frame) */
+@media(max-width: 1200px){
+    .portretcontainer {
+        display: block;        
+    }
+}
+
+/* контейнер портрет + інформація */
 .portretinfo {
     display: flex;
-    text-align: justify;
-    border: 1px solid var(--brand-border); 
+    text-align: justify;    
     background-color: var(--surface-100);
     width: 100%;
     padding: 20px;
@@ -30,16 +48,27 @@
     box-sizing: border-box;
 }
 
-/* make right panel padding a bit larger for visual breathing room */
-.linkouts {
+
+
+/* Consolidated .linkouts rules — single source of truth (removed duplicate blocks) */
+
+.linkouts, .portretinfo {
+    border: 1px solid var(--brand-border);
+}
+
+.linkouts,
+.linkouts ul {
     list-style: none;
     margin: 0;
     padding-left: 0;
-    background: var(--surface-400);
-    border: 1px solid var(--brand-border);
+    background: var(--surface-400);    
     border-radius: inherit;
-    padding: 28px;               /* increased from 20px */
+    padding: 28px;               /* increased for breathing room */
     box-sizing: border-box;
+    columns: auto !important;
+    column-count: 1 !important;
+    column-gap: normal !important;
+    -webkit-column-break-inside: avoid;
 }
 
 /* keep headings/text inside left and right at the same vertical position */
@@ -50,43 +79,26 @@
     margin-bottom: 8px;
 }
 
-/* Consolidated .linkouts rules — single source of truth */
-.linkouts,
-.linkouts ul {
-    list-style: none;
-    margin: 0;
-    padding-left: 0;
-    background: var(--surface-400);
-    border-radius: inherit;
-    padding: 20px;
-    columns: auto !important;
-    column-count: 1 !important;
-    column-gap: normal !important;
-    -webkit-column-break-inside: avoid;
-    -moz-column-break-inside: avoid;
-    column-break-inside: avoid;
-}
-
 /* Keep list items as block so text wraps naturally (multi-line), prevent fragmentation */
 .linkouts li,
 .h-notes {
     display: block;
-    position: relative;           /* for absolutely positioned icon */
-    padding-left: 40px;           /* space for icon */
+    position: relative;          
+    padding-left: 40px;          
     margin-bottom: 8px;
     break-inside: avoid;
-    -webkit-column-break-inside: avoid;
-    -moz-column-break-inside: avoid;
     width: auto;
 }
 
-/* Icon as absolutely positioned pseudo-element aligned with first text line */
+/* -------------
+    іконки ноток 
+   ------------ */
 .linkouts li::before,
 .h-notes::before {
     content: "";
     position: absolute;
     left: 8px;
-    top: 0.12em;                  /* tweak for visual baseline alignment */
+    top: 0.12em;                  
     width: 20px;
     height: 20px;
     background-image: url("/images/note.png");
