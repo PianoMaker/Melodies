@@ -1,5 +1,7 @@
 ﻿@{
-    var currentPage = Context.Request.Path.Value ?? ""; 
+    var currentPage = Context.Request.Path.Value ?? "";
+    var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -64,60 +66,73 @@
 
                 <div id="mainNavbar" class="navbar-collapse collapse justify-content-between">
                     <ul class="navbar-nav flex-grow-1" style="padding:0; align-items: center;">
-                        <!--стиль елемента меню залежить від поточної сторінки-->
+                        
+                        <!--Мелодії-->
                         @if (currentPage.StartsWith("/Melodies"))
                         {
                             <li class="nav-item melodyitem active">
-                                <a class="nav-link navmelody" asp-page="/Melodies/Index">Мелодії</a>
+                                <a class="nav-link navmelody" asp-page="/Melodies/Index">@Localizer["Melodies"]</a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item melodyitem">
-                                <a class="nav-link navmelody" asp-page="/Melodies/Index">Мелодії</a>
+                                <a class="nav-link navmelody" asp-page="/Melodies/Index">@Localizer["Melodies"]</a>
                             </li>
                         }
+                        <!--Автори-->
                         @if (currentPage.StartsWith("/Authors"))
                         {
                             <li class="nav-item melodyitem active">
-                                <a class="nav-link navmelody @(currentPage == "/Authors/Index" ? "active" : "")" asp-page="/Authors/Index">Автори</a>
+                                <a class="nav-link navmelody @(currentPage == "/Authors/Index" ? "active" : "")" asp-page="/Authors/Index">@Localizer["Authors"]</a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item melodyitem">
-                                <a class="nav-link navmelody @(currentPage == "/Authors/Index" ? "active" : "")" asp-page="/Authors/Index">Автори</a>
+                                <a class="nav-link navmelody @(currentPage == "/Authors/Index" ? "active" : "")" asp-page="/Authors/Index">@Localizer["Authors"]</a>
                             </li>
                         }
+                        <!--Країни-->
                         @if (currentPage.StartsWith("/Countries"))
                         {
                             <li class="nav-item melodyitem active">
-                                <a class="nav-link navmelody @(currentPage == "/Countries/Index" ? "active" : "")" asp-page="/Countries/Index">Країни</a>
+                                <a class="nav-link navmelody @(currentPage == "/Countries/Index" ? "active" : "")" asp-page="/Countries/Index">@Localizer["Countries"]</a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item melodyitem">
-                                <a class="nav-link navmelody @(currentPage == "/Countries/Index" ? "active" : "")" asp-page="/Countries/Index">Країни</a>
+                                <a class="nav-link navmelody @(currentPage == "/Countries/Index" ? "active" : "")" asp-page="/Countries/Index">@Localizer["Countries"]</a>
                             </li>
                         }
+                        <!--Про сайт-->
                         @if (currentPage.StartsWith("/Privacy"))
                         {
                             <li class="nav-item melodyitem active">
-                                <a class="nav-link navmelody" asp-area="" asp-page="/Privacy">Про сайт</a>
+                                <a class="nav-link navmelody" asp-area="" asp-page="/Privacy">@Localizer["About"]</a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item melodyitem">
-                                <a class="nav-link navmelody" asp-area="" asp-page="/Privacy">Про сайт</a>
+                                <a class="nav-link navmelody" asp-area="" asp-page="/Privacy">@Localizer["About"]</a>
                             </li>
                         }
-                        
+                        <!-- Мова -->
+                        <li class="nav-item d-flex align-items-center ms-md-2">
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Language switcher">
+                                <input type="radio" class="btn-check" name="culture-switch" id="langUk" value="uk" @(currentCulture == "uk" ? "checked" : null) />
+                                <label class="btn btn-outline-light" for="langUk">УКР</label>
+                                <input type="radio" class="btn-check" name="culture-switch" id="langEn" value="en" @(currentCulture == "en" ? "checked" : null) />
+                                <label class="btn btn-outline-light" for="langEn">EN</label>
+                            </div>
+                        </li>
+
                         <!--
-                        <partial name="_LoginPartial" />
+                        Для адміністратора
                         -->                           
-                        @if (User.IsInRole("Admin"))
+                        @if (User.IsInRole("Admin") || (User.IsInRole("Moderator")))
                         {
                             @* when in Account/Experimental/Admin *@
                             @if (currentPage.Contains("/Account") || currentPage.Contains("/Experimental") || currentPage.Contains("/Admin"))
@@ -189,20 +204,25 @@
     <script src="~/lib/midirender/patternRenderer.js" asp-append-version="true"></script> 
     <script src="~/js/admin-topbar.js" asp-append-version="true"></script>
     
+    <script>
+        (() => {
+            const inputs = document.querySelectorAll('input[name="culture-switch"]');
+            if (!inputs.length) return;
 
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    const culture = input.value;
+                    const cookieName = '.AspNetCore.Culture';
+                    const cookieValue = `c=${culture}|uic=${culture}`;
+                    const expires = new Date();
+                    expires.setFullYear(expires.getFullYear() + 1);
+                    document.cookie = `${cookieName}=${cookieValue}; expires=${expires.toUTCString()}; path=/`;
+                    window.location.reload();
+                });
+            });
+        })();
+    </script>
 
-    <!-- Hamburger button (в хедері) -->
-@*     <button id="mobileMenuToggle" class="btn btn-menu" aria-label="Toggle menu">
-      <i class="fas fa-bars"></i>
-    </button> *@
-
-    <!-- Мобільне overlay меню -->
-    <div id="mobileMenuOverlay" class="mobile-menu-overlay" role="dialog" aria-hidden="true">
-     
-    </div>
-
-    <!-- Backdrop (можна опціонально) -->
-    <div id="mobileMenuBackdrop" class="page-backdrop" aria-hidden="true"></div>
 
     @* Render optional page-level Scripts section here *@
     @await RenderSectionAsync("Scripts", required: false)

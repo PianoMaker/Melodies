@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+     <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+       <xsd:complexType>
+       <xsd:sequence>
+      <xsd:element name="value" type="xsd:string" minOccurs="0" />
+       </xsd:sequence>
+   <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+       <xsd:attribute ref="xml:space" />
+          </xsd:complexType>
+     </xsd:element>
+     <xsd:element name="assembly">
+        <xsd:complexType>
+    <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+          </xsd:complexType>
+     </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+        <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+             <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+     </xsd:sequence>
+         <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+        <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+  <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+  </xsd:sequence>
+ <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Admin Page Resources - Ukrainian -->
+  <data name="AdminPanel" xml:space="preserve">
+    <value>Панель адміністратора</value>
+  </data>
+  <data name="Colors" xml:space="preserve">
+    <value>Кольори</value>
+  </data>
+  <data name="Files" xml:space="preserve">
+    <value>Файли</value>
+  </data>
+  <data name="Incoming" xml:space="preserve">
+    <value>Вхідні</value>
+  </data>
+  <data name="Notation" xml:space="preserve">
+    <value>Нотація</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Налаштування</value>
+  </data>
+  <data name="Tone" xml:space="preserve">
+    <value>Тональність</value>
+  </data>
+  <data name="Widi" xml:space="preserve">
+    <value>MIDI</value>
+  </data>
+  <data name="ManageUsers" xml:space="preserve">
+    <value>Керування користувачами</value>
+  </data>
+  <data name="SystemSettings" xml:space="preserve">
+    <value>Системні налаштування</value>
+  </data>
+  <data name="FileManagement" xml:space="preserve">
+ <value>Управління файлами</value>
+  </data>
+  <data name="ColorScheme" xml:space="preserve">
+<value>Кольорова схема</value>
+  </data>
+  <data name="MusicNotation" xml:space="preserve">
+    <value>Музична нотація</value>
+  </data>
+  <data name="TonalitySettings" xml:space="preserve">
+    <value>Налаштування тональності</value>
+  </data>
+  <data name="UploadedFiles" xml:space="preserve">
+    <value>Завантажені файли</value>
+  </data>
+  <data name="PendingFiles" xml:space="preserve">
+    <value>Файли на розгляді</value>
+  </data>
+</root>

@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @model IndexModel
 @{
     ViewData["Title"] = "Мелодія - головна";
@@ -24,7 +25,7 @@
         <div id="mainpagecommoncontainer" class="d-flex commoncontainer">
             <!-- -->
             <div id="mainpageleftcontainer" class="container flex-column justify-content-center align-items-start mt-5 w-25">
-                <h3 class="homepagetitle mt-lg-5">Знайди схожу мелодію!</h3>
+                <h3 class="homepagetitle mt-lg-5">@Localizer["FindSimilarMelody"]</h3>
                 <p class="homepagesubtitle">Пошук мелодій за нотами</p>
                 <!--ПОШУК-->
                 <form method="post" asp-page-handler="Search" class="mt-3 w-100 d-flex align-items-stretch search-form">
