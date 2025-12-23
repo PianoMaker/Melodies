@@ -105,10 +105,25 @@ namespace Melodies25.Pages.Melodies
 
         private static readonly char[] separator = new char[] { ' ', '_' };
 
+
+        [BindProperty(SupportsGet = true)]
+        public string SelectedLang { get; set; } = "uk";
+
         public void OnGetAsync(string search, int? numerator, int? denominator)
         {
 
             MessageL(COLORS.yellow, $"SEARCH - OnGetAsync method, intonation = {IfIntonation}");
+
+            // Перемикання мови
+            try
+            {
+                var ui = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                SelectedLang = string.IsNullOrWhiteSpace(ui) ? "uk" : ui;
+            }
+            catch
+            {
+                SelectedLang = "uk";
+            }
 
             TimeSignatureNumerator = numerator ?? 4;
             TimeSignatureDenominator = denominator ?? 4;

@@ -219,4 +219,22 @@
   <data name="Profile" xml:space="preserve">
     <value>User profile</value>
   </data>
+  <data name="TimeSignatureLabel" xml:space="preserve">
+    <value>Time signature</value>
+  </data>
+  <data name="ResetButton" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="SearchButton" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="SaveButton" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="PreviewButton" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="PianoPlaceholder" xml:space="preserve">
+    <value>use keyboard to enter notes or type code manually</value>
+  </data>
 </root>
