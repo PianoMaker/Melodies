@@ -4,23 +4,22 @@
     var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@currentCulture">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Melodies25</title>
-    
+
     <!--BOOTSTRAP-->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />    
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <!--<link rel="stylesheet" href="~/css/assets.css" asp-append-version="true" />-->
-    
     <!--GOOOOGLE-->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Monsieur+La+Doulaise&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Pinyon+Script&family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="~/css/singerella.css" asp-append-version="true" />     
+    <link rel="stylesheet" href="~/css/singerella.css" asp-append-version="true" />
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
 
@@ -28,9 +27,9 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
-    
+
     <!--CUSTOM-->
-    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />    
+    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/contextMenu.css" asp-append-version="true" />
 
@@ -41,7 +40,7 @@
 <body class="@(ViewData["BodyClass"] ?? "") @(currentCulture == "en" ? "lang-en" : "")">
 
     <!--Верхня панель-->
-    <header >        
+    <header>
         <nav id="navbarstrip" class="navbar navbar-expand-md navbar-dark bg-sky border-bottom box-shadow p-0">
             <div id="navcontainer" class="container-fluid d-flex flex-nowrap align-items-start px-0 px-md-3">
 
@@ -66,7 +65,7 @@
 
                 <div id="mainNavbar" class="navbar-collapse collapse justify-content-between">
                     <ul class="navbar-nav flex-grow-1" style="padding:0; align-items: center;">
-                        
+
                         <!--Мелодії-->
                         @if (currentPage.StartsWith("/Melodies"))
                         {
@@ -109,15 +108,35 @@
                         <!--Про сайт-->
                         @if (currentPage.StartsWith("/Privacy"))
                         {
-                            <li class="nav-item melodyitem active">
-                                <a class="nav-link navmelody" asp-area="" asp-page="/Privacy">@Localizer["About"]</a>
-                            </li>
+                            @if (currentCulture == "uk")
+                            {
+                                <li class="nav-item melodyitem active">
+                                    <a class="nav-link navmelody" asp-area="" asp-page="/Privacy">@Localizer["About"]</a>
+                                </li>
+                            }
+                            else
+                            {
+
+                                <li class="nav-item melodyitem active">
+                                    <a class="nav-link navmelody" asp-area="" asp-page="/Privacy.en">@Localizer["About"]</a>
+                                </li>
+                            }
                         }
                         else
                         {
-                            <li class="nav-item melodyitem">
-                                <a class="nav-link navmelody" asp-area="" asp-page="/Privacy">@Localizer["About"]</a>
-                            </li>
+                            @if (currentCulture == "uk")
+                            {
+                                <li class="nav-item melodyitem">
+                                    <a class="nav-link navmelody" asp-area="" asp-page="/Privacy">@Localizer["About"]</a>
+                                </li>
+                            }
+                            else
+                            {
+
+                                <li class="nav-item melodyitem">
+                                    <a class="nav-link navmelody" asp-area="" asp-page="/Privacy.en">@Localizer["About"]</a>
+                                </li>
+                            }
                         }
                         <!-- Мова -->
                         <li class="nav-item d-flex align-items-center ms-md-2">
@@ -131,7 +150,7 @@
 
                         <!--
                         Для адміністратора
-                        -->                           
+                        -->
                         @if (User.IsInRole("Admin") || (User.IsInRole("Moderator")))
                         {
                             @* when in Account/Experimental/Admin *@
@@ -150,24 +169,23 @@
                                         <i class="fa fa-cogs"></i>
                                     </a>
                                 </li>
-                            }                           
-                            
+                            }
+
                         }
-                        </ul>
-                    
+                    </ul>
+
                 </div>
-                
+
             </div>
-            
+
         </nav>
     </header>
-    
+
     <!-- Середина -->
-    
     @if (ViewContext.RouteData.Values["Page"]?.ToString() == "/Index")
     {
-     <div class="mainpage">
-        @RenderBody()
+        <div class="mainpage">
+            @RenderBody()
         </div>
     }
     else
@@ -200,49 +218,10 @@
     <script src="~/lib/midirender/mr-rests-helper.js" asp-append-version="true"></script>
     <script src="~/lib/midirender/midiparser.js" asp-append-version="true"></script>
     <script src="~/lib/midirender/midiparser_ext.js" asp-append-version="true"></script>
-    <script src="~/lib/midirender/midiRenderer.js" asp-append-version="true"></script>  
-    <script src="~/lib/midirender/patternRenderer.js" asp-append-version="true"></script> 
+    <script src="~/lib/midirender/midiRenderer.js" asp-append-version="true"></script>
+    <script src="~/lib/midirender/patternRenderer.js" asp-append-version="true"></script>
     <script src="~/js/admin-topbar.js" asp-append-version="true"></script>
-    
-    <script>
-        (() => {
-            const inputs = document.querySelectorAll('input[name="culture-switch"]');
-            if (!inputs.length) return;
-
-            inputs.forEach(input => {
-                input.addEventListener('change', () => {
-                    const culture = input.value;
-                    const cookieName = '.AspNetCore.Culture';
-                    const cookieValue = `c=${culture}|uic=${culture}`;
-                    const expires = new Date();
-                    expires.setFullYear(expires.getFullYear() + 1);
-                    document.cookie = `${cookieName}=${cookieValue}; expires=${expires.toUTCString()}; path=/`;
-                    window.location.reload();
-                });
-            });
-        })();
-    </script>
-    <script>
-        // Apply small theme tweak based on current UI culture.
-        // Insert this after the culture-switch handler (it uses server-side currentCulture variable already defined).
-        (function () {
-            try {
-                var culture = '@currentCulture';
-                if (culture && culture.toLowerCase() === 'en') {
-                    const root = document.documentElement;
-                    // read the --brand-english variable from CSS (defined in site.css) or fallback to hard-coded blue
-                    const englishColor = getComputedStyle(root).getPropertyValue('--brand-english').trim() || '#2a5d84';
-                    root.style.setProperty('--brand-maincolor', englishColor);
-                    // optional: adjust the lighter variant to match the english tone
-                    root.style.setProperty('--brand-maincolor-light', '#5b7fa0');
-                }
-            } catch (e) {
-                // safe fallback — do nothing on error
-                console && console.warn && console.warn('applyLangColors failed', e);
-            }
-        })();
-    </script>
-
+    <script src="~/js/lang-switcher.js" asp-append-version="true"></script>
 
     @* Render optional page-level Scripts section here *@
     @await RenderSectionAsync("Scripts", required: false)
