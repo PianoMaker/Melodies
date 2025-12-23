@@ -1,0 +1,98 @@
+@page
+@model PrivacyModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+ ViewData["Title"] = "Melody - About the project";
+}
+<link rel="stylesheet" href="~/css/privacy.css" />
+<div class="infocontainer">
+
+ <h3 class="mt-4 h-notes">Project goal</h3>
+ <p>
+ To create a tool for searching identical or similar melodies.
+ </p>
+
+
+ <h3 class="mt-4 h-notes">Practical use</h3>
+ <p>
+ <b>Plagiarism detection</b> — composers produce thousands of new melodies daily. As a result, the risk of accidentally repeating an existing melody increases, while copyright legislation becomes stricter. A melody database, when populated, will allow authors to check their melody for potential matches before publication and thus avoid legal issues.
+ </p>
+ <p>
+ <b>Research</b> — musicologists need accurate tools for comparative analysis of works from different eras, styles, genres, etc. Melody comparison tools will enable, for example, assessing the influence of folk art on a particular composer or the degree of stylistic affinity among a group of authors.
+ </p>
+ <h3 class="mt-4 h-notes">
+ Main functionality:
+ </h3>
+ <ul>
+ <li>Stage1. A database of songs with a collection of MIDI melody files. Ability to add, edit, and delete records.</li>
+ <li>Stage2. Melody search by melodic pattern.</li>
+ <li>Stage3. Ability to create a MIDI file directly on the site.</li>
+ </ul>
+ <i class="fa-solid fa-location-dot text-danger m-2"></i>
+ <i> planned:</i>
+
+ <ul>
+ <li>Stage4. Search for similar melodies with controllable similarity parameters.</li>
+ <li>Stage5. Bilingual interface (uk, en).</li>
+ </ul>
+ <h3 class="mt-4 h-notes">
+ Additional features and resources:
+ </h3>
+ <ul>
+ <li>User registration. Roles — administrator, moderator, user.</li>
+ <li>Telegram bot <a href="https://t.me/MelodyNotificationBot">"Melody notification"</a> notifies about new uploads.</li>
+ <li><a href="https://github.com/PianoMaker/Melodies">GitHub repository</a></li>
+ </ul>
+ <i class="fa-solid fa-location-dot text-danger m-2"></i>
+
+ <h3 class="mt-4 h-notes">
+ Toolkit:
+ </h3>
+ <ul>
+ <li>ASP.NET</li>
+ <li>Entity Framework</li>
+ <li>NAudio</li>
+ <li>vexflow</li>
+ </ul>
+
+ <h3 class="mt-4 h-notes">
+ Technical notes:
+ </h3>
+ <p>
+ Currently, uploading MIDI files is allowed only for monophonic musical material. Polyphonic material, or MIDI files in which Note-On events occur before Note-Off events of the previous note, lead to incorrect model behavior.
+ It is recommended to use MIDI format1; MIDI0 is not always fully supported regarding key signatures.
+ Multitrack MIDI files are handled correctly if each track is monophonic. In that case, tracks will be processed sequentially, but their use is not recommended.
+ Work on handling these limitations is planned. For now, to make a MIDI file comply with the stated requirement, use external software (MIDI or notation editors).
+ </p>
+
+
+ <h3 class="mt-4 h-notes">
+ About the project author
+ </h3>
+ <div class="portretcontainer">
+ <div class="portretinfo">
+ <img src="~/images/me.png" alt="Author photo" class="selfportret" style="max-width:100%;" />
+ <div>
+ <p>
+ <strong>Andriy Bondarenko</strong>, <br />
+ graduate of IT?STEP Academy (2025), <br />
+ degree in Software Development.
+ </p>
+ </div>
+ </div>
+ <div class="linkouts">
+ <strong>Other projects by the author: </strong>
+ <ul>
+ <li><a href="https://musicinukrainian.wordpress.com/">World musical classics in Ukrainian</a> — a collection of translations of vocal works by foreign composers into Ukrainian</li>
+ <li><a href="https://solfegio.azurewebsites.net/">Solfegio</a> — an online service for learning solfeggio</li>
+ <li class="youtube-button">
+ <a href="https://www.youtube.com/channel/UCU0uoVAp9po6P8mRpRkNhBQ" target="_blank" rel="noopener noreferrer" aria-label="Author's YouTube channel">YouTube channel</a>
+ </li>
+
+ </ul>
+ </div>
+ </div>
+ 
+
+
+</div>
