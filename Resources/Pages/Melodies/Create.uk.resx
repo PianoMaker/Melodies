@@ -12,7 +12,65 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="__placeholder" xml:space="preserve">
-    <value>TODO</value>
+
+  <data name="Title" xml:space="preserve">
+    <value>Додати мелодію</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Додати мелодію</value>
+  </data>
+  <data name="FileReadyToSave" xml:space="preserve">
+    <value>Файл готовий до збереження</value>
+  </data>
+  <data name="TonalityOption" xml:space="preserve">
+    <value>-- Тональність, в якій завантажено MIDI --</value>
+  </data>
+  <data name="TitleLabel" xml:space="preserve">
+    <value>Назва</value>
+  </data>
+  <data name="TitlePlaceholder" xml:space="preserve">
+    <value>Введіть назву</value>
+  </data>
+  <data name="CopyFromFile" xml:space="preserve">
+    <value>Копіювати з файлу</value>
+  </data>
+  <data name="YearLabel" xml:space="preserve">
+    <value>Рік</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Примітки</value>
+  </data>
+  <data name="AuthorLabel" xml:space="preserve">
+    <value>Автор</value>
+  </data>
+  <data name="AuthorSearchPlaceholder" xml:space="preserve">
+    <value>Введіть ≥3 літери для пошуку автора</value>
+  </data>
+  <data name="CreateButton" xml:space="preserve">
+    <value>Створити</value>
+  </data>
+  <data name="MidiNotReady" xml:space="preserve">
+    <value>MIDI-файл не готовий</value>
+  </data>
+  <data name="MidiReady" xml:space="preserve">
+    <value>MIDI-файл готовий</value>
+  </data>
+  <data name="AddAuthorButton" xml:space="preserve">
+    <value>Додати автора</value>
+  </data>
+  <data name="AddAuthorPlaceholder" xml:space="preserve">
+    <value>Додайте ім'я та прізвище</value>
+  </data>
+  <data name="AddButton" xml:space="preserve">
+    <value>Додати</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Назад до списку</value>
+  </data>
+  <data name="EnterFromKeyboard" xml:space="preserve">
+    <value>Ввести з клавіатури</value>
+  </data>
+  <data name="NoNotesEntered" xml:space="preserve">
+    <value>жодної ноти не введено</value>
   </data>
 </root>

@@ -1,4 +1,6 @@
-﻿@*
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@*
     /*Панель вибору тривалостей для вводу мелодій*/
 *@
 @{
@@ -43,7 +45,7 @@
         <script src="~/js/switchDurations.js" asp-append-version="true"></script>
     </div>
     <div id="timesignature">
-        <label class="form-label mb-1">Музичний розмір</label>
+        <label class="form-label mb-1">@Localizer["TimeSignatureLabel"]</label>
         <div class="settimesignature">
             <input type="number" id="TimeSignatureNumerator" name="TimeSignatureNumerator" form="notesearchForm" min="1" value="@tsNum" class="form-control" style="width:60px" />
             <span class="fs-5">/</span>

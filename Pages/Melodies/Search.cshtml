@@ -3,19 +3,21 @@
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 
 @{
-    ViewData["Title"] = "Мелодія - Пошук";
+    ViewData["Title"] = Localizer["Title"];
     // Pull data prepared in the PageModel for display blocks below
     var melodyPattern = ViewData["melodypattern"] as IEnumerable<string>;
     var matchedMelodiesCount = ViewData["matchedMelodiesCount"] as int? ?? 0;
     int? numerator = Model.TimeSignatureNumerator;
     int? denominator = Model.TimeSignatureDenominator;
+    // detect UI language from current culture (fallback to 'uk')
+    var lng = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName ?? "uk";
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/notes.css" asp-append-version="true" />
 }
 <div class="infocontainer mb-1">
-    <h1>Пошук</h1>
+    <h1>@Localizer["SearchHeading"]</h1>
 </div>
 <div class="searchcontainer h-100 mt-1">
 
@@ -23,36 +25,36 @@
 
     <div class="searchleftcontainer">
         <form method="post" asp-page-handler="search" id="metaSearchForm">
-            <label>Автор</label>
-            <input type="text" asp-for="Author" class="form-control w-75" placeholder="шукати серед усіх" />
+            <label>@Localizer["AuthorLabel"]</label>
+            <input type="text" asp-for="Author" class="form-control w-75" placeholder="@Localizer["SearchAllPlaceholder"]" />
 
-            <label>Назва</label>
-            <input type="text" asp-for="Title" class="form-control w-75" placeholder="шукати серед усіх" />
+            <label>@Localizer["TitleLabel"]</label>
+            <input type="text" asp-for="Title" class="form-control w-75" placeholder="@Localizer["SearchAllPlaceholder"]" />
 
             <div class="form-check mt-2">
                 <input type="checkbox" id="ifPartly" asp-for="IfPartly" class="form-check-input" checked="checked" />
-                <label class="form-check-label" for="ifPartly">Частковий збіг</label>
+                <label class="form-check-label" for="ifPartly">@Localizer["PartlyMatch"]</label>
             </div>
 
-            <label>Починається з ноти...</label>
+            <label>@Localizer["StartsWithNote"]</label>
 
 
             <select asp-for="Note" class="form-control w-75">
-                <option value="" selected disabled>(будь-яка)</option>
-                <option value="c">до</option>
-                <option value="cis">до♯ / ре♭</option>
-                <option value="d">ре</option>
-                <option value="dis">ре♯ / мі♭</option>
-                <option value="e">мі</option>
-                <option value="f">фа</option>
-                <option value="fis">фа♯ / соль♭</option>
-                <option value="g">соль</option>
-                <option value="gis">соль♯ / ля♭</option>
-                <option value="a">ля</option>
-                <option value="ais">ля♯ / сі♭</option>
-                <option value="h">сі</option>
+                <option value="" selected disabled>@Localizer["Any"]</option>
+                <option value="c">@Localizer["NoteC"]</option>
+                <option value="cis">@Localizer["NoteCis"]</option>
+                <option value="d">@Localizer["NoteD"]</option>
+                <option value="dis">@Localizer["NoteDis"]</option>
+                <option value="e">@Localizer["NoteE"]</option>
+                <option value="f">@Localizer["NoteF"]</option>
+                <option value="fis">@Localizer["NoteFis"]</option>
+                <option value="g">@Localizer["NoteG"]</option>
+                <option value="gis">@Localizer["NoteGis"]</option>
+                <option value="a">@Localizer["NoteA"]</option>
+                <option value="ais">@Localizer["NoteAis"]</option>
+                <option value="h">@Localizer["NoteH"]</option>
             </select>
-            <button type="submit" class="btn btn-melody">Пошук</button>
+            <button type="submit" class="btn btn-melody">@Localizer["SearchButton"]</button>
         </form>
 
     </div>
@@ -66,8 +68,8 @@
                 @await Html.PartialAsync("_durationsTable")
             </div>
         </div>
-        
-        <!--  МІЙ СТЕЙНВЕЙ -->
+
+        <!-- МІЙ СТЕЙНВЕЙ -->
         <div class="piano-scroll-wrapper" aria-label="Piano keyboard scroll container">
             <div class="piano-scroll-inner">
                 @await Html.PartialAsync("_PianoKeys")
@@ -116,7 +118,7 @@
                 }
                 else
                 {
-                    <p id="noNotesMsg">жодної ноти не введено</p>
+                    <p id="noNotesMsg">@Localizer["NoNotesEntered"]</p>
                 }
             </div>
         }
@@ -138,30 +140,31 @@
                 <input class="form-check-input" type="radio" name="SearchAlgorithm"
                        value="Substring" id="algSubstring" form="notesearchForm"
                        @(Model.SearchAlgorithm?.Equals("Substring", StringComparison.OrdinalIgnoreCase) == true ? "checked" : null) />
-                <label class="form-check-label" for="algSubstring"><span class="hide-mobile">алгоритм&nbsp</span> без пропусків</label>
+                <label class="form-check-label" for="algSubstring"><span class="hide-mobile">@Localizer["AlgorithmLabel"]&nbsp;</span>@Localizer["Alg_NoGaps"]</label>
             </div>
             <div class="form-check d-flex align-items-center gap-2">
                 <input class="form-check-input" type="radio" name="SearchAlgorithm"
                        value="Subsequence" id="algSubsequence" form="notesearchForm"
                        @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? "checked" : null) />
-                <label class="form-check-label" for="algSubsequence"><text class="hide-mobile">алгоритм&nbsp</text>з пропусками</label>
+                <label class="form-check-label" for="algSubsequence"><text class="hide-mobile">@Localizer["AlgorithmLabel"]&nbsp;</text>@Localizer["Alg_WithGaps"]</label>
             </div>
             <!-- LCS max gap slider (1..3) -->
             <div class="hide-mobile">
-                <input type="range" min="1" max="3" step="1" value="@Model.MaxGap" id="lcsGap"
+                <input type="range" min="1" max="3" step="1" value="@Model.MaxGap"
+                       id="lcsGap"
                        class="form-range ms-2" style="width:120px" form="notesearchForm" name="MaxGap"
                        disabled="@((Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true) ? null : "disabled")" />
-                <span class="small ms-1 @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? null : "text-muted")">gap: <span id="lcsGapVal">@Model.MaxGap</span></span>
+                <span class="small ms-1 @(Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true ? null : "text-muted")">@Localizer["GapLabel"]: <span id="lcsGapVal">@Model.MaxGap</span></span>
             </div>
         </div>
         <div class="notesinfo d-flex align-items-center gap-3 my-2 compact-controls">
             <div class="form-check d-flex align-items-center gap-2">
                 <input asp-for="IfIntonation" class="form-check-input" id="ifIntonation" form="notesearchForm" checked="checked" />
-                <label class="form-check-label" for="ifIntonation">Мелодія</label>
+                <label class="form-check-label" for="ifIntonation">@Localizer["MelodyOption"]</label>
             </div>
             <div class="form-check d-flex align-items-center gap-2">
                 <input asp-for="IfRhythm" class="form-check-input" id="ifRhythm" form="notesearchForm" />
-                <label class="form-check-label" for="ifRhythm">Ритм</label>
+                <label class="form-check-label" for="ifRhythm">@Localizer["RhythmOption"]</label>
             </div>
         </div>
 
@@ -183,17 +186,17 @@
     <!-- Loading animation -->
     <div id="searchLoading" class="text-center my-4">
         <div class="spinner-border text-primary" role="status">
-            <span class="sr-only">Завантаження результатів...</span>
+            <span class="sr-only">@Localizer["LoadingResultsAria"]</span>
         </div>
-        <p class="mt-2">Завантаження результатів пошуку...</p>
+        <p class="mt-2">@Localizer["LoadingResults"]</p>
     </div>
-    <h2>Результати пошуку</h2>
+    <h2>@Localizer["ResultsHeading"]</h2>
 
 
     @if (melodyPattern != null)
     {
         <p class="hide-mobile">
-            Введено мелодію:
+            @Localizer["EnteredMelody"]
             @foreach (var notes in melodyPattern)
             {
                 <text>@notes </text>
@@ -202,16 +205,16 @@
     }
 
 
-    <!-- ВІДОБРАЖЕННЯ  МЕЛОДІЇ ЩО ЗБІГАЄТЬСЯ-->
+    <!-- ВІДОБРАЖЕННЯ МЕЛОДІЇ ЩО ЗБІГАЄТЬСЯ-->
     <div class="notescontainer hide" id="matchedMelodiesContainer">
         @for (int i = 0; i < matchedMelodiesCount; i++)
         {
-            var songPattern = ViewData[$"songpattern{i}"] as List<string>;  //ноти мелодії, що збігаються
-            var title = Model.MatchedMelodies[i].Melody.Title;              //назва мелодії
-            var startposition = Model.MatchedMelodies[i].Position;          //позиція початку збігу
-            var length = Model.MatchedMelodies[i].CommonLength;             //довжина збігу
-            var endposition = startposition + length;                       //позиція кінця збігу
-            var filePath = Model.MatchedMelodies[i].Melody.FilePath;        //шлях до файлу
+            var songPattern = ViewData[$"songpattern{i}"] as List<string>; //ноти мелодії, що збігаються
+            var title = Model.MatchedMelodies[i].Melody.Title; //назва мелодії
+            var startposition = Model.MatchedMelodies[i].Position; //позиція початку збігу
+            var length = Model.MatchedMelodies[i].CommonLength; //довжина збігу
+            var endposition = startposition + length; //позиція кінця збігу
+            var filePath = Model.MatchedMelodies[i].Melody.FilePath; //шлях до файлу
             var midiUrl = string.IsNullOrEmpty(filePath) ? null : Url.Content($"~/melodies/{filePath}");
             var matchedIndices = ViewData[$"songmatched{i}"] as List<int> ?? new List<int>(); //для підсвітки нот, що збігаються за індексами
             bool isSubseq = Model.SearchAlgorithm?.Equals("Subsequence", StringComparison.OrdinalIgnoreCase) == true;
@@ -227,7 +230,7 @@
                         <button id="previoussong" type="button" class="btn btn-outline-secondary song-nav prev" aria-label="previous">
                             <i class="fas fa-chevron-left" aria-hidden="true"></i>
                         </button>
-                        <p class="mb-0">Мелодія: <span class="matchedsongname">@title</span></p>
+                        <p class="mb-0">@Localizer["MelodyLabel"]: <span class="matchedsongname">@title</span></p>
                         <button id="nextsong" type="button" class="btn btn-outline-secondary song-nav next" aria-label="next">
                             <i class="fas fa-chevron-right" aria-hidden="true"></i>
                         </button>
@@ -265,7 +268,7 @@
                     <!--ТРАНСПОЗИЦІЯ-->
                     @if (isSubseq)
                     {
-                        <div class="small text-muted">Транспозиція @(Model.MatchedMelodies[i].BestShift) півтонів.</div>
+                        <div class="small text-muted">@Localizer["Transposition", Model.MatchedMelodies[i].BestShift]</div>
                     }
 
 
@@ -280,12 +283,16 @@
                         <!-- КОМЕНТАРІ ТУТ -->
                         <div id="@commentsId" class="small text-muted" data-suppress-summary="1"></div>
                     }
+                    else
+                    {
+                        <div class="small text-muted">@Localizer["FileNotAvailable", filePath]</div>
+                    }
 
                 </div>
             }
             else
             {
-                <p>Мелодія @i не знайдена.</p>
+                <p>@Localizer["MelodyNotFound", i]</p>
             }
         }
     </div>
@@ -299,15 +306,15 @@
     <table class="table hide">
         <thead>
             <tr>
-                <th>Назва</th>
-                <th>Автор</th>
-                <th class="hide-mobile">Файл</th>
+                <th>@Localizer["TableName"]</th>
+                <th>@Localizer["TableAuthor"]</th>
+                <th class="hide-mobile">@Localizer["TableFile"]</th>
                 @if (Model.NoteSearch is true)
                 {
-                    <th>Довжина <br>збігу</th>
-                    <th>на позиції</th>
+                    <th>@Localizer["MatchLength"]</th>
+                    <th>@Localizer["Position"]</th>
                 }
-                <th class="col-actions hide-mobile">Редагувати/Вилучити</th>
+                <th class="col-actions hide-mobile">@Localizer["Actions"]</th>
             </tr>
         </thead>
         <tbody>
@@ -329,16 +336,25 @@
                         <td>
                             @if (item.Author is not null)
                             {
+
                                 if (item.Author.Surname == "Українська народна пісня")
                                 {
                                     <span class="song-title" data-full="Українська народна пісня" data-short="укр. нар. пісня">
-                                        Українська народна пісня
+                                        @Localizer["UkrainianFolkSong"]
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="author-name">@item.Author.Name</span>
-                                    <span> @Html.DisplayFor(modelItem => item.Author.Surname)</span>
+                                    if (lng == "uk")
+                                    {
+                                        <span class="author-name">@item.Author.Name</span>
+                                        <span> @Html.DisplayFor(modelItem => item.Author.Surname)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="author-name">@item.Author.NameEn</span>
+                                        <span> @Html.DisplayFor(modelItem => item.Author.SurnameEn)</span>
+                                    }
                                 }
                             }
                         </td>
@@ -371,7 +387,7 @@
                             }
                             else
                             {
-                                <span>Файл @item.FilePath не доступний</span>
+                                <span>@Localizer["FileNotAvailable", item.FilePath]</span>
                             }
                         </td>
                         <td>@matchLength</td> @* Відображаємо довжину збігу *@
@@ -385,7 +401,7 @@
             }
             else if (Model.Melody is not null && Model.Melody.Count > 0 && Model.NoteSearch is false)
             {
-                <!--якщо пошук за назвами-->
+                <!--якщо SEARCH ЗА НАЗВАМИ-->
                 @foreach (var item in Model.Melody)
                 {
                     <tr>
@@ -400,13 +416,21 @@
                                 if (item.Author.Surname == "Українська народна пісня")
                                 {
                                     <span class="song-title" data-full="Українська народна пісня" data-short="укр. нар. пісня">
-                                        Українська народна пісня
+                                        @Localizer["UkrainianFolkSong"]
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="author-name">@item.Author.Name</span>
-                                    <span> @Html.DisplayFor(modelItem => item.Author.Surname)</span>
+                                    if (lng == "uk")
+                                    {
+                                        <span class="author-name">@item.Author.Name</span>
+                                        <span> @Html.DisplayFor(modelItem => item.Author.Surname)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="author-name">@item.Author.NameEn</span>
+                                        <span> @Html.DisplayFor(modelItem => item.Author.SurnameEn)</span>
+                                    }
                                 }
                             }
                         </td>
@@ -439,7 +463,7 @@
                             }
                             else
                             {
-                                <span>Файл @item.FilePath не доступний</span>
+                                <span>@Localizer["FileNotAvailable", item.FilePath]</span>
                             }
                         </td>
                         <!-- редагувати/вилучити -->
@@ -470,7 +494,7 @@
 <script src="~/js/melody-create.js" asp-append-version="true"></script>
 
 <script src="~/lib/midirender/midiRenderer.js" asp-append-version="true"></script>
-<script src="~/lib/midirender/patternRenderer.js"></script>
+<script src="~/lib/midirender/patternRenderer.js" asp-append-version="true"></script>
 <!-- Shared setup (must load before wrapper) -->
 <script src="~/lib/midirender/live-notation.js" asp-append-version="true"></script>
 <!-- thin wrapper that calls setupLiveNotationOnCreate -->

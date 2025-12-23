@@ -132,4 +132,7 @@
   <data name="SearchByNotesButton" xml:space="preserve">
     <value>Search by notes</value>
   </data>
+  <data name="EnterMelodyName" xml:space="preserve">
+    <value>Enter melody name</value>
+  </data>
 </root>

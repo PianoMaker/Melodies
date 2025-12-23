@@ -132,4 +132,7 @@
   <data name="SearchByNotesButton" xml:space="preserve">
     <value>Пошук за нотами</value>
   </data>
+  <data name="EnterMelodyName" xml:space="preserve">
+    <value>введіть назву мелодії</value>
+  </data>
 </root>

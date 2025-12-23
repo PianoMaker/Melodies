@@ -1,5 +1,110 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
   </resheader>
@@ -12,7 +117,133 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="__placeholder" xml:space="preserve">
-    <value>TODO</value>
+  <data name="Title" xml:space="preserve">
+    <value>Melody - Search</value>
+  </data>
+  <data name="SearchHeading" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="AuthorLabel" xml:space="preserve">
+    <value>Author</value>
+  </data>
+  <data name="TitleLabel" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="SearchAllPlaceholder" xml:space="preserve">
+    <value>search among all</value>
+  </data>
+  <data name="PartlyMatch" xml:space="preserve">
+    <value>Partial match</value>
+  </data>
+  <data name="StartsWithNote" xml:space="preserve">
+    <value>Starts with note...</value>
+  </data>
+  <data name="Any" xml:space="preserve">
+    <value>(any)</value>
+  </data>
+  <data name="NoteC" xml:space="preserve">
+    <value>do</value>
+  </data>
+  <data name="NoteCis" xml:space="preserve">
+    <value>do♯ / re♭</value>
+  </data>
+  <data name="NoteD" xml:space="preserve">
+    <value>re</value>
+  </data>
+  <data name="NoteDis" xml:space="preserve">
+    <value>re♯ / mi♭</value>
+  </data>
+  <data name="NoteE" xml:space="preserve">
+    <value>mi</value>
+  </data>
+  <data name="NoteF" xml:space="preserve">
+    <value>fa</value>
+  </data>
+  <data name="NoteFis" xml:space="preserve">
+    <value>fa♯ / sol♭</value>
+  </data>
+  <data name="NoteG" xml:space="preserve">
+    <value>sol</value>
+  </data>
+  <data name="NoteGis" xml:space="preserve">
+    <value>sol♯ / la♭</value>
+  </data>
+  <data name="NoteA" xml:space="preserve">
+    <value>la</value>
+  </data>
+  <data name="NoteAis" xml:space="preserve">
+    <value>la♯ / si♭</value>
+  </data>
+  <data name="NoteH" xml:space="preserve">
+    <value>si</value>
+  </data>
+  <data name="SearchButton" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Alg_NoGaps" xml:space="preserve">
+    <value>no gaps</value>
+  </data>
+  <data name="Alg_WithGaps" xml:space="preserve">
+    <value>with gaps</value>
+  </data>
+  <data name="AlgorithmLabel" xml:space="preserve">
+    <value>algorithm</value>
+  </data>
+  <data name="GapLabel" xml:space="preserve">
+    <value>gap</value>
+  </data>
+  <data name="MelodyOption" xml:space="preserve">
+    <value>Melody</value>
+  </data>
+  <data name="RhythmOption" xml:space="preserve">
+    <value>Rhythm</value>
+  </data>
+  <data name="NoNotesEntered" xml:space="preserve">
+    <value>no notes entered</value>
+  </data>
+  <data name="LoadingResultsAria" xml:space="preserve">
+    <value>Loading results...</value>
+  </data>
+  <data name="LoadingResults" xml:space="preserve">
+    <value>Loading search results...</value>
+  </data>
+  <data name="ResultsHeading" xml:space="preserve">
+    <value>Search results</value>
+  </data>
+  <data name="EnteredMelody" xml:space="preserve">
+    <value>Entered melody:</value>
+  </data>
+  <data name="MelodyLabel" xml:space="preserve">
+    <value>Melody</value>
+  </data>
+  <data name="Transposition" xml:space="preserve">
+    <value>Transposition {0} semitones.</value>
+  </data>
+  <data name="FileNotAvailable" xml:space="preserve">
+    <value>File {0} not available</value>
+  </data>
+  <data name="MelodyNotFound" xml:space="preserve">
+    <value>Melody {0} not found.</value>
+  </data>
+  <data name="TableName" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="TableAuthor" xml:space="preserve">
+    <value>Author</value>
+  </data>
+  <data name="TableFile" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="MatchLength" xml:space="preserve">
+    <value>Match length</value>
+  </data>
+  <data name="Position" xml:space="preserve">
+    <value>at position</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Edit/Delete</value>
+  </data>
+  <data name="UkrainianFolkSong" xml:space="preserve">
+    <value>Ukrainian folk song</value>
   </data>
 </root>

@@ -44,6 +44,8 @@
     --brand-maincolor: var(--brand-english);
     --brand-maincolor-light: #5b7fa0;
     --page-bg: #e9f0f6;
+    --surface-400: #eadaff;
+    --surface-200: #faefff;
 }
 
 a {
