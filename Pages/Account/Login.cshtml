@@ -1,8 +1,9 @@
 ﻿@page
 @model LoginModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 
 <div class="infocontainer">
-    <h2>Увійти</h2>
+    <h2>@Localizer["Login"]</h2>
 
     <!-- Загальні помилки (невірний пароль, не підтверджений email тощо) -->
     <div asp-validation-summary="All" class="text-danger"></div>

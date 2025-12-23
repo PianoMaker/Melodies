@@ -216,4 +216,7 @@
   <data name="Edit" xml:space="preserve">
     <value>Редагувати</value>
   </data>
+  <data name="Profile" xml:space="preserve">
+    <value>Профіль користувача</value>
+  </data>
 </root>

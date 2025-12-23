@@ -65,7 +65,7 @@ namespace Melodies25.Pages.Melodies
         {
             MessageL(COLORS.yellow, $"MELODY/INDEX -  OnGET");
 
-            // Ensure SelectedLang reflects current UI culture (so view can render NameEn/SurnameEn for English)
+            // Перемикання мови
             try
             {
                 var ui = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
