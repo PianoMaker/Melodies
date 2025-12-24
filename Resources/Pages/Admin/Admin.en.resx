@@ -93,6 +93,9 @@
   <data name="FileManagement" xml:space="preserve">
     <value>File Management</value>
   </data>
+  <data name="NewFiles" xml:space="preserve">
+    <value>New Files</value>
+  </data>
   <data name="ColorScheme" xml:space="preserve">
  <value>Color Scheme</value>
   </data>

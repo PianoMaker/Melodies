@@ -246,4 +246,7 @@
   <data name="UkrainianFolkSong" xml:space="preserve">
     <value>Ukrainian folk song</value>
   </data>
+  <data name="TimeSignatureLabel" xml:space="preserve">
+    <value>Time Signature</value>
+  </data>
 </root>

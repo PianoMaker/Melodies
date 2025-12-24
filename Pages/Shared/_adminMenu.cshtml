@@ -1,41 +1,42 @@
 ﻿@using Microsoft.AspNetCore.Authorization
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
 {
     var currentPage = ViewContext.RouteData.Values["Page"]?.ToString();
     <div class="exp-top admin-topbar">
         <div class="admin-topbar-inner container-fluid d-flex align-items-center justify-content-between">
             <div class="d-block align-items-center">
-                <span id="adminTopbarLabel" class="admin-topbar-label d-md-none" aria-hidden="true">Адмін-меню</span>
-                <button id="adminTopbarToggle" class="admin-hamburger d-md-none btn btn-light" aria-expanded="false" aria-controls="adminTopbarMobile" aria-label="Відкрити адміністративне меню">
+                <span id="adminTopbarLabel" class="admin-topbar-label d-md-none" aria-hidden="true">@Localizer["AdminPanel"]</span>
+                <button id="adminTopbarToggle" class="admin-hamburger d-md-none btn btn-light" aria-expanded="false" aria-controls="adminTopbarMobile" aria-label="@Localizer["AdminPanel"]">
                     <span class="hamburger-icon" aria-hidden="true">☰</span>
                 </button>
             
             </div>
 
-            <nav class="admin-menu d-none d-md-flex align-items-center gap-2" role="navigation" aria-label="Admin links">
-                <a class="admin-link @(currentPage == "/Account/Users" ? "active" : "")" href="/Account/Users">Управління користувачами</a>
+            <nav class="admin-menu d-none d-md-flex align-items-center gap-2" role="navigation" aria-label="@Localizer["AdminPanel"]">
+                <a class="admin-link @(currentPage == "/Account/Users" ? "active" : "")" href="/Account/Users">@Localizer["ManageUsers"]</a>
                 <span class="divider"> - </span>
-                <a class="admin-link @(currentPage == "/Admin/Incoming" ? "active" : "")" href="/Admin/Incoming">Нові файли</a>
+                <a class="admin-link @(currentPage == "/Admin/Incoming" ? "active" : "")" href="/Admin/Incoming">@Localizer["NewFiles"]</a>
                 <span class="divider"> - </span>
-                <a class="admin-link @(currentPage == "/Admin/Files" ? "active" : "")" href="/Admin/Files">Управління файлами</a>
+                <a class="admin-link @(currentPage == "/Admin/Files" ? "active" : "")" href="/Admin/Files">@Localizer["FileManagement"]</a>
                 <span class="divider"> - </span>
-                <a class="admin-link @(currentPage == "/Admin/Notation" ? "active" : "")" href="/Admin/Notation">Нотація</a>
+                <a class="admin-link @(currentPage == "/Admin/Notation" ? "active" : "")" href="/Admin/Notation">@Localizer["MusicNotation"]</a>
                 <span class="divider"> - </span>
-                <a class="admin-link @(currentPage == "/Admin/Tone" ? "active" : "")" href="/Admin/Tone">Tone</a>
+                <a class="admin-link @(currentPage == "/Admin/Tone" ? "active" : "")" href="/Admin/Tone">@Localizer["Tone"]</a>
                 <span class="divider"> - </span>
-                <a class="admin-link @(currentPage == "/Admin/Settings" ? "active" : "")" href="/Admin/Settings">Налаштування</a>
+                <a class="admin-link @(currentPage == "/Admin/Settings" ? "active" : "")" href="/Admin/Settings">@Localizer["Settings"]</a>
                 <span class="divider"> - </span>
-                <a class="admin-link @(currentPage == "/Admin/Colors" ? "active" : "")" href="/Admin/Colors">Кольори</a>
+                <a class="admin-link @(currentPage == "/Admin/Colors" ? "active" : "")" href="/Admin/Colors">@Localizer["Colors"]</a>
             </nav>
 
-            <div id="adminTopbarMobile" class="admin-mobile-menu d-md-none" hidden aria-label="Admin links mobile" role="menu">
-                <a class="admin-link @(currentPage == "/Account/Users" ? "active" : "")" href="/Account/Users" role="menuitem">Управління користувачами</a>
-                <a class="admin-link @(currentPage == "/Admin/Incoming" ? "active" : "")" href="/Admin/Incoming" role="menuitem">Нові файли</a>
-                <a class="admin-link @(currentPage == "/Admin/Files" ? "active" : "")" href="/Admin/Files" role="menuitem">Управління файлами</a>
-                <a class="admin-link @(currentPage == "/Admin/Notation" ? "active" : "")" href="/Admin/Notation" role="menuitem">Нотація</a>
-                <a class="admin-link @(currentPage == "/Admin/Tone" ? "active" : "")" href="/Admin/Tone" role="menuitem">Tone</a>
-                <a class="admin-link @(currentPage == "/Admin/Settings" ? "active" : "")" href="/Admin/Settings" role="menuitem">Налаштування</a>
-                <a class="admin-link @(currentPage == "/Admin/Colors" ? "active" : "")" href="/Admin/Colors" role="menuitem">Кольори</a>
+            <div id="adminTopbarMobile" class="admin-mobile-menu d-md-none" hidden aria-label="@Localizer["AdminPanel"]" role="menu">
+                <a class="admin-link @(currentPage == "/Account/Users" ? "active" : "")" href="/Account/Users" role="menuitem">@Localizer["ManageUsers"]</a>
+                <a class="admin-link @(currentPage == "/Admin/Incoming" ? "active" : "")" href="/Admin/Incoming" role="menuitem">@Localizer["NewFiles"]</a>
+                <a class="admin-link @(currentPage == "/Admin/Files" ? "active" : "")" href="/Admin/Files" role="menuitem">@Localizer["FileManagement"]</a>
+                <a class="admin-link @(currentPage == "/Admin/Notation" ? "active" : "")" href="/Admin/Notation" role="menuitem">@Localizer["MusicNotation"]</a>
+                <a class="admin-link @(currentPage == "/Admin/Tone" ? "active" : "")" href="/Admin/Tone" role="menuitem">@Localizer["Tone"]</a>
+                <a class="admin-link @(currentPage == "/Admin/Settings" ? "active" : "")" href="/Admin/Settings" role="menuitem">@Localizer["Settings"]</a>
+                <a class="admin-link @(currentPage == "/Admin/Colors" ? "active" : "")" href="/Admin/Colors" role="menuitem">@Localizer["Colors"]</a>
             </div>
         </div>
     </div>
