@@ -69,14 +69,15 @@
             <!--МЕТАДАНІ-->
             <div class="form-group">
                 <label asp-for="Melody.Title" class="control-label">Назва</label>
-                <input asp-for="Melody.Title" class="form-control" />
+                <input asp-for="Melody.Title" id="ukrnameInput" class="form-control" />
                 <span asp-validation-for="Melody.Title" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Melody.Title" class="control-label">Name</label>
-                <input asp-for="Melody.Title" class="form-control" />
+                <input asp-for="Melody.Title" id="ennameInput" class="form-control" />
                 <span asp-validation-for="Melody.Title" class="text-danger"></span>
             </div>
+            <button type="button" class="btn btn-outline-dark light-background" id="translitbtn">translit from ukr</button>
             <div class="form-group">
                 <label asp-for="Melody.Year" class="control-label">Рік</label>
                 <input asp-for="Melody.Year" class="form-control" />
