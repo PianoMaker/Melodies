@@ -35,7 +35,7 @@
     </dl>
     <dl class="row">        
         <dd class="col-sm-10 smallfont">
-            Творів на сайті: @Html.DisplayFor(model => model.Author.MelodiesCount);
+                @Localizer["CompositionsOnSite"] @Html.DisplayFor(model => model.Author.MelodiesCount);
         </dd>
     </dl>
     <dl class="row">
@@ -50,12 +50,12 @@
     <thead>
         <tr>
             <th>
-                Назва
+                @Localizer["Title"]
             </th>
             <th>
-                Файл
+                @Localizer["File"]
             </th>
-            <th>Редагувати/Вилучити</th>
+            <th>@Localizer["Edit/Delete"]</th>
         </tr>
     </thead>
     <tbody>
