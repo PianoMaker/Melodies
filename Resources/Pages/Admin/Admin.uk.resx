@@ -93,6 +93,9 @@
   <data name="FileManagement" xml:space="preserve">
  <value>Управління файлами</value>
   </data>
+  <data name="NewFiles" xml:space="preserve">
+    <value>Нові файли</value>
+  </data>
   <data name="ColorScheme" xml:space="preserve">
 <value>Кольорова схема</value>
   </data>
