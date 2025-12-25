@@ -23,7 +23,7 @@ function applyThemeForCulture(culture) {
 	}
 }
 
-// обробник події зміни мови
+// обробник події зміни мови (дві радіокнопки)
 document.addEventListener('DOMContentLoaded', function () {
 	var inputs = document.querySelectorAll('input[name="culture-switch"]');
 	if (inputs && inputs.length) {
