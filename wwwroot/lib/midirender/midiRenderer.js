@@ -992,6 +992,7 @@ function processActiveNotesFromPreviousBar(activeNotes, index, barStartAbsTime) 
 		console.debug("AN: no active notes from previous bar");
 	}
 }
+
 // --- Replace: drawActiveNotes to set and use lastRenderedNote for cross-bar ties ---
 function drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState, clef = 'treble') {
 	console.debug("MR: FOO: midiRenderer.js - drawActiveNotes");
@@ -1065,7 +1066,6 @@ function CalculateTicksPerMeasure(currentNumerator, ticksPerBeat, currentDenomin
 	console.debug("MR: FOO: midiRenderer.js - CalculateTicksPerMeasure");
 	return currentNumerator * ticksPerBeat * 4 / currentDenominator;
 }
-
 
 // Повертає accidental для відображення з урахуванням key signature
 // Якщо знак збігається з ключем — повертає null (не показувати)
@@ -1394,7 +1394,7 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, isFirstMeasureInRow,
 			// Малюємо голос
 			voice.draw(context, stave);
 
-		/*	addAtributesToNotesInMeasure(validNotes, index);*/
+			addAtributesToNotesInMeasure(validNotes, index);
 
 			// Розпізнаємо й малюємо тріолі
 			drawTuplets(currentNumerator, currentDenominator, validNotes, ticksPerBeat, index, context);
@@ -1450,7 +1450,7 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, isFirstMeasureInRow,
 
 
 // ----------------------
-// ФУНКЦІЯ ДЛЯ ОБРОБКИ І МАЛюВАННЯ ЛІГ З ОБРОБКОЮ ПОМИЛОК
+// ФУНКЦІЯ ДЛЯ ОБРОБКИ І МАЛЮВАННЯ ЛІГ З ОБРОБКОЮ ПОМИЛОК
 // Використовує Vex.Flow.StaveTie
 // Параметри:
 // - ties: Масив об'єктів StaveTie з VexFlow.
@@ -1555,6 +1555,7 @@ function adjustTimeSignature(measure, currentNumerator, currentDenominator) {
 // - previousNote: Попередня нота (Vex.Flow.StaveNote) або null.
 // - ties: Масив ліг (Vex.Flow.StaveTie) для рендерингу.
 // - note: Поточна нота (Vex.Flow.StaveNote).
+
 // Повертає: void
 // ----------------------
 function AddNotesFromPreviousBar(activeNotes, measure) {
@@ -1769,186 +1770,238 @@ function handleNoNotesToRender(commentsDiv, ELEMENT_FOR_RENDERING, measures, mea
 }
 
 
-//function addAtributesToNotesInMeasure(validNotes, measureIndex) {
-//	if (typeof document === 'undefined' || !Array.isArray(validNotes) || typeof measureIndex !== 'number') return;
+function addAtributesToNotesInMeasure(validNotes, measureIndex) {
+	if (typeof document === 'undefined' || !Array.isArray(validNotes) || typeof measureIndex !== 'number') return;
 
-//	function normalizeAcc(a) {
-//		if (!a && a !== '') return null;
-//		const s = String(a).trim();
-//		if (!s) return null;
-//		if (s === '#' || s === '♯' || /sharp/i.test(s)) return '#';
-//		if (s === 'b' || s === '♭' || /flat/i.test(s)) return 'b';
-//		if (s.toLowerCase() === 'n' || /natural/i.test(s)) return 'n';
-//		if (s.indexOf('#') !== -1 || s.indexOf('♯') !== -1) return '#';
-//		if (s.indexOf('b') !== -1 || s.indexOf('♭') !== -1) return 'b';
-//		return null;
-//	}
+	function normalizeAcc(a) {
+		if (!a && a !== '') return null;
+		const s = String(a).trim();
+		if (!s) return null;
+		if (s === '#' || s === '♯' || /sharp/i.test(s)) return '#';
+		if (s === 'b' || s === '♭' || /flat/i.test(s)) return 'b';
+		if (s.toLowerCase() === 'n' || /natural/i.test(s)) return 'n';
+		if (s.indexOf('#') !== -1 || s.indexOf('♯') !== -1) return '#';
+		if (s.indexOf('b') !== -1 || s.indexOf('♭') !== -1) return 'b';
+		return null;
+	}
 
-//	try {
-//		const host = document.getElementById('notation');
-//		let svg = host ? host.querySelector('svg') : null;
-//		if (!svg) {
-//			const svgs = Array.from(document.querySelectorAll('svg'));
-//			svg = svgs.length ? svgs[svgs.length - 1] : null;
-//		}
-//		if (!svg) return;
+	function midiFromKey(rawKey) {
+		if (!rawKey || typeof rawKey !== 'string') return null;
+		const cleaned = rawKey.trim();
+		const parts = cleaned.split('/');
+		if (parts.length <2) return null;
+		const letterPart = parts[0].toLowerCase();
+		const oct = parseInt(parts[1],10);
+		if (Number.isNaN(oct)) return null;
+		const baseMap = { c:0, d:2, e:4, f:5, g:7, a:9, b:11, h:11 };
+		const m = baseMap[letterPart[0]] !== undefined ? baseMap[letterPart[0]] :0;
+		let sem = m;
+		if (letterPart.indexOf('#') !== -1) sem +=1;
+		if (letterPart.indexOf('b') !== -1) sem -=1;
+		sem = ((sem %12) +12) %12;
+		return Math.round((Number(oct) +1) *12 + sem);
+	}
 
-//		const groups = Array.from(svg.querySelectorAll('g.vf-stavenote'));
-//		if (!groups.length || !validNotes.length) return;
+	try {
+		const host = document.getElementById('notation');
+		let svg = host ? host.querySelector('svg') : null;
+		if (!svg) {
+			const svgs = Array.from(document.querySelectorAll('svg'));
+			svg = svgs.length ? svgs[svgs.length -1] : null;
+		}
+		if (!svg) return;
 
-//		const groupCenters = groups.map((g, i) => {
-//			let cx = null;
-//			try { const bb = g.getBBox(); cx = bb.x + bb.width / 2; } catch { cx = null; }
-//			return { i, g, cx, used: false };
-//		});
+		const groups = Array.from(svg.querySelectorAll('g.vf-stavenote'));
+		if (!groups.length || !validNotes.length) return;
 
-//		let annotated = 0;
-//		for (let noteIdx = 0; noteIdx < validNotes.length; noteIdx++) {
-//			const staveNote = validNotes[noteIdx];
-//			if (!staveNote) continue;
+		// Build centers and read any pre-existing data-midi/title for heuristic
+		const groupCenters = groups.map((g, i) => {
+			let cx = null;
+			try { const bb = g.getBBox(); cx = bb.x + bb.width /2; } catch { cx = null; }
+			// read preexisting data-midi if any
+			let existingMidi = null;
+			try { existingMidi = g.getAttribute('data-midi'); } catch { existingMidi = null; }
+			let titleText = null;
+			try {
+				const titleEl = g.querySelector('title');
+				if (titleEl) titleText = titleEl.textContent || null;
+			} catch { titleText = null; }
+			return { i, g, cx, used: false, existingMidi: existingMidi ? parseInt(existingMidi,10) : null, titleText };
+		});
 
-//			let noteX = null;
-//			try {
-//				if (typeof staveNote.getAbsoluteX === 'function') noteX = staveNote.getAbsoluteX();
-//				else if (typeof staveNote.getX === 'function') noteX = staveNote.getX();
-//			} catch { noteX = null; }
+		// Helper: compute expected midi for a staveNote
+		function expectedMidiForStaveNote(staveNote) {
+			if (!staveNote) return null;
+			// prefer explicit field set at creation
+			try {
+				if (Number.isFinite(Number(staveNote.__pitch))) return Number(staveNote.__pitch);
+				if (Number.isFinite(Number(staveNote.__srcMidi))) return Number(staveNote.__srcMidi);
+			} catch (e) { /* ignore */ }
 
-//			let targetGroup = null;
-//			if (Number.isFinite(noteX) && groupCenters.some(gc => Number.isFinite(gc.cx))) {
-//				let best = null, bestDist = Infinity;
-//				for (const gc of groupCenters) {
-//					if (gc.used) continue;
-//					if (!Number.isFinite(gc.cx)) continue;
-//					const d = Math.abs(gc.cx - noteX);
-//					if (d < bestDist) { bestDist = d; best = gc; }
-//				}
-//				if (best) { targetGroup = best.g; best.used = true; }
-//			}
-//			if (!targetGroup) {
-//				const free = groupCenters.find(gc => !gc.used);
-//				if (free) { targetGroup = free.g; free.used = true; }
-//			}
-//			if (!targetGroup) continue;
+			// try getKeyProps
+			try {
+				if (typeof staveNote.getKeyProps === 'function') {
+					const kp = staveNote.getKeyProps();
+					if (Array.isArray(kp) && kp.length >0) {
+						const first = kp[0];
+						if (first && Number.isFinite(Number(first.midi))) return Number(first.midi);
+						if (first && first.key) {
+							const k = String(first.key || '').replace(/\s+/g, '');
+							const mm = midiFromKey(k);
+							if (mm !== null) return mm;
+						}
+					}
+				}
+			} catch (e) { /* ignore */ }
 
-//			// Extract metadata
-//			let rawKey = null, duration = null, srcTicks = null, srcMidi = null;
-//			try { rawKey = (typeof staveNote.getKeys === 'function') ? (staveNote.getKeys()[0] || null) : (staveNote.keys && staveNote.keys[0]) || null; } catch { rawKey = null; }
-//			try { duration = (typeof staveNote.getDuration === 'function') ? staveNote.getDuration() : (staveNote.duration || null); } catch { duration = null; }
-//			try { srcTicks = (staveNote.__srcTicks !== undefined) ? staveNote.__srcTicks : null; } catch { srcTicks = null; }
-//			try { srcMidi = (staveNote.__srcMidi !== undefined) ? staveNote.__srcMidi : null; } catch { srcMidi = null; }
+			// try getKeys string
+			try {
+				if (typeof staveNote.getKeys === 'function') {
+					const keys = staveNote.getKeys();
+					if (Array.isArray(keys) && keys.length >0) {
+						const k = keys[0];
+						const mm = midiFromKey(k);
+						if (mm !== null) return mm;
+					}
+				} else if (staveNote.keys && Array.isArray(staveNote.keys) && staveNote.keys.length >0) {
+					const mm = midiFromKey(staveNote.keys[0]);
+					if (mm !== null) return mm;
+				}
+			} catch (e) { /* ignore */ }
 
-//			let noteLetter = null, noteOctave = null, foundAcc = null;
-//			if (typeof rawKey === 'string') {
-//				const cleaned = rawKey.trim();
-//				const parts = cleaned.split('/');
-//				if (parts.length >= 1) {
-//					const letterPart = parts[0] || '';
-//					const mSharp = letterPart.match(/^([a-gA-G])#$/);
-//					const mFlat = letterPart.match(/^([a-gA-G])b$/i);
-//					if (mSharp) { noteLetter = mSharp[1].toLowerCase(); foundAcc = '#'; }
-//					else if (mFlat) { noteLetter = mFlat[1].toLowerCase(); foundAcc = 'b'; }
-//					else {
-//						const letterMatch = letterPart.match(/^([a-gA-G])/);
-//						noteLetter = letterMatch ? letterMatch[1].toLowerCase() : null;
-//					}
-//				}
-//				if (parts.length >= 2) {
-//					const oct = parseInt(parts[1], 10);
-//					if (!Number.isNaN(oct)) noteOctave = oct;
-//				}
-//			}
+			return null;
+		}
 
-//			if (!foundAcc && typeof staveNote.getKeyProps === 'function') {
-//				try {
-//					const kp = staveNote.getKeyProps && staveNote.getKeyProps();
-//					if (Array.isArray(kp) && kp.length > 0) {
-//						const first = kp[0];
-//						const accCand = first && (first.accidental || first.acc || first.accidentalName || first.accidentalType);
-//						const norm = normalizeAcc(accCand);
-//						if (norm) foundAcc = norm;
-//					}
-//				} catch (e) { /* ignore */ }
-//			}
+		// Build list of unassigned groups
+		const unassigned = new Set(groupCenters.map(gc => gc.i));
 
-//			if (!foundAcc) {
-//				try {
-//					const mods = (typeof staveNote.getModifiers === 'function') ? (staveNote.getModifiers() || []) : (staveNote.modifiers || []);
-//					for (const m of mods) {
-//						if (!m) continue;
-//						const ctorName = (m && m.constructor && m.constructor.name) ? m.constructor.name : '';
-//						if (/Accidental/i.test(ctorName) || (m && (m.type || m.accidental || m.toString))) {
-//							let cand = null;
-//							if (typeof m.type === 'string') cand = m.type;
-//							else if (typeof m.accidental === 'string') cand = m.accidental;
-//							else if (typeof m.getAccidental === 'function') {
-//								try { cand = m.getAccidental(); } catch { cand = null; }
-//							} else if (typeof m.toString === 'function') {
-//								cand = String(m.toString());
-//							}
-//							const norm = normalizeAcc(cand);
-//							if (norm) { foundAcc = norm; break; }
-//						}
-//					}
-//				} catch (e) { /* ignore */ }
-//			}
+		let annotated =0;
 
-//			// If srcMidi is still null, try compute from letter+acc+octave
-//			if (srcMidi == null && noteLetter && (noteOctave !== null && noteOctave !== undefined)) {
-//				const map = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11, h: 11 };
-//				let sem = map[noteLetter] !== undefined ? map[noteLetter] : 0;
-//				if (foundAcc === '#') sem += 1;
-//				else if (foundAcc === 'b') sem -= 1;
-//				sem = ((sem % 12) + 12) % 12;
-//				srcMidi = Math.round((Number(noteOctave) + 1) * 12 + sem);
-//			}
+		// First pass: try exact midi match between expectedMidi and group's existingMidi or title content
+		for (let noteIdx =0; noteIdx < validNotes.length; noteIdx++) {
+			const staveNote = validNotes[noteIdx];
+			if (!staveNote) continue;
+			const expectedMidi = expectedMidiForStaveNote(staveNote);
+			if (expectedMidi == null) continue; // leave for next pass
 
-//			// Build displayKey
-//			let displayKey = rawKey;
-//			if (!displayKey) {
-//				if (noteLetter) {
-//					let accStr = '';
-//					if (foundAcc === '#') accStr = '#';
-//					else if (foundAcc === 'b') accStr = 'b';
-//					displayKey = `${noteLetter}${accStr}${noteOctave !== null ? ('/' + noteOctave) : ''}`;
-//				} else {
-//					displayKey = '?';
-//				}
-//			} else {
-//				if (foundAcc && typeof rawKey === 'string' && /^[a-gA-G]\/-?\d+$/.test(rawKey)) {
-//					const [ltr, oct] = rawKey.split('/');
-//					const accStr = (foundAcc === '#') ? '#' : (foundAcc === 'b') ? 'b' : '';
-//					displayKey = `${ltr.toLowerCase()}${accStr}/${oct}`;
-//				}
-//			}
+			// find group with existingMidi == expectedMidi
+			let matched = null;
+			for (const gc of groupCenters) {
+				if (!unassigned.has(gc.i)) continue;
+				if (gc.existingMidi !== null && gc.existingMidi === expectedMidi) { matched = gc; break; }
+				// try title text containing midi number
+				if (gc.titleText && gc.titleText.indexOf(String(expectedMidi)) !== -1) { matched = gc; break; }
+			}
 
-//			// Write attributes
-//			try {
-//				targetGroup.setAttribute('data-measure-index', String(measureIndex));
-//				targetGroup.setAttribute('data-note-in-measure', String(noteIdx));
-//				if (displayKey != null) targetGroup.setAttribute('data-key', String(displayKey));
-//				if (noteLetter != null) targetGroup.setAttribute('data-note-letter', String(noteLetter));
-//				if (noteOctave != null) targetGroup.setAttribute('data-note-octave', String(noteOctave));
-//				if (foundAcc != null) targetGroup.setAttribute('data-accidental', String(foundAcc));
-//				if (duration != null) targetGroup.setAttribute('data-duration', String(duration));
-//				if (srcTicks != null) targetGroup.setAttribute('data-src-ticks', String(srcTicks));
-//				if (srcMidi != null) targetGroup.setAttribute('data-midi', String(srcMidi));
+			if (matched) {
+				const g = matched.g;
+				try {
+					// write attributes
+					if (!g.getAttribute('data-measure-index')) g.setAttribute('data-measure-index', String(measureIndex));
+					if (!g.getAttribute('data-note-in-measure')) g.setAttribute('data-note-in-measure', String(noteIdx));
+					if (Number.isFinite(expectedMidi)) g.setAttribute('data-midi', String(expectedMidi));
+					// mark used
+					unassigned.delete(matched.i);
+					matched.used = true;
+					annotated++;
+				} catch (e) { /* ignore */ }
+			}
+		}
 
-//				if (!targetGroup.querySelector('title')) {
-//					try {
-//						const accLabel = foundAcc ? (foundAcc === '#' ? '♯' : (foundAcc === 'b' ? '♭' : 'n')) : '-';
-//						const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-//						title.textContent = `${displayKey} • acc:${accLabel} • dur:${duration || '?'} • midi:${srcMidi ?? '-'} • ticks:${srcTicks ?? '-'}`;
-//						targetGroup.insertBefore(title, targetGroup.firstChild);
-//					} catch (e) { /* ignore */ }
-//				}
-//				annotated++;
-//			} catch (e) {
-//				/* ignore per-element failures */
-//			}
-//		}
+		// Second pass: match by position + expectedMidi if available, else by nearest X
+		for (let noteIdx =0; noteIdx < validNotes.length; noteIdx++) {
+			const staveNote = validNotes[noteIdx];
+			if (!staveNote) continue;
 
-//		console.debug && console.debug(`Annotated ${annotated}/${validNotes.length} notes for measure ${measureIndex}`);
-//	} catch (e) {
-//		console.warn('addAtributesToNotesInMeasure failed', e);
-//	}
-//}
+			// if this note already has an assigned group (we set data-midi earlier), skip
+			let alreadyAssigned = false;
+			try {
+				// check if any group has data-note-in-measure == noteIdx and measureIndex
+				for (const gc of groupCenters) {
+					try {
+						const di = gc.g.getAttribute('data-measure-index');
+						const ni = gc.g.getAttribute('data-note-in-measure');
+						if (di !== null && ni !== null && parseInt(di,10) === measureIndex && parseInt(ni,10) === noteIdx) { alreadyAssigned = true; break; }
+					} catch (e) { /* ignore */ }
+				}
+			} catch (e) { /* ignore */ }
+			if (alreadyAssigned) continue;
+
+			let noteX = null;
+			try {
+				if (typeof staveNote.getAbsoluteX === 'function') noteX = staveNote.getAbsoluteX();
+				else if (typeof staveNote.getX === 'function') noteX = staveNote.getX();
+			} catch { noteX = null; }
+
+			const expectedMidi = expectedMidiForStaveNote(staveNote);
+
+			// Try find among unassigned a group with title containing expected key or midi
+			if (expectedMidi != null) {
+				let matched = null;
+				for (const gc of groupCenters) {
+					if (!unassigned.has(gc.i)) continue;
+					if (gc.titleText && (gc.titleText.indexOf(String(expectedMidi)) !== -1 || gc.titleText.indexOf(String(expectedMidi)) !== -1)) { matched = gc; break; }
+				}
+				if (matched) {
+					try {
+						const g = matched.g;
+						if (!g.getAttribute('data-measure-index')) g.setAttribute('data-measure-index', String(measureIndex));
+						if (!g.getAttribute('data-note-in-measure')) g.setAttribute('data-note-in-measure', String(noteIdx));
+						if (!g.getAttribute('data-midi')) g.setAttribute('data-midi', String(expectedMidi));
+						unassigned.delete(matched.i);
+						matched.used = true;
+						annotated++;
+						continue;
+					} catch (e) { /* ignore */ }
+				}
+			}
+
+			// Fallback: nearest by X among unassigned
+			let best = null;
+			let bestDist = Infinity;
+			if (Number.isFinite(noteX)) {
+				for (const gc of groupCenters) {
+					if (!unassigned.has(gc.i)) continue;
+					if (!Number.isFinite(gc.cx)) continue;
+					const d = Math.abs(gc.cx - noteX);
+					if (d < bestDist) { bestDist = d; best = gc; }
+				}
+			} else {
+				// if noteX unknown, pick any unassigned
+				const anyIdx = unassigned.values().next().value;
+				best = anyIdx !== undefined ? groupCenters.find(g => g.i === anyIdx) : null;
+			}
+
+			if (best) {
+				try {
+					const g = best.g;
+					if (!g.getAttribute('data-measure-index')) g.setAttribute('data-measure-index', String(measureIndex));
+					if (!g.getAttribute('data-note-in-measure')) g.setAttribute('data-note-in-measure', String(noteIdx));
+					// if expectedMidi available set it, otherwise if staveNote has __pitch use it
+					if (expectedMidi != null) {
+						if (!g.getAttribute('data-midi')) g.setAttribute('data-midi', String(expectedMidi));
+					} else {
+						// try to compute midi from keys as last resort
+						let computed = null;
+						try {
+							if (typeof staveNote.getKeys === 'function') {
+								const k = staveNote.getKeys()[0];
+								computed = midiFromKey(k);
+							} else if (staveNote.keys && staveNote.keys[0]) {
+								computed = midiFromKey(staveNote.keys[0]);
+							}
+						} catch (e) { computed = null; }
+						if (computed != null && !g.getAttribute('data-midi')) g.setAttribute('data-midi', String(computed));
+					}
+					unassigned.delete(best.i);
+					best.used = true;
+					annotated++;
+				} catch (e) { /* ignore per-element failures */ }
+			}
+		}
+
+		console.debug && console.debug(`Annotated ${annotated}/${validNotes.length} notes for measure ${measureIndex}`);
+	} catch (e) {
+		console.warn('addAtributesToNotesInMeasure failed', e);
+	}
+}
