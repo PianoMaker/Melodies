@@ -181,3 +181,81 @@ if (typeof window !== 'undefined') {
 	} catch (e) { /* ignore */ }
 }
 
+// Debug helper — запускати після рендеру нот (використай в консолі або тимчасово підключи)
+(function debugNotationMapping() {
+	function scanAndLog() {
+		const notation = document.getElementById('notation');
+		if (!notation) { console.warn('debug: notation element not found'); return; }
+
+		// All vf-stavenote nodes
+		const staves = Array.from(notation.querySelectorAll('g.vf-stavenote'));
+		console.groupCollapsed(`debug: found ${staves.length} g.vf-stavenote elements`);
+		staves.forEach((el, i) => {
+			const midi = el.getAttribute('data-midi');
+			const key = el.getAttribute('data-key');
+			const attrs = {};
+			for (let j = 0; j < el.attributes.length; j++) { attrs[el.attributes[j].name] = el.attributes[j].value; }
+			// get bounding box if available
+			let bbox = null;
+			try { const r = el.getBBox(); bbox = { x: r.x, y: r.y, width: r.width, height: r.height }; } catch (e) { }
+			console.log(`#${i}`, { midi, key, attrs, bbox, el });
+		});
+		console.groupEnd();
+
+		// Server-side displayed notes (HTML list in innerNotesContainer)
+		const serverNotes = Array.from(document.querySelectorAll('#innerNotesContainer .outerNoteBox'));
+		console.log('debug: server-side outerNoteBox count =', serverNotes.length);
+		const serverNames = serverNotes.map((b, idx) => {
+			const name = b.querySelector('.notaname') ? b.querySelector('.notaname').textContent.trim() : b.textContent.trim();
+			return { idx, name };
+		});
+		console.log('debug: server-side note names (first 30):', serverNames.slice(0, 30));
+
+		// Quick comparison: report vf-stavenote elements lacking data-midi AND data-key
+		const missingAttrs = staves.filter(s => !s.getAttribute('data-midi') && !s.getAttribute('data-key'));
+		if (missingAttrs.length) {
+			console.warn(`debug: ${missingAttrs.length} stavenote elements have neither data-midi nor data-key`);
+			missingAttrs.forEach((el, i) => console.log('missing', i, el));
+		} else {
+			console.log('debug: all stavenotes have either data-midi or data-key');
+		}
+
+		// Attach quick pointerenter logger to each stavenote (do not change behavior)
+		staves.forEach((el, i) => {
+			if (el.__debugLogged) return; // avoid duplicate listeners
+			const handler = (ev) => {
+				console.debug('debug: pointerenter on stavenote', i, {
+					midi: el.getAttribute('data-midi'),
+					key: el.getAttribute('data-key'),
+					target: ev.target.tagName,
+					clientX: ev.clientX, clientY: ev.clientY
+				});
+			};
+			el.addEventListener('pointerenter', handler, { passive: true });
+			el.__debugLogged = true;
+		});
+
+		// Observe new nodes if renderer adds them later
+		if (!window.__staveObserverInstalled) {
+			const obs = new MutationObserver((mutations) => {
+				let added = 0;
+				for (const m of mutations) {
+					for (const n of m.addedNodes) {
+						if (n.nodeType === 1 && n.matches && n.matches('g.vf-stavenote')) added++;
+					}
+				}
+				if (added) {
+					console.log(`debug: MutationObserver detected ${added} new stavenote(s)`); scanAndLog();
+				}
+			});
+			obs.observe(notation, { childList: true, subtree: true });
+			window.__staveObserverInstalled = true;
+			console.log('debug: MutationObserver installed on #notation');
+		}
+	}
+
+	// Expose helper to window for manual re-scan
+	window.debugScanStavenotes = scanAndLog;
+	// If notation is already rendered, run once
+	setTimeout(scanAndLog, 300);
+})();
