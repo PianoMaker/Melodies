@@ -22,7 +22,45 @@ document.addEventListener('DOMContentLoaded', function () {
 			console.warn('keypress handler failed', ex);
 		}
 	});
+
+	window.addEventListener('mouseover', (e) => {
+		try {
+			const target = e.target.closest('g.vf-stavenote');
+			if (!target) return;
+			target.classList.add('hover');						
+			const midiAttr = target.getAttribute('data-midi');
+			console.log('vf-stavenote hover:', target, 'midi=', midiAttr);
+			const midi = parseInt(midiAttr, 10);
+			const freq = midiToFrequency(midi);
+			playTone(freq, 1.2);		
+
+		} catch (ex) {
+			console.warn('mouseover handler failed', ex);
+		}
+	});
+
+	window.addEventListener('mouseout', (e) => {
+		try {
+			const target = e.target.closest('g.vf-stavenote');
+			if (!target) return;
+			target.classList.remove('hover');
+
+			console.log('vf-stavenote left:', target);
+		} catch (ex) {
+			console.warn('mouseleave handler failed', ex);
+		}
+	});
+		
 });
+
+function serializeAttributes(el) {
+	const attrs = {};
+	for (let i = 0; i < el.attributes.length; i++) {
+		const a = el.attributes[i];
+		attrs[a.name] = a.value;
+	}
+	return attrs;
+}
 
 
 function calcGeneralWidth() {

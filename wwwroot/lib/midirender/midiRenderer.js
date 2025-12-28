@@ -802,8 +802,14 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 							let firstPiece = null;
 							durationsCode.forEach((durationCode, pieceIdx) => {
 								const accToDraw = decideAccidentalForNote(vexKey, accidental, currentKeySig, measureAccState, pieceIdx);
-								const note = processNoteElement(durationCode, vexKey, accToDraw, clefChoice);
+								const note = processNoteElement(durationCode, vexKey, accToDraw, clefChoice, pitch);
 								applyAutoStem(note, durationCode);
+
+								try {
+									note.__pitch = pitch;
+									console.log(`Creating note: pitch=${pitch}, dur=${durationCode}, ticks=${durationTicks}, acc=${accToDraw}`);
+
+								} catch (e) { console.warn(`failed to get pitch ${e}`) }
 
 								const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
 								note.__srcTicks = allocatedTicks;
@@ -812,7 +818,6 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 								notes.push(note); // ADD NOTE //
 								//===============================
 
-								// Tie from previousNote (could be from earlier piece in same measure or from previous measure)
 								AddTie(previousNote, ties, note);
 
 								previousNote = note;
@@ -940,8 +945,8 @@ function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat, clef) {
 				} else {
 					// Для нот потрібно зберегти висоту та знаки альтерації
 					const keys = lastNote.getKeys();
-					// При створенні укоротженої ноти передаємо clef
-					const newNote = processNoteElement(newDuration, keys[0], null, clef);
+					// При створенні укоротженої ноти передаємо clef і pitch
+					const newNote = processNoteElement(newDuration, keys[0], null, clef, lastNote.pitch);
 					if (newNote) {
 						// Копіюємо знаки альтерації з оригінальної ноти
 						const modifiers = lastNote.getModifiers();
@@ -1012,8 +1017,10 @@ function drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties,
 			let firstPiece = null;
 			durationsCode.forEach((durationCode, pieceIdx) => {
 				const accToDraw = decideAccidentalForNote(key, accidental, currentKeySig, measureAccState, pieceIdx);
-				const note = processNoteElement(durationCode, key, accToDraw, clef);
+				const note = processNoteElement(durationCode, key, accToDraw, clef, pitch);
 				applyAutoStem(note, durationCode);
+
+				try { note.__pitch = pitch; } catch (e) { /* ignore */ }
 
 				const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
 				note.__srcTicks = allocatedTicks;
@@ -1387,6 +1394,8 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, isFirstMeasureInRow,
 			// Малюємо голос
 			voice.draw(context, stave);
 
+		/*	addAtributesToNotesInMeasure(validNotes, index);*/
+
 			// Розпізнаємо й малюємо тріолі
 			drawTuplets(currentNumerator, currentDenominator, validNotes, ticksPerBeat, index, context);
 
@@ -1613,7 +1622,7 @@ function AddTie(previousNote, ties, note) {
 // / / - accidental: Знак альтерації ('#', 'b', 'n') або null.
 // Повертає: Об'єкт Vex.Flow.StaveNote або null у разі помилки.
 // ----------------------
-function processNoteElement(durationCode, key, accidental, clef = 'treble') {
+function processNoteElement(durationCode, key, accidental, clef = 'treble', srcMidi = null) {
 	console.debug("MR: FOO: midiRenderer.js - processNoteElement");
 	// key може бути в форматі "C/4" або "C4" — normalize до формату, який очікує createNote (наприклад "c4")
 	let normalized = (typeof key === 'string') ? key.replace('/', '') : key;
@@ -1624,6 +1633,11 @@ function processNoteElement(durationCode, key, accidental, clef = 'treble') {
 	if (note && accidental) {
 		note.addAccidental(0, new Vex.Flow.Accidental(accidental));
 	}
+
+	if (srcMidi !== null && srcMidi !== undefined && Number.isFinite(Number(srcMidi))) {
+		note.__pitch = Number(srcMidi);
+	}
+
 	applyAutoStem(note, durationCode);
 	return note;
 }
@@ -1753,3 +1767,188 @@ function handleNoNotesToRender(commentsDiv, ELEMENT_FOR_RENDERING, measures, mea
 		startAtMeasureIndex: startIdx
 	};
 }
+
+
+//function addAtributesToNotesInMeasure(validNotes, measureIndex) {
+//	if (typeof document === 'undefined' || !Array.isArray(validNotes) || typeof measureIndex !== 'number') return;
+
+//	function normalizeAcc(a) {
+//		if (!a && a !== '') return null;
+//		const s = String(a).trim();
+//		if (!s) return null;
+//		if (s === '#' || s === '♯' || /sharp/i.test(s)) return '#';
+//		if (s === 'b' || s === '♭' || /flat/i.test(s)) return 'b';
+//		if (s.toLowerCase() === 'n' || /natural/i.test(s)) return 'n';
+//		if (s.indexOf('#') !== -1 || s.indexOf('♯') !== -1) return '#';
+//		if (s.indexOf('b') !== -1 || s.indexOf('♭') !== -1) return 'b';
+//		return null;
+//	}
+
+//	try {
+//		const host = document.getElementById('notation');
+//		let svg = host ? host.querySelector('svg') : null;
+//		if (!svg) {
+//			const svgs = Array.from(document.querySelectorAll('svg'));
+//			svg = svgs.length ? svgs[svgs.length - 1] : null;
+//		}
+//		if (!svg) return;
+
+//		const groups = Array.from(svg.querySelectorAll('g.vf-stavenote'));
+//		if (!groups.length || !validNotes.length) return;
+
+//		const groupCenters = groups.map((g, i) => {
+//			let cx = null;
+//			try { const bb = g.getBBox(); cx = bb.x + bb.width / 2; } catch { cx = null; }
+//			return { i, g, cx, used: false };
+//		});
+
+//		let annotated = 0;
+//		for (let noteIdx = 0; noteIdx < validNotes.length; noteIdx++) {
+//			const staveNote = validNotes[noteIdx];
+//			if (!staveNote) continue;
+
+//			let noteX = null;
+//			try {
+//				if (typeof staveNote.getAbsoluteX === 'function') noteX = staveNote.getAbsoluteX();
+//				else if (typeof staveNote.getX === 'function') noteX = staveNote.getX();
+//			} catch { noteX = null; }
+
+//			let targetGroup = null;
+//			if (Number.isFinite(noteX) && groupCenters.some(gc => Number.isFinite(gc.cx))) {
+//				let best = null, bestDist = Infinity;
+//				for (const gc of groupCenters) {
+//					if (gc.used) continue;
+//					if (!Number.isFinite(gc.cx)) continue;
+//					const d = Math.abs(gc.cx - noteX);
+//					if (d < bestDist) { bestDist = d; best = gc; }
+//				}
+//				if (best) { targetGroup = best.g; best.used = true; }
+//			}
+//			if (!targetGroup) {
+//				const free = groupCenters.find(gc => !gc.used);
+//				if (free) { targetGroup = free.g; free.used = true; }
+//			}
+//			if (!targetGroup) continue;
+
+//			// Extract metadata
+//			let rawKey = null, duration = null, srcTicks = null, srcMidi = null;
+//			try { rawKey = (typeof staveNote.getKeys === 'function') ? (staveNote.getKeys()[0] || null) : (staveNote.keys && staveNote.keys[0]) || null; } catch { rawKey = null; }
+//			try { duration = (typeof staveNote.getDuration === 'function') ? staveNote.getDuration() : (staveNote.duration || null); } catch { duration = null; }
+//			try { srcTicks = (staveNote.__srcTicks !== undefined) ? staveNote.__srcTicks : null; } catch { srcTicks = null; }
+//			try { srcMidi = (staveNote.__srcMidi !== undefined) ? staveNote.__srcMidi : null; } catch { srcMidi = null; }
+
+//			let noteLetter = null, noteOctave = null, foundAcc = null;
+//			if (typeof rawKey === 'string') {
+//				const cleaned = rawKey.trim();
+//				const parts = cleaned.split('/');
+//				if (parts.length >= 1) {
+//					const letterPart = parts[0] || '';
+//					const mSharp = letterPart.match(/^([a-gA-G])#$/);
+//					const mFlat = letterPart.match(/^([a-gA-G])b$/i);
+//					if (mSharp) { noteLetter = mSharp[1].toLowerCase(); foundAcc = '#'; }
+//					else if (mFlat) { noteLetter = mFlat[1].toLowerCase(); foundAcc = 'b'; }
+//					else {
+//						const letterMatch = letterPart.match(/^([a-gA-G])/);
+//						noteLetter = letterMatch ? letterMatch[1].toLowerCase() : null;
+//					}
+//				}
+//				if (parts.length >= 2) {
+//					const oct = parseInt(parts[1], 10);
+//					if (!Number.isNaN(oct)) noteOctave = oct;
+//				}
+//			}
+
+//			if (!foundAcc && typeof staveNote.getKeyProps === 'function') {
+//				try {
+//					const kp = staveNote.getKeyProps && staveNote.getKeyProps();
+//					if (Array.isArray(kp) && kp.length > 0) {
+//						const first = kp[0];
+//						const accCand = first && (first.accidental || first.acc || first.accidentalName || first.accidentalType);
+//						const norm = normalizeAcc(accCand);
+//						if (norm) foundAcc = norm;
+//					}
+//				} catch (e) { /* ignore */ }
+//			}
+
+//			if (!foundAcc) {
+//				try {
+//					const mods = (typeof staveNote.getModifiers === 'function') ? (staveNote.getModifiers() || []) : (staveNote.modifiers || []);
+//					for (const m of mods) {
+//						if (!m) continue;
+//						const ctorName = (m && m.constructor && m.constructor.name) ? m.constructor.name : '';
+//						if (/Accidental/i.test(ctorName) || (m && (m.type || m.accidental || m.toString))) {
+//							let cand = null;
+//							if (typeof m.type === 'string') cand = m.type;
+//							else if (typeof m.accidental === 'string') cand = m.accidental;
+//							else if (typeof m.getAccidental === 'function') {
+//								try { cand = m.getAccidental(); } catch { cand = null; }
+//							} else if (typeof m.toString === 'function') {
+//								cand = String(m.toString());
+//							}
+//							const norm = normalizeAcc(cand);
+//							if (norm) { foundAcc = norm; break; }
+//						}
+//					}
+//				} catch (e) { /* ignore */ }
+//			}
+
+//			// If srcMidi is still null, try compute from letter+acc+octave
+//			if (srcMidi == null && noteLetter && (noteOctave !== null && noteOctave !== undefined)) {
+//				const map = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11, h: 11 };
+//				let sem = map[noteLetter] !== undefined ? map[noteLetter] : 0;
+//				if (foundAcc === '#') sem += 1;
+//				else if (foundAcc === 'b') sem -= 1;
+//				sem = ((sem % 12) + 12) % 12;
+//				srcMidi = Math.round((Number(noteOctave) + 1) * 12 + sem);
+//			}
+
+//			// Build displayKey
+//			let displayKey = rawKey;
+//			if (!displayKey) {
+//				if (noteLetter) {
+//					let accStr = '';
+//					if (foundAcc === '#') accStr = '#';
+//					else if (foundAcc === 'b') accStr = 'b';
+//					displayKey = `${noteLetter}${accStr}${noteOctave !== null ? ('/' + noteOctave) : ''}`;
+//				} else {
+//					displayKey = '?';
+//				}
+//			} else {
+//				if (foundAcc && typeof rawKey === 'string' && /^[a-gA-G]\/-?\d+$/.test(rawKey)) {
+//					const [ltr, oct] = rawKey.split('/');
+//					const accStr = (foundAcc === '#') ? '#' : (foundAcc === 'b') ? 'b' : '';
+//					displayKey = `${ltr.toLowerCase()}${accStr}/${oct}`;
+//				}
+//			}
+
+//			// Write attributes
+//			try {
+//				targetGroup.setAttribute('data-measure-index', String(measureIndex));
+//				targetGroup.setAttribute('data-note-in-measure', String(noteIdx));
+//				if (displayKey != null) targetGroup.setAttribute('data-key', String(displayKey));
+//				if (noteLetter != null) targetGroup.setAttribute('data-note-letter', String(noteLetter));
+//				if (noteOctave != null) targetGroup.setAttribute('data-note-octave', String(noteOctave));
+//				if (foundAcc != null) targetGroup.setAttribute('data-accidental', String(foundAcc));
+//				if (duration != null) targetGroup.setAttribute('data-duration', String(duration));
+//				if (srcTicks != null) targetGroup.setAttribute('data-src-ticks', String(srcTicks));
+//				if (srcMidi != null) targetGroup.setAttribute('data-midi', String(srcMidi));
+
+//				if (!targetGroup.querySelector('title')) {
+//					try {
+//						const accLabel = foundAcc ? (foundAcc === '#' ? '♯' : (foundAcc === 'b' ? '♭' : 'n')) : '-';
+//						const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+//						title.textContent = `${displayKey} • acc:${accLabel} • dur:${duration || '?'} • midi:${srcMidi ?? '-'} • ticks:${srcTicks ?? '-'}`;
+//						targetGroup.insertBefore(title, targetGroup.firstChild);
+//					} catch (e) { /* ignore */ }
+//				}
+//				annotated++;
+//			} catch (e) {
+//				/* ignore per-element failures */
+//			}
+//		}
+
+//		console.debug && console.debug(`Annotated ${annotated}/${validNotes.length} notes for measure ${measureIndex}`);
+//	} catch (e) {
+//		console.warn('addAtributesToNotesInMeasure failed', e);
+//	}
+//}

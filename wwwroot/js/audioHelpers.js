@@ -48,6 +48,77 @@ function pianoTokenToMidi(token) {
 	return (octave + 1) * 12 + semitone;
 }
 
+// Parse keys like "c/5", "C/4", "cis/5", "b/4" and return MIDI number (or null)
+function parseSlashKeyToMidi(key) {
+	try {
+		if (!key || typeof key !== 'string') return null;
+		const raw = key.trim().replace(/\s+/g, '').toLowerCase();
+		// Accept "c/5" or "c5"
+		const parts = raw.includes('/') ? raw.split('/') : raw.match(/^([a-gh][#b]?|[a-gh](is|es|s))(-?\d+)?$/i)?.slice(1);
+		let notePart, octavePart;
+		if (Array.isArray(parts) && parts.length >= 2) {
+			// if split('/') -> parts = [note, octave]
+			if (raw.includes('/')) { notePart = parts[0]; octavePart = parts[1]; }
+			else { notePart = parts[0]; octavePart = parts[2] || null; }
+		} else {
+			// fallback: try simple split by '/'
+			const sp = raw.split('/');
+			notePart = sp[0];
+			octavePart = sp[1];
+		}
+
+		// Normalize accidental forms: 'is' -> '#', 'es'/'s' -> 'b'
+		notePart = notePart.replace(/is$/i, '#').replace(/(es|s)$/i, 'b');
+
+		// Map letter+accidental -> semitone (C=0 .. B=11). 'h' treated as B (european).
+		const map = {
+			'c': 0, 'c#': 1, 'db': 1,
+			'd': 2, 'd#': 3, 'eb': 3,
+			'e': 4, 'e#': 5, 'fb': 4,
+			'f': 5, 'f#': 6, 'gb': 6,
+			'g': 7, 'g#': 8, 'ab': 8,
+			'a': 9, 'a#': 10, 'bb': 10,
+			'b': 11, 'h': 11, 'cb': 11
+		};
+
+		// Accept forms like "cis" (handled earlier) or "c#" etc.
+		const base = notePart.toLowerCase();
+		const semitone = map[base];
+		if (semitone === undefined) return null;
+
+		// parse octave (C/4 -> octave 4). If missing fallback to 4.
+		let octave = 4;
+		if (octavePart !== undefined && octavePart !== null && octavePart !== '') {
+			const parsed = parseInt(octavePart, 10);
+			if (!Number.isNaN(parsed)) octave = parsed;
+		}
+
+		// MIDI number: (octave + 1) * 12 + semitone  -> C4 == 60
+		const midi = (octave + 1) * 12 + semitone;
+		return Number.isFinite(midi) ? midi : null;
+	} catch (e) {
+		console.warn('parseSlashKeyToMidi failed for', key, e);
+		return null;
+	}
+}
+
+// Convenience: accept "c/5" and play via WebAudio using existing helpers
+function playSlashKey(key, durationSeconds = 1.0, type = 'sine', volume = 0.82) {
+	try {
+		const midi = parseSlashKeyToMidi(key);
+		if (midi === null) {
+			console.warn('playSlashKey: could not parse key', key);
+			return false;
+		}
+		const freq = midiToFrequency(midi);
+		// ensure AudioContext resumed by playTone internal helper
+		playTone(freq, durationSeconds, type, volume);
+		return true;
+	} catch (e) {
+		console.error('playSlashKey failed', e);
+		return false;
+	}
+}
 
 //==========================================
 // Відтворення звуків через Web Audio API
@@ -208,3 +279,5 @@ window.pianoTokenToMidi = pianoTokenToMidi;
 window.midiToFrequency = midiToFrequency;
 window.playTone = playTone;
 window.playNoteFromKey = playNoteFromKey;
+window.parseSlashKeyToMidi = parseSlashKeyToMidi;
+window.playSlashKey = playSlashKey;

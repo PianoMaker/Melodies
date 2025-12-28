@@ -233,3 +233,24 @@
 #lettersbutton.open {
     display: block !important;
 }
+
+/* Дозволяємо обробку подій на групі */
+g.vf-stavenote {
+    pointer-events: all;
+}
+
+    g.vf-stavenote path {
+        transition: fill 1000ms ease;
+    }
+
+    /* Візуальний ховер — змінюємо заливку дочірніх шляхів */
+    g.vf-stavenote:hover path,
+    g.vf-stavenote.hover path {
+        fill: #d33; /* або інший колір підсвітки */
+        transition: fill 120ms ease;
+    }
+
+/* Показати курсор як посилання/натискуваний елемент */
+g.vf-stavenote:hover {
+  cursor: pointer;
+}
