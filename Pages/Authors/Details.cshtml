@@ -5,6 +5,7 @@
 @{
     ViewData["Title"] = "Мелодія - автор";
     var Melodies = Model.Melody;
+    var lng = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName ?? "uk"; 
 }
 
 @section Styles {
@@ -17,8 +18,24 @@
 
 <div>
     <hr />
-    <dl>
-        
+    <!-- photo + basic info -->
+    <div style="display:flex; gap:1rem; align-items:flex-start;">
+    <div>
+        @if (!string.IsNullOrEmpty(Model.Author.Photo))
+        {
+            var photoUrl = Url.Content(Model.Author.Photo.StartsWith("~/") || Model.Author.Photo.StartsWith("/") ? Model.Author.Photo : ("~/" + Model.Author.Photo).Replace("//","/"));
+            <img src="@photoUrl" alt="@Model.Author.Surname @Model.Author.Name" style="max-width:220px; width:100%; height:auto; border-radius:4px; box-shadow:006px rgba(0,0,0,.1)" />
+        }
+        else
+        {
+            <div style="width:220px; height:220px; display:flex; align-items:center; justify-content:center; background:#f5f5f5; color:#666; border-radius:4px;">
+                <span>Фото відсутнє</span>
+            </div>
+        }
+    </div>
+
+    <div style="flex:1;">
+        <dl>
         <dd class="col-sm-10 ">
             @Html.DisplayFor(model => model.Author.Name) @Html.DisplayFor(model => model.Author.Surname)
             @if (Model.Author.DateOfBirth is not null)
@@ -32,16 +49,36 @@
             @Html.DisplayFor(model => model.Author.NameEn) @Html.DisplayFor(model => model.Author.SurnameEn)
         </span>
         </dd>
-    </dl>
-    <dl class="row">        
+        </dl>
+        <!--Композицій на сайті-->
+        <dl class="row">        
         <dd class="col-sm-10 smallfont">
                 @Localizer["CompositionsOnSite"] @Html.DisplayFor(model => model.Author.MelodiesCount);
         </dd>
-    </dl>
-    <dl class="row">
+        </dl>
+    </div>
+    </div>
+
+    <!--Опис-->
+    <dl class="row" style="margin-top:1rem;">
         <dt></dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Author.Description)
+        @if(lng=="uk")
+             
+            {
+                @Html.DisplayFor(model => model.Author.Description)
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(Model.Author.DescriptionEn))
+                {
+                    <p>@Html.DisplayFor(model => model.Author.DescriptionEn)</p>
+                }
+                else
+                {
+                    <p>@Html.DisplayFor(model => model.Author.Description)</p>
+                }
+            }
         </dd>
     </dl>
 </div>
@@ -132,6 +169,4 @@
         <a asp-page="./Index" class="btn btn-outline-dark light-background link-dark">@Localizer["BackToList"]</a>
     </div>
 </div>
-<script src="~/js/play.js">
-
-</script>
+<script src="~/js/play.js"></script>

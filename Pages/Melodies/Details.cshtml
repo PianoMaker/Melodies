@@ -274,7 +274,10 @@
 </div>
 
 <!--СКРИТПИ-->
-<script src="~/js/play.js"></script>
-<script src="~/lib/midirender/midiRenderer.js" asp-append-version="true"></script>
-<script src="~/js/find-similar.js" asp-append-version="true"></script>
-<script src="~/js/melody-details.js" asp-append-version="true"></script>
+@section Scripts {
+    <script src="~/js/play.js"></script>
+    <script src="~/lib/midirender/midiRenderer.js" asp-append-version="true"></script>
+    <script src="~/js/find-similar.js" asp-append-version="true"></script>
+    <script src="~/js/audioHelpers.js" asp-append-version="true"></script>
+    <script src="~/js/melody-details.js" asp-append-version="true"></script>
+}
