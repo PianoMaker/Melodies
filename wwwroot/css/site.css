@@ -44,8 +44,9 @@
     --brand-maincolor: var(--brand-english);
     --brand-maincolor-light: #5b7fa0;
     --page-bg: #e9f0f6;
-    --surface-400: #eadaff;
-    --surface-200: #faefff;
+    --surface-400: #eadaef;
+    --surface-200: #faefef;
+    --brand-gold: #fff8f0;
 }
 
 a {
@@ -54,7 +55,7 @@ a {
 }
 
     a.link-light:hover {
-        color: yellow !important;
+        color: var(--brand-gold) !important;
     }
 
 /* Component examples */
@@ -290,11 +291,11 @@ body {
 
 /* підсвічує меню */
 .highlight {
-    background-color: yellow;
+    background-color: var(--brand-gold);
 }
 
 li.active {
-    background-color: rgba(255, 255, 0, 0.4) !important;
+    background-color: var(--brand-gold) !important;
 }
 
 .letter {
