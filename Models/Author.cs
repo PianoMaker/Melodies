@@ -15,9 +15,12 @@ namespace Melodies25.Models
         public Country? Country { get; set; }  // Країна автора
         public int? CountryID { get; set; }
         public int? DateOfBirth { get; set; }  // Рік народження
-        public int? DateOfDeath { get; set; }  // Рік смерті (може бути null, якщо автор живий)
-
+        public int? DateOfDeath { get; set; }  // Рік смерті 
         public string? Description { get; set; }
+
+        public string? DescriptionEn { get; set; }
+
+        public string? Photo { get; set; }
 
         // Обчислювана: якщо в імені/прізвищі є "народна пісня" або "folk song"
         [NotMapped]

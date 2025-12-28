@@ -7,81 +7,94 @@
     var @authorsurname = Model.Author.Surname;
 }
 <div class="infocontainer">
-<h1>Редагування  автора</h1>
+<h1>Редагування автора</h1>
 
 <hr />
 <div class="row">
-    <div class="col-md-4">
+ <div class="col-md-8">
 
-        <button type="button" onclick="translit('@authorname', '@authorsurname')">Перекласти</button>
-        
-        
-            <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Author.ID" />
-            <div style="display: inline-flex">
-                <div style="display:block">
-                    <div class="form-group">
-                        <label asp-for="Author.Surname" class="control-label">Прізвище</label>
-                        <input id="surnameUk" asp-for="Author.Surname" class="form-control" />
-                        <span asp-validation-for="Author.Surname" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="Author.Name" class="control-label">Ім'я'</label>
-                        <input id="nameUk" asp-for="Author.Name" class="form-control" />
-                        <span asp-validation-for="Author.Name" class="text-danger"></span>
-                    </div>
-                </div>
-                <div style="display:block">
-                    <div class="form-group">
-                        <label asp-for="Author.SurnameEn" class="control-label">Прізвище (англ.)</label>
-                        <input id="surnameEn" asp-for="Author.SurnameEn" class="form-control" />
-                        <span asp-validation-for="Author.Surname" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="Author.NameEn" class="control-label">Ім'я (англ.)</label>
-                        <input id="nameEn"  asp-for="Author.NameEn" class="form-control" />
-                        <span asp-validation-for="Author.Name" class="text-danger"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group">
-                <label asp-for="Author.DateOfBirth" class="control-label">Народився</label>
-                <input asp-for="Author.DateOfBirth" class="form-control" />
-                <span asp-validation-for="Author.DateOfBirth" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Author.DateOfDeath" class="control-label">Помер</label>
-                <input asp-for="Author.DateOfDeath" class="form-control" />
-                <span asp-validation-for="Author.DateOfDeath" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Author.CountryID" class="control-label">Країна</label>
-                <select asp-for="Author.CountryID" class="form-control" asp-items="ViewBag.CountryID">
-                    <option value="">-- Оберіть країну --</option>
-                </select>
-                <span asp-validation-for="Author.CountryID" class="text-danger"></span>
-            </div>
+ <button type="button" onclick="translit('@authorname', '@authorsurname')">Перекласти</button>
+ 
+ 
+ <form method="post">
+ <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+ <input type="hidden" asp-for="Author.ID" />
+ <div style="display: inline-flex">
+ <div style="display:block; margin-right:1rem;">
+ <div class="form-group">
+ <label asp-for="Author.Surname" class="control-label">Прізвище</label>
+ <input id="surnameUk" asp-for="Author.Surname" class="form-control" />
+ <span asp-validation-for="Author.Surname" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="Author.Name" class="control-label">Ім'я'</label>
+ <input id="nameUk" asp-for="Author.Name" class="form-control" />
+ <span asp-validation-for="Author.Name" class="text-danger"></span>
+ </div>
+ </div>
+ <div style="display:block;">
+ <div class="form-group">
+ <label asp-for="Author.SurnameEn" class="control-label">Прізвище (англ.)</label>
+ <input id="surnameEn" asp-for="Author.SurnameEn" class="form-control" />
+ <span asp-validation-for="Author.SurnameEn" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="Author.NameEn" class="control-label">Ім'я (англ.)</label>
+ <input id="nameEn" asp-for="Author.NameEn" class="form-control" />
+ <span asp-validation-for="Author.NameEn" class="text-danger"></span>
+ </div>
+ </div>
+ </div>
+ <div class="form-group">
+ <label asp-for="Author.DateOfBirth" class="control-label">Народився</label>
+ <input asp-for="Author.DateOfBirth" class="form-control" />
+ <span asp-validation-for="Author.DateOfBirth" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="Author.DateOfDeath" class="control-label">Помер</label>
+ <input asp-for="Author.DateOfDeath" class="form-control" />
+ <span asp-validation-for="Author.DateOfDeath" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="Author.CountryID" class="control-label">Країна</label>
+ <select asp-for="Author.CountryID" class="form-control" asp-items="ViewBag.CountryID">
+ <option value="">-- Оберіть країну --</option>
+ </select>
+ <span asp-validation-for="Author.CountryID" class="text-danger"></span>
+ </div>
 
-            <div class="form-group">
-                <label asp-for="Author.Description" class="control-label">Примітки</label>
-                <input asp-for="Author.Description" class="form-control" />
-                <span asp-validation-for="Author.Description" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group mt-3">
-                <input type="submit" value="Зберегти" class="btn btn-outline-dark light-background" />            
-                <a asp-page="./Index" class="btn btn-outline-dark light-background">Назад до списку</a>
-            </div>
-        </form>
-    </div>
+ <!-- Photo URL field -->
+ <div class="form-group">
+ <label asp-for="Author.Photo" class="control-label">Адреса фото</label>
+ <input asp-for="Author.Photo" class="form-control" placeholder="Вставте URL зображення або шлях" />
+ <span asp-validation-for="Author.Photo" class="text-danger"></span>
+ </div>
+
+ <div class="form-group">
+ <label class="control-label">Інформація про автора (укр.)</label>
+ <textarea asp-for="Author.Description" class="form-control" rows="6" style="resize:vertical;"></textarea>
+ <span asp-validation-for="Author.Description" class="text-danger"></span>
+ </div>
+
+ <div class="form-group">
+ <label class="control-label">Інформація про автора (англ.)</label>
+ <textarea asp-for="Author.DescriptionEn" class="form-control" rows="6" style="resize:vertical;"></textarea>
+ <span asp-validation-for="Author.DescriptionEn" class="text-danger"></span>
+ </div>
+ 
+ <div class="form-group mt-3">
+ <input type="submit" value="Зберегти" class="btn btn-outline-dark light-background" /> 
+ <a asp-page="./Index" class="btn btn-outline-dark light-background">Назад до списку</a>
+ </div>
+ </form>
+ </div>
 </div>
 </div>
 
 <script src="~/js/translate.js"></script>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+ @{
+ await Html.RenderPartialAsync("_ValidationScriptsPartial");
+ }
 }
