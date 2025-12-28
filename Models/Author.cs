@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.Metrics;
 
 namespace Melodies25.Models
@@ -21,6 +22,30 @@ namespace Melodies25.Models
         public string? DescriptionEn { get; set; }
 
         public string? Photo { get; set; }
+
+        [NotMapped]
+        public string? PhotoUrl         {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Photo))
+                {
+                    return null;
+                }
+                var photo = Photo.Trim();
+                // If external absolute URL - return as is
+                if (photo.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || photo.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                {
+                    return photo;
+                }
+                // If already application-relative or root-relative, return as is and let the view resolve via Url.Content
+                if (photo.StartsWith("~/") || photo.StartsWith("/"))
+                {
+                    return photo;
+                }
+                // Otherwise treat as relative path inside the site and return app-relative path; view should call Url.Content(PhotoUrl) when rendering
+                return "~/" + photo;
+            }
+        }
 
         // Обчислювана: якщо в імені/прізвищі є "народна пісня" або "folk song"
         [NotMapped]
