@@ -23,7 +23,20 @@
     <div>
         @if (!string.IsNullOrEmpty(Model.Author.Photo))
         {
-            var photoUrl = Url.Content(Model.Author.Photo.StartsWith("~/") || Model.Author.Photo.StartsWith("/") ? Model.Author.Photo : ("~/" + Model.Author.Photo).Replace("//","/"));
+            var photo = Model.Author.Photo?.Trim();
+            string photoUrl;
+            if (photo.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || photo.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                photoUrl = photo;
+            }
+            else if (photo.StartsWith("~/") || photo.StartsWith("/"))
+            {
+                photoUrl = Url.Content(photo);
+            }
+            else
+            {
+                photoUrl = Url.Content("~/" + photo).Replace("//", "/");
+            }
             <img src="@photoUrl" alt="@Model.Author.Surname @Model.Author.Name" style="max-width:220px; width:100%; height:auto; border-radius:4px; box-shadow:006px rgba(0,0,0,.1)" />
         }
         else
