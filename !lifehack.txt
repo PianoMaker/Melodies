@@ -13,7 +13,7 @@ git restore --source=possible-production-config E:\Programming\Melodies\Pages\Ac
 git restore --source=possible-production-config E:\Programming\Melodies\wwwroot\css
 git restore --source=master E:\Programming\Melodies\wwwroot\js
 
-        Add-Migration EnNames_provided -Context Melodies25Context
+        Add-Migration AuthorModel -Context Melodies25Context
         Update-Database -Context Melodies25Context
 
         сайт опубліковано - http://pianomaker2-001-site1.jtempurl.com/
