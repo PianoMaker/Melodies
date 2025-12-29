@@ -233,3 +233,33 @@
 #lettersbutton.open {
     display: block !important;
 }
+
+/* Author header: великий шрифт для імені, відступи */
+.author-header {
+    margin-bottom: 0.5rem;
+}
+
+.author-name {
+    font-size: 1.5rem; /* змініть значення під ваш дизайн */
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.author-dates {
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+.author-name-en {
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+/* Опис автора — окрема секція */
+.author-description p {
+    margin: 0;
+    padding: 0;
+    color: #222;
+    white-space: pre-wrap; /* зберегти переноси рядків, якщо є */
+}
