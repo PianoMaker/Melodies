@@ -21,6 +21,7 @@
         <!-- photo + basic info -->
         <div style="display:flex; gap:1rem; align-items:flex-start;">
             <div>
+                <!--ФОТО-->
                 @if (!string.IsNullOrEmpty(Model.Author.Photo))
                 {
                     var photoUrl = Model.Author.PhotoUrl;
@@ -33,24 +34,25 @@
                     </div>
                 }
             </div>
-
+            <!--ІНФО-->
             <div style="flex:1;">
-                <dl>
-                    <dd class="col-sm-10 ">
+                <!--Ім'я прізвище-->
+                <div class="author-header">
+                    <h2 class="author-name">
                         @Html.DisplayFor(model => model.Author.Name) @Html.DisplayFor(model => model.Author.Surname)
-                        @if (Model.Author.DateOfBirth is not null)
-                        {
-                            <text>
-                                (@Html.DisplayFor(model => model.Author.DateOfBirth)
-                                - @Html.DisplayFor(model => model.Author.DateOfDeath))
-                            </text>
-                        }
-                        <br />
-                        <span class="col-sm-10 smallfont">
-                            @Html.DisplayFor(model => model.Author.NameEn) @Html.DisplayFor(model => model.Author.SurnameEn)
-                        </span>
-                    </dd>
-                </dl>
+                    </h2>
+
+                    @if (Model.Author.DateOfBirth is not null)
+                    {
+                        <div class="author-dates smallfont">
+                            (@Html.DisplayFor(model => model.Author.DateOfBirth) - @Html.DisplayFor(model => model.Author.DateOfDeath))
+                        </div>
+                    }
+
+                    <div class="author-name-en smallfont">
+                        @Html.DisplayFor(model => model.Author.NameEn) @Html.DisplayFor(model => model.Author.SurnameEn)
+                    </div>
+                </div>
                 <!--Опис-->
                 <dl class="row" style="margin-top:1rem;">
                     <dt></dt>
