@@ -1,13 +1,19 @@
+для синхронізації файлів 
 
-
-
-# для синхронізації файлів 
-
-git restore --source=master E:\Programming\Melodies\Pages\Melodies
-
+git restore --source=twoDatabases E:\Programming\Melodies\Pages\Melodies\Index.cshtml.cs
+git restore --source=twoDatabases E:\Programming\Melodies\Pages\Authors\Index.cshtml.cs
 git restore --source=twoDatabases E:\Programming\Melodies\wwwroot\css
-git restore --source=master E:\Programming\Melodies\wwwroot\js
-git restore --source=master E:\Programming\Melodies\Utilities\
-git restore --source=twoDatabases E:\Programming\wwwroot\lifehack.txt
+git restore --source=twoDatabases E:\Programming\Melodies\wwwroot\js
+git restore --source=twoDatabases E:\Programming\Melodies\!lifehack.txt
+git restore --source=twoDatabases E:\Programming\Melodies\Pages\Melodies\Create.cshtml.cs
+
 
 git restore --source=possible-production-config E:\Programming\Melodies\wwwroot\js
+git restore --source=possible-production-config E:\Programming\Melodies\Pages\Account
+git restore --source=possible-production-config E:\Programming\Melodies\wwwroot\css
+git restore --source=master E:\Programming\Melodies\wwwroot\js
+
+        Add-Migration AuthorModel -Context Melodies25Context
+        Update-Database -Context Melodies25Context
+
+        сайт опубліковано - http://pianomaker2-001-site1.jtempurl.com/

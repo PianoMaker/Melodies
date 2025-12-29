@@ -114,4 +114,102 @@
             }
         });
     }
+    //---------------------------
+    // ТРАНСЛІТ
+    //---------------------------
+    var translitBtn = document.getElementById("translitbtn")
+    if (translitBtn) {
+        translitBtn.addEventListener("click", async function (e) {
+            e.preventDefault();
+			console.log("melody-edit: translit starts")
+
+            try {
+                var ukrname = document.getElementById("ukrnameInput")
+                var enname = document.getElementById("ukrnameInput")
+                if (ukrname) {
+                    var name = ukrname.value;
+                    var enname = translit(name)
+                    console.log(`translit ${name} to ${enname}`)
+                    ennameInput.value = enname;
+
+                }
+                else {
+                    console.warn("no ukr name found")
+                }
+            }
+            catch (err) {
+                console.error("failed to transliterate melody name:", err)
+            }
+
+		})
+    }
+    else { console.warn("no translitbtn found") }
 });
+
+function translit(text) {
+
+    console.log("Start translit:", text);
+    return transliterateToEn(text);
+
+    function transliterateToEn(input) {
+        const map = {
+            'А': "A", 'Б': "B", 'В': "V", 'Г': "H", 'Ґ': "G", 'Д': "D",
+            'Е': "E", 'Є': "Ye", 'Ж': "Zh", 'З': "Z", 'И': "Y", 'І': "I",
+            'Ї': "Ji", 'Й': "J", 'К': "K", 'Л': "L", 'М': "M", 'Н': "N",
+            'О': "O", 'П': "P", 'Р': "R", 'С': "S", 'Т': "T", 'У': "U",
+            'Ф': "F", 'Х': "Kh", 'Ц': "Ts", 'Ч': "Ch", 'Ш': "Sh", 'Щ': "Shch",
+            'Ь': "", 'Ю': "Yu", 'Я': "Ya",
+            'а': "a", 'б': "b", 'в': "v", 'г': "h", 'ґ': "g", 'д': "d",
+            'е': "e", 'є': "ie", 'ж': "zh", 'з': "z", 'и': "y", 'і': "i",
+            'ї': "i", 'й': "j", 'к': "k", 'л': "l", 'м': "m", 'н': "n",
+            'о': "o", 'п': "p", 'р': "r", 'с': "s", 'т': "t", 'у': "u",
+            'ф': "f", 'х': "kh", 'ц': "ts", 'ч': "ch", 'ш': "sh", 'щ': "shch",
+            'ю': "yu", 'я': "ya",
+            ' ': "_", '-': "_", ',': "_", '!': "_", '?': "_"
+        };
+
+        let result = "";
+        let prevChar = null; // Для збереження попереднього символу
+
+        for (let i = 0; i < input.length; i++) {
+            let c = input[i];
+
+            // Перевірка "ьо"
+            if (c === 'ь' && i + 1 < input.length && input[i + 1] === 'о') {
+                result += "io";
+                i++; // Пропускаємо наступний 'о'
+                prevChar = 'о'; // Оновлюємо попередній символ
+                continue;
+            }
+
+            // Пропускаємо всі м'які знаки, ъ, наголоси та ё
+            if (c === 'ь' || c === 'ъ' || c === '́' || c === 'ё') continue;
+
+            // Перевірка "я" після приголосної
+            if (c === 'я') {
+                if (prevChar !== null && !"аеєиіїоуюяь".includes(prevChar)) {
+                    result += "ia";
+                } else {
+                    result += "ya";
+                }
+            } else {
+                if (map.hasOwnProperty(c)) {
+                    result += map[c];
+                } else if (/[a-zA-Z0-9]/.test(c)) {
+                    result += c;
+                }
+            }
+
+            prevChar = c; // Оновлюємо попередній символ
+        }
+
+        let cleanedResult = result.replace(/_+$/, ""); // Видаляємо підкреслення в кінці
+
+        console.log(`${input} transliterated to ${cleanedResult}`);
+
+        return cleanedResult;
+    }
+
+
+}
+

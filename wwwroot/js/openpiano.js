@@ -3,6 +3,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     console.log("openpiano js is running");
     let openpianoDiv = document.getElementById("openpianoDiv");
+    let pianoDiv = document.getElementById("pianoDiv");
     let stainway = document.getElementById("stainway");
     let durationspanel = document.getElementById("durationspanel");
     if (durationspanel) {
