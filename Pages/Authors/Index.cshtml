@@ -38,7 +38,20 @@
     </div>
 </div>
 
-<table class="table">
+<div class="infocontainer melody-width" style="margin-top:0.75rem;">
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+        <!-- Small search icon on the left of the input -->
+        <div aria-hidden="true" style="width:32px; text-align:center; color:#666;">
+            <i class="fas fa-search" style="font-size:14px;"></i>
+        </div>
+
+        <input id="authorSearchInputIndex" type="search" class="form-control" placeholder="Прізвище, ім'я або англ. варіант" aria-label="Пошук авторів" style="max-width:520px;" />
+
+        <div id="authorSearchInfo" class="small text-muted mt-1" style="display:none">Знайдено: <span id="authorSearchCount">0</span></div>
+    </div>
+</div>
+
+<table class="table" id="authorsTable" style="margin-top:0.75rem;">
     <thead>
         <tr>
             <th>
@@ -55,7 +68,7 @@
                    asp-route-sortOrder="@Model.CountrySort"
                    asp-route-SelectedLang="@Model.SelectedLang"
                    class="link-th">
-                    Країна  @(Model.SurnameSort == "surname_asc" ? "▲" : "▼")
+                    Країна @(Model.SurnameSort == "surname_asc" ? "▲" : "▼")
                 </a>
             </th>
             <th>
@@ -63,7 +76,7 @@
                    asp-route-sortOrder="@Model.MelodiesCountSort"
                    asp-route-SelectedLang="@Model.SelectedLang"
                    class="link-th">
-                    Мелодій на сайті  @(Model.SurnameSort == "melody_asc" ? "▲" : "▼")
+                    Мелодій на сайті @(Model.SurnameSort == "melody_asc" ? "▲" : "▼")
                 </a>
             </th>
             <th>Редагувати/Вилучити</th>
@@ -72,7 +85,12 @@
     <tbody>
         @foreach (var item in Model.Author)
         {
-            <tr>
+            // add data-* attributes with all four fields so client search can match them regardless of displayed language
+            <tr class="author-row"
+                data-name="@Html.Raw(item.Name ?? "")"
+                data-surname="@Html.Raw(item.Surname ?? "")"
+                data-nameen="@Html.Raw(item.NameEn ?? "")"
+                data-surnameen="@Html.Raw(item.SurnameEn ?? "")">
                 <td>
                     @if (lng == "uk")
                     {
@@ -108,4 +126,5 @@
     </tbody>
 </table>
 <script src="~/js/author-index.js" asp-append-version="true"></script>
+<script src="~/js/authors-index.js" asp-append-version="true"></script>
 
