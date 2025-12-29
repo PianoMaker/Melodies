@@ -234,7 +234,9 @@ public class DatabaseSyncService
                 Country = country,
                 DateOfBirth = author.DateOfBirth,
                 DateOfDeath = author.DateOfDeath,
-                Description = author.Description
+                Description = author.Description,
+                DescriptionEn = author.DescriptionEn,
+                Photo = author.Photo
             });
         }
         
@@ -387,6 +389,43 @@ public class DatabaseSyncService
             hasChanges = true;
         }
 
+        // Опис
+        if (string.IsNullOrWhiteSpace(targetAuthor.Description) && !string.IsNullOrWhiteSpace(sourceAuthor.Description))
+        {
+            targetAuthor.Description = sourceAuthor.Description;
+            hasChanges = true;
+        }
+        else if (!string.IsNullOrWhiteSpace(targetAuthor.Description) && !string.IsNullOrWhiteSpace(sourceAuthor.Description))
+        {
+            if (!targetAuthor.Description.Contains(sourceAuthor.Description))
+            {
+                targetAuthor.Description += "\n\n--- З джерельної бази ---\n" + sourceAuthor.Description;
+                hasChanges = true;
+            }
+        }
+
+        // Опис англійською
+        if (string.IsNullOrWhiteSpace(targetAuthor.DescriptionEn) && !string.IsNullOrWhiteSpace(sourceAuthor.DescriptionEn))
+        {
+            targetAuthor.DescriptionEn = sourceAuthor.DescriptionEn;
+            hasChanges = true;
+        }
+        else if (!string.IsNullOrWhiteSpace(targetAuthor.DescriptionEn) && !string.IsNullOrWhiteSpace(sourceAuthor.DescriptionEn))
+        {
+            if (!targetAuthor.DescriptionEn.Contains(sourceAuthor.DescriptionEn))
+            {
+                targetAuthor.DescriptionEn += "\n\n--- From source DB ---\n" + sourceAuthor.DescriptionEn;
+                hasChanges = true;
+            }
+        }
+
+        // Фото
+        if (string.IsNullOrWhiteSpace(targetAuthor.Photo) && !string.IsNullOrWhiteSpace(sourceAuthor.Photo))
+        {
+            targetAuthor.Photo = sourceAuthor.Photo;
+            hasChanges = true;
+        }
+
         return hasChanges;
     }
 
@@ -421,7 +460,9 @@ public class DatabaseSyncService
                     Country = country,
                     DateOfBirth = melody.Author.DateOfBirth,
                     DateOfDeath = melody.Author.DateOfDeath,
-                    Description = melody.Author.Description
+                    Description = melody.Author.Description,
+                    DescriptionEn = melody.Author.DescriptionEn,
+                    Photo = melody.Author.Photo
                 };
                 _targetDb.Author.Add(author);
                 await _targetDb.SaveChangesAsync();
@@ -850,20 +891,25 @@ copied, skipped, conflicts);
             }
         }
 
-        // Об'єднання країни
-        if (targetAuthor.Country == null && sourceAuthor.Country != null)
+        // Об'єднання опису англійською
+        if (string.IsNullOrWhiteSpace(targetAuthor.DescriptionEn) && !string.IsNullOrWhiteSpace(sourceAuthor.DescriptionEn))
         {
-            var country = await _targetDb.Country.FirstOrDefaultAsync(c =>
-      ((c.Name ?? "").Trim().ToLower()) == (sourceAuthor.Country.Name ?? "").Trim().ToLower());
-
-            if (country == null)
+            targetAuthor.DescriptionEn = sourceAuthor.DescriptionEn;
+            hasChanges = true;
+        }
+        else if (!string.IsNullOrWhiteSpace(targetAuthor.DescriptionEn) && !string.IsNullOrWhiteSpace(sourceAuthor.DescriptionEn))
+        {
+            if (!targetAuthor.DescriptionEn.Contains(sourceAuthor.DescriptionEn))
             {
-                country = new Country { Name = sourceAuthor.Country.Name };
-                _targetDb.Country.Add(country);
-                await _targetDb.SaveChangesAsync();
+                targetAuthor.DescriptionEn += "\n\n--- From source DB ---\n" + sourceAuthor.DescriptionEn;
+                hasChanges = true;
             }
+        }
 
-            targetAuthor.Country = country;
+        // Об'єднання фото
+        if (string.IsNullOrWhiteSpace(targetAuthor.Photo) && !string.IsNullOrWhiteSpace(sourceAuthor.Photo))
+        {
+            targetAuthor.Photo = sourceAuthor.Photo;
             hasChanges = true;
         }
 
