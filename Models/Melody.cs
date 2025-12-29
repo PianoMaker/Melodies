@@ -26,6 +26,9 @@ namespace Melodies25.Models
         public int AuthorID { get; set; }  
         public Author? Author { get; set; }
 
+        [NotMapped] // TODO!!!!!!!!!!!!!!!
+        public DateTime CreatedAt { get; set; } = DateTime.Now; // Дата створення запису
+
         public bool IfPublicDomain 
         { 
             get
@@ -42,7 +45,7 @@ namespace Melodies25.Models
 
         // власна розробка  для роботи з нотним текстом
         [NotMapped]
-        public MusicMelody? MidiMelody { get; set; } 
+        public Music.MusicMelody? MidiMelody { get; set; } 
 
         [NotMapped]
         public string? Mp3Filepath 
@@ -55,7 +58,5 @@ namespace Melodies25.Models
                 return Path.ChangeExtension(FilePath, ".mp3");
             }
         }
-
-
     }
 }

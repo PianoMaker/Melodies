@@ -12,7 +12,6 @@ namespace Melodies25.Models
         [Required]
         public string Name { get; set; }  // Назва країни
 
-        [Required]
         public string NameEn { get; set; }  // Назва країни
 
         [NotMapped]
