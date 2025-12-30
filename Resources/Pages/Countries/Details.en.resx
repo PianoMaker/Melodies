@@ -123,6 +123,13 @@
   <data name="AuthorsOnSite" xml:space="preserve">
     <value>{0} authors in database</value>
   </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Back to list</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Edit</value>
+    <comment>Редагувати</comment>
+  </data>
   <data name="LifeYears" xml:space="preserve">
     <value>Life years</value>
   </data>

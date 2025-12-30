@@ -4,6 +4,7 @@
 
 @{
     ViewData["Title"] = "Мелодія - країни";
+    var lng = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName ?? "uk";
 }
 
 @section Styles {
@@ -20,8 +21,15 @@
             }
         </div>
         <div>
-            <h1>@Model.Country.Name</h1>
-            <h4>@Model.Country.NameEn</h4>
+            @if (lng == "en")
+            {
+                <h1>@(string.IsNullOrWhiteSpace(Model.Country.NameEn) ? Model.Country.Name : Model.Country.NameEn)</h1>
+            }
+            else
+            {
+                <h1>@Model.Country.Name</h1>
+                <h4>@Model.Country.NameEn</h4>
+            }
         </div>
     </div>
 
