@@ -1,7 +1,14 @@
-﻿using Melodies25.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Melodies25.Data;
 using Melodies25.Models;
 using Melodies25.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Hosting;
 
 public class DatabaseSyncService
 {
@@ -99,7 +106,21 @@ public class DatabaseSyncService
             var toAdd = _missingCountriesInTarget.Where(c => !existing.Contains(c.Name)).ToList();
             if (toAdd.Any())
             {
-                _targetDb.Country.AddRange(toAdd);
+                // Перед додаванням можна підготувати FlagUrl (рядок) — копію файлу прапора з джерела, якщо потрібно
+                foreach (var srcCountry in toAdd)
+                {
+                    // зберігаємо рядок FlagUrl у цільовій базі (копіювання файлу виконується нижче)
+                    _targetDb.Country.Add(new Country
+                    {
+                        Name = srcCountry.Name,
+                        NameEn = srcCountry.NameEn,
+                        FlagUrl = srcCountry.FlagUrl
+                    });
+
+                    // Спробувати скопіювати файл прапора (якщо це локальний шлях/ім'я)
+                    await TryCopyImageForEntryAsync(srcCountry.FlagUrl, "flags");
+                }
+
                 await _targetDb.SaveChangesAsync();
                 _logger.LogInformation("Added countries: {List}", string.Join(", ", toAdd.Select(c => c.Name)));
             }
@@ -149,7 +170,7 @@ public class DatabaseSyncService
                     ((a.SurnameEn ?? "").Trim().ToLower()) == normSurnameEn && 
                     ((a.NameEn ?? "").Trim().ToLower()) == normNameEn);
 
-            // 3. NEW: Перевірка змішаних збігів (Surname = SurnameEn або навпаки)
+            // 3. Перевірка змішаних збігів (Surname = SurnameEn або навпаки)
             bool crossLanguageMatch = false;
             string crossMatchDetails = "";
 
@@ -225,7 +246,7 @@ public class DatabaseSyncService
             }
 
             // Додати автора якщо немає конфліктів
-            _targetDb.Author.Add(new Author
+            var newAuthor = new Author
             {
                 Name = author.Name,
                 Surname = author.Surname,
@@ -237,7 +258,12 @@ public class DatabaseSyncService
                 Description = author.Description,
                 DescriptionEn = author.DescriptionEn,
                 Photo = author.Photo
-            });
+            };
+
+            _targetDb.Author.Add(newAuthor);
+
+            // Спробувати скопіювати фізичний файл фото (якщо локальний шлях/ім'я)
+            await TryCopyImageForEntryAsync(author.Photo, "authors");
         }
         
         await _targetDb.SaveChangesAsync();
@@ -342,6 +368,12 @@ public class DatabaseSyncService
         {
             await _targetDb.SaveChangesAsync();
             _logger.LogInformation($"Cross-language merged author '{sourceAuthor.Surname} {sourceAuthor.Name}' with existing author ID {targetAuthor.ID}.");
+        }
+
+        // Якщо фото перенеслося до цільового запису — скопіювати файл
+        if (!string.IsNullOrWhiteSpace(sourceAuthor.Photo))
+        {
+            await TryCopyImageForEntryAsync(sourceAuthor.Photo, "authors");
         }
     }
 
@@ -466,6 +498,9 @@ public class DatabaseSyncService
                 };
                 _targetDb.Author.Add(author);
                 await _targetDb.SaveChangesAsync();
+
+                // copy author photo if present
+                await TryCopyImageForEntryAsync(melody.Author.Photo, "authors");
             }
 
             var normTitle = (melody.Title ?? "").Trim().ToLower();
@@ -612,6 +647,103 @@ copied, skipped, conflicts);
         }
 
         return sourceProjectDir;
+    }
+
+    // NEW: Отримати шлях до папки зображень джерела
+    private string GetSourceImagesPath()
+    {
+        var currentPath = _environment.WebRootPath;
+        var currentProjectDir = Directory.GetParent(currentPath)?.FullName;
+        var sourceImagesDir = Path.Combine(Directory.GetParent(currentProjectDir)!.FullName, "SourceProject", "wwwroot", "images");
+
+        if (!Directory.Exists(sourceImagesDir))
+        {
+            sourceImagesDir = Path.Combine(_environment.WebRootPath, "images_source");
+        }
+
+        if (!Directory.Exists(sourceImagesDir))
+        {
+            sourceImagesDir = Path.Combine(_environment.WebRootPath, "images");
+        }
+
+        return sourceImagesDir;
+    }
+
+    // NEW: Отримати шлях до папки зображень цілі
+    private string GetTargetImagesPath()
+    {
+        var images = Path.Combine(_environment.WebRootPath, "images");
+        if (!Directory.Exists(images))
+            Directory.CreateDirectory(images);
+        return images;
+    }
+
+    // NEW: Спробувати скопіювати зображення, якщо воно локальне (не HTTP URL)
+    private async Task<bool> TryCopyImageForEntryAsync(string? imagePathOrUrl, string subfolder)
+    {
+        if (string.IsNullOrWhiteSpace(imagePathOrUrl)) return false;
+        if (IsHttpUrl(imagePathOrUrl)) return false; // зовнішні URL не копіюємо тут
+
+        try
+        {
+            // нормалізуємо відносний шлях (без ведучого '/')
+            var relative = imagePathOrUrl.Replace('\\', '/').TrimStart('/');
+
+            // зберігати підкаталог (наприклад 'authors' або 'flags') для уникнення колізій
+            var sourceRoot = GetSourceImagesPath();
+            var targetRoot = Path.Combine(GetTargetImagesPath(), subfolder);
+            if (!Directory.Exists(targetRoot)) Directory.CreateDirectory(targetRoot);
+
+            // якщо в imagePathOrUrl є шляхи з підкаталогами - збережемо їх (take filename)
+            var fileName = Path.GetFileName(relative);
+            if (string.IsNullOrEmpty(fileName)) return false;
+
+            var sourceFile = Path.Combine(sourceRoot, relative);
+            if (!File.Exists(sourceFile))
+            {
+                // якщо не знайшли файл за повним відносним шляхом, спробуємо просто ім'я файлу у sourceRoot
+                sourceFile = Path.Combine(sourceRoot, fileName);
+            }
+
+            if (!File.Exists(sourceFile))
+            {
+                _logger.LogDebug("Source image not found: {SourceFile}", sourceFile);
+                return false;
+            }
+
+            var targetFile = Path.Combine(targetRoot, fileName);
+
+            // Якщо цільовий файл вже існує — оновлюємо тільки якщо джерело новіше
+            if (File.Exists(targetFile))
+            {
+                var srcInfo = new FileInfo(sourceFile);
+                var trgInfo = new FileInfo(targetFile);
+                if (srcInfo.Length == trgInfo.Length && srcInfo.LastWriteTime <= trgInfo.LastWriteTime)
+                {
+                    _logger.LogDebug("Target image exists and is up-to-date: {TargetFile}", targetFile);
+                    return true;
+                }
+            }
+
+            // Копіюємо файл (синхронно — небагато файлів)
+            File.Copy(sourceFile, targetFile, overwrite: true);
+            _logger.LogInformation("Copied image {FileName} to target {TargetFile}", fileName, targetFile);
+
+            // У випадку, якщо хочемо зберігати шлях у базі як відносний до wwwroot/images, можна повернути оновлений шлях.
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to copy image {Image} : {Message}", imagePathOrUrl, ex.Message);
+            return false;
+        }
+    }
+
+    // NEW: Прості утиліти
+    private static bool IsHttpUrl(string s)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return false;
+        return s.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || s.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
     }
 
     // NEW: Enum для рішень щодо файлів
@@ -917,6 +1049,12 @@ copied, skipped, conflicts);
         {
             await _targetDb.SaveChangesAsync();
             _logger.LogInformation($"Merged author '{sourceAuthor.Surname} {sourceAuthor.Name}' with existing author ID {targetAuthor.ID}.");
+        }
+
+        // Скопіювати файл фото, якщо потрібно
+        if (!string.IsNullOrWhiteSpace(sourceAuthor.Photo))
+        {
+            await TryCopyImageForEntryAsync(sourceAuthor.Photo, "authors");
         }
 
         return targetAuthor;
