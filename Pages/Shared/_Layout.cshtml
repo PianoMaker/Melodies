@@ -173,12 +173,23 @@
             &copy; 2025 - Melodies25 - <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>
     </footer>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/lib/vexflow.js"></script> <!-- ноти -->
-    <script src="~/lib/midifile/midifile.bundle.js"></script> <!-- MIDI -->
+    <script src="~/lib/midirender/midifile.bundle.js"></script> <!-- MIDI -->
+    <script src="~/lib/midirender/mr-calculate-rows-helper.js" asp-append-version="true"></script>
+    <script src="~/lib/midirender/mr-key-signatures-helper.js" asp-append-version=" true"></script>
+    <script src="~/lib/midirender/mr-durations-helper.js" asp-append-version="true"></script>
+    <script src="~/lib/midirender/mr-beams-helper.js" asp-append-version="true"></script>
+    <script src="~/lib/midirender/mr-svg-helper.js" asp-append-version="true"></script>
+    <script src="~/lib/midirender/mr-rests-helper.js" asp-append-version="true"></script>
+    <script src="~/lib/midirender/midiparser.js" asp-append-version="true"></script>
+    <script src="~/lib/midirender/midiparser_ext.js" asp-append-version="true"></script>
+    <script src="~/lib/midirender/midiRenderer.js" asp-append-version="true"></script>
+    <script src="~/lib/midirender/patternRenderer.js" asp-append-version="true"></script>
+    <script src="~/js/admin-topbar.js" asp-append-version="true"></script>
+    <script src="~/js/lang-switcher.js" asp-append-version="true"></script>
 
     <environment include="Development">
         <script>window.__APP_DEBUG__ = true;</script>

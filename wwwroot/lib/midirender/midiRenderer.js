@@ -416,6 +416,7 @@ function renderMeasuresToNotation(startAtMeasureIndex, measures, maxBarsToRender
 
     // If we scale the context by scaleFactor, we must allocate a larger renderer
     const { rendererWidth, rendererHeight } = getRenderDimensions(effectiveWidth, scaleFactor, rowsHeight, containerWidth);
+	
 
     setTimeout(() => {
         const factory = new Vex.Flow.Factory({
@@ -433,7 +434,7 @@ function renderMeasuresToNotation(startAtMeasureIndex, measures, maxBarsToRender
         console.debug(`renderMidiFileToNotation: renderer ${rendererWidth}x${rendererHeight}, scaleFactor=${scaleFactor}`);
 
         const scaledWidth = effectiveWidth / scaleFactor;
-		const scaledBARWIDTH = BARWIDTH;
+		const scaledBARWIDTH = BARWIDTH * Math.sqrt(scaleFactor);
 
 		console.debug(`scaledWidth [RW] = ${scaledWidth} `);
 
@@ -462,8 +463,9 @@ function renderMeasuresToNotation(startAtMeasureIndex, measures, maxBarsToRender
 
 function getRenderDimensions(effectiveWidth, scaleFactor, rowsHeight, containerWidth) {
 	const rendererWidth = Math.max(Math.round(effectiveWidth / scaleFactor), 200);
-	const rendererHeight = Math.max(Math.round(rowsHeight * scaleFactor * scaleFactor), 100);
+	const rendererHeight = Math.max(Math.round(rowsHeight * scaleFactor * scaleFactor ), 100);
 	console.log(`renderMidiFileToNotation: rowsHeight = ${rowsHeight}, containerWidth=${containerWidth}`);
+	console.log(`renderMidiFileToNotation: rendererHight = ${rowsHeight}, rendererWidth=${containerWidth}`);
 	return { rendererWidth, rendererHeight };
 }
 
@@ -800,8 +802,14 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 							let firstPiece = null;
 							durationsCode.forEach((durationCode, pieceIdx) => {
 								const accToDraw = decideAccidentalForNote(vexKey, accidental, currentKeySig, measureAccState, pieceIdx);
-								const note = processNoteElement(durationCode, vexKey, accToDraw, clefChoice);
+								const note = processNoteElement(durationCode, vexKey, accToDraw, clefChoice, pitch);
 								applyAutoStem(note, durationCode);
+
+								try {
+									note.__pitch = pitch;
+									console.log(`Creating note: pitch=${pitch}, dur=${durationCode}, ticks=${durationTicks}, acc=${accToDraw}`);
+
+								} catch (e) { console.warn(`failed to get pitch ${e}`) }
 
 								const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
 								note.__srcTicks = allocatedTicks;
@@ -810,7 +818,6 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 								notes.push(note); // ADD NOTE //
 								//===============================
 
-								// Tie from previousNote (could be from earlier piece in same measure or from previous measure)
 								AddTie(previousNote, ties, note);
 
 								previousNote = note;
@@ -938,8 +945,8 @@ function correctExtraNotes(notes, ticksPerMeasure, ticksPerBeat, clef) {
 				} else {
 					// Для нот потрібно зберегти висоту та знаки альтерації
 					const keys = lastNote.getKeys();
-					// При створенні укоротженої ноти передаємо clef
-					const newNote = processNoteElement(newDuration, keys[0], null, clef);
+					// При створенні укоротженої ноти передаємо clef і pitch
+					const newNote = processNoteElement(newDuration, keys[0], null, clef, lastNote.pitch);
 					if (newNote) {
 						// Копіюємо знаки альтерації з оригінальної ноти
 						const modifiers = lastNote.getModifiers();
@@ -985,6 +992,7 @@ function processActiveNotesFromPreviousBar(activeNotes, index, barStartAbsTime) 
 		console.debug("AN: no active notes from previous bar");
 	}
 }
+
 // --- Replace: drawActiveNotes to set and use lastRenderedNote for cross-bar ties ---
 function drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties, currentKeySig, measureAccState, clef = 'treble') {
 	console.debug("MR: FOO: midiRenderer.js - drawActiveNotes");
@@ -1010,8 +1018,10 @@ function drawActiveNotes(activeNotes, measureEndTick, ticksPerBeat, notes, ties,
 			let firstPiece = null;
 			durationsCode.forEach((durationCode, pieceIdx) => {
 				const accToDraw = decideAccidentalForNote(key, accidental, currentKeySig, measureAccState, pieceIdx);
-				const note = processNoteElement(durationCode, key, accToDraw, clef);
+				const note = processNoteElement(durationCode, key, accToDraw, clef, pitch);
 				applyAutoStem(note, durationCode);
+
+				try { note.__pitch = pitch; } catch (e) { /* ignore */ }
 
 				const allocatedTicks = Math.round(durationTicks * (nominalTicksArr[pieceIdx] / nominalSum));
 				note.__srcTicks = allocatedTicks;
@@ -1056,7 +1066,6 @@ function CalculateTicksPerMeasure(currentNumerator, ticksPerBeat, currentDenomin
 	console.debug("MR: FOO: midiRenderer.js - CalculateTicksPerMeasure");
 	return currentNumerator * ticksPerBeat * 4 / currentDenominator;
 }
-
 
 // Повертає accidental для відображення з урахуванням key signature
 // Якщо знак збігається з ключем — повертає null (не показувати)
@@ -1385,6 +1394,8 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, isFirstMeasureInRow,
 			// Малюємо голос
 			voice.draw(context, stave);
 
+			addAtributesToNotesInMeasure(validNotes, index);
+
 			// Розпізнаємо й малюємо тріолі
 			drawTuplets(currentNumerator, currentDenominator, validNotes, ticksPerBeat, index, context);
 
@@ -1439,7 +1450,7 @@ function drawMeasure(notes, BARWIDTH, context, stave, ties, isFirstMeasureInRow,
 
 
 // ----------------------
-// ФУНКЦІЯ ДЛЯ ОБРОБКИ І МАЛюВАННЯ ЛІГ З ОБРОБКОЮ ПОМИЛОК
+// ФУНКЦІЯ ДЛЯ ОБРОБКИ І МАЛЮВАННЯ ЛІГ З ОБРОБКОЮ ПОМИЛОК
 // Використовує Vex.Flow.StaveTie
 // Параметри:
 // - ties: Масив об'єктів StaveTie з VexFlow.
@@ -1544,6 +1555,7 @@ function adjustTimeSignature(measure, currentNumerator, currentDenominator) {
 // - previousNote: Попередня нота (Vex.Flow.StaveNote) або null.
 // - ties: Масив ліг (Vex.Flow.StaveTie) для рендерингу.
 // - note: Поточна нота (Vex.Flow.StaveNote).
+
 // Повертає: void
 // ----------------------
 function AddNotesFromPreviousBar(activeNotes, measure) {
@@ -1611,7 +1623,7 @@ function AddTie(previousNote, ties, note) {
 // / / - accidental: Знак альтерації ('#', 'b', 'n') або null.
 // Повертає: Об'єкт Vex.Flow.StaveNote або null у разі помилки.
 // ----------------------
-function processNoteElement(durationCode, key, accidental, clef = 'treble') {
+function processNoteElement(durationCode, key, accidental, clef = 'treble', srcMidi = null) {
 	console.debug("MR: FOO: midiRenderer.js - processNoteElement");
 	// key може бути в форматі "C/4" або "C4" — normalize до формату, який очікує createNote (наприклад "c4")
 	let normalized = (typeof key === 'string') ? key.replace('/', '') : key;
@@ -1622,6 +1634,11 @@ function processNoteElement(durationCode, key, accidental, clef = 'treble') {
 	if (note && accidental) {
 		note.addAccidental(0, new Vex.Flow.Accidental(accidental));
 	}
+
+	if (srcMidi !== null && srcMidi !== undefined && Number.isFinite(Number(srcMidi))) {
+		note.__pitch = Number(srcMidi);
+	}
+
 	applyAutoStem(note, durationCode);
 	return note;
 }
@@ -1750,4 +1767,241 @@ function handleNoNotesToRender(commentsDiv, ELEMENT_FOR_RENDERING, measures, mea
 		maxBarsToRender,
 		startAtMeasureIndex: startIdx
 	};
+}
+
+
+function addAtributesToNotesInMeasure(validNotes, measureIndex) {
+	if (typeof document === 'undefined' || !Array.isArray(validNotes) || typeof measureIndex !== 'number') return;
+
+	function normalizeAcc(a) {
+		if (!a && a !== '') return null;
+		const s = String(a).trim();
+		if (!s) return null;
+		if (s === '#' || s === '♯' || /sharp/i.test(s)) return '#';
+		if (s === 'b' || s === '♭' || /flat/i.test(s)) return 'b';
+		if (s.toLowerCase() === 'n' || /natural/i.test(s)) return 'n';
+		if (s.indexOf('#') !== -1 || s.indexOf('♯') !== -1) return '#';
+		if (s.indexOf('b') !== -1 || s.indexOf('♭') !== -1) return 'b';
+		return null;
+	}
+
+	function midiFromKey(rawKey) {
+		if (!rawKey || typeof rawKey !== 'string') return null;
+		const cleaned = rawKey.trim();
+		const parts = cleaned.split('/');
+		if (parts.length <2) return null;
+		const letterPart = parts[0].toLowerCase();
+		const oct = parseInt(parts[1],10);
+		if (Number.isNaN(oct)) return null;
+		const baseMap = { c:0, d:2, e:4, f:5, g:7, a:9, b:11, h:11 };
+		const m = baseMap[letterPart[0]] !== undefined ? baseMap[letterPart[0]] :0;
+		let sem = m;
+		if (letterPart.indexOf('#') !== -1) sem +=1;
+		if (letterPart.indexOf('b') !== -1) sem -=1;
+		sem = ((sem %12) +12) %12;
+		return Math.round((Number(oct) +1) *12 + sem);
+	}
+
+	try {
+		const host = document.getElementById('notation');
+		let svg = host ? host.querySelector('svg') : null;
+		if (!svg) {
+			const svgs = Array.from(document.querySelectorAll('svg'));
+			svg = svgs.length ? svgs[svgs.length -1] : null;
+		}
+		if (!svg) return;
+
+		const groups = Array.from(svg.querySelectorAll('g.vf-stavenote'));
+		if (!groups.length || !validNotes.length) return;
+
+		// Build centers and read any pre-existing data-midi/title for heuristic
+		const groupCenters = groups.map((g, i) => {
+			let cx = null;
+			try { const bb = g.getBBox(); cx = bb.x + bb.width /2; } catch { cx = null; }
+			// read preexisting data-midi if any
+			let existingMidi = null;
+			try { existingMidi = g.getAttribute('data-midi'); } catch { existingMidi = null; }
+			let titleText = null;
+			try {
+				const titleEl = g.querySelector('title');
+				if (titleEl) titleText = titleEl.textContent || null;
+			} catch { titleText = null; }
+			return { i, g, cx, used: false, existingMidi: existingMidi ? parseInt(existingMidi,10) : null, titleText };
+		});
+
+		// Helper: compute expected midi for a staveNote
+		function expectedMidiForStaveNote(staveNote) {
+			if (!staveNote) return null;
+			// prefer explicit field set at creation
+			try {
+				if (Number.isFinite(Number(staveNote.__pitch))) return Number(staveNote.__pitch);
+				if (Number.isFinite(Number(staveNote.__srcMidi))) return Number(staveNote.__srcMidi);
+			} catch (e) { /* ignore */ }
+
+			// try getKeyProps
+			try {
+				if (typeof staveNote.getKeyProps === 'function') {
+					const kp = staveNote.getKeyProps();
+					if (Array.isArray(kp) && kp.length >0) {
+						const first = kp[0];
+						if (first && Number.isFinite(Number(first.midi))) return Number(first.midi);
+						if (first && first.key) {
+							const k = String(first.key || '').replace(/\s+/g, '');
+							const mm = midiFromKey(k);
+							if (mm !== null) return mm;
+						}
+					}
+				}
+			} catch (e) { /* ignore */ }
+
+			// try getKeys string
+			try {
+				if (typeof staveNote.getKeys === 'function') {
+					const keys = staveNote.getKeys();
+					if (Array.isArray(keys) && keys.length >0) {
+						const k = keys[0];
+						const mm = midiFromKey(k);
+						if (mm !== null) return mm;
+					}
+				} else if (staveNote.keys && Array.isArray(staveNote.keys) && staveNote.keys.length >0) {
+					const mm = midiFromKey(staveNote.keys[0]);
+					if (mm !== null) return mm;
+				}
+			} catch (e) { /* ignore */ }
+
+			return null;
+		}
+
+		// Build list of unassigned groups
+		const unassigned = new Set(groupCenters.map(gc => gc.i));
+
+		let annotated =0;
+
+		// First pass: try exact midi match between expectedMidi and group's existingMidi or title content
+		for (let noteIdx =0; noteIdx < validNotes.length; noteIdx++) {
+			const staveNote = validNotes[noteIdx];
+			if (!staveNote) continue;
+			const expectedMidi = expectedMidiForStaveNote(staveNote);
+			if (expectedMidi == null) continue; // leave for next pass
+
+			// find group with existingMidi == expectedMidi
+			let matched = null;
+			for (const gc of groupCenters) {
+				if (!unassigned.has(gc.i)) continue;
+				if (gc.existingMidi !== null && gc.existingMidi === expectedMidi) { matched = gc; break; }
+				// try title text containing midi number
+				if (gc.titleText && gc.titleText.indexOf(String(expectedMidi)) !== -1) { matched = gc; break; }
+			}
+
+			if (matched) {
+				const g = matched.g;
+				try {
+					// write attributes
+					if (!g.getAttribute('data-measure-index')) g.setAttribute('data-measure-index', String(measureIndex));
+					if (!g.getAttribute('data-note-in-measure')) g.setAttribute('data-note-in-measure', String(noteIdx));
+					if (Number.isFinite(expectedMidi)) g.setAttribute('data-midi', String(expectedMidi));
+					// mark used
+					unassigned.delete(matched.i);
+					matched.used = true;
+					annotated++;
+				} catch (e) { /* ignore */ }
+			}
+		}
+
+		// Second pass: match by position + expectedMidi if available, else by nearest X
+		for (let noteIdx =0; noteIdx < validNotes.length; noteIdx++) {
+			const staveNote = validNotes[noteIdx];
+			if (!staveNote) continue;
+
+			// if this note already has an assigned group (we set data-midi earlier), skip
+			let alreadyAssigned = false;
+			try {
+				// check if any group has data-note-in-measure == noteIdx and measureIndex
+				for (const gc of groupCenters) {
+					try {
+						const di = gc.g.getAttribute('data-measure-index');
+						const ni = gc.g.getAttribute('data-note-in-measure');
+						if (di !== null && ni !== null && parseInt(di,10) === measureIndex && parseInt(ni,10) === noteIdx) { alreadyAssigned = true; break; }
+					} catch (e) { /* ignore */ }
+				}
+			} catch (e) { /* ignore */ }
+			if (alreadyAssigned) continue;
+
+			let noteX = null;
+			try {
+				if (typeof staveNote.getAbsoluteX === 'function') noteX = staveNote.getAbsoluteX();
+				else if (typeof staveNote.getX === 'function') noteX = staveNote.getX();
+			} catch { noteX = null; }
+
+			const expectedMidi = expectedMidiForStaveNote(staveNote);
+
+			// Try find among unassigned a group with title containing expected key or midi
+			if (expectedMidi != null) {
+				let matched = null;
+				for (const gc of groupCenters) {
+					if (!unassigned.has(gc.i)) continue;
+					if (gc.titleText && (gc.titleText.indexOf(String(expectedMidi)) !== -1 || gc.titleText.indexOf(String(expectedMidi)) !== -1)) { matched = gc; break; }
+				}
+				if (matched) {
+					try {
+						const g = matched.g;
+						if (!g.getAttribute('data-measure-index')) g.setAttribute('data-measure-index', String(measureIndex));
+						if (!g.getAttribute('data-note-in-measure')) g.setAttribute('data-note-in-measure', String(noteIdx));
+						if (!g.getAttribute('data-midi')) g.setAttribute('data-midi', String(expectedMidi));
+						unassigned.delete(matched.i);
+						matched.used = true;
+						annotated++;
+						continue;
+					} catch (e) { /* ignore */ }
+				}
+			}
+
+			// Fallback: nearest by X among unassigned
+			let best = null;
+			let bestDist = Infinity;
+			if (Number.isFinite(noteX)) {
+				for (const gc of groupCenters) {
+					if (!unassigned.has(gc.i)) continue;
+					if (!Number.isFinite(gc.cx)) continue;
+					const d = Math.abs(gc.cx - noteX);
+					if (d < bestDist) { bestDist = d; best = gc; }
+				}
+			} else {
+				// if noteX unknown, pick any unassigned
+				const anyIdx = unassigned.values().next().value;
+				best = anyIdx !== undefined ? groupCenters.find(g => g.i === anyIdx) : null;
+			}
+
+			if (best) {
+				try {
+					const g = best.g;
+					if (!g.getAttribute('data-measure-index')) g.setAttribute('data-measure-index', String(measureIndex));
+					if (!g.getAttribute('data-note-in-measure')) g.setAttribute('data-note-in-measure', String(noteIdx));
+					// if expectedMidi available set it, otherwise if staveNote has __pitch use it
+					if (expectedMidi != null) {
+						if (!g.getAttribute('data-midi')) g.setAttribute('data-midi', String(expectedMidi));
+					} else {
+						// try to compute midi from keys as last resort
+						let computed = null;
+						try {
+							if (typeof staveNote.getKeys === 'function') {
+								const k = staveNote.getKeys()[0];
+								computed = midiFromKey(k);
+							} else if (staveNote.keys && staveNote.keys[0]) {
+								computed = midiFromKey(staveNote.keys[0]);
+							}
+						} catch (e) { computed = null; }
+						if (computed != null && !g.getAttribute('data-midi')) g.setAttribute('data-midi', String(computed));
+					}
+					unassigned.delete(best.i);
+					best.used = true;
+					annotated++;
+				} catch (e) { /* ignore per-element failures */ }
+			}
+		}
+
+		console.debug && console.debug(`Annotated ${annotated}/${validNotes.length} notes for measure ${measureIndex}`);
+	} catch (e) {
+		console.warn('addAtributesToNotesInMeasure failed', e);
+	}
 }

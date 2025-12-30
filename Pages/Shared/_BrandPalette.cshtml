@@ -1,0 +1,69 @@
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@* Minimal preview for designers / admin pages *@
+
+<link rel="stylesheet" href="~/css/colors-page.css" asp-append-version="true" />
+
+<div class="palette">
+    <div class="palette-item">
+        <div class="palette-swatch sw-bg-brand-900">Brand 900</div>
+        <div class="palette-label">--brand-900 — #2b2d0e</div>
+    </div>
+    <div class="palette-item">
+        <div class="palette-swatch sw-bg-brand-700">Brand 700</div>
+        <div class="palette-label">--brand-700 — #3f4214</div>
+    </div>
+    <div class="palette-item">
+        <div class="palette-swatch sw-bg-brand-500">Brand 500</div>
+        <div class="palette-label">--brand-500 — #4b4f18</div>
+    </div>
+    <div class="palette-item">
+        <div class="palette-swatch sw-bg-brand-300">Brand 300</div>
+        <div class="palette-label">--brand-300 — #7a7e38</div>
+    </div>
+    <div class="palette-item">
+        <div class="palette-swatch sw-bg-brand-100">Brand 100</div>
+        <div class="palette-label">--brand-100 — #dfe0ad</div>
+    </div>
+
+    <div class="palette-item">
+        <div class="palette-swatch sw-bg-surface-50">Surface 50</div>
+        <div class="palette-label">--surface-50 — #ffffff</div>
+    </div>
+    <div class="palette-item">
+        <div class="palette-swatch sw-bg-surface-100">Surface 100</div>
+        <div class="palette-label">--surface-100 — #fffef9</div>
+    </div>
+    <div class="palette-item">
+        <div class="palette-swatch sw-bg-surface-200">Surface 200</div>
+        <div class="palette-label">--surface-200 — #fffce6</div>
+    </div>
+    <div class="palette-item">
+        <div class="palette-swatch sw-bg-surface-300">Surface 300</div>
+        <div class="palette-label">--surface-300 — #fffcd1</div>
+    </div>
+    <div class="palette-item">
+        <div class="palette-swatch sw-bg-surface-400">Surface 400</div>
+        <div class="palette-label">--surface-400 — #fff9b0</div>
+    </div>
+</div>
+
+<div style="height:12px"></div>
+
+<div class="color-mosaic" aria-hidden="false">
+    <div class="mosaic-tile tile-brand-gradient">Brand ? Lighter</div>
+    <div class="mosaic-tile tile-accent">Accent Split</div>
+    <div class="mosaic-tile tile-surface-gradient">Surface ? Soft</div>
+    <div class="mosaic-tile sw-bg-brand-500">Brand</div>
+    <div class="mosaic-tile sw-bg-surface-300">Surface</div>
+</div>
+
+<div style="height:12px"></div>
+
+<div class="card-surface" style="max-width:460px;">
+    <h3 style="margin-top:0">Sample card</h3>
+    <p style="margin-bottom:8px">Surface background with brand text — shows how content reads on panel.</p>
+    <div style="display:flex;gap:8px;">
+        <button class="btn-brand">Primary</button>
+        <button class="btn-brand-outline">Outline</button>
+    </div>
+</div>
