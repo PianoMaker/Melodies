@@ -6,32 +6,28 @@
     ViewData["Title"] = "Мелодія - автори";
     var lng = Model.SelectedLang;
 }
+
 <div class="infocontainer melody-width hideformenu">
     <div class="spaceformenu"></div>
     <h1>@Localizer["AuthorsInDatabase", Model.Author.Count]</h1>
     <div style="display:inline">
 
         <a asp-page="Create" class="btn-melody">@Localizer["AddAuthor"]</a>
-
         <form method="post" asp-page-handler="translit" style="display:inline">
             <button type="submit" class="btn-melody m-4">@Localizer["Update"]</button>
         </form>
     </div>
 </div>
-
 <div class="infocontainer melody-width" style="margin-top:0.75rem;">
-    <div style="display:flex; align-items:center; gap:0.5rem;">
-        <!-- Small search icon on the left of the input -->
+    <div style="display:flex; align-items:center; gap:0.5rem;">        
         <div aria-hidden="true" style="width:32px; text-align:center; color:#666;">
             <i class="fas fa-search" style="font-size:14px;"></i>
         </div>
-
-        <input id="authorSearchInputIndex" type="search" class="form-control" placeholder="Прізвище, ім'я або англ. варіант" aria-label="Пошук авторів" style="max-width:520px;" />
-
+        <input id="authorSearchInputIndex" type="search" class="form-control" placeholder="@(lng == "en" ? "enter author name" : "введіть ім'я автора")" aria-label="@(lng == "en" ? "enter author name" : "введіть ім'я автора")" style="max-width:520px;" />
         <div id="authorSearchInfo" class="small text-muted mt-1" style="display:none">Знайдено: <span id="authorSearchCount">0</span></div>
     </div>
 </div>
-
+<!--ТАБЛИЦЯ АВТОРІВ-->
 <table class="table" id="authorsTable" style="margin-top:0.75rem;">
     <thead>
         <tr>
@@ -40,16 +36,16 @@
                    asp-route-sortOrder="@Model.SurnameSort"
                    asp-route-SelectedLang="@Model.SelectedLang"
                    class="link-light">
-                    @Localizer["AuthorColumn"] @(Model.SurnameSort == "surname_asc" ? "▲" : "▼")
+                    @Localizer["Author"] @(Model.SurnameSort == "title_asc" ? "▲" : "▼")
                 </a>
             </th>
-            <th class="d-none d-md-flex">@Localizer["YearsOfLife"]</th>
+            <th class="d-none d-md-table-cell">@Localizer["YearsOfLife"]</th>
             <th>
                 <a asp-page="./Index"
                    asp-route-sortOrder="@Model.CountrySort"
                    asp-route-SelectedLang="@Model.SelectedLang"
                    class="link-light">
-                    @Localizer["Country"] @(Model.CountrySort == "country_asc" ? "▲" : "▼")
+                    @Localizer["Country"] @(Model.CountrySort == "surname_asc" ? "▲" : "▼")
                 </a>
             </th>
             <th>
@@ -62,14 +58,13 @@
             </th>
             @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
             {
-                <th>@Localizer["EditDelete"]</th>
+                <th>@Localizer["EditDelete"] </th>
             }
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model.Author)
         {
-            // add data-* attributes with all four fields so client search can match them regardless of displayed language
             <tr class="author-row"
                 data-name="@Html.Raw(item.Name ?? "")"
                 data-surname="@Html.Raw(item.Surname ?? "")"
@@ -92,11 +87,12 @@
                     @if (lng == "uk")
                     {
                         <a asp-page="../Countries/Details" asp-route-id="@item.Country?.ID" class="link-dark">
-                        @(item.Country != null ? item.Country.Name : Localizer["NoData"])</a>
+                            @(item.Country != null ? item.Country.Name : "Немає даних")
+                        </a>
                     }
                     else
                     {
-                        @(item.Country != null ? item.Country.NameEn : Localizer["Unknown"])
+                        @(item.Country != null ? item.Country.NameEn : "unknown")
                     }
                 </td>
                 <td>
