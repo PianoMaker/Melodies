@@ -128,12 +128,12 @@
                             {
                                 @if (lng == "uk")
                                 {
-                                    <span class="author-name">@item.Author.Name</span>
+                                    <span>@item.Author.Name</span>
                                     <span> @Html.DisplayFor(modelItem => item.Author.Surname)</span>
                                 }
                                 else
                                 {
-                                    <span class="author-name">@item.Author.NameEn</span>
+                                    <span>@item.Author.NameEn</span>
                                     <span> @Html.DisplayFor(modelItem => item.Author.SurnameEn)</span>
                                 }
                             }
