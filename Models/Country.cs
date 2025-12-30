@@ -15,6 +15,9 @@ namespace Melodies25.Models
         [Required]
         public string NameEn { get; set; }  // Назва країни
 
+        // URL або шлях до зображення прапора (може зберігатися відносно до wwwroot або як зовнішнє посилання)
+        public string? FlagUrl { get; set; }
+
         [NotMapped]
         public int? AuthorsCount { get; set; }
 
