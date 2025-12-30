@@ -72,11 +72,32 @@ public class DatabaseSyncService
 
     private async Task<bool> AnalyzeCountriesAsync()
     {
-        var src = await _sourceDb.Country.AsNoTracking().ToListAsync();
-        var trg = await _targetDb.Country.AsNoTracking().ToListAsync();
-        _missingCountriesInTarget = src.Where(sc => !trg.Any(tc => Same(tc.Name, sc.Name))).ToList();
-        _logger.LogInformation("Missing countries in target: {Count}", _missingCountriesInTarget.Count);
-        return _missingCountriesInTarget.Any();
+        try
+        {
+            var src = await _sourceDb.Country.AsNoTracking().ToListAsync();
+            var trg = await _targetDb.Country.AsNoTracking().ToListAsync();
+            _missingCountriesInTarget = src.Where(sc => !trg.Any(tc => Same(tc.Name, sc.Name))).ToList();
+            _logger.LogInformation("Missing countries in target: {Count}", _missingCountriesInTarget.Count);
+            return _missingCountriesInTarget.Any();
+        }
+        catch (Exception ex)
+        {
+            // Якщо при зчитуванні Country сталася помилка (наприклад, відсутній стовпець `FlagUrl`),
+            // повторимо запит з проекцією, що не містить цього поля, щоб продовжити синхронізацію.
+            _logger.LogWarning(ex, "Failed to read Country entities normally - retrying with lightweight projection.");
+
+            var src = await _sourceDb.Country.AsNoTracking()
+                .Select(c => new Country { ID = c.ID, Name = c.Name, NameEn = c.NameEn })
+                .ToListAsync();
+
+            var trg = await _targetDb.Country.AsNoTracking()
+                .Select(c => new Country { ID = c.ID, Name = c.Name, NameEn = c.NameEn })
+                .ToListAsync();
+
+            _missingCountriesInTarget = src.Where(sc => !trg.Any(tc => Same(tc.Name, sc.Name))).ToList();
+            _logger.LogInformation("Missing countries in target (fallback): {Count}", _missingCountriesInTarget.Count);
+            return _missingCountriesInTarget.Any();
+        }
     }
 
     private async Task<bool> AnalyzeAuthorsAsync()
@@ -106,18 +127,15 @@ public class DatabaseSyncService
             var toAdd = _missingCountriesInTarget.Where(c => !existing.Contains(c.Name)).ToList();
             if (toAdd.Any())
             {
-                // Перед додаванням можна підготувати FlagUrl (рядок) — копію файлу прапора з джерела, якщо потрібно
                 foreach (var srcCountry in toAdd)
                 {
-                    // зберігаємо рядок FlagUrl у цільовій базі (копіювання файлу виконується нижче)
+
                     _targetDb.Country.Add(new Country
                     {
                         Name = srcCountry.Name,
                         NameEn = srcCountry.NameEn,
                         FlagUrl = srcCountry.FlagUrl
                     });
-
-                    // Спробувати скопіювати файл прапора (якщо це локальний шлях/ім'я)
                     await TryCopyImageForEntryAsync(srcCountry.FlagUrl, "flags");
                 }
 

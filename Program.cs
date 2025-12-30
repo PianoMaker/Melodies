@@ -29,11 +29,13 @@ namespace Melodies25
 
             // TARGET context: SQLExpress – destination for synchronization
             builder.Services.AddDbContext<Melodies25TargetContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("SQLExpress")));
 
             // WORKING context (used by application pages): also SQLExpress now
             builder.Services.AddDbContext<Melodies25Context>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("VisualStudio")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("SQLExpress")));
+
+            //SQLExpress // Smarter // VisualStudio
 
             // Identity context (can be unified later if desired)
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
