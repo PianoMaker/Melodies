@@ -68,7 +68,8 @@ namespace Melodies25.Pages.Countries
                 }
             }
 
-            return RedirectToPage("./Index");
+            // Redirect to Details page for the updated country
+            return RedirectToPage("./Details", new { id = Country.ID });
         }
 
         private bool CountryExists(int id)
