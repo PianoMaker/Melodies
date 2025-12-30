@@ -79,7 +79,8 @@ namespace Melodies25.Pages.Authors
                 }
             }
 
-            return RedirectToPage("./Index");
+            // Redirect to the Details page of the edited author
+            return RedirectToPage("./Details", new { id = Author.ID });
         }
         /*
         public async Task<IActionResult> OnPostTranslitAsync()

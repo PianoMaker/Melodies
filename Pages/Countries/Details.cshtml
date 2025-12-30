@@ -9,15 +9,26 @@
     <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
 }
 
-<div class="infocontainer melody-width">
-<h1>@Model.Country.Name</h1>
-<h4>@Model.Country.NameEn</h4>
+<div class="infocontainer melody-width hideformenu">
+    <div class="spaceformenu"></div>
+    <div style="display:flex; align-items:center; gap:1rem;">
+        <div>
+            @if (!string.IsNullOrEmpty(Model.Country.FlagUrl))
+            {
+                <img src="@Model.Country.FlagUrl" alt="@Model.Country.Name flag" style="height:48px; width:auto; border:1px solid #ddd;" />
+            }
+        </div>
+        <div>
+            <h1>@Model.Country.Name</h1>
+            <h4>@Model.Country.NameEn</h4>
+        </div>
+    </div>
 
 <div>
     <p>Авторів на сайті - @Model.Author.Count</p>
     <hr />
 
-</div>
+    </div>
 </div>
 <table class="table">
     <thead>
