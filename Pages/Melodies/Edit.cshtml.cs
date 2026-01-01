@@ -241,7 +241,9 @@ namespace Melodies25.Pages.Melodies
                     ? $"{Translit.Transliterate(Melody.Author.Surname)}_"
                     : "";
 
-                string newfilename = $"{authorPart}{Translit.Transliterate(Melody.Title)}.mid";
+                // Use TitleEn if present, otherwise fall back to Title
+                string baseTitle = !string.IsNullOrWhiteSpace(Melody.TitleEn) ? Melody.TitleEn : Melody.Title;
+                string newfilename = $"{authorPart}{Translit.Transliterate(baseTitle)}.mid";
                 string midiFilePath = Path.Combine(uploadsPath, newfilename);
 
                 using (var stream = new FileStream(midiFilePath, FileMode.Create))
