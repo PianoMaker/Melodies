@@ -100,79 +100,64 @@ function getDurationFromTicks(ticks, ticksPerBeat) {
 	console.debug("MR: FOO: midiparser_ext.js - getDurationFromTicks");
 	if (typeof ticks !== "number" || typeof ticksPerBeat !== "number" || ticks <= 0 || ticksPerBeat <= 0) {
 		console.warn("Invalid input to getDurationFromTicks:", { ticks, ticksPerBeat });
-		return [];                      // Повертаємо порожній масив у разі некоректних даних
+		return [];
 	}
-	console.debug('Calculating duration for ticks: ' + ticks + ', ticksPerBeat: ' + ticksPerBeat);
-	var quarterTicks = ticksPerBeat;    // Тривалість чверті дорівнює TPQN
-	let mingap = ticksPerBeat / 16;     // Мінімальний проміжок між нотами
+
+	var quarterTicks = ticksPerBeat;    // duration of a quarter
+	// use a tighter tolerance: default ~ ticksPerBeat/32 (smaller than previous /16)
+	var mingap = Math.max(1, Math.round(ticksPerBeat / 32));
 
 	const durations = [];
 
-	// Значення для тріолей
+	// Triplet values (with tolerance window)
 	const triQ = quarterTicks * (2 / 3);  // 'qt'
 	const tri8 = quarterTicks / 3;        // '8t'
-	const tri16 = quarterTicks / 6;        // '16t'
-	const tri32 = quarterTicks / 12;       // '32t'
+	const tri16 = quarterTicks / 6;       // '16t'
+	const tri32 = quarterTicks / 12;      // '32t'
 
-	// Розбиваємо ticks на частини
-	while (ticks > 0) {
-		// Спочатку обробляємо тріолі (вікно допуску ±mingap)
-		if (ticks >= triQ - mingap && ticks <= triQ + mingap) {
-			durations.push("qt");       //тріольна четвертна
-			ticks -= triQ;
-			continue;
-		} else if (ticks >= tri8 - mingap && ticks <= tri8 + mingap) {
-			durations.push("8t");       //тріольна вісімка
-			ticks -= tri8;
-			continue;
-		} else if (ticks >= tri16 - mingap && ticks <= tri16 + mingap) {
-			durations.push("16t");      //тріольна шіснадцятка
-			ticks -= tri16;
-			continue;
-		} else if (ticks >= tri32 - mingap && ticks <= tri32 + mingap) {
-			durations.push("32t");      //тріольна 32-га
-			ticks -= tri32;
-			continue;
-		}
-		// Регулярні тривалості
-		if (ticks >= quarterTicks * 6 - mingap) {
-			durations.push("w.");       // Ціла нота з крапкою
-			ticks -= quarterTicks * 6;
-		} else if (ticks >= quarterTicks * 4 - mingap) {
-			durations.push("w");        // Ціла нота
-			ticks -= quarterTicks * 4;
-		} else if (ticks >= quarterTicks * 3 - mingap) {
-			durations.push("h.");       // Половинка з крапкою
-			ticks -= quarterTicks * 3;
-		} else if (ticks >= quarterTicks * 2 - mingap) {
-			durations.push("h");        // Половинка 
-			ticks -= quarterTicks * 2;
-		} else if (ticks >= quarterTicks * 1.5 - mingap) {
-			durations.push("q.");       // Чвертна з крапкою
-			ticks -= quarterTicks * 1.5;
-		} else if (ticks >= quarterTicks * 1 - mingap) {
-			durations.push("q");        // Чвертна 
-			ticks -= quarterTicks * 1;
-		} else if (ticks >= quarterTicks * 0.75 - mingap) {
-			durations.push("8.");       // Вісімка з крапкою
-			ticks -= quarterTicks * 0.75;
-		} else if (ticks >= quarterTicks * 0.5 - mingap) {
-			durations.push("8");        // Вісімка
-			ticks -= quarterTicks * 0.5;
-		} else if (ticks >= quarterTicks * 0.25 - mingap) {
-			durations.push("16");       // Шіснадцятка
-			ticks -= quarterTicks * 0.25;
-		} else if (ticks >= quarterTicks * 0.125 - mingap) {
-			durations.push("32");       // 32-га
-			ticks -= quarterTicks * 0.125;
-		} else {
-			console.warn(`Calculated durations: unknown / ${ticks} ticks`);
-			break;
-		}
+	// Helper: push a duration and subtract its ticks
+	function pushDur(code, ticksToSubtract) {
+		durations.push(code);
+		ticks -= ticksToSubtract;
 	}
+
+	// Loop decomposition
+	while (ticks > 0) {
+		// Triplets first (allow small tolerance)
+		if (Math.abs(ticks - triQ) <= mingap) { pushDur("qt", Math.round(triQ)); continue; }
+		if (Math.abs(ticks - tri8) <= mingap) { pushDur("8t", Math.round(tri8)); continue; }
+		if (Math.abs(ticks - tri16) <= mingap) { pushDur("16t", Math.round(tri16)); continue; }
+		if (Math.abs(ticks - tri32) <= mingap) { pushDur("32t", Math.round(tri32)); continue; }
+
+		// Dotted detections (explicit)
+		// dotted 16th = 0.25 + 0.125 = 0.375 quarter
+		const dotted16Ticks = quarterTicks * 0.375;
+		// dotted 32nd = 0.125 + 0.0625 = 0.1875 quarter (rare)
+		const dotted32Ticks = quarterTicks * 0.1875;
+		// dotted 8th = 0.5 + 0.25 = 0.75 quarter (already handled below as 8.)
+		// dotted quarter, dotted half etc. handled below
+
+		if (Math.abs(ticks - dotted16Ticks) <= mingap) { pushDur("16.", Math.round(dotted16Ticks)); continue; }
+		if (Math.abs(ticks - dotted32Ticks) <= mingap) { pushDur("32.", Math.round(dotted32Ticks)); continue; }
+
+		// Regular dotted checks (longer durations)
+		if (ticks >= quarterTicks * 6 - mingap) { pushDur("w.", Math.round(quarterTicks * 6)); continue; }
+		if (ticks >= quarterTicks * 4 - mingap) { pushDur("w", Math.round(quarterTicks * 4)); continue; }
+		if (ticks >= quarterTicks * 3 - mingap) { pushDur("h.", Math.round(quarterTicks * 3)); continue; }
+		if (ticks >= quarterTicks * 2 - mingap) { pushDur("h", Math.round(quarterTicks * 2)); continue; }
+		if (ticks >= quarterTicks * 1.5 - mingap) { pushDur("q.", Math.round(quarterTicks * 1.5)); continue; }
+		if (ticks >= quarterTicks * 1 - mingap) { pushDur("q", Math.round(quarterTicks * 1)); continue; }
+		if (ticks >= quarterTicks * 0.75 - mingap) { pushDur("8.", Math.round(quarterTicks * 0.75)); continue; }
+		if (ticks >= quarterTicks * 0.5 - mingap) { pushDur("8", Math.round(quarterTicks * 0.5)); continue; }
+		if (ticks >= quarterTicks * 0.25 - mingap) { pushDur("16", Math.round(quarterTicks * 0.25)); continue; }
+		if (ticks >= quarterTicks * 0.125 - mingap) { pushDur("32", Math.round(quarterTicks * 0.125)); continue; }
+
+		// If we get here the leftover ticks is very small / unexpected - break to avoid infinite loop
+		console.warn(`Calculated durations: unknown / leftover ${ticks} ticks (mingap=${mingap})`);
+		break;
+	}
+
 	console.debug('Calculated durations: ', durations);
-
-
 	return durations;
 }
 
