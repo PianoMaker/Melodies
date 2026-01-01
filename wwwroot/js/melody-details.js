@@ -1,3 +1,5 @@
+const COPYRIGHT_RENDERING_BARS = 16;
+
 document.addEventListener('DOMContentLoaded', function () {
 	renderAdaptive();
 	let resizeTimer;
@@ -151,7 +153,7 @@ async function renderAdaptive() {
 
 	const midiUrl = notationEl.dataset.midiUrl;
 	const isPublicDomain = (notationEl.dataset.publicDomain === 'true');
-	const maxBarsToRender = isPublicDomain ?1000 :8;
+	const maxBarsToRender = isPublicDomain ? 1000 : COPYRIGHT_RENDERING_BARS;
 
 	if (!midiUrl || typeof renderMidiFromUrl !== 'function') return;
 
