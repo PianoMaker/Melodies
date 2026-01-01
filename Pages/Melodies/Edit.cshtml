@@ -73,9 +73,9 @@
                 <span asp-validation-for="Melody.Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Melody.Title" class="control-label">Name</label>
-                <input asp-for="Melody.Title" id="ennameInput" class="form-control" />
-                <span asp-validation-for="Melody.Title" class="text-danger"></span>
+                <label asp-for="Melody.TitleEn" class="control-label">Name</label>
+                <input asp-for="Melody.TitleEn" id="ennameInput" class="form-control" />
+                <span asp-validation-for="Melody.TitleEn" class="text-danger"></span>
             </div>
             <button type="button" class="btn btn-outline-dark light-background" id="translitbtn">translit from ukr</button>
             <div class="form-group">
@@ -113,5 +113,5 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script src="~/js/melody-edit.js"></script>
+    <script src="~/js/melody-edit.js"></script>    
 }
