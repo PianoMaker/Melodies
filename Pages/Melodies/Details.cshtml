@@ -8,6 +8,9 @@
     var file = Model.Melody.FilePath;
     var url = Url.Content($"~/melodies/{item.FilePath}");
     var notesearchHandlerUrl = Url.Page("./Search", new { handler = "Notesearch" });
+    var lng = System.Globalization.CultureInfo.CurrentCulture.Name; 
+    var authorName = item.Author is not null ? (lng == "en" ? item.Author.NameEn : item.Author.Name) : "";
+    var authorSurname = item.Author is not null ? (lng == "en" ? item.Author.SurnameEn : item.Author.Surname) : "";
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
@@ -16,16 +19,24 @@
     <!--ІНФОРАЦІЯ ПРО ФАЙЛ-->
     <div class="infocontainer melody-width hideformenu">
         <div class="spaceformenu"></div>
-        <h1>@item.Title</h1>
+        @if(lng == "en")
+        {
+            <h1>@item.TitleEn</h1>
+        }
+        else
+        {
+            <h1>@item.Title</h1>
+        }
+        
         <div>
             @if (item.Author is not null && !item.Author.Surname.Contains("народна"))
             {
-                <h4>@Localizer["AuthorLabel"] - <a asp-page="/Authors/Details" asp-route-id="@item.AuthorID">@item.Author.Name @item.Author.Surname</a></h4>
+                <h4>@Localizer["AuthorLabel"] - <a asp-page="/Authors/Details" asp-route-id="@item.AuthorID">@authorName @authorSurname</a></h4>
                 <p class="d-none d-md-inline">(@item.Author.DateOfBirth - @item.Author.DateOfDeath)</p>
             }
             else if (item.Author is not null)
             {
-                <p>@item.Author.Surname</p>
+                <p>@authorSurname</p>
             }
             @if (item.Year is not null)
             {

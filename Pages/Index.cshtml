@@ -11,7 +11,9 @@
 }
 
 <div class="mainpage">
-    <div style="position:absolute; top:5px; left:5px; z-index:4">
+    <!--Кнопка переключення дизайну, для production прихована-->
+    <div style="position:absolute; top:5px; left:5px; z-index:4; display: none;">
+        <!-- -->
     <form method="post" asp-page-handler="ChangeDesign" id="myForm" style="align-content:end">
         <input type="checkbox" asp-for="Singerella" id="singerellaCheckbox" />
         </form>
