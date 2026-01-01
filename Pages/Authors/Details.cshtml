@@ -6,6 +6,9 @@
     ViewData["Title"] = "Мелодія - автор";
     var Melodies = Model.Melody;
     var lng = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName ?? "uk";
+    var name = lng == "uk" ? Model.Author.Name : Model.Author.NameEn;
+    var surname = lng == "uk" ? Model.Author.Surname : Model.Author.SurnameEn;
+    var subname = lng == "en" ? $"{Model.Author.Name} {Model.Author.Surname}" : $"{Model.Author.NameEn} {Model.Author.SurnameEn}";
 }
 
 @section Styles {
@@ -39,7 +42,7 @@
                 <!--Ім'я прізвище-->
                 <div class="author-header">
                     <h2 class="author-name">
-                        @Html.DisplayFor(model => model.Author.Name) @Html.DisplayFor(model => model.Author.Surname)
+                        @name @surname
                     </h2>
 
                     @if (Model.Author.DateOfBirth is not null)
@@ -48,9 +51,8 @@
                             (@Html.DisplayFor(model => model.Author.DateOfBirth) - @Html.DisplayFor(model => model.Author.DateOfDeath))
                         </div>
                     }
-
                     <div class="author-name-en smallfont">
-                        @Html.DisplayFor(model => model.Author.NameEn) @Html.DisplayFor(model => model.Author.SurnameEn)
+                        @subname
                     </div>
                 </div>
                 <!--Опис-->
@@ -58,13 +60,13 @@
                     <dt></dt>
                     <dd class="col-sm-10">
                         @if (lng == "uk")
-
                         {
                             @Html.DisplayFor(model => model.Author.Description)
                         }
                         else
                         {
-                            if (string.IsNullOrEmpty(Model.Author.DescriptionEn))
+                            // show English description if available, otherwise fallback to Ukrainian
+                            if (!string.IsNullOrEmpty(Model.Author.DescriptionEn))
                             {
                                 <p>@Html.DisplayFor(model => model.Author.DescriptionEn)</p>
                             }
@@ -105,7 +107,6 @@
             <tr>
                 <!--НАЗВА-->
                 <td>
-
                     <a asp-page="../Melodies/Details" asp-route-id="@item.ID" class="link-dark">@Html.DisplayFor(modelItem => item.Title)</a>
                 </td>
                 <!--ФАЙЛ-->
@@ -118,7 +119,8 @@
                             <a href="@midifilepath" download class="btn btn-outline-dark light-background">
                                 <i class="fas fa-download"></i>
                             </a>
-                            @if (@item.IsFileEligible is null)
+                            @* Removed stray '@' inside C# expressions below *@
+                            @if (item.IsFileEligible is null)
                             {
                                 <button class="btn btn-outline-dark light-background playButton"
                                         data-filepath="@item.FilePath" id="playButton_@item.FilePath">
@@ -129,7 +131,7 @@
                                     <i class="fas fa-stop">?</i>
                                 </button>
                             }
-                            else if (@item.IsFileEligible is true)
+                            else if (item.IsFileEligible is true)
                             {
                                 <button class="btn btn-outline-dark light-background playButton"
                                         data-filepath="@item.FilePath" id="playButton_@item.FilePath">
@@ -140,7 +142,7 @@
                                     <i class="fas fa-stop"></i>
                                 </button>
                             }
-                            else if (@item.IsFileEligible is false)
+                            else if (item.IsFileEligible is false)
                             {
                                 <p>Midi File is not correct</p>
                             }
@@ -164,8 +166,6 @@
         }
     </tbody>
 </table>
-
-
 
 <div class="infocontainer actions-container melody-width">
     <div class="actions-row">
