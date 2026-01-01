@@ -147,4 +147,7 @@
   <data name="Unknown" xml:space="preserve">
     <value>Невідомо</value>
   </data>
+  <data name="Found" xml:space="preserve">
+    <value>Знайдено</value>
+  </data>
 </root>
