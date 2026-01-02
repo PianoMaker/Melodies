@@ -48,12 +48,34 @@ public class DatabaseSyncService
         bool authors = await AnalyzeAuthorsAsync();
         bool melodies = await AnalyzeMelodiesAsync();
 
+        //КРАЇНИ
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("Синхронізуємо країни");
+        Console.ResetColor();
         if (countries) await SyncCountriesAsync(); else _logger.LogInformation("Countries up-to-date.");
+
+        // АВТОРИ
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("Синшронізуємо авторів");
+        Console.ResetColor();
         if (authors) await SyncAuthorsAsync(); else _logger.LogInformation("Authors up-to-date.");
 
-        // NEW: Enrich English names in both databases (NameEn, SurnameEn) after author existence sync
+        // АВТОРИ-ФОТО
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("Синхронізуємо фото");
+        Console.ResetColor();
+        await SyncMissingAuthorPhotosAsync();
+
+        // АВТОРИ-АНГЛІЙСЬКІ ІМЕНА
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("Синхронізуємо мультимовнімена");
+        Console.ResetColor();
         await SyncAuthorEnglishNamesAsync();
 
+        // МЕЛОДІЇ
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("Синхронізуємо мелодії");
+        Console.ResetColor();
         if (melodies) await SyncMelodiesAsync(); else _logger.LogInformation("Melodies up-to-date.");
 
         // NEW: Синхронізація MIDI файлів
@@ -83,7 +105,7 @@ public class DatabaseSyncService
         catch (Exception ex)
         {
             // Якщо при зчитуванні Country сталася помилка (наприклад, відсутній стовпець `FlagUrl`),
-            // повторимо запит з проекцією, що не містить цього поля, щоб продовжити синхронізацію.
+            // повторимо запит з проєкцією, що не містить цього поля, щоб продовжити синхронізацію.
             _logger.LogWarning(ex, "Failed to read Country entities normally - retrying with lightweight projection.");
 
             var src = await _sourceDb.Country.AsNoTracking()
@@ -152,7 +174,7 @@ public class DatabaseSyncService
     private async Task SyncAuthorsAsync()
     {
         foreach (var a in _missingAuthorsInTarget) a.ID = 0;
-        
+
         foreach (var author in _missingAuthorsInTarget)
         {
             Country? country = null;
@@ -178,14 +200,14 @@ public class DatabaseSyncService
             var normNameEn = (author.NameEn ?? "").Trim().ToLower();
 
             // 1. Перевірка точного збігу (ім'я + прізвище)
-            bool exactMatch = await _targetDb.Author.AnyAsync(a => 
-                ((a.Surname ?? "").Trim().ToLower()) == normSurname && 
+            bool exactMatch = await _targetDb.Author.AnyAsync(a =>
+                ((a.Surname ?? "").Trim().ToLower()) == normSurname &&
                 ((a.Name ?? "").Trim().ToLower()) == normName);
 
             // 2. Перевірка збігу англійських імен
-            bool englishMatch = !string.IsNullOrEmpty(normSurnameEn) && 
-                await _targetDb.Author.AnyAsync(a => 
-                    ((a.SurnameEn ?? "").Trim().ToLower()) == normSurnameEn && 
+            bool englishMatch = !string.IsNullOrEmpty(normSurnameEn) &&
+                await _targetDb.Author.AnyAsync(a =>
+                    ((a.SurnameEn ?? "").Trim().ToLower()) == normSurnameEn &&
                     ((a.NameEn ?? "").Trim().ToLower()) == normNameEn);
 
             // 3. Перевірка змішаних збігів (Surname = SurnameEn або навпаки)
@@ -195,24 +217,24 @@ public class DatabaseSyncService
             if (!string.IsNullOrEmpty(normSurname) && !string.IsNullOrEmpty(normSurnameEn))
             {
                 // Перевірка чи Surname джерела = SurnameEn цілі
-                bool surnameMatchesTargetEn = await _targetDb.Author.AnyAsync(a => 
+                bool surnameMatchesTargetEn = await _targetDb.Author.AnyAsync(a =>
                     ((a.SurnameEn ?? "").Trim().ToLower()) == normSurname);
-                
+
                 // Перевірка чи SurnameEn джерела = Surname цілі  
-                bool surnameEnMatchesTarget = await _targetDb.Author.AnyAsync(a => 
+                bool surnameEnMatchesTarget = await _targetDb.Author.AnyAsync(a =>
                     ((a.Surname ?? "").Trim().ToLower()) == normSurnameEn);
 
                 if (surnameMatchesTargetEn || surnameEnMatchesTarget)
                 {
                     crossLanguageMatch = true;
-                    crossMatchDetails = surnameMatchesTargetEn ? 
+                    crossMatchDetails = surnameMatchesTargetEn ?
                         $"Surname '{author.Surname}' matches existing SurnameEn" :
                         $"SurnameEn '{author.SurnameEn}' matches existing Surname";
                 }
             }
 
             // 4. Перевірка часткових збігів по прізвищу
-            bool partialMatch = await _targetDb.Author.AnyAsync(a => 
+            bool partialMatch = await _targetDb.Author.AnyAsync(a =>
                 ((a.Surname ?? "").Trim().ToLower()) == normSurname);
 
             // 5. Обробка результатів перевірки
@@ -231,7 +253,7 @@ public class DatabaseSyncService
             if (crossLanguageMatch)
             {
                 AddCollision($"Author '{author.Surname} {author.Name}' / '{author.SurnameEn} {author.NameEn}' - {crossMatchDetails} (NEEDS CONFIRMATION).");
-                
+
                 if (_interactiveMode)
                 {
                     var decision = await AskCrossLanguageDecisionAsync(author, crossMatchDetails);
@@ -283,7 +305,7 @@ public class DatabaseSyncService
             // Спробувати скопіювати фізичний файл фото (якщо локальний шлях/ім'я)
             await TryCopyImageForEntryAsync(author.Photo, "authors");
         }
-        
+
         await _targetDb.SaveChangesAsync();
         _logger.LogInformation("Authors sync complete.");
     }
@@ -336,7 +358,7 @@ public class DatabaseSyncService
 
         var similarAuthors = await _targetDb.Author
             .Include(a => a.Country)
-            .Where(a => 
+            .Where(a =>
                 ((a.Surname ?? "").Trim().ToLower()) == normSurname ||
                 ((a.SurnameEn ?? "").Trim().ToLower()) == normSurname ||
                 ((a.Surname ?? "").Trim().ToLower()) == normSurnameEn ||
@@ -367,7 +389,7 @@ public class DatabaseSyncService
         // Знайти цільового автора для об'єднання
         var targetAuthor = await _targetDb.Author
             .Include(a => a.Country)
-            .Where(a => 
+            .Where(a =>
                 ((a.Surname ?? "").Trim().ToLower()) == normSurname ||
                 ((a.SurnameEn ?? "").Trim().ToLower()) == normSurname ||
                 ((a.Surname ?? "").Trim().ToLower()) == normSurnameEn ||
@@ -479,70 +501,339 @@ public class DatabaseSyncService
         return hasChanges;
     }
 
+    //---------
+    //Синхронізація мелодій
+    //--------
     private async Task SyncMelodiesAsync()
     {
-        foreach (var melody in _missingMelodiesInTarget)
-        {
-            if (melody.Author == null) continue;
-            var normSurname = (melody.Author.Surname ?? "").Trim().ToLower();
-            var author = await _targetDb.Author.Include(a => a.Country)
-                 .FirstOrDefaultAsync(a => ((a.Surname ?? "").Trim().ToLower()) == normSurname);
+        _logger.LogInformation("Starting melodies sync (DB-level)...");
 
-            if (author == null)
+        var melodiesPath = Path.Combine(_environment.WebRootPath, "melodies");
+        if (!Directory.Exists(melodiesPath)) Directory.CreateDirectory(melodiesPath);
+
+        // Load source and target melodies into memory (including author)
+        var sourceMelodies = await _sourceDb.Melody.Include(m => m.Author).ToListAsync();
+        var targetMelodies = await _targetDb.Melody.Include(m => m.Author).ToListAsync();
+
+        string NormalizeKey(string? p) => (p ?? "").Replace('\\', '/').TrimStart('/').ToLowerInvariant();
+        string NormalizeTitle(string? t) => (t ?? "").Trim().ToLowerInvariant();
+
+        // Build lookup by normalized file path
+        var srcByFile = sourceMelodies
+            .Where(m => !string.IsNullOrWhiteSpace(m.FilePath))
+            .GroupBy(m => NormalizeKey(m.FilePath))
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var trgByFile = targetMelodies
+            .Where(m => !string.IsNullOrWhiteSpace(m.FilePath))
+            .GroupBy(m => NormalizeKey(m.FilePath))
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        //1) Find unique in source: those that have no matching title in target AND no matching file in target
+        var targetTitlesSet = new HashSet<string>(targetMelodies.Select(t => NormalizeTitle(t.Title)), StringComparer.OrdinalIgnoreCase);
+
+        List<Melody> uniqueSourceMelodies = GetUniqueSourceMelodies(sourceMelodies, trgByFile, targetTitlesSet);
+
+        _logger.LogInformation("Unique source melodies to add: {Count}", uniqueSourceMelodies.Count);
+
+        // If there are unique melodies, ask user for confirmation in interactive mode
+        bool shouldAddUnique = AskIfAddUniqueMelodies(uniqueSourceMelodies);
+
+        // Copy unique source melodies (both DB record and physical MIDI file) if confirmed
+        if (shouldAddUnique && uniqueSourceMelodies.Count > 0)
+        {
+            await PrepareMelodiesForCopying(melodiesPath, uniqueSourceMelodies);
+                        
+            await _targetDb.SaveChangesAsync();
+        }
+        else
+        {
+            _logger.LogInformation("Skipping adding unique melodies (user declined or none). Pending conflict handling will continue.");
+        }
+
+        // Reload lists to reflect added records
+        sourceMelodies = await _sourceDb.Melody.Include(m => m.Author).ToListAsync();
+        targetMelodies = await _targetDb.Melody.Include(m => m.Author).ToListAsync();
+
+        srcByFile = sourceMelodies
+            .Where(m => !string.IsNullOrWhiteSpace(m.FilePath))
+            .GroupBy(m => NormalizeKey(m.FilePath))
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        trgByFile = targetMelodies
+            .Where(m => !string.IsNullOrWhiteSpace(m.FilePath))
+            .GroupBy(m => NormalizeKey(m.FilePath))
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        //2) Handle files that are present in both DBs
+        var filesInBoth = srcByFile.Keys.Intersect(trgByFile.Keys).ToList();
+
+        foreach (var fileKey in filesInBoth)
+        {
+            var srcList = srcByFile[fileKey];
+            var trgList = trgByFile[fileKey];
+
+            var allTitles = srcList.Select(s => s.Title ?? "").Concat(trgList.Select(t => t.Title ?? ""))
+                .Select(t => (t ?? "").Trim())
+                .Where(t => !string.IsNullOrEmpty(t))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            // Case A: Different titles for same file
+            if (allTitles.Count > 1)
             {
-                // Ensure author (and country) exists in target
-                Country? country = null;
-                if (melody.Author.Country != null)
+                if (!_interactiveMode)
                 {
-                    var normCountry = (melody.Author.Country.Name ?? "").Trim().ToLower();
-                    country = await _targetDb.Country.FirstOrDefaultAsync(c => ((c.Name ?? "").Trim().ToLower()) == normCountry);
-                    if (country == null)
+                    AddCollision($"Title conflict for MIDI '{fileKey}' - multiple titles found; left unchanged (non-interactive).");
+                }
+                else
+                {
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("=== TITLE CONFLICT FOR MIDI FILE ===");
+                    Console.ResetColor();
+                    Console.WriteLine($"File: {fileKey}");
+
+                    // List options
+                    for (int i = 0; i < allTitles.Count; i++)
                     {
-                        country = new Country { Name = melody.Author.Country.Name };
-                        _targetDb.Country.Add(country);
-                        await _targetDb.SaveChangesAsync();
+                        Console.WriteLine($"{i + 1} - {allTitles[i]}");
+                    }
+                    Console.WriteLine("0 - Keep all entries (do nothing)");
+                    Console.Write("Choose title to keep (number) or 0: ");
+
+                    while (true)
+                    {
+                        var input = Console.ReadLine()?.Trim();
+                        if (int.TryParse(input, out int choice))
+                        {
+                            if (choice == 0) break; // keep all
+                            if (choice >= 1 && choice <= allTitles.Count)
+                            {
+                                var chosenTitle = allTitles[choice - 1];
+
+                                // Update target records: pick one target entity with chosen title if exists; remove other target entries for this file
+                                var targetEntities = (await _targetDb.Melody.Where(m => m.FilePath != null).ToListAsync())
+                                    .Where(m => NormalizeKey(m.FilePath) == fileKey)
+                                    .ToList();
+
+                                // Find keep entity (prefer one already having chosen title)
+                                var keep = targetEntities.FirstOrDefault(t => string.Equals((t.Title ?? "").Trim(), chosenTitle.Trim(), StringComparison.OrdinalIgnoreCase))
+                                    ?? targetEntities.FirstOrDefault();
+
+                                if (keep != null)
+                                {
+                                    // Update its title to chosen
+                                    keep.Title = chosenTitle;
+
+                                    // Remove other target entities for this file
+                                    foreach (var other in targetEntities.Where(e => e.ID != keep.ID))
+                                    {
+                                        _targetDb.Melody.Remove(other);
+                                    }
+
+                                    await _targetDb.SaveChangesAsync();
+                                    _logger.LogInformation("Resolved title conflict for {File} -> kept title '{Title}'", fileKey, chosenTitle);
+                                }
+
+                                break;
+                            }
+                        }
+                        Console.Write("Invalid choice. Enter number: ");
                     }
                 }
-                author = new Author
+
+                continue; // move to next file
+            }
+
+            // Case B: Titles same (or only one non-empty title), check physical file sizes
+            var singleTitle = allTitles.FirstOrDefault() ?? string.Empty;
+
+            var srcFirst = srcList.FirstOrDefault();
+            var trgFirst = trgList.FirstOrDefault();
+            if (srcFirst == null || trgFirst == null) continue;
+
+            var srcPhysical = Path.Combine(GetSourceMelodiesPath(), fileKey);
+            var trgPhysical = Path.Combine(melodiesPath, fileKey);
+
+            if (File.Exists(srcPhysical) && File.Exists(trgPhysical))
+            {
+                var srcInfo = new FileInfo(srcPhysical);
+                var trgInfo = new FileInfo(trgPhysical);
+                if (srcInfo.Length != trgInfo.Length)
                 {
-                    Name = melody.Author.Name,
-                    Surname = melody.Author.Surname,
-                    Country = country,
-                    DateOfBirth = melody.Author.DateOfBirth,
-                    DateOfDeath = melody.Author.DateOfDeath,
-                    Description = melody.Author.Description,
-                    DescriptionEn = melody.Author.DescriptionEn,
-                    Photo = melody.Author.Photo
-                };
-                _targetDb.Author.Add(author);
-                await _targetDb.SaveChangesAsync();
+                    if (!_interactiveMode)
+                    {
+                        // choose newer
+                        if (srcInfo.LastWriteTime > trgInfo.LastWriteTime)
+                        {
+                            File.Copy(srcPhysical, trgPhysical, overwrite: true);
+                            _logger.LogInformation("Auto-copied newer source MIDI for {File}", fileKey);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Kept target MIDI for {File} (newer).", fileKey);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine();
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("=== MIDI SIZE CONFLICT ===");
+                        Console.ResetColor();
+                        Console.WriteLine($"File: {fileKey}");
+                        Console.WriteLine($"Source size: {FormatFileSize(srcInfo.Length)} LastWrite: {srcInfo.LastWriteTime:yyyy-MM-dd HH:mm:ss}");
+                        Console.WriteLine($"Target size: {FormatFileSize(trgInfo.Length)} LastWrite: {trgInfo.LastWriteTime:yyyy-MM-dd HH:mm:ss}");
+                        Console.WriteLine();
+                        Console.WriteLine("Choose file to keep in target:");
+                        Console.WriteLine("1 - Use source file");
+                        Console.WriteLine("2 - Keep target file");
+                        Console.WriteLine("0 - Skip");
+                        Console.Write("Your choice (1/2/0): ");
 
-                // copy author photo if present
-                await TryCopyImageForEntryAsync(melody.Author.Photo, "authors");
+                        while (true)
+                        {
+                            var input = Console.ReadLine()?.Trim();
+                            if (input == "1")
+                            {
+                                File.Copy(srcPhysical, trgPhysical, overwrite: true);
+                                _logger.LogInformation("Copied source MIDI over target for {File}", fileKey);
+                                break;
+                            }
+                            if (input == "2")
+                            {
+                                _logger.LogInformation("Kept target MIDI for {File} (user choice)", fileKey);
+                                break;
+                            }
+                            if (input == "0")
+                            {
+                                _logger.LogInformation("Skipped MIDI size conflict for {File}", fileKey);
+                                break;
+                            }
+                            Console.Write("Invalid choice. Enter 1, 2 or 0: ");
+                        }
+                    }
+                }
             }
-
-            var normTitle = (melody.Title ?? "").Trim().ToLower();
-            bool exists = await _targetDb.Melody.AnyAsync(m => ((m.Title ?? "").Trim().ToLower()) == normTitle && m.AuthorID == author.ID);
-            if (exists)
-            {
-                AddCollision($"Melody '{melody.Title}' ({melody.Author.Surname}) already exists (skip).");
-                continue;
-            }
-
-            _targetDb.Melody.Add(new Melody
-            {
-                Title = melody.Title,
-                Author = author,
-                Year = melody.Year,
-                Description = melody.Description,
-                FilePath = melody.FilePath,
-                IsFileEligible = melody.IsFileEligible,
-                Tonality = melody.Tonality,
-                AuthorID = author.ID
-            });
         }
-        await _targetDb.SaveChangesAsync();
+
         _logger.LogInformation("Melodies sync complete.");
+
+        List<Melody> GetUniqueSourceMelodies(List<Melody> sourceMelodies, Dictionary<string, List<Melody>> trgByFile, HashSet<string> targetTitlesSet)
+        {
+            return sourceMelodies.Where(src =>
+            {
+                var normTitle = NormalizeTitle(src.Title);
+                var normFile = string.IsNullOrWhiteSpace(src.FilePath) ? null : NormalizeKey(src.FilePath);
+
+                bool sameTitleInTarget = targetTitlesSet.Contains(normTitle);
+                bool sameFileInTarget = !string.IsNullOrEmpty(normFile) && trgByFile.ContainsKey(normFile);
+
+                return !sameTitleInTarget && !sameFileInTarget;
+            }).ToList();
+        }
+
+        async Task PrepareMelodiesForCopying(string melodiesPath, List<Melody> uniqueSourceMelodies)
+        {
+            foreach (var src in uniqueSourceMelodies)
+            {
+                try
+                {
+                    if (src.Author == null) continue; // skip if no author information
+
+                    var author = await EnsureAuthorInTargetAsync(src.Author);
+
+                    // Add melody record to target
+                    var newMelody = new Melody
+                    {
+                        Title = src.Title,
+                        Author = author,
+                        Year = src.Year,
+                        Description = src.Description,
+                        FilePath = src.FilePath,
+                        IsFileEligible = src.IsFileEligible,
+                        Tonality = src.Tonality,
+                        AuthorID = author.ID
+                    };
+                    _targetDb.Melody.Add(newMelody);
+
+                    // Copy physical MIDI file if exists in source
+                    if (!string.IsNullOrWhiteSpace(src.FilePath))
+                    {
+                        var rel = NormalizeKey(src.FilePath);
+                        var srcFile = Path.Combine(GetSourceMelodiesPath(), rel);
+                        var dstFile = Path.Combine(melodiesPath, rel);
+
+                        try
+                        {
+                            var dstDir = Path.GetDirectoryName(dstFile) ?? melodiesPath;
+                            if (!Directory.Exists(dstDir)) Directory.CreateDirectory(dstDir);
+
+                            if (File.Exists(srcFile))
+                            {
+                                File.Copy(srcFile, dstFile, overwrite: true);
+                                _logger.LogInformation("Copied MIDI file for unique melody: {File}", rel);
+                            }
+                            else
+                            {
+                                _logger.LogWarning("Source MIDI file not found for unique melody: {File}", rel);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to copy MIDI file {Src} -> {Dst}", srcFile, dstFile);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to add unique source melody '{Title}'", src.Title);
+                }
+            }
+        }
+    }
+
+    private bool AskIfAddUniqueMelodies(List<Melody> uniqueSourceMelodies)
+    {
+        bool shouldAddUnique = true;
+        if (uniqueSourceMelodies.Count > 0 && _interactiveMode)
+        {
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("The following unique melodies were found in source and are planned to be added to the target:");
+            Console.ResetColor();
+
+            for (int i = 0; i < uniqueSourceMelodies.Count; i++)
+            {
+                var u = uniqueSourceMelodies[i];
+                var author = u.Author != null ? $"{u.Author.Surname} {u.Author.Name}" : "<no author>";
+                Console.WriteLine($"[{i + 1}] Title: '{u.Title}' | Author: {author} | File: {u.FilePath}");
+            }
+
+            Console.WriteLine();
+            Console.Write("Add these melodies to target database? (y/n): ");
+            while (true)
+            {
+                var ans = (Console.ReadLine() ?? string.Empty).Trim().ToLowerInvariant();
+                if (ans == "y" || ans == "yes")
+                {
+                    shouldAddUnique = true;
+                    break;
+                }
+                if (ans == "n" || ans == "no")
+                {
+                    shouldAddUnique = false;
+                    break;
+                }
+                Console.Write("Please answer 'y' or 'n': ");
+            }
+        }
+        else if (uniqueSourceMelodies.Count > 0 && !_interactiveMode)
+        {
+            _logger.LogInformation("Non-interactive mode: automatically adding {Count} unique melodies.", uniqueSourceMelodies.Count);
+        }
+
+        return shouldAddUnique;
     }
 
     // NEW: Синхронізація MIDI файлів
@@ -559,23 +850,58 @@ public class DatabaseSyncService
             _logger.LogInformation("Created melodies directory: {Path}", melodiesPath);
         }
 
-        // Отримати всі мелодії з обох баз даних
+        // Отримати всіх мелодії з обох баз даних
         var sourceMelodies = await _sourceDb.Melody
             .Where(m => !string.IsNullOrEmpty(m.FilePath) && m.FilePath.EndsWith(".mid"))
-        .Select(m => new { m.ID, m.FilePath, m.Title, m.Author.Surname })
-.ToListAsync();
+            .Select(m => new { m.ID, m.FilePath, m.Title, AuthorSurname = m.Author.Surname })
+            .ToListAsync();
 
         var targetMelodies = await _targetDb.Melody
             .Where(m => !string.IsNullOrEmpty(m.FilePath) && m.FilePath.EndsWith(".mid"))
- .Select(m => new { m.ID, m.FilePath, m.Title, m.Author.Surname })
-         .ToListAsync();
+            .Select(m => new { m.ID, m.FilePath, m.Title, AuthorSurname = m.Author.Surname })
+            .ToListAsync();
 
         _logger.LogInformation("Found {SourceCount} source MIDI files and {TargetCount} target MIDI files",
             sourceMelodies.Count, targetMelodies.Count);
 
-        // Створити мапи файлів за іменем
-        var sourceFileMap = sourceMelodies.ToDictionary(m => m.FilePath!, m => m);
-        var targetFileMap = targetMelodies.ToDictionary(m => m.FilePath!, m => m);
+        // Нормалізація ключа шляху
+        string NormalizeKey(string? p) => (p ?? "").Replace('\\', '/').TrimStart('/').ToLowerInvariant();
+
+        // Групувати та виявляти дублікати у джерелі
+        var srcGroups = sourceMelodies.GroupBy(m => NormalizeKey(m.FilePath)).ToList();
+        var duplicatedSourceKeys = srcGroups.Where(g => g.Count() > 1).ToList();
+        foreach (var g in duplicatedSourceKeys)
+        {
+            var sampleList = g.Select(d => $"{d.Title ?? "<no title>"} ({d.AuthorSurname})").Distinct().Take(5);
+            var msg = $"File='{g.Key}' Count={g.Count()} Entries={string.Join("; ", sampleList)}";
+            //_logger.LogWarning(msg);
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.Write("Duplicate source MIDI detected: ");
+            Console.ResetColor();
+            _logger.LogWarning(msg);
+        }
+
+        // Для подальшої обробки беремо перший елемент з кожної групи
+        var sourceFileMap = srcGroups
+            .Select(g => g.First())
+            .ToDictionary(m => NormalizeKey(m.FilePath), m => m);
+
+        // Групувати та виявляти дублікати у цілі
+        var trgGroups = targetMelodies.GroupBy(m => NormalizeKey(m.FilePath)).ToList();
+        var duplicatedTargetKeys = trgGroups.Where(g => g.Count() > 1).ToList();
+        foreach (var g in duplicatedTargetKeys)
+        {
+            var sampleList = g.Select(d => $"{d.Title ?? "<no title>"} ({d.AuthorSurname})").Distinct().Take(5);
+            var msg = $"Duplicate target MIDI detected: File='{g.Key}' Count={g.Count()} Entries={string.Join("; ", sampleList)}";
+            _logger.LogWarning(msg);
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine(msg);
+            Console.ResetColor();
+        }
+
+        var targetFileMap = trgGroups
+            .Select(g => g.First())
+            .ToDictionary(m => NormalizeKey(m.FilePath), m => m);
 
         // Отримати всі унікальні імена файлів
         var allFileNames = sourceFileMap.Keys.Union(targetFileMap.Keys).ToHashSet();
@@ -704,10 +1030,41 @@ copied, skipped, conflicts);
 
         try
         {
+            // Якщо рядок виглядає як file:// URI, вилучимо префікс
+            if (imagePathOrUrl.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+            {
+                imagePathOrUrl = new Uri(imagePathOrUrl).LocalPath;
+            }
+
+            // Якщо це абсолютний шлях у файловій системі — використовуємо його напряму
+            if (Path.IsPathRooted(imagePathOrUrl))
+            {
+                var absPath = imagePathOrUrl.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+                if (File.Exists(absPath))
+                {
+                    var targetRootAbs = Path.Combine(GetTargetImagesPath(), subfolder);
+                    if (!Directory.Exists(targetRootAbs)) Directory.CreateDirectory(targetRootAbs);
+                    var fileNameAbs = Path.GetFileName(absPath);
+                    var targetFileAbs = Path.Combine(targetRootAbs, fileNameAbs);
+                    File.Copy(absPath, targetFileAbs, overwrite: true);
+                    _logger.LogInformation("Copied image {FileName} to target {TargetFile}", fileNameAbs, targetFileAbs);
+                    return true;
+                }
+
+                return false;
+            }
+
             // нормалізуємо відносний шлях (без ведучого '/')
             var relative = imagePathOrUrl.Replace('\\', '/').TrimStart('/');
 
-            // зберігати підкаталог (наприклад 'authors' або 'flags') для уникнення колізій
+            // Якщо шлях містить "wwwroot/" або провідний "images/" — прибираємо їх, щоб уникнути дублювання
+            if (relative.StartsWith("wwwroot/", StringComparison.OrdinalIgnoreCase))
+                relative = relative.Substring("wwwroot/".Length);
+
+            if (relative.StartsWith("images/", StringComparison.OrdinalIgnoreCase))
+                relative = relative.Substring("images/".Length);
+
+            // зберігати підкаталог (наприклад 'authors' або 'flags') для unikнення колізій
             var sourceRoot = GetSourceImagesPath();
             var targetRoot = Path.Combine(GetTargetImagesPath(), subfolder);
             if (!Directory.Exists(targetRoot)) Directory.CreateDirectory(targetRoot);
@@ -716,11 +1073,21 @@ copied, skipped, conflicts);
             var fileName = Path.GetFileName(relative);
             if (string.IsNullOrEmpty(fileName)) return false;
 
+            // Спробуємо кілька варіантів пошуку у джерелі:
+            //1) sourceRoot + relative
+            //2) sourceRoot + fileName
+            //3) якщо relative містить підпапки, ще раз перевірити без них
             var sourceFile = Path.Combine(sourceRoot, relative);
             if (!File.Exists(sourceFile))
             {
-                // якщо не знайшли файл за повним відносним шляхом, спробуємо просто ім'я файлу у sourceRoot
                 sourceFile = Path.Combine(sourceRoot, fileName);
+            }
+
+            if (!File.Exists(sourceFile))
+            {
+                // Іноді у базі збережено шлях з провідним підкаталогом (наприклад "authors/...") — перевіримо так само
+                var alt = relative.Contains('/') ? Path.GetFileName(relative) : relative;
+                sourceFile = Path.Combine(sourceRoot, alt);
             }
 
             if (!File.Exists(sourceFile))
@@ -755,6 +1122,149 @@ copied, skipped, conflicts);
             _logger.LogWarning(ex, "Failed to copy image {Image} : {Message}", imagePathOrUrl, ex.Message);
             return false;
         }
+    }
+
+    // NEW: Проходити по авторам у цільовій базі і копіює фото тільки якщо поле Photo пусте
+    private async Task SyncMissingAuthorPhotosAsync()
+    {
+        _logger.LogInformation("Starting sync of missing author photos (target-only check)...");
+
+        if (_sourceDb == null || _targetDb == null)
+        {
+            _logger.LogWarning("Source or target DB context is null - skipping photo sync.");
+            return;
+        }
+
+        List<Author> sourceAuthors;
+        List<Author> targetAuthors;
+
+        try
+        {
+            // Завантажити всіх авторів джерела (для пошуку відповідностей в пам'яті)
+            sourceAuthors = await _sourceDb.Author.AsNoTracking().ToListAsync();
+
+            // Завантажити всіх авторів цілі
+            targetAuthors = await _targetDb.Author.ToListAsync(); // will update some records
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load authors for photo synchronization. Aborting photo sync.");
+            return;
+        }
+
+        int copied = 0, assigned = 0, skipped = 0, notFound = 0;
+
+        _logger.LogInformation("Starting foreach...");
+
+        try
+        {
+            foreach (var target in targetAuthors)
+            {
+                _logger.LogDebug("Processing target author ID {AuthorID} '{Surname} {Name}'", target.ID, target.Surname, target.Name);
+
+                // Якщо в цільовому записі вже є Photo — пропускаємо
+                if (!string.IsNullOrWhiteSpace(target.Photo))
+                {
+                    _logger.LogInformation("Author ID {AuthorID} '{Surname} {Name}' already has photo = {Photo}, skipping", target.ID, target.Surname, target.Name, target.Photo);
+                    continue;
+                }
+
+                // Знайти відповідника у джерелі
+                Author? src = GetAuthorInSource(sourceAuthors, target);
+
+                // Якщо не знайдено джерело або в джерелі немає Photo — пропускаємо
+                if (src == null || string.IsNullOrWhiteSpace(src.Photo))
+                {
+                    notFound++;
+                    _logger.LogDebug("No source author or photo found for target author ID {AuthorID} '{Surname} {Name}'", target.ID, target.Surname, target.Name);
+                    continue;
+                }
+
+                // Якщо це зовнішній URL — просто скопіювати посилання у цільову базу
+                if (IsHttpUrl(src.Photo))
+                {
+                    target.Photo = src.Photo;
+                    assigned++;
+                    _logger.LogDebug("Assigned external URL photo for author ID {AuthorID} '{Surname} {Name}'", target.ID, target.Surname, target.Name);
+                    continue;
+                }
+
+                // Локальний або відносний шлях - визначити ім'я файлу
+                var fileName = Path.GetFileName(src.Photo.Replace('\\', '/'));
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    // Немає валідного імені файлу — все одно зберігаємо те, що є
+                    target.Photo = src.Photo;
+                    assigned++;
+                    skipped++;
+                    continue;
+                }
+
+                // Намір зберегти в "images/authors/<fileName>" у цільовому проекті
+                var relativeTargetPath = Path.Combine("images", "authors", fileName).Replace('\\', '/');
+
+                // Спробувати скопіювати файл (необхідно, але якщо не вдасться — все одно зберігаємо шлях)
+                var copiedOk = false;
+                try
+                {
+                    copiedOk = await TryCopyImageForEntryAsync(src.Photo, "authors");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Exception while trying to copy image for source {SourcePhoto}", src.Photo);
+                    copiedOk = false;
+                }
+
+                if (copiedOk)
+                {
+                    copied++;
+                }
+                else
+                {
+                    skipped++;
+                    _logger.LogDebug("Image copy failed or source not found for {SourcePhoto}; still assigning path {TargetPath}", src.Photo, relativeTargetPath);
+                }
+
+                // Призначити відносний шлях у базі незалежно від результату копіювання
+                target.Photo = relativeTargetPath;
+                assigned++;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred during photo synchronization loop.");
+        }
+
+        if (assigned > 0)
+        {
+            try
+            {
+                await _targetDb.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save photo assignments to target database.");
+            }
+        }
+
+        _logger.LogInformation("Missing author photos sync complete. Assigned: {Assigned}, Copied: {Copied}, Skipped: {Skipped}, NotFound: {NotFound}", assigned, copied, skipped, notFound);
+    }
+
+    private static Author? GetAuthorInSource(List<Author> sourceAuthors, Author target)
+    {
+        Author? src = sourceAuthors.FirstOrDefault(sa => Same(sa.Name, target.Name) && Same(sa.Surname, target.Surname));
+
+        if (src == null && !string.IsNullOrWhiteSpace(target.NameEn) && !string.IsNullOrWhiteSpace(target.SurnameEn))
+        {
+            src = sourceAuthors.FirstOrDefault(sa => Same(sa.NameEn, target.NameEn) && Same(sa.SurnameEn, target.SurnameEn));
+        }
+
+        if (src == null)
+        {
+            src = sourceAuthors.FirstOrDefault(sa => Same(sa.Surname, target.Surname));
+        }
+
+        return src;
     }
 
     // NEW: Прості утиліти
@@ -889,7 +1399,7 @@ copied, skipped, conflicts);
         Console.ResetColor();
 
         if (exists)
-            Console.WriteLine("• Точний збіг імені та прізвища");
+            Console.WriteLine("• Точний збіг імені та прізвище");
         if (possibleDuplicate)
             Console.WriteLine("• Збіг прізвища (можливий дублікат)");
         if (enDuplicate)
@@ -953,7 +1463,7 @@ copied, skipped, conflicts);
             for (int i = 0; i < existingAuthors.Count; i++)
             {
                 var existing = existingAuthors[i];
-                Console.WriteLine($"  [{i + 1}] {existing.Surname} {existing.Name} | {existing.SurnameEn} {existing.NameEn}");
+                Console.WriteLine($"  [{i + 1}] {existing.Surname} {existing.Name} | {existing.SurnameEn} {existing.NameEn} (ID: {existing.ID})");
                 Console.WriteLine($"      Країна: {existing.Country?.Name} | Роки: {existing.DateOfBirth}-{existing.DateOfDeath}");
             }
         }
@@ -1337,5 +1847,67 @@ copied, skipped, conflicts);
 
         _logger.LogInformation("Generated transliterated names. Source: {SourceCount}, Target: {TargetCount}",
             generatedInSource, generatedInTarget);
+    }
+
+    // Ensure author exists in target DB; create if missing, copy country/photo as needed
+    private async Task<Author> EnsureAuthorInTargetAsync(Author srcAuthor)
+    {
+        if (srcAuthor == null) throw new ArgumentNullException(nameof(srcAuthor));
+
+        var normSurname = (srcAuthor.Surname ?? string.Empty).Trim().ToLowerInvariant();
+        var author = await _targetDb.Author.Include(a => a.Country)
+        .FirstOrDefaultAsync(a => ((a.Surname ?? string.Empty).Trim().ToLower()) == normSurname);
+
+        if (author != null)
+            return author;
+
+        Country? country = null;
+        if (srcAuthor.Country != null)
+        {
+            var normCountry = (srcAuthor.Country.Name ?? string.Empty).Trim().ToLowerInvariant();
+            country = await _targetDb.Country.FirstOrDefaultAsync(c => ((c.Name ?? string.Empty).Trim().ToLower()) == normCountry);
+            if (country == null)
+            {
+                country = new Country
+                {
+                    Name = srcAuthor.Country.Name,
+                    NameEn = srcAuthor.Country.NameEn,
+                    FlagUrl = srcAuthor.Country.FlagUrl
+                };
+                _targetDb.Country.Add(country);
+                await _targetDb.SaveChangesAsync();
+            }
+        }
+
+        var newAuthor = new Author
+        {
+            Name = srcAuthor.Name,
+            Surname = srcAuthor.Surname,
+            NameEn = srcAuthor.NameEn,
+            SurnameEn = srcAuthor.SurnameEn,
+            Country = country,
+            DateOfBirth = srcAuthor.DateOfBirth,
+            DateOfDeath = srcAuthor.DateOfDeath,
+            Description = srcAuthor.Description,
+            DescriptionEn = srcAuthor.DescriptionEn,
+            Photo = srcAuthor.Photo
+        };
+
+        _targetDb.Author.Add(newAuthor);
+        await _targetDb.SaveChangesAsync();
+
+        if (!string.IsNullOrWhiteSpace(srcAuthor.Photo))
+        {
+            try
+            {
+                await TryCopyImageForEntryAsync(srcAuthor.Photo, "authors");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to copy author photo for {Author}", srcAuthor.Surname);
+            }
+        }
+
+        return newAuthor;
     }
 }
