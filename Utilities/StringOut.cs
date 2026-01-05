@@ -1,4 +1,4 @@
-﻿using static Music.Messages;
+using static Music.Messages;
 using static Music.Engine;
 using static System.Console;
 using static System.Convert;
@@ -253,6 +253,5 @@ namespace Music
             }
             return convertedCollection;
         }
-
     }
 }

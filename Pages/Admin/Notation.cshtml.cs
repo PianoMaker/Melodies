@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Music;
 using NAudio.Midi;
@@ -32,7 +32,6 @@ namespace Melodies25.Pages.Account
 
         [BindProperty]
         public string SelectedMidiFile { get; set; } = default!;
-
 
         public void OnGet()
         {
@@ -154,7 +153,7 @@ namespace Melodies25.Pages.Account
                     }
 
                     // Додаємо новий EndTrack після останньої події
-                    long lastTime = filteredEvents.Any() ? filteredEvents.Max(ev => ev.AbsoluteTime) : 0;
+                    long lastTime = filteredEvents.Count != 0 ? filteredEvents.Max(ev => ev.AbsoluteTime) : 0;
                     filteredEvents.Add(new MetaEvent(MetaEventType.EndTrack, 0, lastTime + 1));
 
                     // Очищаємо трек і додаємо нові події, відсортовані за часом

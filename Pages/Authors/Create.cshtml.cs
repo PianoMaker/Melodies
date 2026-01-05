@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,9 +22,7 @@ namespace Melodies25.Pages.Authors
         public CreateModel(Melodies25.Data.Melodies25Context context)
         {
             _context = context;
-            
         }
-
 
         [BindProperty]
         public string? SelectedMode { get; set; }
@@ -82,8 +80,6 @@ namespace Melodies25.Pages.Authors
                 }
                 return Page();
             }
-            
-
 
             _context.Author.Add(Author);
             await _context.SaveChangesAsync();

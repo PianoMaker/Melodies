@@ -1,4 +1,4 @@
-﻿using static Music.Engine;
+using static Music.Engine;
 using static Music.Messages;
 using System.Linq;
 using System.Collections;
@@ -13,7 +13,6 @@ namespace Music
         { get { return notes; } 
         set { notes = value; }
         }
-
 
         public List<int> Pitches
         {
@@ -39,8 +38,6 @@ namespace Music
             }
         }
 
-
-
         public Scale() { }
         public Scale(List<Note> notes) { this.notes = notes; }
 
@@ -59,8 +56,6 @@ namespace Music
                 Note note = new(input);
                 if (note is not null) AddNote(note);
             }
-           
-
         }
 
         public Scale(string input)
@@ -76,7 +71,7 @@ namespace Music
                         AddNote(note);
                     }
                     catch (IncorrectNote) { Console.WriteLine("skip adding " + i); }
-                };
+                }
         }
 
         public Note this[int index]
@@ -101,7 +96,6 @@ namespace Music
 
             return steps;
         }
-
 
         public void AddNote(Note note) {
             Note temp = (Note)note.Clone();              
@@ -130,7 +124,6 @@ namespace Music
             AddNote(newnote);
         }
 
-
         public void Adjust()
         {
             for (int i = 0; i < notes.Count - 1; i++)
@@ -140,7 +133,6 @@ namespace Music
                 while (notes[i + 1].AbsPitch() - notes[i].AbsPitch() > 12)
                     notes[i + 1].OctDown(1);
             }
-
         }
         public void Adjust(int octave = 1)
         {
@@ -148,7 +140,6 @@ namespace Music
             while (notes[0].Oct < octave) OctUp();
             Adjust();
         }
-
 
         public bool CheckForSharps()
         {
@@ -242,7 +233,6 @@ namespace Music
             MessageL(COLORS.standart, confirmednotes);
             return note;
         }
-
 
         public void Clear() { notes.Clear(); }
         /*
@@ -348,7 +338,6 @@ namespace Music
         //    return list;
         //}
 
-
         //public static List<Scale> Permute(Scale chord) // генерування усіх можливих розташувань
         //{
         //    PermutationsGenerator<Note> generator = new PermutationsGenerator<Note>();
@@ -364,7 +353,6 @@ namespace Music
         //    }
         //    return list;
         //}
-
 
         //public List<Scale> PermuteList() // генерування усіх можливих розташувань
         //{
@@ -383,19 +371,15 @@ namespace Music
 
         //}
 
-
         public void RemoveNote(Note note) { notes.Remove(note); }
-
 
         public void Reverse()
         { notes.Reverse(); }
 
         //transposed.Reverse(); return transposed;
 
-
         public int Range()
         { return notes[^1].AbsPitch() - notes[0].AbsPitch(); }
-
 
         public int Size() { return notes.Count(); }
 
@@ -415,7 +399,6 @@ namespace Music
                 note.Transpose(interval, quality, dir, octave);
         }
 
-
         public void Transpose(Interval i, DIR dir)
         { Transpose(i.Interval_, i.Quality, dir); }
 
@@ -427,11 +410,9 @@ namespace Music
             return transposed;
         } // Clonable
 
-
         /// <summary>
         /// ////////////////TEST SECTION///////////////////
         /// </summary>
-
         public virtual void Display(bool octtriger = true, int color = 14)
         {
             StringOut.Display(this, octtriger, color);
@@ -441,12 +422,10 @@ namespace Music
         {
             StringOut.DisplaySh(this, octtriger, color);
         }
-        
 
         public void SortByPitch()
         {
             notes.Sort();
-            
         }
         /*
         public void ShortTest()
@@ -468,8 +447,6 @@ namespace Music
                 display += (note.ToString());
             return display;
         }
-
-
 
         public static Scale operator +(Scale A, Scale B)
         {
@@ -494,7 +471,6 @@ namespace Music
 
             return C;
         }
-
 
         public static bool operator ==(Scale A, Scale B)
         {

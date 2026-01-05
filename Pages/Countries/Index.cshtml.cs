@@ -1,4 +1,4 @@
-﻿using Melodies25.Data;
+using Melodies25.Data;
 using Melodies25.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +12,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using static Music.Messages;
 
-
 namespace Melodies25.Pages.Countries
 {
     public class IndexModel : PageModel
@@ -25,7 +24,6 @@ namespace Melodies25.Pages.Countries
         }
 
         public IList<Country> Country { get;set; } = default!;
-
 
         [BindProperty(SupportsGet = true)]
         public string SelectedLang { get; set; } = "uk";
@@ -42,7 +40,6 @@ namespace Melodies25.Pages.Countries
                 SelectedLang = "uk";
             }
 
-
             Country = await _context.Country.ToListAsync();
 
             bool isEn = string.Equals(SelectedLang, "en", StringComparison.OrdinalIgnoreCase);
@@ -54,7 +51,6 @@ namespace Melodies25.Pages.Countries
                 var authors = await _context.Author.Where(m => m.CountryID == currentCountry.ID).ToListAsync();
                 currentCountry.AuthorsCount = authors.Count;
 
-                
                 foreach (var currentAuthor in authors)
                 {
                     var meloides = await _context.Melody.Where(m => m.AuthorID == currentAuthor.ID).ToListAsync();

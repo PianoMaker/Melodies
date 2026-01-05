@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -22,17 +22,14 @@ namespace Melodies25.Migrations
                 type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "");
-
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-
             migrationBuilder.DropColumn(
                 name: "NameEn",
                 table: "Country");
- 
         }
     }
 }

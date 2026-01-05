@@ -1,4 +1,4 @@
-﻿using Melodies25.Data;
+using Melodies25.Data;
 using Melodies25.Models;
 using Melodies25.Utilities;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +27,6 @@ namespace Melodies25.Pages.Authors
         {
             _context = context;            
         }
-               
 
         public IList<Author> Author { get; set; } = default!;
                 
@@ -39,7 +38,6 @@ namespace Melodies25.Pages.Authors
 
         [BindProperty(SupportsGet = true)] 
         public string SelectedLang { get; set; } = "uk";
-
 
         public async Task OnGetAsync(string sortOrder)
         {

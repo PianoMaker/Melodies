@@ -1,4 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Music;
@@ -14,7 +14,6 @@ namespace Melodies25.Models
 
         public string? Tonality { get; set; } // Тональність. працювати через модель Tonality 
 
-        
         [Required(ErrorMessage = "Назва є обов'язковою.")]
         public string Title { get; set; }
 
@@ -35,7 +34,6 @@ namespace Melodies25.Models
             }
         }   
 
-
         [Display(Name = "MIDI файл")]
         [NotMapped]
         public IFormFile? File { get; set; } 
@@ -55,7 +53,5 @@ namespace Melodies25.Models
                 return Path.ChangeExtension(FilePath, ".mp3");
             }
         }
-
-
     }
 }

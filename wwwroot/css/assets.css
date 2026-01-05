@@ -421,7 +421,7 @@ h6 {
     display: none;
     list-style: none;
     position: absolute;
-    inset: 60px 20px 20px 20px;
+    inset: 60px 20px 20px;
     padding: 10px 0;
     margin: 0;
     border-radius: 6px;
@@ -661,7 +661,7 @@ h6 {
 .footer .footer-newsletter .newsletter-form input[type=submit] {
   border: 0;
   font-size: 16px;
-  padding: 0 20px 2px 20px;
+  padding: 0 20px 2px;
   margin: -7px -8px -7px 0;
   background: var(--accent-color);
   color: var(--contrast-color);
@@ -920,7 +920,7 @@ section,
 
 .hero p {
   color: color-mix(in srgb, var(--default-color), transparent 20%);
-  margin: 10px 0 0 0;
+  margin: 10px 0 0;
   font-size: 24px;
 }
 
@@ -929,7 +929,7 @@ section,
   font-size: 15px;
   letter-spacing: 1px;
   display: inline-block;
-  padding: 8px 35px 10px 35px;
+  padding: 8px 35px 10px;
   border-radius: 50px;
   transition: 0.4s;
   margin-top: 30px;
@@ -986,7 +986,7 @@ section,
   font-weight: 500;
   font-size: 15px;
   letter-spacing: 1px;
-  padding: 10px 24px 12px 24px;
+  padding: 10px 24px 12px;
   border-radius: 50px;
   transition: 0.3s;
   display: inline-flex;
@@ -1061,7 +1061,7 @@ section,
 .why-us .why-box .more-btn {
   display: inline-block;
   background: color-mix(in srgb, var(--contrast-color), transparent 85%);
-  padding: 8px 40px 10px 40px;
+  padding: 8px 40px 10px;
   color: var(--contrast-color);
   transition: all ease-in-out 0.4s;
   border-radius: 50px;
@@ -1102,7 +1102,7 @@ section,
 .why-us .icon-box h4 {
   font-size: 20px;
   font-weight: 700;
-  margin: 0 0 30px 0;
+  margin: 0 0 30px;
 }
 
 .why-us .icon-box p {
@@ -1249,11 +1249,11 @@ section,
 }
 
 .trainers-index .member img {
-  margin: -1px -1px 30px -1px;
+  margin: -1px -1px 30px;
 }
 
 .trainers-index .member .member-content {
-  padding: 0 20px 30px 20px;
+  padding: 0 20px 30px;
 }
 
 .trainers-index .member h4 {
@@ -1354,7 +1354,7 @@ section,
 .testimonials .testimonial-item h3 {
   font-size: 18px;
   font-weight: bold;
-  margin: 10px 0 5px 0;
+  margin: 10px 0 5px;
 }
 
 .testimonials .testimonial-item h4 {
@@ -1395,7 +1395,7 @@ section,
 
 .testimonials .testimonial-item p {
   font-style: italic;
-  margin: 15px auto 15px auto;
+  margin: 15px auto;
 }
 
 .testimonials .swiper-wrapper {
@@ -1449,7 +1449,7 @@ section,
 
 .courses-course-details h3 {
   font-size: 24px;
-  margin: 30px 0 15px 0;
+  margin: 30px 0 15px;
   font-weight: 700;
   position: relative;
   padding-bottom: 10px;
@@ -1716,7 +1716,7 @@ section,
 }
 
 .pricing .pricing-item h3 {
-  margin: -20px -20px 20px -20px;
+  margin: -20px -20px 20px;
   padding: 20px 15px;
   font-size: 16px;
   font-weight: 600;
@@ -1767,7 +1767,7 @@ section,
 
 .pricing .btn-wrap {
   background: color-mix(in srgb, var(--default-color), transparent 95%);
-  margin: 0 -20px -20px -20px;
+  margin: 0 -20px -20px;
   padding: 20px 15px;
   text-align: center;
 }
@@ -1776,11 +1776,9 @@ section,
   background: var(--accent-color);
   color: var(--contrast-color);
   display: inline-block;
-  padding: 8px 35px 10px 35px;
+  padding: 8px 35px 10px;
   border-radius: 4px;
-  transition: none;
   font-size: 14px;
-  font-weight: 400;
   font-family: var(--heading-font);
   font-weight: 600;
   transition: 0.3s;
@@ -1805,7 +1803,7 @@ section,
   transform: rotate(45deg);
   z-index: 1;
   font-size: 14px;
-  padding: 1px 0 3px 0;
+  padding: 1px 0 3px;
 }
 
 /*--------------------------------------------------------------
@@ -1879,7 +1877,7 @@ section,
   color: var(--contrast-color);
   background: var(--accent-color);
   border: 0;
-  padding: 10px 30px 12px 30px;
+  padding: 10px 30px 12px;
   transition: 0.4s;
   border-radius: 50px;
 }

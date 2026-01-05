@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -42,10 +42,8 @@ namespace Melodies25.Pages.Countries
 
             try
             {
-
                 _context.Country.Add(Country);
                 await _context.SaveChangesAsync();
-
             }
             catch (Exception ex)
             {
@@ -53,7 +51,6 @@ namespace Melodies25.Pages.Countries
                 Msg = $"Країна з такою назвою вже створена";
                 return Page();
             }
-
 
             return RedirectToPage("./Index");
         }

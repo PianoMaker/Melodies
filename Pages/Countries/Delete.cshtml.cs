@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -40,7 +40,6 @@ namespace Melodies25.Pages.Countries
             if (user is not null)
             { isAdminOrModerator = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "Moderator"); }
             else isAdminOrModerator = false;
-
 
             if (!isAdminOrModerator)
             {

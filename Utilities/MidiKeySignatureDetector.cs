@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using NAudio.Midi;
 using static Music.Messages; // додано
@@ -70,7 +70,6 @@ namespace Melodies25.Utilities
             return null;
         }
 
-  
         private static string? MapToTonality(int sf, int mi)
         {
             if (sf < -7 || sf > 7) return null;

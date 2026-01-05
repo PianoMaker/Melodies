@@ -25,19 +25,18 @@ namespace Melodies25.Pages.Melodies
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<SearchModel> _logger;
 
-
         public IList<Melody> Melody { get; set; } = default!;
 
-        // Список знайдених мелодій з довжиною збігу та позицією
-        // commonLength - довжина збігу в нотах
-        // position - позиція початку збігу в мелодії
-        // Якщо position = -1, збіг не є підрядком (для алгоритму підпослідовності)
-        // Якщо position >= 0, збіг є підрядком (для алгоритму підрядка)
-        // Додається ще список пар індексів (melodyIndex, patternIndex) для відображення підсвітки у режимі Subsequence
-        // Сортування за commonLength у спадному порядку
-        // Використовується в OnPostNotesearch
+        // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        // commonLength - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
+        // position - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅдії
+        // пїЅпїЅпїЅпїЅ position = -1, пїЅпїЅпїЅ пїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
+        // пїЅпїЅпїЅпїЅ position >= 0, пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (melodyIndex, patternIndex) пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ Subsequence
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ commonLength пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ OnPostNotesearch
         public List<MatchedMelody> MatchedMelodies { get; set; } = new();
-        // Чи відображати результати пошуку за нотами
+        // пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         public bool NoteSearch { get; set; }
 
         [BindProperty]
@@ -55,7 +54,7 @@ namespace Melodies25.Pages.Melodies
             _logger = logger;
         }
 
-        private int minimummatch = 4;//вивести на контроллер
+        private int minimummatch = 4;//пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
         [BindProperty]
         public string Note { get; set; }
@@ -72,11 +71,11 @@ namespace Melodies25.Pages.Melodies
         [TempData]
         public string Description { get; set; }
 
-        // Введені ноти для пошуку
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         [BindProperty]
         public string Keys { get; set; }
 
-        // Алгоритм пошуку: "Substring" (default) or "Subsequence"
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ: "Substring" (default) or "Subsequence"
         [BindProperty]
         public string SearchAlgorithm { get; set; } = "Substring";
 
@@ -84,13 +83,13 @@ namespace Melodies25.Pages.Melodies
         [BindProperty]
         public int MaxGap { get; set; } = 1;
 
-        // Нова мелодія, створена на сторінці пошуку
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         public MusicMelody NewPattern { get; set; }
 
-        // Тимчасові файли для створеної мелодії
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅдії
         internal string TempMidiFilePath { get; set; }
 
-        // Тимчасовий mp3 файл для створеної мелодії
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ mp3 пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅдії
         [BindProperty]
         internal string TempMp3FilePath { get; set; }
 
@@ -105,16 +104,14 @@ namespace Melodies25.Pages.Melodies
 
         private static readonly char[] separator = new char[] { ' ', '_' };
 
-
         [BindProperty(SupportsGet = true)]
         public string SelectedLang { get; set; } = "uk";
 
         public void OnGetAsync(string search, int? numerator, int? denominator)
         {
-
             MessageL(COLORS.yellow, $"SEARCH - OnGetAsync method, intonation = {IfIntonation}");
 
-            // Перемикання мови
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
             try
             {
                 var ui = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
@@ -140,7 +137,6 @@ namespace Melodies25.Pages.Melodies
 
                 var query = _context.Melody.AsQueryable().Include(m => m.Author);
 
-
                 var results = query.Where(m => m.Author != null && EF.Functions.Like(m.Author.Surname ?? "", $"%{searchQuery}%"))
                    .Concat(query.Where(m => EF.Functions.Like(m.Title ?? "", $"%{searchQuery}%")))
                    .Concat(query.Where(m => m.Author != null && EF.Functions.Like(m.Author.SurnameEn ?? "", $"%{searchQuery}%")))
@@ -150,17 +146,15 @@ namespace Melodies25.Pages.Melodies
 
                 Melody = results.ToList();
 
-
-                if (Melody.Count == 0) Description = ($"За результатами пошуку \"{search}\" Нічого не знайдено");
-                else Description = ($"За результатами пошуку \"{search}\" знайдено");
+                if (Melody.Count == 0) Description = ($"пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ \"{search}\" НіпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
+                else Description = ($"пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ \"{search}\" пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
             }
 
             Page();
-
         }
 
         //--------------------------------
-        // ІНІЦІАЛІЗАЦІЯ БАЗИ ДАНИХ ДЛЯ ПОШУКУ ЗА НОТАМИ
+        // пїЅНІЦІпїЅЛІпїЅпїЅЦІпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         //--------------------------------
         private async Task NotesSearchInitialize()
         {
@@ -176,7 +170,7 @@ namespace Melodies25.Pages.Melodies
 
             var missingFiles = new List<string>();
 
-            //Підготовка файлів
+            //ПіпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
             foreach (var melody in Melody)
             {
                 try
@@ -236,8 +230,8 @@ namespace Melodies25.Pages.Melodies
         }
 
         //--------------------------------
-        // ПОШУК МЕЛОДІЇ ЗА МЕТАДАНИМИ
-        // викликається кнопкою "Пошук" (id="metaSearchForm")
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅДІпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅ" (id="metaSearchForm")
         //--------------------------------
         public async Task OnPostSearchAsync()
         {
@@ -245,8 +239,7 @@ namespace Melodies25.Pages.Melodies
 
             MessageL(COLORS.yellow, "SEARCH - OnPostSearchAsync method");//+" num="+TimeSignatureNumerator+", den="+TimeSignatureDenominator);
 
-
-            // Очищення попередніх результатів
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             Melody = new List<Melody>();
 
             IQueryable<Melody> query = _context.Melody.Include(m => m.Author);
@@ -263,7 +256,6 @@ namespace Melodies25.Pages.Melodies
                 {
                     string titleLower = Title.ToLower();
                     query = query.Where(m => m.Title.ToLower() == titleLower);
-
                 }
             }
             else
@@ -285,12 +277,11 @@ namespace Melodies25.Pages.Melodies
 
             if (!string.IsNullOrWhiteSpace(Note))
             {
-                // Ініціалізую властивість midiMelody
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ midiMelody
                 await NotesSearchInitialize();
 
                 var firstnote = new Note(Note);
                 var filteredMelodies = new List<Melody>();
-
 
                 foreach (var melody in Melody)
                 {
@@ -304,7 +295,7 @@ namespace Melodies25.Pages.Melodies
                     }
                     else if (melody.MidiMelody.IfStartsFromNote(firstnote))
                     {
-                        filteredMelodies.Add(melody); // Додаємо в список результатів
+                        filteredMelodies.Add(melody); // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         if (LoggingManager.PatternSearch)
                             Message(COLORS.blue, "+");
                     }
@@ -318,25 +309,21 @@ namespace Melodies25.Pages.Melodies
                 Melody = filteredMelodies;
             }
 
-            if (Melody.Count == 0) Description = ($"За результатами пошуку \"{Author}\", \"{Title}\" Нічого не знайдено");
-            else Description = ($"За результатами пошуку \"{Author}\", \"{Title}\" знайдено:");
+            if (Melody.Count == 0) Description = ($"пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ \"{Author}\", \"{Title}\" НіпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
+            else Description = ($"пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ \"{Author}\", \"{Title}\" пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ:");
         }
 
         //--------------------------------
-        // ДОДАВАННЯ НОТИ ЧЕРЕЗ ПІАНІНО
-        // викликається кнопкою на піаніно
-        // параметр key - назва ноти
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ ПІпїЅНІпїЅпїЅ
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ key - пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         //--------------------------------
         public void OnPostAsync(string key)
         {
-
             MessageL(COLORS.yellow, $"SEARCH - OnPostAsync method {key}");
 
             OnPostPiano(key);
-
-
         }
-
 
         public IActionResult OnPostPiano(string key)
         {
@@ -354,7 +341,7 @@ namespace Melodies25.Pages.Melodies
             }
             var note = new Note(key);
 
-            // відтворення ноти
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
             try
             {
                 string mp3Path = Path.Combine(_environment.WebRootPath, "sounds", $"{key}.mp3");
@@ -371,14 +358,13 @@ namespace Melodies25.Pages.Melodies
                 Msg = ex.ToString();
             }
 
-
             return Page();
         }
 
         //--------------------------------
-        // СКИДАННЯ МЕЛОДІЇ ПОШУКУ
-        // викликається кнопкою "Скинути"
-        // параметр key - назва ноти
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅДІпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ key - пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         //--------------------------------
         public void OnPostReset()
         {
@@ -391,8 +377,8 @@ namespace Melodies25.Pages.Melodies
             Page();
         }
         //--------------------------------
-        // ПОШУК МЕЛОДІЇ ЗА НОТАМИ
-        // викликається кнопкою "Пошук" (id="searchBtn")
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅДІпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅ" (id="searchBtn")
         //--------------------------------
         public async Task OnPostNotesearch()
         {
@@ -404,7 +390,6 @@ namespace Melodies25.Pages.Melodies
                 var s = ff.ToString();
                 FromFindSimilar = s == "1" || string.Equals(s, "true", StringComparison.OrdinalIgnoreCase) || string.Equals(s, "on", StringComparison.OrdinalIgnoreCase);
                 MessageL(COLORS.olive, $"find similar = {FromFindSimilar}");
-
             }
 
             var vaste = "g,,,,,1.";
@@ -416,14 +401,13 @@ namespace Melodies25.Pages.Melodies
                 Keys = Keys.Remove(vasteidx);
             }
 
-            /*включаємо відображення за нотним пошуком*/
+            /*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
             NoteSearch = true;
 
-            /*ІНІЦІАЛІЗАЦІЯ БАЗИ*/
+            /*пїЅНІЦІпїЅЛІпїЅпїЅЦІпїЅ пїЅпїЅпїЅпїЅ*/
             await NotesSearchInitialize();
 
-
-            /*ІНІЦІАЛІЗАЦІЯ ВВЕДЕНОГО МАЛЮНКУ*/
+            /*пїЅНІЦІпїЅЛІпїЅпїЅЦІпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
             MusicMelody MelodyPattern = new();
             Globals.notation = Notation.eu;
             Globals.lng = LNG.uk;
@@ -431,10 +415,9 @@ namespace Melodies25.Pages.Melodies
             TempData["Numerator"] = TimeSignatureNumerator;
             TempData["Denominator"] = TimeSignatureDenominator;
 
-
             if (Keys is not null)
             {
-                /* Будуємо послідовність введених нот */
+                /* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ */
                 BuildPattern(MelodyPattern);
                 try
                 {
@@ -445,17 +428,16 @@ namespace Melodies25.Pages.Melodies
                     ErrorMessageL($"failed to enharmonize: {e}");
                 }
 
-                /* ЛОГУВАННЯ */
+                /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
                 LogNotesearch(MelodyPattern);
 
-                /*аудіо*/
+                /*пїЅпїЅпїЅпїЅ*/
                 try
                 {
                     TempMp3FilePath = PrepareTempName(_environment, ".mp3");
 
                     if (LoggingManager.CreateAudio)
                         MessageL(COLORS.green, $"CreateAudio: generating preview mp3 at {TempMp3FilePath}");
-
 
                     await GenerateMp3Async(MelodyPattern, TempMp3FilePath);
                     TempMp3FilePath = GetTemporaryPath(TempMp3FilePath);
@@ -465,30 +447,26 @@ namespace Melodies25.Pages.Melodies
                     ErrorMessageL($"impossible to create mp3: {e.Message}");
                 }
 
-
-                /* будуємо список виявлених збігів MathedMelodies */
+                /* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ MathedMelodies */
                 CompareMelodies(MelodyPattern);
 
-
-                // Сортуємо за довжиною збігу
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
                 MatchedMelodies = MatchedMelodies.OrderByDescending(m => m.CommonLength).ToList();
 
-                Description = $"Знайдено {MatchedMelodies.Count} мелодій, в яких співпадають не менше ніж {minimummatch} нот поспіль";
+                Description = $"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ {MatchedMelodies.Count} пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ {minimummatch} пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ";
 
-                //Передаємо список введених нот 
+                //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ 
                 ViewData["melodypattern"] = MelodyPattern.NotesList;
                 ViewData["searchAlgorithm"] = SearchAlgorithm;
                 GrayMessageL($"melodypattern = {MelodyPattern.NotesList}");
 
-                //Передаємо списки нот по кожній мелодії
+                //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅдії
                 CreatingPatternsView();
-
             }
             else
             {
-
                 Console.WriteLine("no pattern");
-                Description = "Помилка розпізнавання введеної мелодії для пошуку";
+                Description = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅдії пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ";
             }
             MessageL(COLORS.cyan, $"finishing SEARCH method, findsimilar = {FromFindSimilar}");
         }
@@ -532,12 +510,11 @@ namespace Melodies25.Pages.Melodies
         }
 
         //--------------------------------
-        // ВІДТВОРЕННЯ МЕЛОДІЇ
-        // викликається кнопкою "Прослухати"
+        // ВІпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅДІпїЅ
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
         //--------------------------------
         public IActionResult OnPostPlay(string midiPath)
         {
-
             MessageL(COLORS.yellow, $"SEARCH - OnPostPlay. Trying to get {midiPath}");
 
             try
@@ -559,20 +536,19 @@ namespace Melodies25.Pages.Melodies
                 var relativePath = "/mp3/" + Path.GetFileName(mp3Path);
                 TempData["AudioFile"] = relativePath;
                 MessageL(COLORS.green, relativePath);
-
             }
             catch (Exception ex)
             {
                 ErrorWarning = ex.Message;
-                ErrorMessage($"Неможливо згенерувати MP3:\n {ex.Message}\n");
+                ErrorMessage($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ MP3:\n {ex.Message}\n");
             }
             return Page();
         }
 
         //--------------------------------
-        // СТВОРЕННЯ МЕЛОДІЇ ВРУЧНУ НА СТОРІНЦІ ПОШУКУ
-        // зберігає у тимчасовий midi та генерує mp3 для попереднього прослуховування
-        // викликається кнопкою "Згенерувати мелодію"
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅДІпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅРІпїЅЦІ пїЅпїЅпїЅпїЅпїЅпїЅ
+        // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ midi пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ mp3 пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ"
         //--------------------------------
         public async Task<IActionResult> OnPostMelody()
         {
@@ -613,13 +589,13 @@ namespace Melodies25.Pages.Melodies
                 catch (Exception ex)
                 {
                     ErrorMessageL(ex.ToString());
-                    TempData["ErrorWarning"] = "Не вдалося згенерувати файл";
+                    TempData["ErrorWarning"] = "пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ";
                 }
             }
             else
             {
                 ErrorMessageL("keys are null or empty");
-                TempData["ErrorWarning"] = "Жодної ноти не введено";
+                TempData["ErrorWarning"] = "пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
             }
 
             MessageL(COLORS.cyan, "Search.OnPostMelody finished");
@@ -627,11 +603,11 @@ namespace Melodies25.Pages.Melodies
         }
 
         //================================
-        // ДОПОМІЖНІ ФУНКЦІЇ 
+        // пїЅпїЅпїЅпїЅМІпїЅНІ пїЅпїЅпїЅпїЅЦІпїЅ 
         //================================
 
         //--------------------------------
-        // СТВОРЕННЯ ВІДОБРАЖЕННЯ ЗНАЙДЕНИХ ПАТЕРНІВ
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ВІпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅНІпїЅ
         //--------------------------------
         private void CreatingPatternsView()
         {
@@ -651,8 +627,8 @@ namespace Melodies25.Pages.Melodies
         }
 
         //--------------------------------
-        // ПОБУДОВА МЕЛОДІЇ З ВВЕДЕНИХ НОТ
-        //  викликається в OnPostNotesearch
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅДІпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
+        //  пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ OnPostNotesearch
         //--------------------------------
         private void BuildPattern(MusicMelody MelodyPattern)
         {
@@ -679,8 +655,8 @@ namespace Melodies25.Pages.Melodies
             }
         }
         //--------------------------------
-        // ПОРІВНЯННЯ МЕЛОДІЙ
-        // викликається в OnPostNotesearch
+        // пїЅпїЅРІпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅДІпїЅ
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ OnPostNotesearch
         //--------------------------------
         private void CompareMelodies(MusicMelody MelodyPattern)
         {
@@ -721,9 +697,9 @@ namespace Melodies25.Pages.Melodies
                         {
                             if (LoggingManager.Comparing || LoggingManager.AlgorithmDiagnostics)
                                 MessageL(14, $"comparing subsequence for {title}");
-                            // TEMPORARY: restrict subsequence search to songs whose Title starts with Cyrillic 'Г'
+                            // TEMPORARY: restrict subsequence search to songs whose Title starts with Cyrillic 'пїЅ'
                             /*
-                            if (string.IsNullOrEmpty(melody.Title) || !melody.Title.StartsWith("Г", StringComparison.CurrentCultureIgnoreCase))
+                            if (string.IsNullOrEmpty(melody.Title) || !melody.Title.StartsWith("пїЅ", StringComparison.CurrentCultureIgnoreCase))
                             {
                                 //TempLetterMethod(title, out length, out position, out finalBestPairs);
                                 break;
@@ -768,7 +744,6 @@ namespace Melodies25.Pages.Melodies
                             {
                                 return;
                             }
-
                         }
                     case "substring":
                         {
@@ -824,8 +799,6 @@ namespace Melodies25.Pages.Melodies
 
                 if (length >= minimummatch)
                 {
-
-
                     MatchedMelodies.Add(new MatchedMelody
                     {
                         Melody = melody,
@@ -887,7 +860,7 @@ namespace Melodies25.Pages.Melodies
 
         private static void TempLetterMethod(string title, out int length, out int position, out List<(int i1, int i2)> finalBestPairs)
         {
-            MessageL(COLORS.gray, $"Skipping subsequence for '{title}' — title does not start with 'Г'");
+            MessageL(COLORS.gray, $"Skipping subsequence for '{title}' пїЅ title does not start with 'пїЅ'");
             // ensure no match will be registered for this melody
             length = 0;
             position = -1;

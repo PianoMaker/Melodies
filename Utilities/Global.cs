@@ -1,38 +1,37 @@
-﻿using Microsoft.VisualBasic;
+using Microsoft.VisualBasic;
 using NAudio.Midi;
 
 namespace Music
 {
-    public enum NOTES { DO = 0, RE, MI, FA, SOL, LA, SI }; // ноти
+    public enum NOTES { DO = 0, RE, MI, FA, SOL, LA, SI } // ноти
     public enum Notation { eu = 1, us = 2 } // вибір нотації
     public enum LNG { uk = 1, en = 2 } // мова інтерфейсу
-    public enum PLAYER { beeper, naudio, midiplayer }; // вибір присторїв відтворення
+    public enum PLAYER { beeper, naudio, midiplayer } // вибір присторїв відтворення
 
-    public enum TIMBRE { sin, tri, sawtooth, square }; // вибір тембрів відтворення
+    public enum TIMBRE { sin, tri, sawtooth, square } // вибір тембрів відтворення
     public enum COLORS { blue = 1, darkred = 4, olive = 6, standart = 7, gray = 8, green = 10, cyan = 11, red = 12, purple = 13, yellow = 14, white = 15 }
-    public enum DIR { UP, DOWN }; // транспорт вгору/вниз
-    public enum ALTER { SHARP = 1, DOUBLESHARP = 2, TRIPLESHARP = 3, FLAT = -1, DOUBLEFLAT = -2, FLATFLAT = -2, TREPLEFLAT = -3, NATURAL = 0 }; // знаки альтерації
-    public enum QUALITY { PERFECT = 0, MAJ = 1, MIN = -1, AUG = 2, DIM = -2, AUG2 = 3, DIM2 = -3 }; // якість інтервалів
-    public enum INTERVALS { PRIMA, SECUNDA, TERZIA, QUARTA, QUINTA, SEKSTA, SEPTYMA, OCTAVA }; // інтервали
+    public enum DIR { UP, DOWN } // транспорт вгору/вниз
+    public enum ALTER { SHARP = 1, DOUBLESHARP = 2, TRIPLESHARP = 3, FLAT = -1, DOUBLEFLAT = -2, FLATFLAT = -2, TREPLEFLAT = -3, NATURAL = 0 } // знаки альтерації
+    public enum QUALITY { PERFECT = 0, MAJ = 1, MIN = -1, AUG = 2, DIM = -2, AUG2 = 3, DIM2 = -3 } // якість інтервалів
+    public enum INTERVALS { PRIMA, SECUNDA, TERZIA, QUARTA, QUINTA, SEKSTA, SEPTYMA, OCTAVA } // інтервали
     public enum CHORDS
     {
         TRI, SEXT, QSEXT, SEPT, SEC, TERZQ, QUINTS, HSEPT, HQUINTS, HTERZQ, HSEC, ADDQUARTA, ADDSEC, SUSQUARTA,
         NONACORD, NONACORD_1i, NONACORD_2i, NONACORD_3i, NONACORD_4i, CORD69, HUNDECCORD, HUNDECCORD_1i, HUNDECCORD_2i, HUNDECCORD_3i, HUNDECCORD_4i, HUNDECCORD_5i,
         UNDECCORD, UNDECCORD_1i, UNDECCORD_2i, UNDECCORD_3i, UNDECCORD_4i, UNDECCORD_5i, TERZDEC, CLUSTER, UNKNOWN, UNIS
-    }; // тип акордів
-    public enum SEPTS { MAJAUG, MAJMAJ, MAJMIN, MINMAJ, MINMIN, MINDIM, DIMDIM, ALTQUINT, ALTPRIM }; // якість септакордів
+    } // тип акордів
+    public enum SEPTS { MAJAUG, MAJMAJ, MAJMIN, MINMAJ, MINMIN, MINDIM, DIMDIM, ALTQUINT, ALTPRIM } // якість септакордів
 
-    public enum NINTHS { NMJAUG, NMNAUG, NDAUG, NMAJ, NDOM, NMDOM, NMIN, NMDIM, NDDIM, HMAJ, HMIN, HAUG, HDOM, OTHER }; // якість акордів
-    public enum MODE { dur, moll, chrome }; // лад
+    public enum NINTHS { NMJAUG, NMNAUG, NDAUG, NMAJ, NDOM, NMDOM, NMIN, NMDIM, NDDIM, HMAJ, HMIN, HAUG, HDOM, OTHER } // якість акордів
+    public enum MODE { dur, moll, chrome } // лад
 
     public enum DURATION { whole = 1, half = 2, quater = 4, eigth = 8, sixteenth = 16, thirtysecond = 32 } // тривалості
     public enum DURMODIFIER { none, dotted, doubledotted, tripledotted, tuplet, tied } // тривалості з крапками і види ритмічного поділу
 
-    enum MAJTONALITIES { Cdur, Gdur, Ddur, Adur, Edur, Hdur, Fisdur, Cisdur, Fdur, Bdur, Esdur, Asdur, Desdur, Gesdur, Cesdur, Fesdur, Gisdur };
-    enum MINTONALITIES { amoll, emoll, hmoll, fismoll, cismoll, gismoll, dismoll, aismoll, eismoll, dmoll, gmoll, cmoll, fmoll, bmoll, esmoll, asmoll, desmoll };
-    enum TRIPOSITIONS { open1, open3, open5, closed1, closed3, closed5 };
+    enum MAJTONALITIES { Cdur, Gdur, Ddur, Adur, Edur, Hdur, Fisdur, Cisdur, Fdur, Bdur, Esdur, Asdur, Desdur, Gesdur, Cesdur, Fesdur, Gisdur }
+    enum MINTONALITIES { amoll, emoll, hmoll, fismoll, cismoll, gismoll, dismoll, aismoll, eismoll, dmoll, gmoll, cmoll, fmoll, bmoll, esmoll, asmoll, desmoll }
+    enum TRIPOSITIONS { open1, open3, open5, closed1, closed3, closed5 }
 
-    
     public static class Globals
     {
         public const string flatsymbol = "♭";
@@ -97,10 +96,8 @@ namespace Music
 
         public static void SetTempo(double bpm)
         {
-            
             playspeed = (int)Math.Round(48000 / bpm);
             Console.WriteLine($"tempo = {bpm}bpm, playspeed = {playspeed} ms / quater" );
-
         }
 
         public static double GetBpmFromTempoEvent(TempoEvent tempoEvent)
@@ -112,10 +109,8 @@ namespace Music
 
         public static void GetPlayspeedFromTempoEvent(TempoEvent tempoEvent)
         {
-
             playspeed = (int)Math.Round(48000 / GetBpmFromTempoEvent(tempoEvent));
         }
-
     }
 
     public class IncorrectNote : Exception
@@ -140,10 +135,7 @@ namespace Music
     public class ImpossibleVoicing : IncorrectNote
     {
         public ImpossibleVoicing() { msg = "impossible to find voicing"; }
-
     }
-
-
 }
 
 

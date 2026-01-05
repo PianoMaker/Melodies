@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.CodeDom;
 using System.Configuration;
 using System.Linq;
@@ -12,14 +12,12 @@ using NAudio.Midi;
 
 namespace Music
 {
-
     //Тональність
     public class Tonalities : ICloneable
     {
         private NOTES step;
         private ALTER alter;// знак альтерації (у назві тональності)
         private MODE mode; // лад
-
 
         public Tonalities(NOTES key, ALTER alter, MODE mode)
         { this.step = key; this.mode = mode; this.alter = alter; }
@@ -60,7 +58,6 @@ namespace Music
                 this.alter = ALTER.NATURAL;
                 switch (sharpflat)
                 {
-
                     case 0: this.step = NOTES.DO; break;
                     case 1: this.step = NOTES.SOL; break;
                     case 2: this.step = NOTES.RE; break;
@@ -84,7 +81,6 @@ namespace Music
                 this.alter = ALTER.NATURAL;
                 switch (sharpflat)
                 {
-
                     case 0: this.step = NOTES.LA; break;
                     case 1: this.step = NOTES.MI; break;
                     case 2: this.step = NOTES.SI; break;
@@ -109,13 +105,11 @@ namespace Music
             this.step = (NOTES)step;
             alter = (ALTER)alter_from_pitch(step, pitch);
             this.mode = mode;
-
         }
 
         //input вводити в європейській нотації як "c-dur" "es-moll" і т.п.
         public Tonalities(string input)
         {
-
             string name = EnterTonalityName(input);
             string[] tokens = name.Split('-', ' '); 
             string key = tokens[0]; 
@@ -125,7 +119,6 @@ namespace Music
             int pitch = key_to_pitch(key); 
             alter = (ALTER)pitch_to_alter(step, pitch); 
             mode = (tempmode == "dur") ? MODE.dur : MODE.moll; 
-
         }
 
         public NOTES Key { get { return step; } set { step = value; } }
@@ -234,7 +227,6 @@ namespace Music
 
         public string Name()
         {
-            
             return (step_to_notename((int)step, (int)alter));
         }
         public Note Note()
@@ -293,7 +285,7 @@ namespace Music
                 case 3:
                     step = addstepN(step, 2); /* III ступінь */
                     if (mode == MODE.dur) { pitch = addpitch(pitch, 4); mode = MODE.moll; }
-                    else { pitch = addpitch(pitch, 3); mode = MODE.dur; };
+                    else { pitch = addpitch(pitch, 3); mode = MODE.dur; }
                     break;
                 case 4: step = addstepN(step, 3); pitch = addpitch(pitch, 5); break;// субдомінанта
                 case 5: step = addstepN(step, 4); pitch = addpitch(pitch, 7); break; // домінанта
@@ -306,7 +298,7 @@ namespace Music
                     if (mode == MODE.moll) { step = addstepN(step, 4); pitch = addpitch(pitch, 7); mode = MODE.dur; } // мажорна домінанта
                     else { step = addstepN(step, 3); pitch = addpitch(pitch, 5); mode = MODE.moll; } // мінорна субдомінанта
                     break;
-            };
+            }
 
             alter = (ALTER)alter_from_pitch(step, pitch);
         }
@@ -358,7 +350,6 @@ namespace Music
 
         public Scale NotesInTonalityExtended()
         {
-            
             Scale scale = CommonScale();
 
             var noteI = new Note(step, alter);
@@ -367,13 +358,11 @@ namespace Music
             var noteII_ = noteI.TransposeToNote(INTERVALS.SECUNDA, QUALITY.MIN);
             scale.AddNote(noteII_);
 
-
             //IV#
             var noteIV_ = noteI.TransposeToNote(INTERVALS.QUARTA, QUALITY.AUG);
             scale.AddNote(noteIV_);
 
             if (mode == MODE.moll) {
-                
                 //VI#
                 var noteVI_ = noteI.TransposeToNote(INTERVALS.SEKSTA, QUALITY.MAJ);
                 scale.AddNote(noteVI_);
@@ -386,11 +375,9 @@ namespace Music
             return scale;
         }
 
-
         public static string GetDegree(Note note, Tonalities tonality)
         {
             while (note.AbsPitch() < tonality.Pitch()) note.OctUp();
-            
 
             Interval interval = new Interval(tonality.GetNote(), note);
             
@@ -405,14 +392,14 @@ namespace Music
                         if (degree == "II") degree += flatsymbol; 
                         else if (degree == "VI" && tonality.mode == MODE.dur)  degree += flatsymbol; 
                         else if (degree == "VII" && tonality.mode == MODE.dur) degree += flatsymbol;
-                    }; break;
+                    } break;
                 case QUALITY.MAJ:
                     {
                         if (degree == "VI" && tonality.mode == MODE.moll) degree += sharpsymbol;
                         else if (degree == "VII" && tonality.mode == MODE.moll) degree += sharpsymbol;
-                    }; break;
+                    } break;
                 default: return degree;
-            }; 
+            } 
             return degree;
         }
 
@@ -490,19 +477,16 @@ namespace Music
 
         public static Tonalities? GetTonalitiesFromMidi(MidiFile midifile)
         {
-
             Tonalities? tonalities = null;
             
             foreach (var midievent in midifile.Events)
             {
-                
                     if (midievent is KeySignatureEvent kse)
                     {
                         int sharpflat = (int)kse.SharpsFlats;
                         MODE mode = (MODE)kse.MajorMinor;                        
                         tonalities.GetTonalityFromKeySignature(sharpflat, mode);                        
                     }
-                
             }
             return tonalities;
         }
@@ -511,7 +495,6 @@ namespace Music
         {
             return Keysignatures();
         }
-
 
         public object Clone()
         {
@@ -546,6 +529,5 @@ namespace Music
         {
             return !(left == right);
         }
-
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Melodies25.Utilities
+namespace Melodies25.Utilities
 {
     public class Sound
     {
@@ -7,7 +7,5 @@
         public int Duration { get; set; } // ms
 
         public int Amplitude { get; set; } // %
-        
-
     }
 }

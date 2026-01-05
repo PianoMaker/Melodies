@@ -11,7 +11,7 @@ using System.Security.Cryptography;
 
 namespace Melodies25.Pages.Account
 {
-    [Authorize(Roles = "Admin")]  // Доступ лише для адміністратора
+    [Authorize(Roles = "Admin")]  // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     public class UsersModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -27,33 +27,30 @@ namespace Melodies25.Pages.Account
         public IList<string> Roles { get; set; }
         public Dictionary<string, List<string>> UserRoles { get; set; }
 
-
-
-        // Метод OnGetAsync для завантаження користувачів та їх ролей
+        // пїЅпїЅпїЅпїЅпїЅ OnGetAsync пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         public async Task<IActionResult> OnGetAsync()
         {
-            
-                  // М1яке посилання
+                  // пїЅ1пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                   var user = await _userManager.GetUserAsync(User);
                   if (user == null || !await _userManager.IsInRoleAsync(user, "Admin"))
                   {
                       return RedirectToPage("/Shared/AccessDenied");
                   }
             
-            // Завантажуємо список користувачів та ролей
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
             Users = _userManager.Users.ToList();
             Roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
 
-            // Перевірка на наявність даних
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
             if (Users == null || Roles == null)
             {
-                ModelState.AddModelError(string.Empty, "Дані не можуть бути завантажені.");
+                ModelState.AddModelError(string.Empty, "пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
                 return Page();
             }
 
             UserRoles = new Dictionary<string, List<string>>();
 
-            // Завантажуємо ролі для кожного користувача
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             foreach (var currentuser in Users)
             {
                 var roles = await _userManager.GetRolesAsync(currentuser);
@@ -88,7 +85,7 @@ namespace Melodies25.Pages.Account
             return new string(chars.ToArray());
         }
 
-        // Скидання пароля
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         public async Task<IActionResult> OnPostResetPasswordAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))
@@ -102,11 +99,11 @@ namespace Melodies25.Pages.Account
                 return NotFound();
             }
 
-            // Неможливо скинути власний пароль тут (використовуйте сторінку ChangePassword)
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ ChangePassword)
             var current = await _userManager.GetUserAsync(User);
             if (current != null && current.Id == target.Id)
             {
-                TempData["ErrorMessage"] = "Власний пароль змінюйте через 'Змінити пароль'.";
+                TempData["ErrorMessage"] = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 'пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ'.";
                 return RedirectToPage();
             }
 
@@ -115,8 +112,8 @@ namespace Melodies25.Pages.Account
             var result = await _userManager.ResetPasswordAsync(target, token, tempPass);
             if (result.Succeeded)
             {
-                await _userManager.SetLockoutEndDateAsync(target, DateTimeOffset.UtcNow); // розблокування
-                TempData["SuccessMessage"] = $"Тимчасовий пароль для {target.Email}: {tempPass}"; // показуємо одноразово
+                await _userManager.SetLockoutEndDateAsync(target, DateTimeOffset.UtcNow); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                TempData["SuccessMessage"] = $"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ {target.Email}: {tempPass}"; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             }
             else
             {
@@ -126,7 +123,7 @@ namespace Melodies25.Pages.Account
             return RedirectToPage();
         }
 
-        // Додавання ролі адміністратора до користувача
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         public async Task<IActionResult> OnPostAssignAdminRoleAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))
@@ -143,15 +140,15 @@ namespace Melodies25.Pages.Account
             var result = await _userManager.AddToRoleAsync(user, "Admin");
             if (result.Succeeded)
             {
-                TempData["SuccessMessage"] = $"{user.Email} отримав роль адміністратора.";
+                TempData["SuccessMessage"] = $"{user.Email} пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.";
                 return RedirectToPage();
             }
 
-            ModelState.AddModelError(string.Empty, "Помилка при призначенні ролі.");
+            ModelState.AddModelError(string.Empty, "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ.");
             return RedirectToPage();
         }
 
-        // Видалення ролі адміністратора від користувача
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         public async Task<IActionResult> OnPostRemoveAdminRoleAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))
@@ -168,22 +165,22 @@ namespace Melodies25.Pages.Account
             var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
             if (adminUsers.Count == 1 && adminUsers.Contains(user))
             {
-                ModelState.AddModelError("", "Неможливо видалити останнього адміністратора.");
+                ModelState.AddModelError("", "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
                 return Page();
             }
 
             var result = await _userManager.RemoveFromRoleAsync(user, "Admin");
             if (result.Succeeded)
             {
-                TempData["SuccessMessage"] = $"{user.Email} втратив роль адміністратора.";
+                TempData["SuccessMessage"] = $"{user.Email} пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.";
                 return RedirectToPage();
             }
 
-            ModelState.AddModelError("", "Не вдалося видалити роль адміністратора.");
+            ModelState.AddModelError("", "пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
             return Page();
         }
 
-        // Підтвердження електронної пошти
+        // ПіпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         public async Task<IActionResult> OnPostConfirmEmailAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))
@@ -194,7 +191,7 @@ namespace Melodies25.Pages.Account
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound($"Користувача з ID {userId} не знайдено.");
+                return NotFound($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ ID {userId} пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
             }
 
             user.EmailConfirmed = true;
@@ -202,17 +199,17 @@ namespace Melodies25.Pages.Account
 
             if (result.Succeeded)
             {
-                TempData["SuccessMessage"] = "Електронну пошту підтверджено успішно.";
+                TempData["SuccessMessage"] = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.";
             }
             else
             {
-                TempData["ErrorMessage"] = "Сталася помилка під час підтвердження електронної пошти.";
+                TempData["ErrorMessage"] = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ.";
             }
 
             return RedirectToPage();
         }
 
-        // Призначення ролі модератора користувачу
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         public async Task<IActionResult> OnPostAssignModeratorAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))
@@ -229,17 +226,17 @@ namespace Melodies25.Pages.Account
             var result = await _userManager.AddToRoleAsync(user, "Moderator");
             if (result.Succeeded)
             {
-                TempData["SuccessMessage"] = $"{user.Email} отримав роль модератора.";
+                TempData["SuccessMessage"] = $"{user.Email} пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.";
             }
             else
             {
-                TempData["ErrorMessage"] = "Не вдалося призначити роль модератора.";
+                TempData["ErrorMessage"] = "пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.";
             }
 
             return RedirectToPage();
         }
 
-        // Видалення ролі модератора від користувача
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         public async Task<IActionResult> OnPostRemoveModeratorAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))
@@ -256,17 +253,17 @@ namespace Melodies25.Pages.Account
             var result = await _userManager.RemoveFromRoleAsync(user, "Moderator");
             if (result.Succeeded)
             {
-                TempData["SuccessMessage"] = $"{user.Email} втратив роль модератора.";
+                TempData["SuccessMessage"] = $"{user.Email} пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.";
             }
             else
             {
-                TempData["ErrorMessage"] = "Не вдалося видалити роль модератора.";
+                TempData["ErrorMessage"] = "пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.";
             }
 
             return RedirectToPage();
         }
 
-        // Обробник для видалення користувача
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         public async Task<IActionResult> OnPostDeleteUserAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))
@@ -280,42 +277,42 @@ namespace Melodies25.Pages.Account
                 return NotFound();
             }
 
-            // Забороняємо видаляти себе
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
             var current = await _userManager.GetUserAsync(User);
             if (current != null && current.Id == target.Id)
             {
-                TempData["ErrorMessage"] = "Ви не можете видалити свій власний обліковий запис.";
+                TempData["ErrorMessage"] = "пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ.";
                 return RedirectToPage();
             }
 
-            // Не дозволяємо видалити останнього адміністратора
+            // пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if (await _userManager.IsInRoleAsync(target, "Admin"))
             {
                 var admins = await _userManager.GetUsersInRoleAsync("Admin");
                 if (admins.Count <= 1)
                 {
-                    TempData["ErrorMessage"] = "Неможливо видалити останнього адміністратора.";
+                    TempData["ErrorMessage"] = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.";
                     return RedirectToPage();
                 }
             }
 
             try
             {
-                // Видаляємо зовнішні логіни
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
                 var logins = await _userManager.GetLoginsAsync(target);
                 foreach (var l in logins)
                 {
                     await _userManager.RemoveLoginAsync(target, l.LoginProvider, l.ProviderKey);
                 }
 
-                // Видаляємо claims
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ claims
                 var claims = await _userManager.GetClaimsAsync(target);
                 foreach (var c in claims)
                 {
                     await _userManager.RemoveClaimAsync(target, c);
                 }
 
-                // Видаляємо ролі
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
                 var roles = await _userManager.GetRolesAsync(target);
                 if (roles.Count > 0)
                 {
@@ -325,7 +322,7 @@ namespace Melodies25.Pages.Account
                 var result = await _userManager.DeleteAsync(target);
                 if (result.Succeeded)
                 {
-                    TempData["SuccessMessage"] = $"Користувача {target.Email} успішно видалено.";
+                    TempData["SuccessMessage"] = $"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ {target.Email} пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.";
                     return RedirectToPage();
                 }
                 else
@@ -336,7 +333,7 @@ namespace Melodies25.Pages.Account
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Помилка при видаленні користувача: " + ex.Message;
+                TempData["ErrorMessage"] = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: " + ex.Message;
                 return RedirectToPage();
             }
         }
@@ -358,7 +355,7 @@ namespace Melodies25.Pages.Account
             // Clear lockout
             await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow);
             await _userManager.ResetAccessFailedCountAsync(user);
-            TempData["SuccessMessage"] = $"Розблоковано {user.Email}.";
+            TempData["SuccessMessage"] = $"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ {user.Email}.";
             return RedirectToPage();
         }
     }

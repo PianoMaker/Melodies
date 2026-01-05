@@ -1,4 +1,4 @@
-﻿using Melodies25.Data;
+using Melodies25.Data;
 using Melodies25.Models;
 using Melodies25.Services; // Додано для використання сервісів очистки
 using Microsoft.AspNetCore.Identity;
@@ -40,7 +40,6 @@ namespace Melodies25
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
                 .AddDataAnnotationsLocalization();
 
-           
             // Створюємо логер для відлагодження
             var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
 

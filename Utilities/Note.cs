@@ -1,4 +1,4 @@
-﻿using Melodies25.Utilities;
+using Melodies25.Utilities;
 using NAudio.Midi;
 using System.Diagnostics.Metrics;
 using static Music.Engine;
@@ -9,10 +9,8 @@ using static System.Convert;
 
 namespace Music
 {
-
     public class Note : ICloneable, IComparable
     {
-
         private int pitch; // висота у півтонах від "до" = 0
         private int step;// висота у ступенях від "до" = 0
         private int oct; // октава (1 - перша октава)
@@ -39,7 +37,6 @@ namespace Music
 
         public int Alter { get { return pitch_to_alter(step, pitch); } }
 
-        
         public int MidiNote { get { return AbsPitch() + GMCorrection; } }
         // 1-а октава відповідає 4-й MIDI-октаві, нумерація MIDI-октав з нуля
 
@@ -53,7 +50,6 @@ namespace Music
         {
             get { return duration.Symbol(rest); }
         }
-
 
         public (string, string) DurName
         {
@@ -73,8 +69,6 @@ namespace Music
             }
         }
 
-
-
         public Note(Note note)
         {
             pitch = note.pitch;
@@ -87,12 +81,10 @@ namespace Music
         public Note(int pitch, int step)
         {
             this.pitch = pitch; this.step = step; oct = 1; duration = new Duration(); rest = false;
-
         }
         public Note(int pitch, int step, int oct)
         {
             this.pitch = pitch; this.step = step; this.oct = oct; duration = new Duration(); rest = false;
-
         }
         public Note(int pitch, int step, int oct, int duration)
         {
@@ -138,7 +130,7 @@ namespace Music
         {
             pitch = noteEvent.NoteNumber % NotesInOctave;
             step = pitch_to_step_alter(pitch).Item1;
-            oct = noteEvent.NoteNumber / NotesInOctave - GMOctaveCorrection;
+            oct = (noteEvent.NoteNumber / NotesInOctave) - GMOctaveCorrection;
             rest = false;
         }
 
@@ -174,7 +166,6 @@ namespace Music
             return new Note(step, alter);
         }
 
-
         public static Note GenerateRandomDistinctNote(Note note)
         {
             var rnd = new Random();
@@ -188,7 +179,6 @@ namespace Music
             }
         }
 
-        
         public static Note GenerateRandomNote(int oct)
         {
             var rnd = new Random();
@@ -200,7 +190,6 @@ namespace Music
                 oct = rnd.Next(oct)
             };
         }
-
 
         public static Note GenerateRandomDistinctNote(MusicMelody melody)
         {
@@ -220,7 +209,6 @@ namespace Music
                         break;
                     }
                 if (distinct) return newnote;
-                
             }
             throw new Exception("no distinct note found");
         }
@@ -231,7 +219,6 @@ namespace Music
             int dur = (int)Math.Pow(2, rnd.Next(5));
             duration = new(dur);
         }
-
 
         public override bool Equals(object? obj)
         {
@@ -262,23 +249,20 @@ namespace Music
             unchecked
             {
                 int hash = 17;
-                hash = hash * 23 + Pitch.GetHashCode();
-                hash = hash * 23 + Step.GetHashCode();
-                hash = hash * 23 + Oct.GetHashCode();
+                hash = (hash * 23) + Pitch.GetHashCode();
+                hash = (hash * 23) + Step.GetHashCode();
+                hash = (hash * 23) + Oct.GetHashCode();
                 return hash;
             }
         }
 
-
         public Note(string input)        {            
-
             if (input is null) throw new IncorrectNote("Impossible to initialize note");
             input = CutSlash(input); // при пошуку типу cis/des
             stringdivider(input, out string key, out int octave, out int duration, out string? durmodifier);
             if (key == "r") MakeRest();
             else
             {
-
                 pitch = key_to_pitch(key, true);
                 step = key_to_step(key);
                 oct = octave;
@@ -293,7 +277,6 @@ namespace Music
                 ErrorMessage("Possible incorrect duration");
             }
         }
-        
 
         private void MakeRest()
         {
@@ -309,11 +292,10 @@ namespace Music
         public int AbsPitch()
         {
             if (rest == true) return -1; 
-            if (pitch - step > 10) return pitch + (oct - 2) * NotesInOctave; // для до-бемоля і іншої дубль-бемольної екзотики
-            if (step - pitch > 5) return pitch + oct * NotesInOctave;
-            else return pitch + (oct - 1) * NotesInOctave;
+            if (pitch - step > 10) return pitch + ((oct - 2) * NotesInOctave); // для до-бемоля і іншої дубль-бемольної екзотики
+            if (step - pitch > 5) return pitch + (oct * NotesInOctave);
+            else return pitch + ((oct - 1) * NotesInOctave);
         }
-
 
         public bool CheckIfFlatable()
         {
@@ -336,18 +318,18 @@ namespace Music
         public void EnharmonizeSharp()
         {
             step = addstep(step, ref oct, -1);
-
         }
 
         public void EnharmonizeFlat()
         { step = addstep(step, ref oct, 1); }
 
-
         public void EnharmonizeSmart()
         {
             if (Sharpness > 6) step = addstep(step, ref oct, 1);
             else if (Sharpness < -6) step = addstep(step, ref oct, -1);
-            else;
+            else
+            {
+            }
         }
 
         public void EnharmonizeDoubles()
@@ -376,7 +358,6 @@ namespace Music
             return AbsPitch() >= BaseL.AbsPitch() && AbsPitch() <= BaseH.AbsPitch();
         }
 
-
         public string GetName() {
             if (!rest)
                 return pitch_to_notename(step, pitch).Replace("b", "♭");
@@ -397,8 +378,6 @@ namespace Music
                 return 0;
             else return -1;
         }
-
-        
 
         // Транспозиція //
         public void Transpose(INTERVALS interval, QUALITY quality, int octave = 0)
@@ -443,7 +422,6 @@ namespace Music
         public void Transpose(Interval i)
         { Transpose(i.Interval_, i.Quality, i.Octaves); }
 
-
         public int DisplayWidth(int minWidth, int displayRange)
         {            
             return minWidth + (int)(duration.RelDuration() * displayRange); 
@@ -451,7 +429,6 @@ namespace Music
 
         public void Transpose(Interval i, DIR dir)
         { Transpose(i.Interval_, i.Quality, dir, i.Octaves); }
-
 
         /// <summary>
         /// /DISPLAYING
@@ -478,7 +455,6 @@ namespace Music
             else if (player == PLAYER.midiplayer)
                 MidiFile0.Play(this);
         }*/
-
         public int SortByPitch(Note a, Note b)
         {
             return a.CompareTo(b);
@@ -487,7 +463,6 @@ namespace Music
         public override string ToString()
         {
             return pitch_to_notename(step, pitch) + " (" + Oct + ") "; 
-
         }
         public object Clone()
         {
@@ -524,7 +499,6 @@ namespace Music
             }
         }
 
-
         internal void SetDuration(int dur)
         {
             try
@@ -537,21 +511,18 @@ namespace Music
                 if (LoggingManager.ReadMidi)
                     ErrorMessage("Failed to set duration: " + e.Message);
             }
-
         }
 
         public static bool operator ==(Note a, Note b)
         {
            // if (b is null || a is null) return false;
             return a.Step == b.Step && a.Pitch == b.Pitch && a.Oct == b.Oct;
-
         }
 
         public static bool operator !=(Note a, Note b)
         {
             //if (b is null || a is null) return true; 
             return a.Step != b.Step || a.Pitch != b.Pitch || a.Oct != b.Oct;
-
         }
 
         public static bool operator > (Note a, Note b)
@@ -559,7 +530,6 @@ namespace Music
             if (a.CompareTo(b) == 1)
                 return true;
             else return false;
-
         }
 
         public static bool operator < (Note a, Note b)
@@ -567,20 +537,12 @@ namespace Music
             if (a.CompareTo(b) == -1)
                 return true;
             else return false;
-
         }
 
         //public string GetJSON()
         //{
         //    return JsonConvert.SerializeObject(this);
         //}
-
-
-
-
-
-    };
-
-
+    }
 }
 

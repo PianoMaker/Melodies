@@ -1,4 +1,4 @@
-﻿using Music;
+using Music;
 using NAudio.Lame;
 using NAudio.Wave;
 using static Music.Engine;
@@ -8,8 +8,6 @@ namespace Melodies25.Utilities
 {
     public static class WaveConverter
     {
-
-
         public static void GenerateWave(List<(double frequency, int durationMs)> sequence, string wavePath)
         {
             int sampleRate = 44100;
@@ -29,7 +27,6 @@ namespace Melodies25.Utilities
             var waveProvider = new SynthWaveProvider(sequence, sampleRate);            
             await CreateWaveAsync(sampleRate, waveProvider, wavePath);            
         }
-
 
         // створює mp3 файл зі шляхом outputPath (шлях давати з розширенням .mp3)
         public static void GenerateMp3(List<(double frequency, int durationMs)> sequence, string mp3Path)
@@ -63,7 +60,6 @@ namespace Melodies25.Utilities
                 reader.CopyTo(mp3Writer);
                 if (LoggingManager.CreateAudio)
                                     Console.WriteLine("MP3 conversion completed.");
-                
             }
 
             File.Delete(wavPath);
@@ -98,7 +94,6 @@ namespace Melodies25.Utilities
                             Console.WriteLine("Reached maximum file size. Stopping.");
                         break;
                     }
-
                 }
             }
 
@@ -111,7 +106,6 @@ namespace Melodies25.Utilities
             int sampleRate = 44100;
             if (LoggingManager.CreateAudio)            
                 MessageL(COLORS.olive, "Starting GenerateMp3Async method...");
-            
 
             var waveProvider = new SynthWaveProvider(sequence, sampleRate);
             string wavPath = "output.wav";
@@ -183,16 +177,12 @@ namespace Melodies25.Utilities
             GenerateMp3(sequence, outputPath);
         }
 
-
-
         public static void GenerateMp3(MusicMelody melody, string outputPath)
         {
-
             List<(double frequency, int durationMs)> sequence = new();
 
             foreach (var note in melody.Notes)
             {
-
                 sequence.Add(new(Pitch_to_hz(note.AbsPitch()), note.AbsDuration()));
             }
             sequence.Add(new(0, 200));
@@ -211,12 +201,10 @@ namespace Melodies25.Utilities
 
         public async static Task GenerateMp3Async(MusicMelody melody, string outputPath)
         {
-
             List<(double frequency, int durationMs)> sequence = new();
 
             foreach (var note in melody.Notes)
             {
-
                 sequence.Add(new(Pitch_to_hz(note.AbsPitch()), note.AbsDuration()));
             }
             sequence.Add(new(0, 200));

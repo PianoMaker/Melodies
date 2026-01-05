@@ -24,5 +24,4 @@ namespace Melodies25.Pages
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
         }
     }
-
 }
