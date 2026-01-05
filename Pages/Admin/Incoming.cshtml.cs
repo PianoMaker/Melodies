@@ -10,15 +10,13 @@ using static Music.Messages;
 
 namespace Melodies25.Pages.Experimental
 {
-    [Authorize(Roles = "Admin, Moderator")] // Доступ лише для адміністратора або модератора
+    [Authorize(Roles = "Admin, Moderator")] // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     public class IncomingModel : PageModel
     {
-
         public List<(Melody, string, int, string)> IncomingMelodies = new List<(Melody, string, int, string)>();
         private readonly IWebHostEnvironment _environment;
         private const string IncomingWebFolder = "/melodies/incoming";
         private readonly Melodies25.Data.Melodies25Context _context;
-
 
         public IncomingModel(IWebHostEnvironment environment, Melodies25.Data.Melodies25Context context)
         {
@@ -129,7 +127,7 @@ namespace Melodies25.Pages.Experimental
             Console.WriteLine($"onpost pressed id = {id}");
         }
 
-        // Збереження мелодії до бази даних
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅдії пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         public async Task<IActionResult> OnPostSaveAsync(int id)
         {
             IncomingMelodies = GetIncomingMelodies();
@@ -143,7 +141,7 @@ namespace Melodies25.Pages.Experimental
                 if (incomingMelody is null)
                 {
                     Console.WriteLine("Incoming melody not found");
-                    TempData["Message"] = "Файл не знайдено";
+                    TempData["Message"] = "пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
                     return Page();
                 }
 
@@ -151,7 +149,7 @@ namespace Melodies25.Pages.Experimental
                 if (exists)
                 {
                     Console.WriteLine("MusicMelody already exists in DB");
-                    TempData["Message"] = "Мелодія вже є в базі";
+                    TempData["Message"] = "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅ пїЅпїЅпїЅ";
                     DeleteFileFromWebDirectory(id);
                     return RedirectToPage();
                 }
@@ -194,14 +192,14 @@ namespace Melodies25.Pages.Experimental
                 await _context.SaveChangesAsync();
 
                 Console.WriteLine($"Saving melody: {entity.Title}");
-                TempData["Message"] = $"Мелодія '{entity.Title}' збережена";
+                TempData["Message"] = $"пїЅпїЅпїЅпїЅпїЅпїЅ '{entity.Title}' пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
                 DeleteFileFromWebDirectory(id);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to save melody: {ex.Message}");
-                TempData["Message"] = $"Помилка збереження: {ex.Message}";
+                TempData["Message"] = $"пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {ex.Message}";
                 return Page();
             }
 
@@ -272,7 +270,7 @@ namespace Melodies25.Pages.Experimental
             }
         }
 
-        // Видалення вхідної мелодії
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅдії
         public async Task OnPostDelete(int id)
         {
             // Placeholder for future POST handling
@@ -280,14 +278,12 @@ namespace Melodies25.Pages.Experimental
             IncomingMelodies.RemoveAll(item => item.Item1.ID == id);
             DeleteFileFromWebDirectory(id);
 
-
             IncomingMelodies = GetIncomingMelodies();
             Page();
         }
 
         public async Task<IActionResult> OnPostPreviewAsync(int id)
         {
-
             // Placeholder for future POST handling
             Console.WriteLine($"Preview requested for incoming melody ID: {id}");
             IncomingMelodies = GetIncomingMelodies();
@@ -296,13 +292,12 @@ namespace Melodies25.Pages.Experimental
             if (incomingMelody is null)
             {
                 Console.WriteLine("Incoming melody not found for preview");
-                TempData["Message"] = "Мелодію не знайдено для попереднього перегляду";
+                TempData["Message"] = "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
                 return Page();
             }
             // Redirect to a preview page with the melody details
             return RedirectToPage("/Melodies/Preview", new { path = incomingMelody.FilePath, name = incomingMelody.Title });
         }
-
 
         private void DeleteFileFromWebDirectory(int id)
         {
@@ -312,7 +307,6 @@ namespace Melodies25.Pages.Experimental
             var file = allfiles[id];
 
             Console.WriteLine($"Deleting file {file}");
-
 
             try
             {
@@ -324,10 +318,7 @@ namespace Melodies25.Pages.Experimental
                 Console.WriteLine($"Failed to delete file '{file}': {ex.Message}");
             }
 
-
             Console.WriteLine($"Deletion process completed for incoming melody ID: {id}, {counter} files deleted");
         }
-
-
     }
 }

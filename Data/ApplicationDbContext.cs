@@ -1,4 +1,4 @@
-﻿using Melodies25.Models;
+using Melodies25.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,9 +10,6 @@ namespace Melodies25.Data
             : base(options)
         {
         }
-
-
     }
-    
 }
     

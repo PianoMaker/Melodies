@@ -1,19 +1,15 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using static Music.Globals;
 using static Music.Messages;
 using static System.Console;
 
 namespace Music
 {
-
     public class Engine
     {
-
         public static double abs_duration(DURATION duration)
         {
             return playspeed / (int)duration;
-
-
         }
 
         public static int addpitch(int pitch1, int pitch2)
@@ -23,7 +19,6 @@ namespace Music
             while (pitch < 0) pitch += NotesInOctave;
             while (pitch >= NotesInOctave) pitch -= NotesInOctave;
             return pitch;
-
         }
 
         public static int addpitch(int pitch1, ref int oct, int pitch2)
@@ -33,7 +28,6 @@ namespace Music
             while (pitch < 0) { pitch += NotesInOctave; oct--; }
             while (pitch >= NotesInOctave) { pitch -= NotesInOctave; oct++; }
             return pitch;
-
         }
         public static int addstep(int step1, int step2)
         {// обчислює ступінь після додаання заданого інтервалу (в ступенях)
@@ -65,7 +59,6 @@ namespace Music
             while (step < 0) step += 7;
             while (step > 6) step -= 7;
             step1 = (NOTES)step;
-
         }
 
         public static int addstep(int step1, ref int oct, int step2)
@@ -114,7 +107,6 @@ namespace Music
 
         public static int alter_from_pitch(int step, int pitch)
         {// для обчислення знаків альтерації
-
             while (step >= StepsInOctave)
                 step -= StepsInOctave;
             while (step < 0)
@@ -122,14 +114,12 @@ namespace Music
             while (pitch >= NotesInOctave)
                 pitch -= NotesInOctave;
 
-
             int standartpitch = standartpitch_from_step(step);
             return alter_from_standartpitch(pitch, standartpitch);
         }
 
         public static int alter_from_pitch(NOTES step, int pitch)
         { return alter_from_pitch((int)step, pitch); }
-
 
         public static int CountOccurrences(string input, string character)
         {
@@ -146,13 +136,11 @@ namespace Music
         public static double Diffpitch(double pitch, int octavecorrector)
         {
             // вихідний тон: А4 
-            return pitch - standartpitch_from_step(NOTES.LA) + NotesInOctave * octavecorrector;
-            
+            return pitch - standartpitch_from_step(NOTES.LA) + (NotesInOctave * octavecorrector);
         }
 
         public static string Interval_name(int step0, int step1)
         {
-
             int steps = stepdiff(step0, step1);
             INTERVALS interval = (INTERVALS)steps;
             switch (interval)
@@ -188,8 +176,6 @@ namespace Music
 
         public static QUALITY int_quality(int steps, int halftones)
         {//визначає якість інтервалу
-
-
             int temp_steps = steps, temp_halftones = halftones;
             while (steps > 6) temp_steps -= 7;
             while (halftones > NotesInOctave) temp_halftones -= NotesInOctave;
@@ -200,7 +186,6 @@ namespace Music
                 (temp_steps == 3 && temp_halftones == 5) ||
                 (temp_steps == 4 && temp_halftones == 7) ||
                 (temp_steps == 7 && temp_halftones == 12)) return QUALITY.PERFECT; // "чистий"
-
             else if ((temp_steps == 0 && temp_halftones == 1) ||
                 (temp_steps == 3 && temp_halftones == 6) ||
                 (temp_steps == 4 && temp_halftones == 8) ||
@@ -210,57 +195,41 @@ namespace Music
                 (temp_steps == 3 && temp_halftones == 7) ||
                 (temp_steps == 4 && temp_halftones == 9) ||
                 (temp_steps == 7 && temp_halftones == 2)) return QUALITY.AUG2;//двічі збільшений
-
             else if ((temp_steps == 0 && temp_halftones == -1) ||
                 (temp_steps == 0 && temp_halftones == 11) ||
                 (temp_steps == 3 && temp_halftones == 4) ||
                 (temp_steps == 4 && temp_halftones == 6) ||
                 (temp_steps == 7 && temp_halftones == 11)) return QUALITY.DIM;//зменшений
-
             else if ((temp_steps == 0 && temp_halftones == -2) ||
                 (temp_steps == 0 && temp_halftones == 10) ||
                 (temp_steps == 3 && temp_halftones == 3) ||
                 (temp_steps == 4 && temp_halftones == 5) ||
                 (temp_steps == 7 && temp_halftones == 10)) return QUALITY.DIM2;//двічі зменшений
 
-
             // умови для альтерованих недосконалих консонансів (2 - терція, 5 - секста)
-
             else if ((temp_steps == 2 && temp_halftones == 3) ||
                 (temp_steps == 5 && temp_halftones == 8)) return QUALITY.MIN; // малий
-
             else if ((temp_steps == 2 && temp_halftones == 2) ||
                 (temp_steps == 5 && temp_halftones == 7)) return QUALITY.DIM; // зменшенй
-
             else if ((temp_steps == 2 && temp_halftones == 4) ||
                 (temp_steps == 5 && temp_halftones == 9)) return QUALITY.MAJ; // великий
-
             else if ((temp_steps == 2 && temp_halftones == 5) ||
                 (temp_steps == 5 && temp_halftones == 10)) return QUALITY.AUG; // збільшений
 
-
             // умови для альтерованих дисонансів (1 - секунда, 6 - септима)
-
             else if ((temp_steps == 1 && temp_halftones == 1) ||
                 (temp_steps == 6 && temp_halftones == 10)) return QUALITY.MIN;// малий
-
             else if ((temp_steps == 1 && temp_halftones == 0) ||
                 (temp_steps == 6 && temp_halftones == 9)) return QUALITY.DIM;// зменшений
-
             else if ((temp_steps == 1 && temp_halftones == 2) ||
                 (temp_steps == 6 && temp_halftones == 11)) return QUALITY.MAJ;//великий
-
             else if ((temp_steps == 1 && temp_halftones == 3) ||
                 (temp_steps == 6 && temp_halftones == 12)) return QUALITY.AUG;//збільшений
-
             else if ((temp_steps == 1 && temp_halftones == 3) ||
                    (temp_steps == 6 && temp_halftones == 0)) return QUALITY.AUG;//збільшена 
 
             // для тих хто вирішив повимахуватись і думає, що програма це схаває
-
             else throw new IncorrectNote("incorrect interval, int_quality func." + " steps = " + steps + " halftones = " + halftones);
-
-
         }// визначає якість інтервалу
 
         public static int int_to_pitch(INTERVALS interval, QUALITY intervalquality)
@@ -343,9 +312,7 @@ namespace Music
                                 default: throw new IncorrectNote("Incorrect interval (int_to_pitch func.) intquality = " + intervalquality);
                             }
                         }
-
                 }
-
             }
         }//повертає величину інтервалу в півтонах
         public static string key_to_notename(string key)
@@ -364,38 +331,34 @@ namespace Music
             else if (note_as_written == "a") notename = nla();
             else if ((note_as_written == "b" && notation == Notation.eu && n_acc == "is") || (note_as_written == "b" && notation == Notation.eu && n_acc == "isis"))
                 return note_error();
-
             else if (note_as_written == "h" && notation == Notation.eu && n_acc == "es")
                 return note_error();
-
             else if (note_as_written == "b" && notation == Notation.eu && n_acc == "es") notename = nsi();
             else if (note_as_written == "b" && notation == Notation.eu) notename = nsi() + " b";
             else if (note_as_written == "b" && notation == Notation.us) notename = nsi();
             else if (note_as_written == "h")
             {
                 if (notation == Notation.eu) notename = nsi();
-
                 else
                     return note_error();
             }
             else
                 return note_error();
 
-
             if (n_acc == "") noteaccname = "";
-            else if (n_acc == "isisis" && notation == Notation.eu || n_acc == "###" || n_acc == "x#")
+            else if ((n_acc == "isisis" && notation == Notation.eu) || n_acc == "###" || n_acc == "x#")
                 noteaccname = " х#";
-            else if (n_acc == "isis" && notation == Notation.eu || n_acc == "##" && notation == Notation.us || n_acc == "x" && notation == Notation.us)
+            else if ((n_acc == "isis" && notation == Notation.eu) || (n_acc == "##" && notation == Notation.us) || (n_acc == "x" && notation == Notation.us))
                 noteaccname = " х";
-            else if (n_acc == "eseses" && notation == Notation.eu || n_acc == "seses" && notation == Notation.eu || n_acc == "bbb")
+            else if ((n_acc == "eseses" && notation == Notation.eu) || (n_acc == "seses" && notation == Notation.eu) || n_acc == "bbb")
                 noteaccname = " ььь";
-            else if (n_acc == "eses" && notation == Notation.eu || n_acc == "ses" && notation == Notation.eu || n_acc == "bb")
+            else if ((n_acc == "eses" && notation == Notation.eu) || (n_acc == "ses" && notation == Notation.eu) || n_acc == "bb")
                 noteaccname = " ьь";
-            else if (n_acc == "is" && notation == Notation.eu || n_acc == "#" && notation == Notation.us)
+            else if ((n_acc == "is" && notation == Notation.eu) || (n_acc == "#" && notation == Notation.us))
                 noteaccname = " #";
             else if (n_acc == "es" && note_as_written == "b" && notation == Notation.us)
                 noteaccname = " ьь";
-            else if (n_acc == "es" && notation == Notation.eu || n_acc == "s" && notation == Notation.eu || n_acc == "b" && notation == Notation.us)
+            else if ((n_acc == "es" && notation == Notation.eu) || (n_acc == "s" && notation == Notation.eu) || (n_acc == "b" && notation == Notation.us))
                 noteaccname = " ь";
             else
                 return note_error();
@@ -405,7 +368,6 @@ namespace Music
 
         public static int key_to_pitch(string key, bool ifext = false)
         {//перетворює латинське позначення у звуковисотність
-
             string note_as_written = key.Substring(0, 1);
             string n_acc = "";
             if (key.Length > 1)
@@ -434,17 +396,17 @@ namespace Music
                 throw new IncorrectNote(note_as_written);
             if (n_acc == "")
                 alteration = 0;
-            else if (n_acc == "isis" && notation == Notation.eu || n_acc == "##" && notation == Notation.us || n_acc == "x" && notation == Notation.us)
+            else if ((n_acc == "isis" && notation == Notation.eu) || (n_acc == "##" && notation == Notation.us) || (n_acc == "x" && notation == Notation.us))
             { alteration = 2; }
-            else if (n_acc == "isisis" && notation == Notation.eu || n_acc == "###" && notation == Notation.us || n_acc == "x#" && notation == Notation.us)
+            else if ((n_acc == "isisis" && notation == Notation.eu) || (n_acc == "###" && notation == Notation.us) || (n_acc == "x#" && notation == Notation.us))
             { alteration = 3; }
-            else if (n_acc == "eses" && notation == Notation.eu || n_acc == "ses" && notation == Notation.eu || n_acc == "bb")
+            else if ((n_acc == "eses" && notation == Notation.eu) || (n_acc == "ses" && notation == Notation.eu) || n_acc == "bb")
             { alteration = -2; }
-            else if (n_acc == "is" && notation == Notation.eu || n_acc == "#" && notation == Notation.us)
+            else if ((n_acc == "is" && notation == Notation.eu) || (n_acc == "#" && notation == Notation.us))
             { alteration = 1; }
             else if (n_acc == "es" && note_as_written == "b" && notation == Notation.eu)
             { alteration = -1; }
-            else if (n_acc == "es" && notation == Notation.eu || n_acc == "s" && notation == Notation.eu || n_acc == "b" && notation == Notation.us)
+            else if ((n_acc == "es" && notation == Notation.eu) || (n_acc == "s" && notation == Notation.eu) || (n_acc == "b" && notation == Notation.us))
             { alteration = -1; }
             else if (n_acc == "s" && note_as_written == "a" && notation == Notation.eu)
             { alteration = -1; }
@@ -457,7 +419,6 @@ namespace Music
             else throw new IncorrectNote("\nUnrecognised postfix : " + n_acc + "\n");
 
             return pitch + alteration;
-
         } // звуковисотності
 
         public static int key_to_step(string key) // повертає ступінь за введеною клавішею
@@ -488,7 +449,6 @@ namespace Music
             }
         }
 
-
         public static int keysign(NOTES step, ALTER alter, MODE mode)
         {
             int keysign;
@@ -509,10 +469,6 @@ namespace Music
             return keysign;
         }
 
-
-
-
-
         public static string noteaccname_from_alter(int alter)
         {
             switch (alter)
@@ -528,9 +484,7 @@ namespace Music
                 case -4: return " bbbb";
                 default: return "Помилка при введенні ноти\n";
             }
-
         }
-
 
         public static string note_to_key(int step, int pitch)
         {//Визначає латинську назву за ступенем і висотою
@@ -566,7 +520,6 @@ namespace Music
                 else if (key == "eeses") key = "eses";
                 else if (key == "aes") key = "as";
                 else if (key == "aeses") key = "ases";
-
             }
 
             if (notation == Notation.us)
@@ -622,7 +575,6 @@ namespace Music
                 octave = 0; key = input;
             }
         }
-
 
         public static int pitch_to_alter(int step, int pitch)
         {
@@ -701,7 +653,6 @@ namespace Music
             }
         }
 
-
         public static int standartpitch_from_step(int step)
         {            
             try
@@ -728,7 +679,6 @@ namespace Music
         public static int standartpitch_from_step(NOTES step)
         { return standartpitch_from_step((int)step); }
 
-
         public static float sharpness_counter(int enterstep, int alter) // вводиться step, alter 
         {// положення на квінтовому колі
             int sharpness;
@@ -746,7 +696,6 @@ namespace Music
             if (alter != 0) sharpness += alter * StepsInOctave;
 
             return sharpness;
-
         }
 
         public static string step_to_key(int step, Notation? notation)
@@ -855,7 +804,6 @@ namespace Music
             Match match = Regex.Match(input, @"([a-zA-Z]+)([',]+)?(\d+)?([.]+)?");
             try
             {
-
                 if (match.Success)
                 {
                     // нота
@@ -879,7 +827,6 @@ namespace Music
                     // Якщо не знайдено відповідності, видаємо помилку
                     throw new IncorrectNote($"помилка розпізнання рядку {match} під час генерування ноти");
                 }
-
             }
             catch (IncorrectNote e)
             {
@@ -888,14 +835,12 @@ namespace Music
             }
         }
 
-
         public static int sum_pitchs(int[] pitch, int NoI)
         {
             int sum = 0;
             for (int i = 0; i < NoI; i++)
                 sum += pitchdiff(pitch[i], pitch[i + 1]);
             return sum;
-
         }
 
         public static int sum_steps(int[] step, int NoI)
@@ -904,15 +849,11 @@ namespace Music
             for (int i = 0; i < NoI; i++)
                 sum += stepdiff(step[i], step[i + 1]);
             return sum;
-
         }
 
         public int To_hz(int pitch, int oct = 0)
         {
             return (int)Pitch(Diffpitch(pitch, oct));
         }
-
-
     }
-
 }

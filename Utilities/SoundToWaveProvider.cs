@@ -1,4 +1,4 @@
-﻿using Music;
+using Music;
 using NAudio.Dsp;
 using NAudio.Wave;
 using static Music.Messages;
@@ -14,7 +14,6 @@ namespace Melodies25.Utilities
         private double _phaseIncrement;
         private int _sampleRate;
         private int _noteIndex = 0; // Відстежуємо поточну ноту
-
 
         private EnvelopeGenerator _adsr;
         private float attackSeconds;
@@ -99,8 +98,6 @@ namespace Melodies25.Utilities
             _adsr.Gate(true);
         }
 
-
-
         public override int Read(float[] buffer, int offset, int count)
         {
             int samplesPerMs = _sampleRate / 1000;
@@ -115,7 +112,6 @@ namespace Melodies25.Utilities
                 {
                     if (_samplesRemaining <= 0)
                     {
-
                         _adsr.Gate(false);  // Запуск фази релізу
                         Console.WriteLine($"Release phase started for note {_noteIndex}");
                         _samplesRemaining = sound.Duration * samplesPerMs; // Задаємо тривалість релізу
@@ -163,9 +159,7 @@ namespace Melodies25.Utilities
             return (float)Math.Sin(_phase); // Синусоїда. 
                                             //Згодом слід додати інші!                                            
         }
-
     }
-
 }
 
  

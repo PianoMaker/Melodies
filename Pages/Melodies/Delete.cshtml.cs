@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -96,9 +96,6 @@ namespace Melodies25.Pages.Melodies
 
                 _context.Melody.Remove(Melody);
                 await _context.SaveChangesAsync();
-
-                
-
             }
 
             return RedirectToPage("./Index");

@@ -5,7 +5,6 @@ namespace Melodies25.Pages.Melodies
 {
     public class PreviewModel : PageModel
     {
-        
         public string? FilePath { get; set; }
 
         public string? FileName { get; set; }
@@ -15,8 +14,6 @@ namespace Melodies25.Pages.Melodies
             FilePath = path;
             FileName = name;
             Console.WriteLine($"PreviewModel OnGet called with path: {FilePath}, name: {FileName}");          
-
-
         }
     }
 }

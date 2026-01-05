@@ -1,4 +1,4 @@
-﻿using Music;
+using Music;
 using static Music.Messages;
 using static Music.MidiConverter;
 using static Melodies25.Utilities.WaveConverter;
@@ -12,7 +12,6 @@ namespace Melodies25.Utilities
     {
         public static string ConvertToMp3Path(string midiPath)
         {
-
             string directory = Path.GetDirectoryName(midiPath)?.Replace("melodies", "mp3") ?? "";
             if (!Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
             {
@@ -22,13 +21,11 @@ namespace Melodies25.Utilities
             return Path.Combine(directory, filenameWithoutExt + ".mp3");
         }
 
-
         public static string GetTemporaryPath(string mp3Path)
         {
             string fileName = Path.GetFileNameWithoutExtension(mp3Path) + ".mp3";
             return "/temporary/" + fileName;
         }
-
 
         public static string PrepareTempName(IWebHostEnvironment _environment, string extension)
         {
@@ -103,7 +100,6 @@ namespace Melodies25.Utilities
                 }
                 if (LoggingManager.CreateAudio)
                                     MessageL(COLORS.cyan, "PrepareMp3Async finished (original preserved)");
-                
             }
             catch (Exception ex)
             {
@@ -135,7 +131,6 @@ namespace Melodies25.Utilities
             sw.Stop();
             if (LoggingManager.CreateAudio)
                             MessageL(COLORS.green, $"File {mp3Path} was generated in {sw.ElapsedMilliseconds} ms");
-           
         }
     }
 }

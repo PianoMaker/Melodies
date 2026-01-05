@@ -1,4 +1,4 @@
-﻿namespace Melodies25.Utilities
+namespace Melodies25.Utilities
 {
     using System.Net.Http;
     using System.Threading.Tasks;
@@ -24,5 +24,4 @@
             }
         }
     }
-
 }

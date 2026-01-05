@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,8 +21,6 @@ namespace Melodies25.Pages.Authors
 
         public Author Author { get; set; } = default!;
         public List<Melody> Melody { get; set; } = default!;
-
-        
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -55,7 +53,5 @@ namespace Melodies25.Pages.Authors
             }
             return Page();
         }
-
-
     }
 }

@@ -1,4 +1,4 @@
-﻿using Melodies25.Utilities;
+using Melodies25.Utilities;
 using NAudio.Midi;
 using NAudio.Wave;
 using System;
@@ -17,10 +17,8 @@ using System.Runtime.Serialization;
 
 namespace Music
 {
-
     public static class MidiConverter
     {
-
         public static MusicMelody GetMelodyFromMidi(string file)
         {
             MidiFile midiFile = new MidiFile(file);
@@ -62,7 +60,7 @@ namespace Music
                         {
                             starttime = ne.AbsoluteTime;
                             var pitch = ne.NoteNumber % 12;
-                            var oct = ne.NoteNumber / 12 - 4;
+                            var oct = (ne.NoteNumber / 12) - 4;
                             var step = key_to_step(ne.NoteName);
                             var note = new Note(pitch, step, oct);
                             melody.AddNote(note);
@@ -137,7 +135,6 @@ namespace Music
                     MessageL(COLORS.olive, "GetMelodyFromMidiAsync is running");
 
                 return GetMelodyFromMidi(midiFile);
-
             });
         }
 
@@ -150,10 +147,8 @@ namespace Music
 
         public static void SetTempo(double bpm)
         {
-
             playspeed = (int)Math.Round(48000 / bpm);
             //Console.WriteLine($"tempo = {bpm}bpm, playspeed = {playspeed} ms / quater";
-
         }
 
         // трансформує MIDI файл у список нот у форматі герци-мілісекунди
@@ -256,18 +251,15 @@ namespace Music
                     return false;
                 }
 
-
                 var midiFile = new MidiFile(midifilePath);
 
                 var ispoliphonic = MidiConverter.CheckForPolyphony(midiFile);
-
 
                 if (ispoliphonic)
                 {
                     MessageL(COLORS.red, "Виявлено поліфонію!");
                     return false;
                 }
-
                 else
                 {
                     MessageL(COLORS.blue, "Одноголосний!");
@@ -284,7 +276,6 @@ namespace Music
         public static MidiFile GetMidiFile(string path)
         {
             return new MidiFile(path);
-
         }
 
         public static void ReadMidiFile(string path)
@@ -303,7 +294,6 @@ namespace Music
                 currenttrack++;
                 foreach (var me in track)
                 {
-
                     if (me is TempoEvent te)
                     {
                         if (LoggingManager.ReadMidi)
@@ -355,7 +345,6 @@ namespace Music
                 StraightMidiFile(path, ref currentchanges);
                 if (attempt > 100) break;
             }
-        ;
             return allchanges;
         }
 
@@ -403,7 +392,6 @@ namespace Music
                 MessageL(COLORS.olive, $"\n{ifchanged} have been apllied");
 
             MidiFile.Export(path, straightEventCollection);
-
         }
         public static string StraightMidiFile(string path, ref int ifchanged)
         {
@@ -484,7 +472,6 @@ namespace Music
                         // Message(COLORS.gray, ".");
                         // newTrack.Add(me); // Копіюємо інші події
                     }
-
                 }
                 monoEventCollection.AddTrack(newTrack);
             }
@@ -556,7 +543,6 @@ namespace Music
                             //GrayMessageL($"\tduration = {note.AbsoluteTime - currentTime}");
 
                             newTrack.Add(note); // Копіюємо подію у новий трек
-
                         }
                     }
                     else
@@ -565,9 +551,7 @@ namespace Music
 
                         newTrack.Add(me); // Копіюємо інші події
                     }
-
                 }
-
 
                 newEventCollection.AddTrack(newTrack);
             }
@@ -584,7 +568,6 @@ namespace Music
             if (idx < 0 || idx >= majors.Length) return $"sf={sf}, mi={mi}";
             return mi == 0 ? $"{majors[idx]}-dur" : $"{minors[idx]}-moll";
         }
-
 
         // Replaced InsertKeySignatures methods for robust insertion/export of KeySignature meta-events.
         public static MidiEventCollection InsertKeySignatures(MidiFile midiFile, int sharps, MODE mode)
@@ -685,7 +668,6 @@ namespace Music
             }
         }
 
-
         public static bool CheckForPolyphony(MidiFile midiFile)
         {
             foreach (var track in midiFile.Events)
@@ -761,7 +743,6 @@ namespace Music
         }
         internal static void SaveMidi(MusicMelody melody, string fileName = "output.mid")
         {
-
             int channel;
             MidiEventCollection collection;
             Initialize(out channel, out collection);
@@ -771,13 +752,11 @@ namespace Music
                 collection.PrepareForExport();
                 MidiFile.Export(fileName, collection);
                 Console.WriteLine($"file is being saved as {Path.GetFullPath(fileName)}");
-
             }
             catch (Exception e)
             {
                 Messages.ErrorMessage("Failed to save file");
                 GrayMessageL(e.Message);
-
             }
         }
 
@@ -795,12 +774,10 @@ namespace Music
                 }
             }
             return -1;
-
         }
 
         public static void UpdateTempoInMidiFile(MidiFile midiFile, int bpm)
         {
-
             int newTempo = 60000000 / bpm;
 
             foreach (var track in midiFile.Events)
@@ -875,7 +852,6 @@ namespace Music
             }
         }
 
-
         public static void VerifyKeySignaturesInFile(string midiFilePath)
         {
             try
@@ -917,7 +893,6 @@ namespace Music
         {
             return new KeySignatureEvent((sbyte)sharps, (byte)mi, absoluteTime);
         }
-        
 
         // Helper: set KS fields/properties safely
         private static void SetKeySignatureValues(KeySignatureEvent ks, long absoluteTime, int sharps, int mi)
@@ -970,5 +945,4 @@ namespace Music
             throw new InvalidOperationException("No suitable KeySignatureEvent constructor found.");
         }
     }
-
 }

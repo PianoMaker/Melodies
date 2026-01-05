@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NAudio.Wave;
 using NAudio.Lame;
@@ -19,8 +19,6 @@ namespace Melodies25.Utilities
         private double _phaseIncrement;
         private int _sampleRate;
         private int _noteIndex = 0; // Відстежуємо поточну ноту
-
-
 
         private EnvelopeGenerator _adsr;
         private float attackSeconds;
@@ -85,10 +83,7 @@ namespace Melodies25.Utilities
             ReleaseSeconds = 0.3f;
 
             _adsr.Gate(true);
-
         }
-
-
 
         public override int Read(float[] buffer, int offset, int count)
         {
@@ -104,7 +99,6 @@ namespace Melodies25.Utilities
                 {
                     if (_samplesRemaining <= 0)
                     {
-
                         _adsr.Gate(false);  // Запуск фази релізу
                         if (LoggingManager.CreateAudio)
                             Console.WriteLine($"Release phase started for note {_noteIndex}");
@@ -154,7 +148,6 @@ namespace Melodies25.Utilities
             return (float)Math.Sin(_phase); // Синусоїда. 
                                             //Згодом слід додати інші!                                            
         }
-
 
         /*
         // створює mp3 файл зі шляхом outputPath (шлях давати з розширенням .mp3)
@@ -318,7 +311,6 @@ namespace Melodies25.Utilities
             await GenerateMp3Async(sequence, outputPath);
         }*/
     }
-        
 }
 /*
 // Використання:

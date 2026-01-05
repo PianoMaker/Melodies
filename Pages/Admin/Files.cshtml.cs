@@ -5,7 +5,6 @@ using Music;
 using System.Runtime.CompilerServices;
 using static Music.Messages;
 
-
 namespace Melodies25.Pages.Account
 {
     [BindProperties] // Move the attribute to the class level
@@ -28,7 +27,6 @@ namespace Melodies25.Pages.Account
         }
         [BindProperty]
         public int Days { get; set; }
-        
 
         public IWebHostEnvironment _environment;
 
@@ -40,7 +38,6 @@ namespace Melodies25.Pages.Account
             MessageL(COLORS.yellow, "FileNames/OnGet method starts");
 
             InitializeFiles();
-
         }
 
         private void InitializeFiles()
@@ -76,7 +73,6 @@ namespace Melodies25.Pages.Account
                 int currentId = 0;
                 foreach (var file in FileNames)
                 {
-
                     if (file == null) continue;
                     var filePath = Path.Combine(fileslist, file);
                     try
@@ -115,10 +111,10 @@ namespace Melodies25.Pages.Account
                 return Page();
             }
 
-            // Ініціалізуємо файли
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
             InitializeFiles();
 
-            // Парсимо ID файлу
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ ID пїЅпїЅпїЅпїЅпїЅ
             if (!int.TryParse(fileId, out int id))
             {
                 ErrorMessageL("Invalid file ID format");
@@ -127,23 +123,23 @@ namespace Melodies25.Pages.Account
 
             try
             {
-                // Шукаємо файл у всіх колекціях
+                // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 FileInformation? fileToDelete = null;
                 string? subcategory = null;
 
-                // Перевіряємо у TempFiles
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ TempFiles
                 if (TempFiles != null && id < TempFiles.Count)
                 {
                     fileToDelete = TempFiles[id];
                     subcategory = "temporary";
                 }
-                // Перевіряємо у MidiFiles  
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ MidiFiles  
                 else if (MidiFiles != null && id < MidiFiles.Count)
                 {
                     fileToDelete = MidiFiles[id];
                     subcategory = "melodies";
                 }
-                // Перевіряємо у Mp3Files
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ Mp3Files
                 else if (Mp3Files != null && id < Mp3Files.Count)
                 {
                     fileToDelete = Mp3Files[id];
@@ -156,13 +152,13 @@ namespace Melodies25.Pages.Account
                     return Page();
                 }
 
-                // Створюємо повний шлях до файлу
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
                 var filePath = Path.Combine(_environment.WebRootPath, subcategory, fileToDelete.Value.Name);
 
-                // Перевіряємо чи існує файл
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
                 if (System.IO.File.Exists(filePath))
                 {
-                    // Видаляємо фізичний файл
+                    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
                     System.IO.File.Delete(filePath);
                     MessageL(COLORS.green, $"Physical file deleted: {filePath}");
                 }
@@ -171,7 +167,7 @@ namespace Melodies25.Pages.Account
                     MessageL(COLORS.yellow, $"Physical file not found: {filePath}");
                 }
 
-                // Видаляємо з відповідної колекції
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 if (subcategory == "temporary")
                 {
                     TempFiles?.RemoveAt(id);
@@ -187,7 +183,7 @@ namespace Melodies25.Pages.Account
 
                 MessageL(COLORS.cyan, "File removed successfully");
 
-                // Оновлюємо статистику
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 NumberOfFiles = (TempFiles?.Count ?? 0) + (MidiFiles?.Count ?? 0) + (Mp3Files?.Count ?? 0);
                 TotalSize = GetTotalSize();
             }
