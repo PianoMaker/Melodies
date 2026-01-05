@@ -1,4 +1,4 @@
-﻿using Music;
+using Music;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -438,7 +438,6 @@ namespace Music
                 }
             }
         }
-
 
         public static (int len, int pos, List<(int i1, int i2)> pairs) FindLongestSubstringMatch(float[] arr1, float[] arr2)
         {

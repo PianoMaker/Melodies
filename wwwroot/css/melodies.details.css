@@ -32,7 +32,7 @@
 .melody-details .section-header {
     font-weight: 600;
     color: #5a3d1c;
-    margin: 0 0 .5rem 0;
+    margin: 0 0 .5rem;
     display: flex; align-items: center; gap: .5rem;
 }
 
@@ -102,7 +102,7 @@
     height: auto !important;
 }
 
-/* Make panel-notes taller on desktop so bottom letter buttons (including "я") are visible */
+/* Make panel-notes taller on desktop so bottom letter buttons (including "пїЅ") are visible */
 .melody-details .panel-notes {
     /* Give more vertical space and a little extra bottom padding */
     min-height: 360px;
@@ -234,13 +234,13 @@
     display: block !important;
 }
 
-/* Author header: великий шрифт для імені, відступи */
+/* Author header: пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 .author-header {
     margin-bottom: 0.5rem;
 }
 
 .author-name {
-    font-size: 1.5rem; /* змініть значення під ваш дизайн */
+    font-size: 1.5rem; /* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
     font-weight: 600;
     margin: 0;
     line-height: 1.1;
@@ -256,15 +256,15 @@
     margin-top: 0.25rem;
 }
 
-/* Опис автора — окрема секція */
+/* пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
 .author-description p {
     margin: 0;
     padding: 0;
     color: #222;
-    white-space: pre-wrap; /* зберегти переноси рядків, якщо є */
+    white-space: pre-wrap; /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅ */
 }
 
-/* Дозволяємо обробку подій на групі */
+/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ */
 g.vf-stavenote {
     pointer-events: all;
 }
@@ -273,14 +273,14 @@ g.vf-stavenote {
         transition: fill 1000ms ease;
     }
 
-    /* Візуальний ховер — змінюємо заливку дочірніх шляхів */
+    /* ВіпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
     g.vf-stavenote:hover path,
     g.vf-stavenote.hover path {
-        fill: #d33; /* або інший колір підсвітки */
+        fill: #d33; /* пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
         transition: fill 120ms ease;
     }
 
-/* Показати курсор як посилання/натискуваний елемент */
+/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 g.vf-stavenote:hover {
   cursor: pointer;
 }

@@ -1,4 +1,4 @@
-﻿using System.Reflection.Metadata.Ecma335;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices.Marshalling;
 using System.Text;
 using static Music.Globals;
@@ -17,7 +17,6 @@ namespace Music
         public Duration(DURATION duration)
         {
             this.duration = duration;
-
         }
         public Duration()
         { duration = DURATION.quater; modifier = DURMODIFIER.none; tuplet = 1; }
@@ -55,7 +54,6 @@ namespace Music
             modifier = DURMODIFIER.none;
         }
 
-
         public Duration(int mididuration, int tickperquater)
         {
            // Messages.GrayMessageL($"input: {mididuration} : {tickperquater}");
@@ -69,7 +67,6 @@ namespace Music
             }
             else
             {
-                
                 double dur64th = mididuration / base64th;
                 // Messages.GrayMessage($"determine method ({mididuration} / {base64th}) = {dur64th} ");
                 DetermineDuration(dur64th);
@@ -78,7 +75,6 @@ namespace Music
 
         private void DetermineDuration(double dur64th)
         {
-            
             int[] baseDurations = { 1, 2, 4, 8, 16, 32 };
             modifier = DURMODIFIER.none;
 
@@ -92,7 +88,6 @@ namespace Music
                 }
                 else if (dur64th >= baseDur * 1.2 && dur64th < baseDur * 1.3)
                 {
-                    
                     duration = ConvertValue(baseDur);
                     //Messages.GrayMessageL($"dur = {duration}_");
                     modifier = DURMODIFIER.tied;                    
@@ -100,7 +95,6 @@ namespace Music
                 }
                 else if (dur64th >= baseDur * 1.3 && dur64th < baseDur * 1.4)
                 {
-                    
                     duration = ConvertValue(baseDur);
                     //Messages.GrayMessageL($"dur = {duration}/3");
                     modifier = DURMODIFIER.tuplet;
@@ -245,8 +239,5 @@ namespace Music
             }
             return symbol;
         }
-
-
-
     }
 }

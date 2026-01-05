@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Melodies25.Data;
 using Melodies25.Models;
 using Melodies25.Pages.Account;
@@ -49,13 +49,11 @@ namespace Melodies25.Pages.Melodies
 
         public IndexModel(Melodies25Context context, IWebHostEnvironment environment, UserManager<IdentityUser> userManager)
         {
-            
             _context = context;
             _environment = environment;
             _userManager = userManager;
         }
-        
-             
+
         public IList<Melody> Melody { get; set; } = new List<Melody>();
 
         [BindProperty(SupportsGet = true)]
@@ -81,7 +79,6 @@ namespace Melodies25.Pages.Melodies
             CurrentSort = sortOrder;
 
             SelectedLetter = letter;
-            
 
             var melodiesQuery = _context.Melody.Include(m => m.Author).AsQueryable();
 
@@ -212,8 +209,6 @@ namespace Melodies25.Pages.Melodies
             // Redirect to first page after deletion
             return RedirectToPage(new { pageIndex = 1 });
         }
-
-
 
         // Add sortOrder to the Filter POST and include it in redirect so paging preserves current sort.
         public IActionResult OnPostFilterByLetter(string letter, string? sortOrder = null)

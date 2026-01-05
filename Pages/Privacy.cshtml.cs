@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Melodies25.Pages
@@ -16,5 +16,4 @@ namespace Melodies25.Pages
         {
         }
     }
-
 }

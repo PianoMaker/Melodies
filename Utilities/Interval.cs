@@ -1,15 +1,13 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Text.RegularExpressions;
 using static Music.Engine;
 using static Music.Globals;
 using static Music.Messages;
 
-
 namespace Music
 {
     public class Interval
     {
-
         private INTERVALS interval;
         private QUALITY quality;
         private int octaves;
@@ -48,7 +46,7 @@ namespace Music
                     if ((interval == INTERVALS.OCTAVA || interval == INTERVALS.QUARTA || interval == INTERVALS.QUINTA) && quality == QUALITY.MIN) quality = QUALITY.DIM;
                 }
             }
-            catch (IncorrectNote e) { ;
+            catch (IncorrectNote e) {
             ErrorMessage(e.Message);
             }
         }
@@ -59,7 +57,6 @@ namespace Music
         public Interval(int interval, int quality, int octaves = 0)
         { this.interval = (INTERVALS)interval; this.quality = (QUALITY)quality; this.octaves = octaves; }
 
-
         public Interval(Note notelow, Note notehigh)
         {
             if (notelow > notehigh) swap(ref notelow, ref notehigh);
@@ -69,7 +66,6 @@ namespace Music
             interval = (INTERVALS)steps;
             octaves = (notehigh.AbsPitch() - notelow.AbsPitch()) / 12;
             if (Interval_ == INTERVALS.PRIMA && Quality == QUALITY.DIM) Interval_ = INTERVALS.OCTAVA;
-
         }
 
         public INTERVALS Interval_
@@ -128,8 +124,6 @@ namespace Music
                 OctDown(ch);
         }
 
-
-
         public void TransposeNote(Note note, DIR dir = DIR.UP)
         {
             note.Transpose(interval, quality, dir);
@@ -182,7 +176,6 @@ namespace Music
             transposed.Transpose(interval, dir);
             return transposed;
         }
-
 
         public List<T> Transpose<T>(T[] scale, DIR dir = DIR.UP) where T : Scale
         {
@@ -261,16 +254,13 @@ namespace Music
             return transposed;
         }
 
-
         public override string ToString()
         {
             return interval.ToString() + " " + quality.ToString() + " (" + octaves.ToString() + ")" ;
-
         }
 
         public static List<T> AllTonalities<T>(T item) where T : Scale/*, ICloneable*/
         {
-
             var result = new List<T>();
             foreach (var interval in allintervals)
             {
@@ -294,8 +284,6 @@ namespace Music
             }
             return transposed;
         }
-      
-
 
         //public static List<Scale> Permute(Scale chord) // генерування усіх можливих розташувань
         //{
@@ -312,6 +300,5 @@ namespace Music
         //    }
         //    return list;
         //}
-
     }
 }

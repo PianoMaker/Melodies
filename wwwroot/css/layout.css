@@ -1,4 +1,4 @@
-﻿.home {
+.home {
     overflow: hidden;
 }
 
@@ -542,7 +542,7 @@
         transform: none !important;
         border-radius: 0 !important;
         font-size: 1.6rem;
-        margin: 12px 12px 6px 12px;
+        margin: 12px 12px 6px;
         padding: 0;
         color: #ffffff;
         text-shadow: 0 1px 2px rgba(0,0,0,.25);

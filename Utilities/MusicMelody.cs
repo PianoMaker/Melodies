@@ -1,4 +1,4 @@
-﻿using Melodies25.Migrations;
+using Melodies25.Migrations;
 using Melodies25.Utilities;
 using NAudio.CoreAudioApi;
 using NAudio.Midi;
@@ -10,7 +10,6 @@ using static Music.Algorythm;
 using static Music.Engine;
 using static Music.Globals;
 using static Music.Messages;
-
 
 namespace Music
 {
@@ -37,7 +36,6 @@ namespace Music
 
         public new Note this[int index]
         { get { return notes[index]; } set { this[index] = value; } }
-
 
         //повертає мелодичний малюнок по інтервалах
         public List<int> IntervalList
@@ -182,7 +180,6 @@ namespace Music
                 {
                     list += note.Sharpness;
                     list += " ";
-
                 }
                 return list;
             }
@@ -197,7 +194,6 @@ namespace Music
                 {
                     list += interval.ToString();
                     list += " ";
-
                 }
                 return list;
             }
@@ -211,13 +207,10 @@ namespace Music
                 foreach (var note in Notes)
                 {
                     length += note.AbsDuration();
-
                 }
                 return length;
             }
-
         }
-
 
         //Чи починається з ноти
         public bool IfStartsFromNote(Note note)
@@ -226,14 +219,11 @@ namespace Music
             return Notes[0].Pitch == note.Pitch;
         }
 
-
         public bool IfStartsFromNote(string input)
         {
             var note = new Note(input);
             return IfStartsFromNote(note);
         }
-
-
 
         // АЛГОРИТМИ ПОШУКУ СПІВПАДІНЬ МЕЛОДІЙ
         static int LongestCommonSubstring(int[] A, int[] B)
@@ -248,12 +238,10 @@ namespace Music
 
         public static MelodyMatchResult FindLongestSubstringMatch(int[] patternShape, int[] melodyShape)
         {
-
             var match = Algorythm.FindLongestSubstringMatch(patternShape, melodyShape);
             MelodyMatchResult result = new MelodyMatchResult(match.length, match.position, match.pairs, 0);
             return result;
         }
-
 
         public static MelodyMatchResult FindLongestSubstringMatch(float[] patternShape, float[] melodyShape)
         {
@@ -279,10 +267,8 @@ namespace Music
             return new MelodyMatchResult(match.length, pos, pairs, 0);
         }
 
-
         public void Enharmonize()
         {//бета-версія
-
             if (Tonality is not null)
                 EnharmonizeToTonality();
             else
@@ -299,7 +285,6 @@ namespace Music
                 UpChromatics(); // висхідна хроматика            
                 AfterEffectUnflat(); // артефакти попередніх
             }
-
         }
 
         private void EnharmonizeToTonality()
@@ -342,10 +327,8 @@ namespace Music
             int doublesharpposition = 0;
             int endsharprow = 0;
 
-
             for (int i = 1; i < Size() - 1; i++)
             {
-
                 if (Notes[i].Sharpness < 3 && doublesharpposition == 0)
                 {
                     startsharprow = 0;
@@ -382,7 +365,6 @@ namespace Music
 
             for (int i = 1; i < Size(); i++)
             {
-
                 if (Notes[i].Sharpness - Notes[i - 1].Sharpness >= 7 && Notes[i].Sharpness > 0)
                 {
                     if (LoggingManager.ReadMidi)
@@ -397,7 +379,6 @@ namespace Music
                         continue;
                     }
 
-
                 if (Notes[i].Sharpness - Notes[i - 1].Sharpness <= -4 || i == (Size() - 1) /*&& Notes[i].Sharpness > 2*/)
                 {
                     endposition = i;
@@ -410,15 +391,11 @@ namespace Music
                     GrayMessageL($"Desharp (flat) notes from {startposition} to {endposition}");
                 for (int i = startposition; i <= endposition; i++)
                 {
-
                     Notes[i].EnharmonizeFlat();
                 }
                 DesharpFlatTonalities();
             }
-
-            
         }
-
 
         public void UnDoubleFlat()
         {
@@ -428,11 +405,8 @@ namespace Music
             {
                 if (Notes[i].Sharpness - Notes[i - 1].Sharpness == 7)
                     startposition = i;
-
             }
         }
-
-
 
         public void UnChromEnd()
         {
@@ -442,7 +416,6 @@ namespace Music
                 Notes[lastindex].EnharmonizeFlat();
                 if (LoggingManager.ReadMidi)
                     GrayMessageL("unhromed end to flat");
-
             }
             else if (Notes[lastindex].Sharpness - Notes[lastindex - 1].Sharpness == -7)
             {
@@ -463,7 +436,6 @@ namespace Music
                     GrayMessageL("unhromed end to sharp");
             }
         }
-
 
         public void UpChromatics()
         {
@@ -487,7 +459,6 @@ namespace Music
                         GrayMessageL($"correct upgoing chromatics 2, position {i - 2}");
                 }
             }
-
         }
 
         public void AfterEffectUnflat()
@@ -502,8 +473,6 @@ namespace Music
                 }
             }
         }
-
-
 
         public new void Inversion()
         {
@@ -525,7 +494,6 @@ namespace Music
 
         public void Join(MusicMelody other)
         {
-
             foreach (Note note in other.notes)
             {
                 Notes.Add(note);
@@ -592,10 +560,8 @@ namespace Music
         public new void Reverse()
         { notes.Reverse(); }
 
-
         public new int Range()
         { return pitchdiff(notes[0].AbsPitch(), notes[^1].AbsPitch()); }
-
 
         // Збіг по інтервалах, а не по звуках,
         // таким чином однакові мелодії в різних тональностях розпінаються як однакові)
@@ -643,7 +609,6 @@ namespace Music
             return FindLongestSubstringMatch(notesA, notesB);
         }
 
-
         public static MelodyMatchResult SimilarByBoth(MusicMelody melodyPattern, MusicMelody midiMelody)
         {
             if (melodyPattern is null || midiMelody is null)
@@ -663,10 +628,8 @@ namespace Music
             return new MelodyMatchResult(notesCount, startPos, pairs, 0);
         }
 
-
         // Найдовший збіг мелодій в заданій тональності з пропусками,
         // повертає кількість нот у послідовності
-
 
         public static MelodyMatchResult SimilarByIntervalsWithGap(MusicMelody pattern, MusicMelody melody, int gap)
         {
@@ -870,7 +833,6 @@ namespace Music
 
         public void TransposeToLowNote(Note note) // chord
         {
-
             if (note == Notes[0]) return;
             DIR dir = new();
             if (note.CompareTo(Notes[0]) == 1) dir = DIR.UP;
@@ -884,7 +846,6 @@ namespace Music
 
         public void TransposeToHighNote(Note note)
         {
-
             if (note == Notes[^1]) return;
             DIR dir = new();
             if (note > Notes[^1]) dir = DIR.UP;
@@ -941,7 +902,6 @@ namespace Music
         /// ГЕНЕРУВАННЯ ВИПАДКОВИХ МЕЛОДІЙ
         /// </summary>
         /// <param name="oct"></param>
-
         public void RandomizeOct(int oct)
         {
             foreach (Note note in Notes)
@@ -958,7 +918,6 @@ namespace Music
         /// СТАТИСТИЧНІ
         /// </summary>
         /// <returns></returns>
-
         public Dictionary<string, float>? GetStats()
         {
             var stats = new Dictionary<string, float>();
@@ -972,19 +931,16 @@ namespace Music
                 if (!stats.ContainsKey(note.Name))  // Avoid duplicate key exception
                     stats[note.Name] = 0;
             }
-            ;
             foreach (Note note in Notes)
             {
                 stats[note.Name] += increment;
             }
-            ;
             // values * 100 і округлити до одного знака
 
             stats = stats.ToDictionary(pair => pair.Key, pair => (float)Math.Round(pair.Value, 1));
 
             return stats.OrderByDescending(x => x.Value)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
-
         }
 
         public Dictionary<string, float>? GetWeight()
@@ -998,19 +954,15 @@ namespace Music
                 if (!stats.ContainsKey(note.Name))  // Avoid duplicate key exception
                     stats[note.Name] = 0;
             }
-            ;
             foreach (Note note in Notes)
             {
-
                 stats[note.Name] += (float)note.AbsDuration() * 100 / AbsLength;
             }
-            ;
 
             stats = stats.ToDictionary(pair => pair.Key, pair => (float)Math.Round(pair.Value, 1));
 
             return stats.OrderByDescending(x => x.Key)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
-
         }
 
         public Dictionary<string, float>? GetDegreesStats()
@@ -1031,12 +983,9 @@ namespace Music
             else return null;
         }
 
-
         /// <summary>
         /// ////////////////TEST SECTION///////////////////
         /// </summary>
-
-
         /*
         public static void DisplayTable(List<MusicMelody> list)
         {
@@ -1077,17 +1026,11 @@ namespace Music
             }
         }
         */
-
-
-
-
         /// <summary>
         /// Клонування об'єктів
         /// </summary>
         /// <returns></returns>
         /// 
-
-
         public override object Clone()
         {
             MusicMelody clone = new();
@@ -1125,7 +1068,6 @@ namespace Music
 
         internal MidiEventCollection ConvertToMIDI()
         {
-
             var collection = new MidiEventCollection(0, PPQN);
             int currenttime = 0;
             var tempoEvent = new TempoEvent(Tempo, 0);
@@ -1163,8 +1105,6 @@ namespace Music
         {
             MidiConverter.SaveMidi(this, filepath);
         }
-
-
     }
 
     public struct MelodyMatchResult

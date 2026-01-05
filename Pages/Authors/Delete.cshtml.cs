@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,7 +23,6 @@ namespace Melodies25.Pages.Authors
         {
             _context = context;
             _userManager = userManager;
-            
         }
 
         [BindProperty]
@@ -41,7 +40,6 @@ namespace Melodies25.Pages.Authors
             if (user is not null)
             {
                 var isAdminOrModerator = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "Moderator");
-
 
                 if (!isAdminOrModerator)
                 {

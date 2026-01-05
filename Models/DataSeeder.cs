@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 
 public class DataSeeder
 {
@@ -25,8 +25,6 @@ public class DataSeeder
         {
             await _roleManager.CreateAsync(new IdentityRole(moderatorRole));
         }
-
-
 
         string adminEmail = "admin@example.com";
         string adminPassword = "Admin123!";

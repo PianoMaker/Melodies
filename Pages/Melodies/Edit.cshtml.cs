@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +26,6 @@ namespace Melodies25.Pages.Melodies
         private readonly Melodies25.Data.Melodies25Context _context;
         private readonly IWebHostEnvironment _environment;
         private readonly UserManager<IdentityUser> _userManager;
-
 
         public EditModel(Melodies25.Data.Melodies25Context context, IWebHostEnvironment hostEnvironment, UserManager<IdentityUser> userManager)
         {
@@ -167,7 +166,6 @@ namespace Melodies25.Pages.Melodies
             MessageL(COLORS.yellow, "MELODIES/RELATIVE TONALITY starts");
             try
             {
-
                 var sw = Stopwatch.StartNew();
                 var melody = await _context.Melody.FirstOrDefaultAsync(m => m.ID == id);
                 if (melody == null)
@@ -228,7 +226,6 @@ namespace Melodies25.Pages.Melodies
                 }
             }
 
-
             var uploadsPath = Path.Combine(_environment.WebRootPath, "melodies");
             Directory.CreateDirectory(uploadsPath);
 
@@ -260,7 +257,6 @@ namespace Melodies25.Pages.Melodies
             }
 
             _context.Attach(Melody).State = EntityState.Modified;
-
 
             //створення аудіо
             if (Melody.FilePath is not null && Tempocorrected == false)
@@ -302,7 +298,6 @@ namespace Melodies25.Pages.Melodies
             //корекція темпу
             if (Melody.FilePath is not null && Tempocorrected == true)
             {
-
                 string fullPath = Path.Combine(_environment.WebRootPath, "melodies", Melody.FilePath);
                 MessageL(COLORS.purple, $"Перезапис файлу, темп = {Tempo}");
 
@@ -315,14 +310,12 @@ namespace Melodies25.Pages.Melodies
                         MidiFile.Export(fullPath, newmidifile.Events);
                         MessageL(COLORS.purple, $"Midi-файл перезаписано, темп - {GetTempofromMidi(fullPath)}");
                         await PrepareAudio(uploadsPath);
-
                     }
                     catch (Exception e)
                     {
                         ErrorMessage("Не вдалося перезаписати файл: ");
                         GrayMessageL(e.Message);
                     }
-
                 }
             }
             else
@@ -406,7 +399,6 @@ namespace Melodies25.Pages.Melodies
                 catch (Exception e)
                 {
                     ErrorMessageL($"Failed to update key signature: {melody.FilePath} " + e.Message);
-
                 }
             }
 
@@ -532,7 +524,6 @@ namespace Melodies25.Pages.Melodies
             }
         }
 
-
         private async Task PrepareAudio(string uploadsPath)
         {
             MessageL(COLORS.olive, $"PrepareAudio method, path = {uploadsPath}");
@@ -603,14 +594,12 @@ namespace Melodies25.Pages.Melodies
                 return NotFound();
             }
 
-
             /*м'яке посилання користувача */
             bool isAdminOrModerator;
             var user = await _userManager.GetUserAsync(User);
             if (user is not null)
             { isAdminOrModerator = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "Moderator"); }
             else isAdminOrModerator = false;
-
 
             if (!isAdminOrModerator)
             {
@@ -619,7 +608,6 @@ namespace Melodies25.Pages.Melodies
 
             /**/
             /**/
-
 
             if (!string.IsNullOrEmpty(melody.FilePath))
             {

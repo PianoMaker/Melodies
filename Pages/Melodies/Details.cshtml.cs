@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +15,6 @@ using Microsoft.Extensions.Hosting;
 using Melodies25.Utilities;
 using Newtonsoft.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
-
 
 namespace Melodies25.Pages.Melodies
 {
@@ -40,7 +39,6 @@ namespace Melodies25.Pages.Melodies
 
         public Models.Melody Melody { get; set; } = default!;
 
-        
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             MessageL(Music.COLORS.yellow, "MELODY/DETAILS OnGet method");
@@ -48,7 +46,6 @@ namespace Melodies25.Pages.Melodies
             {
                 return NotFound();
             }
-                       
 
             var melody = await _context.Melody
                 .Include(m => m.Author)
@@ -121,11 +118,9 @@ namespace Melodies25.Pages.Melodies
                 ErrorMessageL("impossible to build charts.");
                 MessageL(COLORS.standart, ex.Message);
                 ErrorMsg = ex.Message;
-
             }
 
             return Page();
         }       
-
     }
 }

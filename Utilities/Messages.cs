@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using static System.Console;
 using static Music.Globals;
@@ -37,7 +37,6 @@ namespace Music
         private const string aug_int_en = "augmented ";
         private const string aug_int_uk = "збільшений ";
         #endregion
-
 
         #region _B_
         private const string between_en = " between melody and root";
@@ -238,8 +237,6 @@ namespace Music
         private const string notonality_uk = "неможливо визначити тональність";
         #endregion
 
-
-
         private const string oneperrow_en = "one per row";
         private const string oneperrow_uk = "по одній на рядок";
         private const string range_order_en = " in ascending order of range\n";
@@ -359,9 +356,6 @@ namespace Music
         public const string CLUSTER_en = "cluster";
         #endregion
 
-
-
-
         public static void Color(int color)
         {
             if (!Enabled) return;
@@ -414,7 +408,6 @@ namespace Music
             ResetColor();
         }
 
-
         public static void MessageL(COLORS color, string msg)
         {
             if (!Enabled) return;
@@ -457,7 +450,6 @@ namespace Music
                 if (lng == LNG.uk) return anyway_uk;
                 else return anyway_en;
             }
-
 
             public static string all_voicings()
             {
@@ -522,8 +514,6 @@ namespace Music
                 if (lng == LNG.uk) return c13th_uk;
                 else return c13th_en;
             }
-
-
 
             public static string c_all()
             {
@@ -605,7 +595,6 @@ namespace Music
             {
                 if (lng == LNG.uk) return choose_player_uk;
                 else return choose_player_en;
-
             }
 
             public static string choose_program()
@@ -635,8 +624,6 @@ namespace Music
             {
                 if (lng == LNG.uk) return choose_harmonisation_mode_uk;
                 else return choose_harmonisation_mode_en;
-
-            
             }
 
             public static string choose_model()
@@ -678,7 +665,6 @@ namespace Music
                 else return entermaintone_en;
             }
 
-
         public static string enternotes()
             {
                 if (lng == LNG.uk) return enternotes_uk;
@@ -690,7 +676,6 @@ namespace Music
                 if (lng == LNG.uk) return enternote_uk;
                 else return enternote_en;
             }
-
 
         public static string enterspeed()
         {
@@ -722,7 +707,6 @@ namespace Music
             {
                 if (lng == LNG.uk) return iftrymore_uk;
                 else return iftrymore_en;
-
             }
             public static string incorrect_value()
             {
@@ -781,7 +765,6 @@ namespace Music
                 if (lng == LNG.uk) return inversions_order_uk;
                 else return inversions_order_en;
             }
-
 
             public static string less()
             {
@@ -894,7 +877,6 @@ namespace Music
                 else return notonality_en;
             }
 
-
         public static string ndo()
             {
                 if (lng == LNG.uk) return ndo_uk;
@@ -942,7 +924,6 @@ namespace Music
                 if (lng == LNG.uk) return oneperrow_uk;
                 else return oneperrow_en;
             }
-
 
             public static string root()
             {
@@ -1010,7 +991,6 @@ namespace Music
                 if (lng == LNG.uk) return tonetable_uk;
                 else return tonetable_en;
             }
-
 
             public static string table_header()
             {
