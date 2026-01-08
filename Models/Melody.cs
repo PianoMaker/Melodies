@@ -23,6 +23,10 @@ namespace Melodies25.Models
 
         public string? Description { get; set; }  
 
+        public string? DescriptionEn { get; set; }
+
+        public string LinkToPDF { get; set; } = string.Empty; // Посилання на PDF версію нот
+
         public int AuthorID { get; set; }  
         public Author? Author { get; set; }
 
