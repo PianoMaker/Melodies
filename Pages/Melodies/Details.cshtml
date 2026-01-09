@@ -11,6 +11,9 @@
     var lng = System.Globalization.CultureInfo.CurrentCulture.Name; 
     var authorName = item.Author is not null ? (lng == "en" ? item.Author.NameEn : item.Author.Name) : "";
     var authorSurname = item.Author is not null ? (lng == "en" ? item.Author.SurnameEn : item.Author.Surname) : "";
+
+    // allow download only for admins/moderators
+    var canDownload = User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Moderator");
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/melodies.details.css" asp-append-version="true" />
@@ -71,12 +74,16 @@
                     </audio>
 
                     <div class="btn-group" role="group" aria-label="downloads">
-                        <a href="@midifilepath" download class="btn btn-outline-dark light-background" aria-label="@Localizer["DownloadMIDI"]">
-                            <span class="d-none d-md-inline">@Localizer["Download"] </span>Midi <i class="fas fa-download"></i>
-                        </a>
-                        <a href="@mp3filepath" download class="btn btn-outline-dark light-background" aria-label="@Localizer["DownloadMP3"]">
-                            <span class="d-none d-md-inline">@Localizer["Download"] </span>mp3 <i class="fas fa-download"></i>
-                        </a>
+                        @* Download links visible only to admins/moderators *@
+                        @if (canDownload)
+                        {
+                            <a href="@midifilepath" download class="btn btn-outline-dark light-background" aria-label="@Localizer["DownloadMIDI"]">
+                                <span class="d-none d-md-inline">@Localizer["Download"] </span>Midi <i class="fas fa-download"></i>
+                            </a>
+                            <a href="@mp3filepath" download class="btn btn-outline-dark light-background" aria-label="@Localizer["DownloadMP3"]">
+                                <span class="d-none d-md-inline">@Localizer["Download"] </span>mp3 <i class="fas fa-download"></i>
+                            </a>
+                        }
                     </div>
                 </div>
 
@@ -281,7 +288,7 @@
         </div>
     </div>
 
-    <!-- НИЖНІЙ КОНТЕНЬЕР З КНОПКАМИ -->
+    <!-- НИЖНІЙ КОНТЕНТЕР З КНОПКАМИ -->
     <div class="infocontainer actions-container melody-width">
         <div class="actions-row">
             <a asp-page="./Edit" asp-route-id="@Model.Melody.ID" class="btn btn-outline-dark light-background link-dark">@Localizer["Edit"]</a>
