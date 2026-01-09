@@ -1269,13 +1269,14 @@ function adjustStaveWidth(BARWIDTH, index, CLEFZONE, isFirstMeasureInRow = false
 	console.debug("MR: FOO: midiRenderer.js - adjustStaveWidth");
 	let STAVE_WIDTH = BARWIDTH;
 	if (currentNumerator / currentDenominator > 1) {
-		STAVE_WIDTH += (currentNumerator / currentDenominator - 1) * 10; // Додатковий простір для більших розмірів такту
+		STAVE_WIDTH *= (currentNumerator / currentDenominator) * 0.95; // Додатковий простір для більших розмірів такту
 		console.log(`Increased STAVE_WIDTH for larger time signature: ${STAVE_WIDTH}`);
 	}
 	else if (currentNumerator / currentDenominator < 1) {
-		STAVE_WIDTH -= (1 - currentNumerator / currentDenominator) * 10; // Зменшення простору для менших розмірів такту
+		STAVE_WIDTH *= (currentNumerator / currentDenominator) * 1.05; // Зменшення простору для менших розмірів такту
 		console.log(`Decreased STAVE_WIDTH for smaller time signature: ${STAVE_WIDTH}`);
 	}
+	else console.log(`STAVE_WIDTH remains standard: ${STAVE_WIDTH}`);
 
 
 	// Додаємо CLEFZONE для першого такту взагалі або для першого такту в кожному рядку
