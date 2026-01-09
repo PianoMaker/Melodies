@@ -641,7 +641,7 @@ function renderMeasures(measureMap, measures, ticksPerBeat, score, context, Xmar
 			console.log(`New row started at measure ${index + 1}, Y position: ${Yposition}`);
 		}
 
-		let STAVE_WIDTH = adjustStaveWidth(meanBarWidth, index, CLEFZONE, isFirstMeasureInRow, timeSignatureChanged);
+		let STAVE_WIDTH = adjustStaveWidth(meanBarWidth, index, CLEFZONE, isFirstMeasureInRow, timeSignatureChanged, currentNumerator, currentDenominator);
 
 		// Use global clefChoice determined from the first measure — do NOT change clef inside melody
 		const clefChoice = globalClefChoice;
@@ -1272,9 +1272,18 @@ function setStave(Xposition, Yposition, STAVE_WIDTH, index, currentNumerator, cu
 	return stave;
 }
 
-function adjustStaveWidth(BARWIDTH, index, CLEFZONE, isFirstMeasureInRow = false, timeSignatureChanged = false) {
+function adjustStaveWidth(BARWIDTH, index, CLEFZONE, isFirstMeasureInRow = false, timeSignatureChanged = false, currentNumerator = 4, currentDenominator = 4) {
 	console.debug("MR: FOO: midiRenderer.js - adjustStaveWidth");
 	let STAVE_WIDTH = BARWIDTH;
+	if (currentNumerator / currentDenominator > 1) {
+		STAVE_WIDTH += (currentNumerator / currentDenominator - 1) * 10; // Додатковий простір для більших розмірів такту
+		console.log(`Increased STAVE_WIDTH for larger time signature: ${STAVE_WIDTH}`);
+	}
+	else if (currentNumerator / currentDenominator < 1) {
+		STAVE_WIDTH -= (1 - currentNumerator / currentDenominator) * 10; // Зменшення простору для менших розмірів такту
+		console.log(`Decreased STAVE_WIDTH for smaller time signature: ${STAVE_WIDTH}`);
+	}
+
 
 	// Додаємо CLEFZONE для першого такту взагалі або для першого такту в кожному рядку
 	if (index === 0 || isFirstMeasureInRow) {
