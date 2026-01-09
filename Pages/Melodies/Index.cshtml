@@ -109,32 +109,39 @@
                     <td>
                         @if (item.Author is not null)
                         {
+                            
+                            var authorId = item.Author.ID;
+                            
                             if (item.Author.Surname == "Українська народна пісня")
                             {
-                                @if (lng == "uk")
+                                if (lng == "uk")
                                 {
-                                    <span class="song-title" data-full="Українська народна пісня" data-short="укр. нар. пісня">
+                                    <a asp-page="/Authors/Details" asp-route-id="@authorId" class="link-dark song-title" data-full="Українська народна пісня" data-short="укр. нар. пісня">
                                         Українська народна пісня
-                                    </span>
+                                    </a>
                                 }
                                 else
                                 {
-                                    <span class="song-title" data-full="Українська народна пісня" data-short="ukr. song">
+                                    <a asp-page="/Authors/Details" asp-route-id="@authorId" class="link-dark song-title" data-full="Українська народна пісня" data-short="ukr. song">
                                         Ukrainian folk song
-                                    </span>
+                                    </a>
                                 }
                             }
                             else
                             {
-                                @if (lng == "uk")
+                                if (lng == "uk")
                                 {
-                                    <span>@item.Author.Name</span>
-                                    <span> @Html.DisplayFor(modelItem => item.Author.Surname)</span>
+                                    <a asp-page="/Authors/Details" asp-route-id="@authorId" class="link-dark">
+                                        <span>@item.Author.Name</span>
+                                        <span> @Html.DisplayFor(modelItem => item.Author.Surname)</span>
+                                    </a>
                                 }
                                 else
                                 {
-                                    <span>@item.Author.NameEn</span>
-                                    <span> @Html.DisplayFor(modelItem => item.Author.SurnameEn)</span>
+                                    <a asp-page="/Authors/Details" asp-route-id="@authorId" class="link-dark">
+                                        <span>@item.Author.NameEn</span>
+                                        <span> @Html.DisplayFor(modelItem => item.Author.SurnameEn)</span>
+                                    </a>
                                 }
                             }
                         }
