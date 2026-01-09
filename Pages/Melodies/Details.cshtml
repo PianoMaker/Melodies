@@ -43,8 +43,20 @@
                 <p class="d-none d-md-inline">@Localizer["Written"] @item.Year @Localizer["InYear"]</p>
             }
         </div>
-        <p><i>@item.Description</i></p>
+        @if (lng == "uk")
+        {
+            <p><i>@item.Description</i></p>
+        }
+        else
+        {
+            <p><i>@item.DescriptionEn</i></p>
+        } 
+        
         <hr />
+        @if(!string.IsNullOrEmpty(item.LinkToPDF))
+        {
+            <p><a href="@item.LinkToPDF" target="_blank">@Localizer["DownloadPDF"]</a></p>
+        }
         <div class="container">
 
             @if (!string.IsNullOrEmpty(item.FilePath))

@@ -207,8 +207,7 @@
   <data name="FindSimilarShort" xml:space="preserve">
     <value>Find similar</value>
   </data>
-
-  <data name="__placeholder" xml:space="preserve">
-    <value>TODO</value>
+  <data name="DownloadPDF" xml:space="preserve">
+    <value>Download PDF</value>
   </data>
 </root>
