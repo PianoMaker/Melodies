@@ -244,11 +244,22 @@ function createRest(duration, clef = 'treble') {
 			return null;
 		}
 
-		// Normalize duration: strip trailing 'r' if present to avoid 'qrr'
-		const hasDot = duration.endsWith('.');
+		// Detect modifiers
+		const hasDot = /\.$/.test(duration) && !duration.endsWith('t');
 		const hasTriplet = duration.endsWith('t');
-		const raw = duration.replace(/r$/i, '');
-		const base = (hasDot || hasTriplet) ? raw.slice(0, -1) : raw;
+		
+		// Normalize duration: strip trailing 'r' if present to avoid 'qrr'
+		let raw = duration.replace(/r$/i, '');
+		
+		// For triplets, strip the 't' suffix to get base duration
+		// VexFlow doesn't have native triplet rest notation, so we use base duration
+		// and mark it for tuplet detection later
+		let base = raw;
+		if (hasTriplet) {
+			base = raw.slice(0, -1); // remove 't' suffix
+		} else if (hasDot) {
+			base = raw.slice(0, -1); // remove '.' suffix for dot handling
+		}
 
 		// VexFlow rest notation requires trailing 'r'
 		const vexDur = `${base}r`;
@@ -259,8 +270,15 @@ function createRest(duration, clef = 'treble') {
 			clef: clef
 		});
 
-		if (hasDot && !hasTriplet) {
+		if (hasDot) {
 			rest.addDot(0);
+		}
+
+		// Mark triplet rests for later tuplet grouping
+		if (hasTriplet) {
+			rest.__isTriplet = true;
+			rest.__tripletBase = base;
+			rest.__durationCode = duration;
 		}
 
 		return rest;
@@ -269,7 +287,6 @@ function createRest(duration, clef = 'treble') {
 		return null;
 	}
 }
-
 // --------------------------------
 // ФУНКЦІЯ ДЛЯ СТВОРЕННЯ НОТИ
 // приймає note

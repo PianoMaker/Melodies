@@ -27,9 +27,9 @@ function addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, 
 	}
 
 	console.debug(`MR: need rest for ${remainingTicks} ticks (relativeLastOff=${relLastOff})`);
-	const restDurations = (typeof ticksToCleanDurations === 'function')
-		? ticksToCleanDurations(remainingTicks, ticksPerBeat)
-		: getDurationFromTicks(remainingTicks, ticksPerBeat);
+	
+	// USE getDurationFromTicks which supports triplets, NOT ticksToCleanDurations
+	const restDurations = getDurationFromTicks(remainingTicks, ticksPerBeat);
 
 	console.debug(`MR: got durations: ${Array.isArray(restDurations) ? restDurations.join(',') : restDurations}`);
 
@@ -37,8 +37,10 @@ function addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, 
 	restDurations.forEach((restDuration) => {
 		const r = createRest(restDuration);
 		if (r) {
-			notes.push(r);
+			// Set __srcTicks for tuplet detection
 			const ticks = calculateTicksFromDuration(restDuration, ticksPerBeat);
+			r.__srcTicks = ticks;
+			notes.push(r);
 			timeadded += ticks;
 			console.debug(`MR: added rest ${restDuration} (${ticks} ticks)`);
 		} else {
@@ -51,26 +53,25 @@ function addMissingRests(lastNoteOffTime, notes, ticksPerMeasure, thresholdGap, 
 
 // ------------------------------------
 // ФУНКЦІЯ ДЛЯ ДОДАВАННЯ ПАУЗИ МІЖ НОТАМИ
-// Якщо між останньою нотою і поточною подією є розрив більше порогового значення
-// Параметри:
-// - lastNoteOffTime: Абсолютний час відключення останньої ноти.
-// - event: Поточна подія MIDI.
-// - ticksPerBeat: Кількість тіків на чвертну ноту.
-// - thresholdGap: Мінімальна кількість тіків для додавання паузи.
-// - notes: Масив нот для рендерингу.
-// Повертає: void
 // ------------------------------------
 function addRestsBetween(lastNoteOffTime, event, ticksPerBeat, thresholdGap, notes) {
 	console.debug("MR: FOO: midiRenderer.js - addRestsBetween");
 	if (lastNoteOffTime > 0 && event.absTime > lastNoteOffTime) {
 		const gapTicks = event.absTime - lastNoteOffTime;
-		const restDurations = (typeof ticksToCleanDurations === 'function')
-			? ticksToCleanDurations(gapTicks, ticksPerBeat)
-			: getDurationFromTicks(gapTicks, ticksPerBeat);
+		
+		// USE getDurationFromTicks which supports triplets
+		const restDurations = getDurationFromTicks(gapTicks, ticksPerBeat);
+		
 		if (gapTicks > thresholdGap) {
 			restDurations.forEach((restDuration) => {
 				console.log(`Rest added: current event abs time ${event.absTime} vs lastNoteOffTime: ${lastNoteOffTime}: rest is needed: ${restDuration}`);
-				notes.push(createRest(restDuration));
+				const r = createRest(restDuration);
+				if (r) {
+					// Set __srcTicks for tuplet detection
+					const ticks = calculateTicksFromDuration(restDuration, ticksPerBeat);
+					r.__srcTicks = ticks;
+					notes.push(r);
+				}
 			});
 		}
 	}
@@ -78,14 +79,6 @@ function addRestsBetween(lastNoteOffTime, event, ticksPerBeat, thresholdGap, not
 
 // ----------------------
 // ФУНКЦІЯ ДЛЯ ДОДАВАННЯ ПАУЗИ НА ПОЧАТКУ ТАКТУ
-// якщо перша подія в такті починається не з 0
-// Параметри:
-// - event: Перша подія в такті.
-// - ticksPerBeat: Кількість тіків на чвертну ноту.
-// - thresholdGap: Мінімальна кількість тіків для додавання паузи.
-// - notes: Масив нот для рендерингу.
-// - barStartAbsTime: Абсолютний час початку такту.
-// Повертає: void
 // ----------------------
 function AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime) {
 	console.debug("MR: FOO: midiRenderer.js - AddStartRest");
@@ -95,15 +88,17 @@ function AddStartRest(event, ticksPerBeat, thresholdGap, notes, barStartAbsTime)
 		return;
 	}
 
-	const restDurations = (typeof ticksToCleanDurations === 'function')
-		? ticksToCleanDurations(relTime, ticksPerBeat)
-		: getDurationFromTicks(relTime, ticksPerBeat);
+	// USE getDurationFromTicks which supports triplets
+	const restDurations = getDurationFromTicks(relTime, ticksPerBeat);
 
 	console.log(`AddStartRest: inserting leading rest totalTicks=${relTime}, parts=[${restDurations.join(',')}]`);
 
 	restDurations.forEach(dur => {
 		const rest = createRest(dur);
 		if (rest) {
+			// Set __srcTicks for tuplet detection
+			const ticks = calculateTicksFromDuration(dur, ticksPerBeat);
+			rest.__srcTicks = ticks;
 			notes.push(rest);
 			console.log(`MR: Leading rest added duration=${dur}`);
 		} else {
