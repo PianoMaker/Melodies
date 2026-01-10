@@ -429,94 +429,215 @@ if (typeof window !== 'undefined' && window.__mr_beams_helper_loaded) {
 		return getNoteMidiTicks(note, localTicksPerBeat);
 	}
 
+	// Замініть функцію detectTuplets на цю версію з підтримкою 2-нотних тріолей:
+
 	function detectTuplets(measure, ticksPerBeat) {
-		if (!measure || !Array.isArray(measure.notes) || measure.notes.length < 3) return [];
+		if (!measure || !Array.isArray(measure.notes) || measure.notes.length < 2) return [];
 		const local = ticksPerBeat || 480;
 		const tuplets = [];
 
-		const isBeamableNote = (n) => {
+		// Допоміжна функція: чи є елемент паузою
+		const isRestNote = (n) => {
 			const d = durationResolver(n);
-			return !d.isRest && (beamableDurations.has(d.code) || d.code === 'q');
+			return d.isRest;
 		};
 
-		for (let i = 0; i <= measure.notes.length - 3;) {
-			const a = measure.notes[i], b = measure.notes[i + 1], c = measure.notes[i + 2];
-			const va = a && (a.vexNote || a), vb = b && (b.vexNote || b), vc = c && (c.vexNote || c);
+		// Допоміжна функція: чи є елемент beamable (восьма або коротша)
+		const isBeamableNote = (n) => {
+			if (isRestNote(n)) return false;
+			const d = durationResolver(n);
+			return ['8', '16', '32', '64', '128'].includes(d.code);
+		};
 
-			const fastTriplet =
-				va && vb && vc &&
-				va.__isTriplet && vb.__isTriplet && vc.__isTriplet &&
-				va.__tripletBase && vb.__tripletBase && vc.__tripletBase &&
-				va.__tripletBase === vb.__tripletBase && vb.__tripletBase === vc.__tripletBase;
+		// Очікувані тріольні тривалості (в тіках)
+		const triplet8thUnit = local / 3;           // тріольна 1/8: ≈ 85.3
+		const triplet16thUnit = local / 6;          // тріольна 1/16: ≈ 42.7
+		const tripletQuarterUnit = (2 * local) / 3; // тріольна 1/4: ≈ 170.7
 
-			if (fastTriplet) {
-				try {
-					const tuplet = new Vex.Flow.Tuplet([va, vb, vc], {
-						num_notes: 3,
-						notes_occupied: 2,
-						ratioed: false
-					});
-					tuplets.push(tuplet);
-				} catch (e) {
-					console.warn('Tuplet creation failed (fast path):', e);
-				}
-				i += 3;
-				continue;
-			}
+		console.debug(`MB: detectTuplets | ticksPerBeat=${local}, triplet8thUnit=${triplet8thUnit.toFixed(1)}, tripletQuarterUnit=${tripletQuarterUnit.toFixed(1)}`);
 
-			if (!a || !b || !c || !isBeamableNote(a) || !isBeamableNote(b) || !isBeamableNote(c)) {
-				i += 1; continue;
-			}
+		// Логуємо всі ноти такту для діагностики
+		console.debug(`MB: Measure notes dump:`);
+		measure.notes.forEach((n, idx) => {
+			const vn = n.vexNote || n;
+			const isRest = isRestNote(n);
+			const ticks = getSrcTicksOrFallback(n, local);
+			console.debug(`  [${idx}] ${isRest ? 'REST' : 'NOTE'} ticks=${ticks} __srcTicks=${vn.__srcTicks}`);
+		});
+
+		// Множина індексів, які вже використані в тріолях
+		const usedIndices = new Set();
+
+		for (let i = 0; i <= measure.notes.length - 2;) {
+			// Пропускаємо вже використані
+			if (usedIndices.has(i)) { i++; continue; }
+
+			const a = measure.notes[i];
+			const b = measure.notes[i + 1];
+			const c = measure.notes[i + 2]; // може бути undefined
+
+			if (!a || !b) { i++; continue; }
+
+			const va = a.vexNote || a;
+			const vb = b.vexNote || b;
+			const vc = c ? (c.vexNote || c) : null;
+
+			const aIsRest = isRestNote(a);
+			const bIsRest = isRestNote(b);
+			const cIsRest = c ? isRestNote(c) : true;
 
 			const ta = getSrcTicksOrFallback(a, local);
 			const tb = getSrcTicksOrFallback(b, local);
-			const tc = getSrcTicksOrFallback(c, local);
-			const total = ta + tb + tc;
+			const tc = c ? getSrcTicksOrFallback(c, local) : 0;
 
-			const dA = durationResolver(a).code;
-			const dB = durationResolver(b).code;
-			const dC = durationResolver(c).code;
-			const sameDur = (dA === dB && dB === dC);
+			// === СПРОБА 3-НОТНОЇ ТРІОЛІ ===
+			if (c && !usedIndices.has(i + 2)) {
+				// Не всі три паузи
+				if (!(aIsRest && bIsRest && cIsRest)) {
+					const total3 = ta + tb + tc;
 
-			const epsTotal = local * 0.06;
-			const epsEach = local * 0.10;
+					// FAST PATH: прапорець __isTriplet
+					if (va.__isTriplet && vb.__isTriplet && vc.__isTriplet &&
+						va.__tripletBase === vb.__tripletBase && vb.__tripletBase === vc.__tripletBase) {
 
-			const is8thTriplet = sameDur && dA === '8'
-				&& Math.abs(total - local) <= epsTotal
-				&& Math.abs(ta - local / 3) <= epsEach && Math.abs(tb - local / 3) <= epsEach && Math.abs(tc - local / 3) <= epsEach;
+						const hasPause = aIsRest || bIsRest || cIsRest;
+						const allBeamable = isBeamableNote(a) && isBeamableNote(b) && isBeamableNote(c);
+						const needBracket = hasPause || !allBeamable;
 
-			const is16thTriplet = sameDur && dA === '16'
-				&& Math.abs(total - local / 2) <= epsTotal
-				&& Math.abs(ta - local / 6) <= epsEach && Math.abs(tb - local / 6) <= epsEach && Math.abs(tc - local / 6) <= epsEach;
+						try {
+							const tuplet = new Vex.Flow.Tuplet([va, vb, vc], {
+								num_notes: 3, notes_occupied: 2, ratioed: false, bracketed: needBracket
+							});
+							tuplets.push(tuplet);
+							console.debug(`MB: Tuplet (fast 3-note) at i=${i}, bracketed=${needBracket}`);
+						} catch (e) { console.warn('Tuplet creation failed (fast):', e); }
 
-			const isQuarterTriplet = sameDur && dA === 'q'
-				&& Math.abs(total - (2 * local)) <= (epsTotal * 1.2)
-				&& Math.abs(ta - (2 * local / 3)) <= (epsEach * 1.2)
-				&& Math.abs(tb - (2 * local / 3)) <= (epsEach * 1.2)
-				&& Math.abs(tc - (2 * local / 3)) <= (epsEach * 1.2);
+						usedIndices.add(i); usedIndices.add(i + 1); usedIndices.add(i + 2);
+						i += 3;
+						continue;
+					}
 
-			if (is8thTriplet || is16thTriplet || isQuarterTriplet) {
-				const vexNotes = [va, vb, vc];
-				try {
-					const tuplet = new Vex.Flow.Tuplet(vexNotes, {
-						num_notes: 3,
-						notes_occupied: 2,
-						ratioed: false
-					});
-					tuplets.push(tuplet);
-				} catch (e) {
-					console.warn('Tuplet creation failed:', e);
+					// Тріоль ВОСЬМИХ: кожен ≈ local/3, сума = local
+					const eps8 = local * 0.15;
+					const aIs8t = Math.abs(ta - triplet8thUnit) <= eps8;
+					const bIs8t = Math.abs(tb - triplet8thUnit) <= eps8;
+					const cIs8t = Math.abs(tc - triplet8thUnit) <= eps8;
+
+					if (Math.abs(total3 - local) <= (local * 0.12) && aIs8t && bIs8t && cIs8t) {
+						const hasPause = aIsRest || bIsRest || cIsRest;
+						const allBeamable = isBeamableNote(a) && isBeamableNote(b) && isBeamableNote(c);
+						const needBracket = hasPause || !allBeamable;
+
+						try {
+							const tuplet = new Vex.Flow.Tuplet([va, vb, vc], {
+								num_notes: 3, notes_occupied: 2, ratioed: false, bracketed: needBracket
+							});
+							tuplets.push(tuplet);
+							console.debug(`MB: ✓ 8th Triplet (3-note) at i=${i}, bracketed=${needBracket}`);
+						} catch (e) { console.warn('Tuplet creation failed (8th):', e); }
+
+						usedIndices.add(i); usedIndices.add(i + 1); usedIndices.add(i + 2);
+						i += 3;
+						continue;
+					}
+
+					// Тріоль ШІСТНАДЦЯТИХ: кожен ≈ local/6, сума = local/2
+					const eps16 = local * 0.10;
+					const aIs16t = Math.abs(ta - triplet16thUnit) <= eps16;
+					const bIs16t = Math.abs(tb - triplet16thUnit) <= eps16;
+					const cIs16t = Math.abs(tc - triplet16thUnit) <= eps16;
+
+					if (Math.abs(total3 - local / 2) <= (local * 0.10) && aIs16t && bIs16t && cIs16t) {
+						const hasPause = aIsRest || bIsRest || cIsRest;
+						const allBeamable = isBeamableNote(a) && isBeamableNote(b) && isBeamableNote(c);
+						const needBracket = hasPause || !allBeamable;
+
+						try {
+							const tuplet = new Vex.Flow.Tuplet([va, vb, vc], {
+								num_notes: 3, notes_occupied: 2, ratioed: false, bracketed: needBracket
+							});
+							tuplets.push(tuplet);
+							console.debug(`MB: ✓ 16th Triplet (3-note) at i=${i}, bracketed=${needBracket}`);
+						} catch (e) { console.warn('Tuplet creation failed (16th):', e); }
+
+						usedIndices.add(i); usedIndices.add(i + 1); usedIndices.add(i + 2);
+						i += 3;
+						continue;
+					}
+
+					// Тріоль ЧВЕРТНИХ: кожен ≈ 2*local/3, сума = 2*local
+					const epsQ = local * 0.15;
+					const aIsQt = Math.abs(ta - tripletQuarterUnit) <= epsQ;
+					const bIsQt = Math.abs(tb - tripletQuarterUnit) <= epsQ;
+					const cIsQt = Math.abs(tc - tripletQuarterUnit) <= epsQ;
+
+					if (Math.abs(total3 - (2 * local)) <= (local * 0.15) && aIsQt && bIsQt && cIsQt) {
+						try {
+							const tuplet = new Vex.Flow.Tuplet([va, vb, vc], {
+								num_notes: 3, notes_occupied: 2, ratioed: false, bracketed: true
+							});
+							tuplets.push(tuplet);
+							console.debug(`MB: ✓ Quarter Triplet (3-note) at i=${i}`);
+						} catch (e) { console.warn('Tuplet creation failed (quarter):', e); }
+
+						usedIndices.add(i); usedIndices.add(i + 1); usedIndices.add(i + 2);
+						i += 3;
+						continue;
+					}
 				}
-				i += 3;
-			} else {
-				i += 1;
 			}
+
+			// === СПРОБА 2-НОТНОЇ ТРІОЛІ (нерівномірна: чверть + восьма = 1 біт) ===
+			// Патерн: тріольна чверть (≈170) + тріольна восьма (≈85) = 256 = 1 біт
+			// Або навпаки: восьма + чверть
+			if (!(aIsRest && bIsRest)) {
+				const total2 = ta + tb;
+				const eps2 = local * 0.15;
+
+				// Варіант 1: чверть (170) + восьма (85)
+				const aIsQtriplet = Math.abs(ta - tripletQuarterUnit) <= eps2;
+				const bIs8triplet = Math.abs(tb - triplet8thUnit) <= eps2;
+
+				// Варіант 2: восьма (85) + чверть (170)
+				const aIs8triplet = Math.abs(ta - triplet8thUnit) <= eps2;
+				const bIsQtriplet = Math.abs(tb - tripletQuarterUnit) <= eps2;
+
+				const is2NoteTriplet = Math.abs(total2 - local) <= (local * 0.12) &&
+					((aIsQtriplet && bIs8triplet) || (aIs8triplet && bIsQtriplet));
+
+				if (is2NoteTriplet) {
+					console.debug(`MB: Found 2-note triplet at i=${i}: [${ta}] + [${tb}] = ${total2} ≈ ${local}`);
+
+					// 2-нотна тріоль завжди потребує дужку
+					const hasPause = aIsRest || bIsRest;
+					const needBracket = true; // 2-нотні тріолі завжди з дужкою для ясності
+
+					try {
+						const tuplet = new Vex.Flow.Tuplet([va, vb], {
+							num_notes: 3,        // логічно це "3 восьмих"
+							notes_occupied: 2,   // займають місце 2 восьмих
+							ratioed: false,
+							bracketed: needBracket
+						});
+						tuplets.push(tuplet);
+						console.debug(`MB: ✓ 2-note Triplet CREATED at i=${i}, pattern=${aIsQtriplet ? 'Q+8' : '8+Q'}`);
+					} catch (e) {
+						console.warn('Tuplet creation failed (2-note):', e);
+					}
+
+					usedIndices.add(i); usedIndices.add(i + 1);
+					i += 2;
+					continue;
+				}
+			}
+
+			console.debug(`MB: No triplet match at i=${i}`);
+			i += 1;
 		}
 
+		console.debug(`MB: detectTuplets finished, found ${tuplets.length} tuplets`);
 		return tuplets;
 	}
-
-
 
 	/**
 	* (AUTO-STEM HELPER)
@@ -574,6 +695,4 @@ if (typeof window !== 'undefined' && window.__mr_beams_helper_loaded) {
 		return beams;
 	}
 }
-
-
 
