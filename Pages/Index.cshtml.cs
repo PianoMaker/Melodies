@@ -7,8 +7,6 @@ namespace Melodies25.Pages
 {
     public class IndexModel : PageModel
     {
-
-
         [BindProperty]
         public bool Singerella { get; set; }
 
@@ -22,10 +20,8 @@ namespace Melodies25.Pages
             _logger = logger;
         }
 
-
         public void OnGet()
         {
-
             MessageL(14, "Index OnGet");
         }
 
@@ -33,15 +29,16 @@ namespace Melodies25.Pages
         {
             MessageL(14, "Index OnPostSearch");
 
-            return RedirectToPage("./Melodies/Search", new { search = Search });
+            var url = Url.Page("./Melodies/Search", new { search = Search });
+            return Redirect(url + "#results");
         }
 
         public IActionResult OnPostAdvancedSearch()
         {
             MessageL(14, "Index OnPostAdvancedSearch");
-            return RedirectToPage("./Melodies/Search", new { search = Search });
+            var url = Url.Page("./Melodies/Search", new { search = Search });
+            return Redirect(url + "#results");
         }
-
 
         public IActionResult OnPostChangeDesign()
         {
