@@ -81,45 +81,47 @@
         {
             @* <p>find sim= @Model.FromFindSimilar</p> *@
             <div id="innerNotesContainer">
-                <!-- LIVE notation заповнюється melody-search.js -->
+                <!-- РЕНДЕР заповнюється melody-search.js -->
                 <div id="liveNotation" class="mb-3"></div>
 
                 <div id="patternComments" style="display:none"></div>
-
-                @if (@Model.NewPattern is not null)
-                {
-
-                    @for (int index = 0; index < @Model.NewPattern.Count(); index++)
+                <!-- ПОЛЕ ДЛЯ РЕДАГУВАННЯ -->
+                <div class="editNotation">
+                    @if (@Model.NewPattern is not null)
                     {
-                        var note = @Model.NewPattern[index];
-                        string width = $"{note.DisplayWidth(45, 20)}px";
-                        string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
-                        if (!@note.Rest)
+
+                        @for (int index = 0; index < @Model.NewPattern.Count(); index++)
                         {
-                            <div class="outerNoteBox" style="width:@width; height:10px;">
-                                <div class="notebox" style="margin-bottom:@marginbottom; width:@width;">
-                                    <span>@note.DurSymbol</span><br>
+                            var note = @Model.NewPattern[index];
+                            string width = $"{note.DisplayWidth(45, 20)}px";
+                            string marginbottom = $"{note.AbsPitch() * 2 - 10}px";
+                            if (!@note.Rest)
+                            {
+                                <div class="outerNoteBox" style="width:@width; height:10px;">
+                                    <div class="notebox" style="margin-bottom:@marginbottom; width:@width;">
+                                        <span>@note.DurSymbol</span><br>
+                                    </div>
+                                    <span data-index="@index" class="notaname">@note.Name</span>
                                 </div>
-                                <span data-index="@index" class="notaname">@note.Name</span>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="outerNoteBox" style="width:@width; height:10px;">
-                                <div class="notebox pausebox" style="margin-bottom:@marginbottom; width:@width;">
-                                    <span>@note.DurSymbol</span><br>
+                            }
+                            else
+                            {
+                                <div class="outerNoteBox" style="width:@width; height:10px;">
+                                    <div class="notebox pausebox" style="margin-bottom:@marginbottom; width:@width;">
+                                        <span>@note.DurSymbol</span><br>
+                                    </div>
+                                    <span data-index="@index" class="notaname">@note.Name</span>
                                 </div>
-                                <span data-index="@index" class="notaname">@note.Name</span>
-                            </div>
+                            }
+                            @await Html.PartialAsync("_options")
                         }
-                        @await Html.PartialAsync("_options")
+                        <script type="module" src="~/js/contextMenu.js"></script>
                     }
-                    <script type="module" src="~/js/contextMenu.js"></script>
-                }
-                else
-                {
-                    <p id="noNotesMsg">@Localizer["NoNotesEntered"]</p>
-                }
+                    else
+                    {
+                        <p id="noNotesMsg">@Localizer["NoNotesEntered"]</p>
+                    }
+                </div>
             </div>
         }
         else
@@ -127,6 +129,7 @@
 
             <p>___</p>
         }
+        
         <script type="module" src="~/js/noteTable.js"></script>
 
 
