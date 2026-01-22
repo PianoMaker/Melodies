@@ -252,6 +252,35 @@ document.addEventListener("DOMContentLoaded", function () {
 			dotBtn.classList.toggle('highlight');
 			console.log('[createMelody]: toggling highlight for dot button');
 		}
+
+		// Map letter keys to piano keys (works on Create and Search pages)
+		// Only when focus is not in an input/textarea/contentEditable (handled above)
+		const letter = k.toLowerCase();
+		const allowed = new Set(['c','d','e','f','g','a','b']);
+		if (allowed.has(letter)) {
+			try {
+				// Find the matching button in the pianoroll (first occurrence)
+				const btn = document.querySelector(`#pianoroll button[data-key="${letter}"]`);
+				if (btn) {
+					// Trigger click to reuse existing click handler behavior (play + append token)
+					btn.click();
+					// prevent default to avoid accidental scrolling/typing
+					e.preventDefault();
+				} else {
+					// Fallback: if exact match not found, try matching button whose data-key starts with the letter (e.g., "c" matches "c" or "c'") 
+					const btnAlt = Array.from(document.querySelectorAll('#pianoroll button')).find(b => {
+						const dk = b.getAttribute('data-key') || '';
+						return dk.toLowerCase().startsWith(letter);
+					});
+					if (btnAlt) {
+						btnAlt.click();
+						e.preventDefault();
+					}
+				}
+			} catch (ex) {
+				console.warn('[createMelody] keyboard -> piano mapping failed', ex);
+			}
+		}
 	});
 
 	//----------------------------------
@@ -365,6 +394,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		//перемалювати екран
 	}
 	else console.warn("no backBtn found");
+
 
 
 
@@ -697,8 +727,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		});
 	}
-
-
 
 	// ======================
 	// КОПІЮВАННЯ НАЗВИ З ФАЙЛУ
