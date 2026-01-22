@@ -355,16 +355,12 @@
         padding-right: 0;
         margin: 0;
     }
-
-
     .whitepianobutton {
         width: 45px;
     }
-
     .blackpianobutton {
         width: 37px;
     }
-
     .c3 {
         display: none;
     }

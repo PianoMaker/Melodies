@@ -27,7 +27,7 @@
 {
     <div class="alert alert-info">@message</div>
 }
-<div class="searchcontainer h-100">
+<div class="searchcontainer h-100 mt-1">
 
 
     <!--ЛІВОРУЧ-->
@@ -126,11 +126,16 @@
 
     <div class="searchrightcontainer">
         <div id="openpianoDiv" style="display:none">
+            <!--openpiano.js-->
             <button style="width:80%; margin:10px" id="openpianoBtn">@Localizer["EnterFromKeyboard"]</button>
         </div>
 
         <!-- ДЛЯ ТРИВАЛОСТЕЙ -->
-        @await Html.PartialAsync("_durationsTable")
+        <div class="piano-scroll-wrapper">
+            <div class="piano-scroll-inner">
+                @await Html.PartialAsync("_durationsTable")
+            </div>
+        </div>
 
         <!--МІЙ СТЕЙНВЕЙ-->
         <div class="piano-scroll-wrapper" aria-label="Piano keyboard scroll container">
@@ -142,6 +147,10 @@
 
         <!--ТАБЛО НОТ ВНИЗУ -->
         <div id="innerNotesContainer">
+            <!-- РЕНДЕР-->
+            <div id="liveNotation" class="mb-3"></div>
+            <!-- ПОЛЕ ДЛЯ РЕДАГУВАННЯ -->
+            <div class="editNotation">
             @if (newMelody is not null)
             {
                 @for (int index = 0; index < newMelody.Count(); index++)
@@ -175,6 +184,7 @@
             {
                 <p id="ifNotesEntered">@Localizer["NoNotesEntered"]</p>
             }
+            </div>
         </div>
 
 

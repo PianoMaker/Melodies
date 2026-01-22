@@ -2,20 +2,22 @@
 
 document.addEventListener("DOMContentLoaded", function () {
     console.log("openpiano js is running");
-    let openpianoDiv = document.getElementById("openpianoDiv");
-    let pianoDiv = document.getElementById("pianoDiv");
-    let stainway = document.getElementById("stainway");
-    let durationspanel = document.getElementById("durationspanel");
+    let openpianoDiv = document.getElementById("openpianoDiv");         //контейнер з кнопкою відкриття піаніно
+	let openpianoButton = document.getElementById("openpianoButton");   //кнопка відкриття піаніно
+	let pianoDiv = document.getElementById("pianoDiv");                 //панель з піаніно  
+    let stainway = document.getElementById("stainway");                 //зображення рояля
+	let durationspanel = document.getElementById("durationspanel");//панель з тривалостями нот
     if (durationspanel) {
         console.log("durationspanel знайдено!");
     } else {
         console.warn("durationspanel НЕ знайдено!");
     }
-    let pianodisplay = document.getElementById("pianodisplay");
+	let pianodisplay = document.getElementById("pianodisplay");     //поле для зберігання коду мелодії
     let onpianodisplay = pianodisplay.value;    
     let createMIDI = document.getElementById("createMIDI");
 
     if (onpianodisplay) {
+		//якщо значення є, контейнер з кнопкою "показати піаніно" не відображається, а піаніно відображається"
         openpianoDiv.style.display = 'none';               
     }
     else 
@@ -26,9 +28,12 @@ document.addEventListener("DOMContentLoaded", function () {
         pianoDiv.style.display = 'none';
         openpianoDiv.style.display = 'flex';
     }
-    openpianoDiv.addEventListener("click", () => {
+
+
+	//обробник події кліку на кнопку відкриття піаніно
+    openpianoButton.addEventListener("click", () => {
         console.log("opening piano");
-        stainway.style.display = 'inline-flex';
+        stainway.style.display = 'inline-flex';         
         durationspanel.style.display = 'inline-flex';
         pianoDiv.style.display = 'inline-flex';
         openpianoDiv.style.display = 'none';        
