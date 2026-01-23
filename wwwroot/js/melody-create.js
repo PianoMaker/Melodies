@@ -226,31 +226,29 @@ document.addEventListener("DOMContentLoaded", function () {
 		return document.getElementById('dotbutton')?.classList.contains('highlight') || false;
 	}
 
-	// обробник клавіші '1' для встановлення цілої ноти
+	// -------------------------------------
+	// обробник клавіш для швидкого вводу нотного тексту
+	// -------------------------------------
 
-	// Replace the existing 'keydown' listener block with this unified handler (handles keys 1..6)
 	document.addEventListener('keydown', function (e) {
 		// не перехоплювати введення, коли користувач у полі вводу/textarea або contentEditable
 		const active = document.activeElement;
 		const tag = active && active.tagName ? active.tagName.toLowerCase() : '';
 		if (tag === 'input' || tag === 'textarea' || (active && active.isContentEditable)) return;
 
-		// верхній рядок клавіш 1..6 → індекси 0..5 → duration = 2**index (1,2,4,8,16,32)
+		
 		const k = e.key;
-		if (k >= '1' && k <= '6') {
-			const idx = parseInt(k, 10) - 1;
-			duration = String(2 ** idx);
-			if (typeof durationbuttons !== 'undefined' && durationbuttons.length > 0) {
-				durationbuttons.forEach((btn, i) => {
-					btn.classList.toggle('highlight', i === idx);
-				});
-			}
-			console.log('[createMelody] keyboard: set duration to', duration, 'from key', k);
+		// Backspace
+		if (k === 'Backspace') {
 			e.preventDefault();
+			removeLastTokenFromPianodisplay();
+			if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
+			return; 
 		}
-		if (k === '.' || k === '/' || k=== ',') {
-			dotBtn.classList.toggle('highlight');
-			console.log('[createMelody]: toggling highlight for dot button');
+		// 1..6 - тривалості
+		if (k >= '1' && k <= '6') { 
+			duration = handleDurationsShortcut(k, duration, durationbuttons, e, dotBtn);
+			return;
 		}
 	});
 
@@ -266,7 +264,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 			// Додаємо крапку до тривалості, якщо активна
 			const dotSuffix = isDottedActive() ? '.' : '';
-			pianodisplay.value += `${key}${duration}${dotSuffix}_`;
+			// Ensure single underscore separators
+			appendToken(`${key}${duration}${dotSuffix}`);
 			if (createMIDIButton) createMIDIButton.style.background = "lightgreen";
 			if (playButton) {
 				playButton.style.background = "lightgray";
@@ -314,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	if (restBtn) {
 		restBtn.addEventListener('click', function () {
 			const dotSuffix = isDottedActive() ? '.' : '';
-			pianodisplay.value += `r${duration}${dotSuffix}_`;
+			appendToken(`r${duration}${dotSuffix}`);
 			if (createMIDIButton) createMIDIButton.style.background = "lightgreen";
 			if (playButton) {
 				playButton.style.background = "lightgray";
@@ -329,40 +328,21 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 	//----------------------------------
-	// обробник клавіші повернення
+	// обробник клавіші повернення (backspace)
 	//----------------------------------
 
 	if (backBtn) {
 		backBtn.addEventListener('click', function () {
 			try {
-				let i = 0.0;
-				if (!pianodisplay || !pianodisplay.value) return;
-
-				while (pianodisplay.value.length > 0 && i < 4) {
-					const lastChar = pianodisplay.value.charAt(pianodisplay.value.length - 1);
-					console.log(`slice: val=${pianodisplay.value} lastChar=${lastChar} i=${i}`)
-					if (lastChar !== '_' && i > 0) {
-						pianodisplay.value = pianodisplay.value.slice(0, -1)
-						console.log(`slice: val=${pianodisplay.value} i=${i}`)
-						i++;
-					}
-					else if (lastChar === '_' && i === 0) {
-						pianodisplay.value = pianodisplay.value.slice(0, -1)
-						console.log(`slice: val=${pianodisplay.value} i=${i}`)
-						i++;
-					}
-					else {
-						console.log(`slice: val=${pianodisplay.value} i=${i} break`);
-						break;
-					}
-				}
-				if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();
+				// previous inline loop extracted to helper
+				removeLastTokenFromPianodisplay();
+				if (window.__scheduleLiveNotationRender) window.__scheduleLiveNotationRender();//оновлення нотного рядку
 			}
 			catch (e) {
 				console.warn(`imposible to slice notes: ${e}`);
 			}
 		})
-		//перемалювати екран
+		
 	}
 	else console.warn("no backBtn found");
 
@@ -404,7 +384,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			var unique = checkIfunique();
 			if (unique) {
 
-				if (keysInput_save) keysInput_save.value = pianodisplay.value
+				if (keysInput_save) keysInput_save.value = normalizeNotation(pianodisplay.value);
 				sessionStorage.setItem("savedTitle", titleInput.value);
 				const hidden = document.getElementById('authorIdHidden');
 				// Replace the three lines that query the DOM again and save selectedId:
@@ -434,7 +414,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		// Fallback для сторінок без title/author (наприклад, Search)
 		createMIDIButton.addEventListener('click', function (event) {
 			// Не відміняємо submit, просто встановлюємо Keys перед відправкою
-			if (keysInput_save) keysInput_save.value = pianodisplay.value;
+			if (keysInput_save) keysInput_save.value = normalizeNotation(pianodisplay.value);
 			console.log("Preview submit with Keys:", keysInput_save ? keysInput_save.value : '(no element)');
 		});
 	}
@@ -698,8 +678,6 @@ document.addEventListener("DOMContentLoaded", function () {
 		});
 	}
 
-
-
 	// ======================
 	// КОПІЮВАННЯ НАЗВИ З ФАЙЛУ
 	// ======================
@@ -791,6 +769,91 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
+//--------------------------------
+//helper: клавіатурні скорочення
+//--------------------------------
+function handleLettersShortcut(k, e) {
+	const letter = k.toLowerCase();
+
+	// Support Shift + letter → black key (sharp) shortcuts
+	// Mapping: shift+c -> cis, shift+d -> dis, shift+f -> fis, shift+g -> gis, shift+b -> b (A#)
+	if ( e && e.shiftKey) {
+		const sharpMap = { c: 'cis', d: 'dis', f: 'fis', g: 'gis', b: 'b' };
+		const mapped = sharpMap[letter];
+		if (mapped) {
+			try {
+				const btn = document.querySelector(`#pianoroll button[data-key="${mapped}"]`);
+				if (btn) {
+					btn.click();
+					e.preventDefault();
+					e.stopPropagation();
+					console.log(`[createMelody] Shift+${letter} -> triggered black key ${mapped}`);
+					return;
+				} else {
+					// Fallback: try to find any button that starts with mapped (octave variants)
+					const btnAlt = Array.from(document.querySelectorAll('#pianoroll button')).find(b => {
+						const dk = (b.getAttribute('data-key') || '').toLowerCase();
+						return dk === mapped || dk.startsWith(mapped + "'");
+					});
+					if (btnAlt) {
+						btnAlt.click();
+						e.preventDefault();
+						e.stopPropagation();
+						console.log(`[createMelody] Shift+${letter} -> triggered black key fallback ${btnAlt.getAttribute('data-key')}`);
+						return;
+					}
+				}
+			} catch (ex) {
+				console.warn('[createMelody] Shift -> black key mapping failed', ex);
+			}
+		}
+	}
+
+	// Default behaviour for natural (white) keys
+	const allowed = new Set(['c', 'd', 'e', 'f', 'g', 'a', 'b']);
+	if (allowed.has(letter)) {
+		try {
+			const btn = document.querySelector(`#pianoroll button[data-key="${letter}"]`);
+			if (btn) {
+				btn.click();
+				e.preventDefault();
+			} else {
+				const btnAlt = Array.from(document.querySelectorAll('#pianoroll button')).find(b => {
+					const dk = b.getAttribute('data-key') || '';
+					return dk.toLowerCase().startsWith(letter);
+				});
+				if (btnAlt) {
+					btnAlt.click();
+					e.preventDefault();
+				}
+			}
+		} catch (ex) {
+			console.warn('[createMelody] keyboard -> piano mapping failed', ex);
+		}
+	}
+}
+//--------------------------------
+//helper: клавіатурні скорочення
+//--------------------------------
+function handleDurationsShortcut(k, duration, durationbuttons, e, dotBtn) {
+    if (k >= '1' && k <= '6') {
+        const idx = parseInt(k, 10) - 1;
+        duration = String(2 ** idx);
+        if (typeof durationbuttons !== 'undefined' && durationbuttons.length > 0) {
+            durationbuttons.forEach((btn, i) => {
+                btn.classList.toggle('highlight', i === idx);
+            });
+        }
+        console.log('[createMelody] keyboard: set duration to', duration, 'from key', k);
+        e.preventDefault();
+    }
+    if (k === '.' || k === '/' || k === ',') {
+        dotBtn.classList.toggle('highlight');
+        console.log('[createMelody]: toggling highlight for dot button');
+    }
+    return duration;
+}
+
 //----------------------------
 // safe helper to set element.style.display if element exists
 //----------------------------
@@ -805,7 +868,127 @@ function safeStyleDisplay(el, display) {
 
 
 
+function normalizeNotation(input) {
+	if (!input) return '';
+	let s = String(input);
+	// collapse multiple underscores into single
+	s = s.replace(/_+/g, '_');
+	// remove leading/trailing underscores
+	s = s.replace(/^_+|_+$/g, '');
+	// trim whitespace edges
+	s = s.trim();
+	if (s.length === 0) return '';
+	// ensure single trailing underscore for non-empty content
+	return s + '_';
+}
 
+	// Append a token ensuring there is exactly one underscore between tokens
+	function appendToken(token) {
+		if (!pianodisplay) return;
+		const tok = String(token || '').trim();
+		if (!tok) return;
+		const cur = String(pianodisplay.value || '');
+		// remove trailing underscores and whitespace
+		const base = cur.replace(/_+$/g, '').trim();
+		// join with single underscore if base not empty
+		const joined = base === '' ? tok : (base + '_' + tok);
+		// normalize and set
+		pianodisplay.value = normalizeNotation(joined);
+	}
+
+	// Remove last token characters from the pianodisplay field
+	function removeLastTokenFromPianodisplay(maxChars = 4) {
+		if (!pianodisplay) return;
+		try {
+			let i = 0;
+			while (pianodisplay.value.length > 0 && i < maxChars) {
+				const lastChar = pianodisplay.value.charAt(pianodisplay.value.length - 1);
+				console.log(`[createMelody] removeLastToken: val=${pianodisplay.value} lastChar=${lastChar} i=${i}`);
+				if (lastChar !== '_' && i > 0) {
+					pianodisplay.value = pianodisplay.value.slice(0, -1);
+					console.log(`[createMelody] removeLastToken: val=${pianodisplay.value} i=${i}`);
+					i++;
+				}
+				else if (lastChar === '_' && i === 0) {
+					pianodisplay.value = pianodisplay.value.slice(0, -1);
+					console.log(`[createMelody] removeLastToken: val=${pianodisplay.value} i=${i}`);
+					i++;
+				}
+				else {
+					console.log(`[createMelody] removeLastToken: val=${pianodisplay.value} i=${i} break`);
+					break;
+				}
+			}
+		} catch (e) {
+			console.warn('[createMelody] removeLastTokenFromPianodisplay failed', e);
+		}
+}
+
+// Shift + ArrowUp/ArrowDown: transpose last note by one octave and re-render
+function handleShiftArrows(k, e) {
+	if (!e || !e.shiftKey) return;
+	if (k !== 'ArrowUp' && k !== 'ArrowDown') return;
+
+	try {
+		e.preventDefault();
+		const dir = k === 'ArrowUp' ? 1 : -1;
+		const raw = String(pianodisplay.value || '').trim();
+		if (!raw) return;
+
+		// tokens separated by single underscore; ignore empty tokens
+		const tokens = raw.split('_').filter(t => t.length > 0);
+		if (tokens.length === 0) return;
+
+		let last = tokens[tokens.length - 1];
+
+		// Do not transpose rests (tokens starting with 'r')
+		if (/^r/i.test(last)) return;
+
+		// Parse note: name, octave symbols (apostrophes/commas), rest (duration/dots etc)
+		const m = last.match(/^(cis|dis|fis|gis|ais|as|ges|es|des|b|c|d|e|f|g|a|h)([',]*)(.*)$/i);
+		if (!m) return;
+
+		let name = m[1];
+		let octMod = m[2] || '';
+		const rest = m[3] || ''; // duration and optional dots, e.g. "4.", "8._" (without underscore)
+
+		// Always use symbolic octave markers: apostrophes for up, commas for down
+		if (dir > 0) {
+			// if there's a comma (lower octave marker), remove one; otherwise add an apostrophe
+			if (octMod.includes(',')) {
+				octMod = octMod.replace(',', '');
+			} else {
+				octMod = octMod + "'";
+			}
+		} else {
+			// dir < 0: if there's an apostrophe, remove one; otherwise add a comma
+			if (octMod.includes("'")) {
+				octMod = octMod.replace("'", "");
+			} else {
+				octMod = octMod + ",";
+			}
+		}
+
+		const newToken = name + octMod + rest;
+		tokens[tokens.length - 1] = newToken;
+
+		pianodisplay.value = normalizeNotation(tokens.join('_'));
+
+		// mark changed UI
+		if (createMIDIButton) createMIDIButton.style.background = "lightgreen";
+		if (playButton) {
+			playButton.style.background = "lightgray";
+			const playIcon = document.querySelector('.fas.fa-play');
+			if (playIcon) playIcon.style.color = "gray";
+		}
+
+		// force immediate live notation render
+		window.__forceLiveNotationRender();
+
+	} catch (ex) {
+		console.warn('[createMelody] handleShiftArrows failed', ex);
+	}
+}
 
 
 

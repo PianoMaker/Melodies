@@ -109,40 +109,39 @@
                     <td>
                         @if (item.Author is not null)
                         {
-                            
                             var authorId = item.Author.ID;
-                            
-                            if (item.Author.Surname == "Українська народна пісня")
+                            // Special-case display for Ukrainian folk song
+                            if (string.Equals(item.Author.Surname, "Українська народна пісня", StringComparison.OrdinalIgnoreCase))
                             {
-                                if (lng == "uk")
-                                {
-                                    <a asp-page="/Authors/Details" asp-route-id="@authorId" class="link-dark song-title" data-full="Українська народна пісня" data-short="укр. нар. пісня">
-                                        Українська народна пісня
-                                    </a>
-                                }
-                                else
-                                {
-                                    <a asp-page="/Authors/Details" asp-route-id="@authorId" class="link-dark song-title" data-full="Українська народна пісня" data-short="ukr. song">
-                                        Ukrainian folk song
-                                    </a>
-                                }
+                                var displayText = lng == "uk" ? "Українська народна пісня" : "Ukrainian folk song";
+                                <a asp-page="/Authors/Details" asp-route-id="@authorId" class="link-dark song-title" title="@displayText">
+                                    @displayText
+                                </a>
                             }
                             else
                             {
-                                if (lng == "uk")
-                                {
-                                    <a asp-page="/Authors/Details" asp-route-id="@authorId" class="link-dark">
-                                        <span>@item.Author.Name</span>
-                                        <span> @Html.DisplayFor(modelItem => item.Author.Surname)</span>
-                                    </a>
-                                }
-                                else
-                                {
-                                    <a asp-page="/Authors/Details" asp-route-id="@authorId" class="link-dark">
-                                        <span>@item.Author.NameEn</span>
-                                        <span> @Html.DisplayFor(modelItem => item.Author.SurnameEn)</span>
-                                    </a>
-                                }
+                                // Determine display name with fallbacks
+                                string firstName = (lng == "uk") ? (item.Author.Name ?? item.Author.NameEn ?? string.Empty) : (item.Author.NameEn ?? item.Author.Name ?? string.Empty);
+                                string lastName  = (lng == "uk") ? (item.Author.Surname ?? item.Author.SurnameEn ?? string.Empty) : (item.Author.SurnameEn ?? item.Author.Surname ?? string.Empty);
+
+                                // Trim and ensure not empty
+                                firstName = (firstName ?? string.Empty).Trim();
+                                lastName = (lastName ?? string.Empty).Trim();
+
+                                <a asp-page="/Authors/Details" asp-route-id="@authorId" class="link-dark">
+                                    @if (!string.IsNullOrEmpty(firstName))
+                                    {
+                                        <span>@firstName</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
+                                    {
+                                        <span>&nbsp;</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(lastName))
+                                    {
+                                        <span>@lastName</span>
+                                    }
+                                </a>
                             }
                         }
                     </td>

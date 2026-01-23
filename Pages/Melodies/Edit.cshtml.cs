@@ -341,7 +341,9 @@ namespace Melodies25.Pages.Melodies
                         var tonal = new Tonalities(tonStr);
                         // InsertKeySignatures will ensure a KeySignature event at abs=0 (and in note tracks)
                         InsertKeySignatures(fullPath, tonal);
-                        MessageL(COLORS.green, $"KeySignature inserted/updated via InsertKeySignatures: {tonStr}");
+                        MessageL(COLORS.green, $"KeySignature inserted/updated 1st time via InsertKeySignatures: {tonStr}");
+                        InsertKeySignatures(fullPath, tonal);
+                        MessageL(COLORS.green, $"KeySignature inserted/updated 2nd time via InsertKeySignatures: {tonStr}");
                     }
                     catch (Exception exKs)
                     {

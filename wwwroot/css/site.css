@@ -370,18 +370,7 @@ label, .form-label, .col-form-label {
     opacity: 0.90 !important;
 }
 
-.searchrightcontainer {
-    width: 70%;
-    height: 100%;
-    margin: 10px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding-left: 0;
-    padding-right: 0;
-    align-items: stretch;
-}
+
 
 /* ensure inner notes container uses the same width anchor */
 #innerNotesContainer {
@@ -545,10 +534,67 @@ table, th, td {
     height: 200px;
 }
 
+
+
+
+/*  
+    ----
+    ПОЛЕ РЕДАГУВАННЯ НОТ 
+    ----
+*/
+
+.editNotation {
+    border: 1px solid gray;
+    background-color: var(--surface-100);
+    padding: 10px;
+    font-size: 1.2rem;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: auto; 
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.editNotation .outerNoteBox {
+    display: inline-block;
+    text-align: center;
+    vertical-align: top;
+    margin: 0 4px 6px 4px; /* spacing between tokens */
+    line-height: 1;
+}
+
+.editNotation .notebox {
+    display: inline-block;
+    background: var(--surface-200);
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    box-sizing: border-box;
+    /* width and margin-bottom are currently set inline per-note */
+}
+
+    .editNotation .notebox.pausebox {
+        background: #ffffff;
+        border-style: dashed;
+        color: #666;
+    }
+
+.editNotation .notaname {
+    display: block;
+    font-size: 0.85rem;
+    color: #333;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
 .outerNoteBox {
     display: inline-block;
     text-align: center;
 }
+
+
 
 .noteanalysis {
     display: inline-block;
@@ -661,11 +707,12 @@ table, th, td {
 }
 
 .searchrightcontainer {
-    width: 60%;
-    height: 100%;
-    box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
+    margin: 10px;
+    width: 70%;
+    height: 100%;
     gap: 12px;
     padding-left: 0;
     padding-right: 0;
@@ -675,7 +722,7 @@ table, th, td {
 .searchleftcontainer {
     display: inline-block;
     height: 100%;
-    width: 40%;
+    width: 30%;
     margin: 10px;
     min-height: 620px;
     padding: 15px;
