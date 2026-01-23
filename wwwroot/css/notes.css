@@ -1,7 +1,7 @@
 /* ФОРТЕПІАННА КЛАВІАТУРА */
 /* Контейнер для нот */
 
-/*������ ������ ����������� ��� ����� ������*/
+/*Кнопки вибору тривалостей для вводу мелодій*/
 .durbtn {
     width: 40px;
     height: 40px;
@@ -18,7 +18,7 @@
 
 
 /* -----------------
-    ��������� 
+    Клавіатура 
     -----------------*/
 
 .piano-scroll-inner {
@@ -52,7 +52,7 @@
     padding: 0;
 }
 
-/* �� ������ */
+/* білі клавіші */
 .whitepianobutton {
     height: 200px;
     width: 50px;
@@ -69,10 +69,55 @@
     margin: 0;
 }
 
-/* ������� ��� ����� ����� ������ */
+/* позиції для кожної чорної клавіші */
 .cis1 {
     top: 0px;
     left: 35px;
+}
+
+.dis1 {
+    top: 0px;
+    left: 90px;
+}
+
+.fis1 {
+    top: 0px;
+    left: 180px;
+}
+
+.gis1 {
+    top: 0px;
+    left: 235px;
+}
+
+.b1 {
+    top: 0px;
+    left: 290px;
+}
+
+.cis2 {
+    top: 0px;
+    left: 385px;
+}
+
+.dis2 {
+    top: 0px;
+    left: 440px;
+}
+
+.fis2 {
+    top: 0px;
+    left: 530px;
+}
+
+.gis2 {
+    top: 0px;
+    left: 585px;
+}
+
+.b2 {
+    top: 0px;
+    left: 640px;
 }
 
 .dis1 {
@@ -320,7 +365,7 @@
 
 
 
-/* ��������� ������������� ��� ������ ����� */
+/* Адаптивне масштабування для нотних блоків */
 .melody-block [id^="notation_"] svg {
     display: block;
     width: 100%;
@@ -341,7 +386,7 @@
         max-width: 100%;
     }
 
-/* ����������� ��������� ������ ���������� ��� containerWidth ���������� */
+/* Забезпечити правильні розміри контейнера для containerWidth розрахунку */
 .melody-block {
     width: 100%;
     box-sizing: border-box;
@@ -353,12 +398,12 @@
     }
 
         .melody-block [id^="notation_match_"] {
-            /* ������������ �� containerWidth ��������� ������������� */
+            /* Переконатися що containerWidth правильно розраховується */
             min-width: 0;
         }
 }
 
-/* ��������� ���������� */
+/* Контейнер результатів */
 #matchedMelodiesContainer {
     max-width: 100%;
     overflow-x: hidden;
@@ -488,7 +533,7 @@
     border: 1px solid black;
     border-radius: 5px;
     background-color: lightgray;
-    padding: 10px;
+    padding: 10px 10px;
     margin: 0;
     /*padding: 10px;*/
 }
@@ -602,7 +647,7 @@
         box-sizing: border-box;
     }
 
-/*  ����������� ����ֲ� ���²����� ��� ������� ����Ͳ� */
+/*  ВИПРАВЛЕННЯ ПОЗИЦІЙ КЛАВІАТУРИ ДЛЯ ШИРОКИХ ЕКРАНІВ */
 
 @media (min-width: 901px) {
     /* center piano without changing positioning context inside it */
