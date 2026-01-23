@@ -784,7 +784,9 @@ function handleLettersShortcut(k, e) {
 	// Support Shift + letter → black key (sharp) shortcuts
 	// Mapping: shift+c -> cis, shift+d -> dis, shift+f -> fis, shift+g -> gis, shift+b -> b (A#)
 	if ( e && e.shiftKey) {
-		const sharpMap = { c: 'cis', d: 'dis', f: 'fis', g: 'gis', b: 'b' };
+		const sharpMap = {
+			c: 'cis', d: 'dis', e: 'eis', f: 'fis', g: 'gis', a: 'ais', b: 'h', h: 'his'
+		};
 		const mapped = sharpMap[letter];
 		if (mapped) {
 			try {
@@ -816,7 +818,7 @@ function handleLettersShortcut(k, e) {
 	}
 
 	// Default behaviour for natural (white) keys
-	const allowed = new Set(['c', 'd', 'e', 'f', 'g', 'a', 'b']);
+	const allowed = new Set(['c', 'd', 'e', 'f', 'g', 'a', 'b', 'h']);
 	if (allowed.has(letter)) {
 		try {
 			const btn = document.querySelector(`#pianoroll button[data-key="${letter}"]`);
@@ -873,79 +875,6 @@ function safeStyleDisplay(el, display) {
 }
 
 
-
-function normalizeNotation(input) {
-	if (!input) return '';
-	let s = String(input);
-	// collapse multiple underscores into single
-	s = s.replace(/_+/g, '_');
-	// remove leading/trailing underscores
-	s = s.replace(/^_+|_+$/g, '');
-	// trim whitespace edges
-	s = s.trim();
-	if (s.length === 0) return '';
-	// ensure single trailing underscore for non-empty content
-	return s + '_';
-}
-
-	// Append a token ensuring there is exactly one underscore between tokens
-	function appendToken(token) {
-		if (!pianodisplay) return;
-		const tok = String(token || '').trim();
-		if (!tok) return;
-		const cur = String(pianodisplay.value || '');
-		// remove trailing underscores and whitespace
-		const base = cur.replace(/_+$/g, '').trim();
-		// join with single underscore if base not empty
-		const joined = base === '' ? tok : (base + '_' + tok);
-		// normalize and set
-		pianodisplay.value = normalizeNotation(joined);
-	}
-
-	// Remove last token characters from the pianodisplay field
-	function removeLastTokenFromPianodisplay(maxChars = 4) {
-		if (!pianodisplay) return;
-		try {
-			let i = 0;
-			while (pianodisplay.value.length > 0 && i < maxChars) {
-				const lastChar = pianodisplay.value.charAt(pianodisplay.value.length - 1);
-				console.log(`[createMelody] removeLastToken: val=${pianodisplay.value} lastChar=${lastChar} i=${i}`);
-				if (lastChar !== '_' && i > 0) {
-					pianodisplay.value = pianodisplay.value.slice(0, -1);
-					console.log(`[createMelody] removeLastToken: val=${pianodisplay.value} i=${i}`);
-					i++;
-				}
-				else if (lastChar === '_' && i === 0) {
-					pianodisplay.value = pianodisplay.value.slice(0, -1);
-					console.log(`[createMelody] removeLastToken: val=${pianodisplay.value} i=${i}`);
-					i++;
-				}
-				else {
-					console.log(`[createMelody] removeLastToken: val=${pianodisplay.value} i=${i} break`);
-					break;
-				}
-			}
-		} catch (e) {
-			console.warn('[createMelody] removeLastTokenFromPianodisplay failed', e);
-		}
-}
-
-// Shift + ArrowUp/ArrowDown: transpose last note by one octave and re-render
-function handleShiftArrows(k, e) {
-	if (!e || !e.shiftKey) return;
-	if (k !== 'ArrowUp' && k !== 'ArrowDown') return;
-
-	try {
-		e.preventDefault();
-		const dir = k === 'ArrowUp' ? 1 : -1;
-		const raw = String(pianodisplay.value || '').trim();
-		if (!raw) return;
-
-		// tokens separated by single underscore; ignore empty tokens
-		const tokens = raw.split('_').filter(t => t.length > 0);
-		if (tokens.length === 0) return;
-
-		let last = tokens[tokens.length - 1];
 
 function normalizeNotation(input) {
 	if (!input) return '';
